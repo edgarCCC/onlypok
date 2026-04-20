@@ -94,7 +94,9 @@ export default function FormationsPage() {
     const matchV = !v || f.variant === v
     const matchP = !p || (p === 'Gratuit' && f.price === 0) || (p === '< 30€' && f.price > 0 && f.price < 30) || (p === '30–60€' && f.price >= 30 && f.price <= 60) || (p === '> 60€' && f.price > 60)
     const matchD = !d || (d === '< 2h' && f.duration_minutes < 120) || (d === '2h – 5h' && f.duration_minutes >= 120 && f.duration_minutes <= 300) || (d === '> 5h' && f.duration_minutes > 300)
-    return matchV && matchP && matchD
+    const contentType = f.content_type ?? 'formation'
+    const matchTab = tab === 'formations' ? contentType === 'formation' : tab === 'videos' ? contentType === 'video' : tab === 'coaching' ? contentType === 'coaching' : true
+    return matchTab && matchV && matchP && matchD
   })
 
   const top10      = filtered.slice(0, 10)
@@ -300,38 +302,52 @@ export default function FormationsPage() {
           CONTENU
       ══════════════════════ */}
       <main style={{ paddingTop: 220, paddingLeft: 40, paddingRight: 40, paddingBottom: 100, position: 'relative', zIndex: 1 }}>
-
-        {tab === 'formations' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 64 }}>
-            {!loading && top10.length > 0 && (
-              <NetflixRow title="Top 10" subtitle="Les formations incontournables du moment" formations={top10} accentColor={accentColor} isTop10 />
-            )}
-            {loading ? (
-              <div style={{ display: 'flex', gap: 20 }}>
-                {[...Array(4)].map((_, i) => <div key={i} style={{ minWidth: 280, height: 180, background: 'rgba(232,228,220,0.03)', borderRadius: 20 }} />)}
-              </div>
-            ) : (
-              <>
-                {nouveautes.length > 0 && <NetflixRow title="Nouveautés" subtitle="Découvrez les dernières pépites" formations={nouveautes} accentColor={accentColor} />}
-                {pourVous.length > 0 && <NetflixRow title="Pour vous" subtitle="Adapté à votre progression" formations={pourVous} accentColor={accentColor} />}
-                <PlaceholderRow title="Masterclasses" subtitle="L'élite vous livre ses secrets" icon={<BookOpen size={18} color={SILVER} />} />
-              </>
-            )}
+        {loading ? (
+          <div style={{ display: 'flex', gap: 16 }}>
+            {[...Array(4)].map((_, i) => <div key={i} style={{ minWidth: 260, height: 200, background: 'rgba(232,228,220,0.03)', borderRadius: 14, flexShrink: 0 }} />)}
           </div>
-        )}
-
-        {tab === 'videos' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 64 }}>
-            <PlaceholderRow title="Les bases" subtitle="Apprendre les fondamentaux" icon={<PlayCircle size={18} color={SILVER} />} />
-            <PlaceholderRow title="Analyses Pro" subtitle="Reviews de sessions complètes" icon={<PlayCircle size={18} color={SILVER} />} />
-            <PlaceholderRow title="Replays Live" subtitle="Revivez les meilleures sessions" icon={<PlayCircle size={18} color={SILVER} />} />
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '100px 0' }}>
+            <div style={{ fontSize: 48, opacity: 0.1, marginBottom: 16 }}>♠</div>
+            <p style={{ color: 'rgba(232,228,220,0.2)', fontSize: 14 }}>
+              {tab === 'videos' ? 'Aucune vidéo disponible' : tab === 'coaching' ? 'Aucun coaching disponible' : 'Aucune formation disponible'}
+            </p>
           </div>
-        )}
-
-        {tab === 'coaching' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 64 }}>
-            <PlaceholderRow title="Coachs Elite" subtitle="Un accompagnement sur-mesure" icon={<Users size={18} color={SILVER} />} height={240} />
-            <PlaceholderRow title="Sessions de groupe" subtitle="Apprenez en communauté" icon={<Users size={18} color={SILVER} />} height={200} />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 52 }}>
+            {filtered.slice(0, 10).length > 0 && (
+              <NetflixRow
+                title={tab === 'videos' ? 'Top vidéos' : tab === 'coaching' ? 'Nos coachs' : 'Top formations'}
+                subtitle="Les plus populaires du moment"
+                formations={filtered.slice(0, 10)}
+                accentColor={accentColor}
+                isTop10={filtered.length >= 3}
+              />
+            )}
+            {filtered.filter(f => f.price === 0).length > 0 && (
+              <NetflixRow
+                title="Accès gratuit"
+                subtitle="Commence sans rien débourser"
+                formations={filtered.filter(f => f.price === 0)}
+                accentColor={accentColor}
+              />
+            )}
+            {filtered.filter(f => f.price > 0).length > 0 && (
+              <NetflixRow
+                title="Premium"
+                subtitle="Le meilleur du contenu pro"
+                formations={filtered.filter(f => f.price > 0)}
+                accentColor={accentColor}
+              />
+            )}
+            {[...filtered].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0,8).length > 0 && (
+              <NetflixRow
+                title="Nouveautés"
+                subtitle="Ajoutés récemment"
+                formations={[...filtered].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0,8)}
+                accentColor={accentColor}
+              />
+            )}
           </div>
         )}
       </main>
