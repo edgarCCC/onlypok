@@ -1,10 +1,13 @@
 'use client'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Search, ChevronRight, ChevronLeft, HelpCircle, Menu, X, Check, PlayCircle, Users, BookOpen, Star, MessageSquare, Clock, TrendingUp, Award, Send, FileText } from 'lucide-react'
+import { Search, ChevronRight, ChevronLeft, HelpCircle, Menu, X, Check, PlayCircle, Users, BookOpen, Star, MessageSquare, Clock, TrendingUp, Award, Send, FileText, Sparkles, Maximize2 } from 'lucide-react'
 import FormationCard from '@/components/formations/FormationCard'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const MindMap = dynamic(() => import('@/components/MindMap'), { ssr: false })
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -393,6 +396,7 @@ export default function FormationsPage() {
         @keyframes airbnbPop { from { opacity:0; transform:translateY(-8px) scale(0.98); } to { opacity:1; transform:translateY(0) scale(1); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         @keyframes modalIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
+        @keyframes mindmapIn { from { opacity:0; transform:scale(0.98); } to { opacity:1; transform:scale(1); } }
       `}</style>
     </div>
   )
@@ -581,19 +585,29 @@ function VideoStudio({ video, onClose }: { video: { url: string; title: string }
   const embedUrl  = getEmbedUrl(video.url)
   const isNative  = !video.url.match(/youtube|youtu\.be|vimeo/)
   const noteKey   = `onlypok_note_${video.url.slice(-60)}`
+  const synthKey  = `onlypok_synth_${video.url.slice(-60)}`
+  const MAX_SYNTH = 3
 
   const C = '#f0f4ff', S = 'rgba(240,244,255,0.45)', D = 'rgba(240,244,255,0.2)', V = '#7c3aed'
 
-  const [tab,        setTab]        = useState<'notes' | 'comments'>('notes')
-  const [notes,      setNotes]      = useState('')
-  const [comments,   setComments]   = useState<any[]>([])
-  const [newComment, setNewComment] = useState('')
-  const [authUser,   setAuthUser]   = useState<any>(null)
-  const [posting,    setPosting]    = useState(false)
+  const [tab,          setTab]          = useState<'notes' | 'comments'>('notes')
+  const [notes,        setNotes]        = useState('')
+  const [comments,     setComments]     = useState<any[]>([])
+  const [newComment,   setNewComment]   = useState('')
+  const [authUser,     setAuthUser]     = useState<any>(null)
+  const [posting,      setPosting]      = useState(false)
+  const [mindmap,           setMindmap]           = useState<string | null>(null)
+  const [synthesizing,      setSynthesizing]      = useState(false)
+  const [showMindmap,       setShowMindmap]        = useState(false)
+  const [fullscreenMindmap, setFullscreenMindmap] = useState(false)
+  const [synthCount,        setSynthCount]        = useState(0)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') setNotes(localStorage.getItem(noteKey) ?? '')
-    supabase.auth.getUser().then(({ data }) => setAuthUser(data.user))
+    if (typeof window !== 'undefined') {
+      setNotes(localStorage.getItem(noteKey) ?? '')
+      setSynthCount(parseInt(localStorage.getItem(synthKey) ?? '0', 10))
+    }
+    supabase.auth.getUser().then(({ data: d }) => setAuthUser(d.user))
     supabase.from('video_comments')
       .select('*, profile:profiles!student_id(username)')
       .eq('video_url', video.url)
@@ -607,6 +621,28 @@ function VideoStudio({ video, onClose }: { video: { url: string; title: string }
   const saveNote = (val: string) => {
     setNotes(val)
     if (typeof window !== 'undefined') localStorage.setItem(noteKey, val)
+  }
+
+  const synthesize = async () => {
+    if (!notes.trim() || synthesizing || synthCount >= MAX_SYNTH) return
+    setSynthesizing(true)
+    try {
+      const res = await fetch('/api/ai/synthesize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes, title: video.title }),
+      })
+      const { markdown } = await res.json()
+      if (markdown) {
+        setMindmap(markdown)
+        setShowMindmap(true)
+        const next = synthCount + 1
+        setSynthCount(next)
+        localStorage.setItem(synthKey, String(next))
+      }
+    } finally {
+      setSynthesizing(false)
+    }
   }
 
   const postComment = async () => {
@@ -636,6 +672,39 @@ function VideoStudio({ video, onClose }: { video: { url: string; title: string }
           <X size={14} />
         </button>
       </div>
+
+      {/* ── Mind map plein écran ── */}
+      {fullscreenMindmap && mindmap && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'linear-gradient(160deg,#07070f 0%,#04040a 60%,#080812 100%)', display: 'flex', flexDirection: 'column', animation: 'mindmapIn 0.22s cubic-bezier(0.16,1,0.3,1)' }}>
+
+          {/* Ambient glow blobs */}
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+            <div style={{ position: 'absolute', top: '15%', left: '20%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+            <div style={{ position: 'absolute', bottom: '20%', right: '15%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,0.06) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+          </div>
+
+          {/* Header glass */}
+          <div style={{ position: 'relative', zIndex: 1, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(7,7,15,0.7)', backdropFilter: 'blur(20px)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 6, height: 6, borderRadius: 2, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', boxShadow: '0 0 8px rgba(124,58,237,0.6)' }} />
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(240,244,255,0.5)', textTransform: 'uppercase' }}>Mind Map</span>
+              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)', margin: '0 4px' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#EDEDEF', maxWidth: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{video.title}</span>
+            </div>
+            <button onClick={() => setFullscreenMindmap(false)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(240,244,255,0.5)', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#EDEDEF' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(240,244,255,0.5)' }}>
+              <X size={12} /> Fermer
+            </button>
+          </div>
+
+          {/* Map */}
+          <div style={{ position: 'relative', zIndex: 1, flex: 1, minHeight: 0, padding: '8px 0' }}>
+            <MindMap markdown={mindmap} />
+          </div>
+        </div>
+      )}
 
       {/* ── Body ── */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
@@ -670,19 +739,60 @@ function VideoStudio({ video, onClose }: { video: { url: string; title: string }
 
             {tab === 'notes' ? (
               <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 16, gap: 10 }}>
-                <p style={{ fontSize: 11, color: D, margin: 0, lineHeight: 1.5 }}>
-                  Sauvegardées automatiquement sur cet appareil.
-                </p>
-                <textarea
-                  value={notes}
-                  onChange={e => saveNote(e.target.value)}
-                  placeholder="Prenez des notes sur cette vidéo…&#10;&#10;Concepts clés, mains marquantes, points à retravailler…"
-                  style={{ flex: 1, minHeight: 360, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '12px 14px', color: C, fontSize: 13, fontFamily: 'inherit', resize: 'none', outline: 'none', lineHeight: 1.65, boxSizing: 'border-box' }}
-                  onFocus={e => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)')}
-                  onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
-                />
-                {notes.length > 0 && (
-                  <p style={{ fontSize: 11, color: D, margin: 0, textAlign: 'right' }}>{notes.length} caractères</p>
+
+                {/* Toggle Notes / Mind map */}
+                {mindmap && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', flex: 1, gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 3 }}>
+                      {(['notes', 'mindmap'] as const).map(v => (
+                        <button key={v} onClick={() => setShowMindmap(v === 'mindmap')}
+                          style={{ flex: 1, padding: '6px', borderRadius: 6, border: 'none', background: (v === 'mindmap') === showMindmap ? 'rgba(124,58,237,0.3)' : 'transparent', color: (v === 'mindmap') === showMindmap ? C : S, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}>
+                          {v === 'notes' ? 'Notes' : 'Mind map'}
+                        </button>
+                      ))}
+                    </div>
+                    {showMindmap && (
+                      <button onClick={() => setFullscreenMindmap(true)}
+                        title="Plein écran"
+                        style={{ width: 30, height: 30, borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: S, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}
+                        onMouseEnter={e => { e.currentTarget.style.color = C; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = S; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}>
+                        <Maximize2 size={13} />
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {showMindmap && mindmap ? (
+                  <div style={{ flex: 1, minHeight: 0, borderRadius: 10, overflow: 'hidden', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <MindMap markdown={mindmap} />
+                  </div>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 11, color: D, margin: 0, lineHeight: 1.5, flexShrink: 0 }}>
+                      Sauvegardées automatiquement sur cet appareil.
+                    </p>
+                    <textarea
+                      value={notes}
+                      onChange={e => saveNote(e.target.value)}
+                      placeholder="Prenez des notes sur cette vidéo…&#10;&#10;Concepts clés, mains marquantes, points à retravailler…"
+                      style={{ flex: 1, minHeight: 280, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '12px 14px', color: C, fontSize: 13, fontFamily: 'inherit', resize: 'none', outline: 'none', lineHeight: 1.65, boxSizing: 'border-box' }}
+                      onFocus={e => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)')}
+                      onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                      {notes.length > 0 && (
+                        <p style={{ fontSize: 11, color: D, margin: 0 }}>{notes.length} car.</p>
+                      )}
+                      <button
+                        onClick={synthesize}
+                        disabled={synthesizing || notes.trim().length === 0 || synthCount >= MAX_SYNTH}
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: synthCount >= MAX_SYNTH || notes.trim().length === 0 || synthesizing ? 'rgba(124,58,237,0.1)' : 'linear-gradient(135deg,rgba(124,58,237,0.6),rgba(6,182,212,0.4))', color: synthCount >= MAX_SYNTH || notes.trim().length === 0 ? S : C, fontSize: 12, fontWeight: 700, cursor: synthCount >= MAX_SYNTH || notes.trim().length === 0 || synthesizing ? 'default' : 'pointer', transition: 'all 0.2s', opacity: synthesizing ? 0.7 : 1, marginLeft: 'auto' }}>
+                        <Sparkles size={12} />
+                        {synthesizing ? 'Synthèse…' : synthCount >= MAX_SYNTH ? `Limite atteinte (${MAX_SYNTH}/${MAX_SYNTH})` : `Synthétiser avec IA${synthCount > 0 ? ` (${synthCount}/${MAX_SYNTH})` : ''}`}
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             ) : (

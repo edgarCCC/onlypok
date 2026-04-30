@@ -6,34 +6,10 @@ import { useUser } from '@/hooks/useUser'
 import { ArrowLeft, Lock, CheckCircle, PlayCircle, Download, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import FourAcesLoader from '@/components/FourAcesLoader'
+import VideoStudio from '@/components/VideoStudio'
 
 const CREAM = '#E8E4DC'
 const SILVER = '#8A8A8A'
-
-function VideoPlayer({ url, type }: { url: string, type: string }) {
-  const getYtId = (u: string) => u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1]
-  const getVimeoId = (u: string) => u.match(/vimeo\.com\/(\d+)/)?.[1]
-
-  if (type === 'youtube' || url.includes('youtu')) {
-    const id = getYtId(url)
-    if (!id) return null
-    return (
-      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden' }}>
-        <iframe src={`https://www.youtube.com/embed/${id}`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} allowFullScreen />
-      </div>
-    )
-  }
-  if (type === 'vimeo' || url.includes('vimeo')) {
-    const id = getVimeoId(url)
-    if (!id) return null
-    return (
-      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden' }}>
-        <iframe src={`https://player.vimeo.com/video/${id}`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} allowFullScreen />
-      </div>
-    )
-  }
-  return <video controls src={url} style={{ width: '100%', borderRadius: 12 }} />
-}
 
 export default function FormationDetailPage() {
   const { id } = useParams()
@@ -49,6 +25,7 @@ export default function FormationDetailPage() {
   const [hasPurchased, setHasPurchased] = useState(false)
   const [completedLessons, setCompletedLessons] = useState<string[]>([])
   const [currentLesson, setCurrentLesson] = useState<any>(null)
+  const [studioOpen, setStudioOpen]       = useState(false)
   const [openChapters, setOpenChapters]   = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [showSuccessBanner, setShowSuccessBanner] = useState(paymentSuccess)
@@ -112,7 +89,8 @@ export default function FormationDetailPage() {
     const locked = !lesson.is_free && !hasPurchased
     if (locked) return
     setCurrentLesson(lesson)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (lesson.video_url) setStudioOpen(true)
+    else window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   if (loading) return <FourAcesLoader />
@@ -121,6 +99,13 @@ export default function FormationDetailPage() {
   const typeColor = formation.content_type === 'video' ? '#06b6d4' : '#7c3aed'
 
   return (
+    <>
+    {studioOpen && currentLesson?.video_url && (
+      <VideoStudio
+        video={{ url: currentLesson.video_url, title: currentLesson.title }}
+        onClose={() => setStudioOpen(false)}
+      />
+    )}
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
       {/* Glow */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 60% 30% at 50% 0%, ${typeColor}15 0%, transparent 70%)` }} />
@@ -155,26 +140,30 @@ export default function FormationDetailPage() {
           <div>
             {/* Lecteur ou placeholder */}
             {currentLesson ? (
-              <div style={{ marginBottom: 24 }}>
-                {currentLesson.video_url ? (
-                  <VideoPlayer url={currentLesson.video_url} type={currentLesson.video_type ?? 'youtube'} />
-                ) : (
-                  <div style={{ aspectRatio: '16/9', background: 'rgba(232,228,220,0.04)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <p style={{ color: SILVER, fontSize: 14 }}>Pas de vidéo pour cette leçon</p>
+              <div style={{ marginBottom: 24, background: 'rgba(232,228,220,0.03)', border: `1px solid ${typeColor}30`, borderRadius: 14, padding: '20px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: `${typeColor}20`, border: `1px solid ${typeColor}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <PlayCircle size={20} color={typeColor} />
                   </div>
-                )}
-                <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <h2 style={{ fontSize: 18, fontWeight: 700, color: CREAM, letterSpacing: '-0.3px' }}>{currentLesson.title}</h2>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    {currentLesson.pdf_url && (
-                      <a href={currentLesson.pdf_url} download style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: typeColor, textDecoration: 'none', padding: '6px 12px', border: `1px solid ${typeColor}40`, borderRadius: 8 }}>
-                        <Download size={13} /> PDF
-                      </a>
-                    )}
-                    <button onClick={() => handleComplete(currentLesson.id)} style={{ fontSize: 12, fontWeight: 600, padding: '6px 14px', borderRadius: 8, border: `1px solid ${completedLessons.includes(currentLesson.id) ? 'rgba(16,185,129,0.4)' : 'rgba(232,228,220,0.15)'}`, background: completedLessons.includes(currentLesson.id) ? 'rgba(16,185,129,0.1)' : 'transparent', color: completedLessons.includes(currentLesson.id) ? '#06b6d4' : SILVER, cursor: 'pointer' }}>
-                      {completedLessons.includes(currentLesson.id) ? '✓ Terminé' : 'Marquer terminé'}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 11, color: typeColor, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 3 }}>Leçon en cours</p>
+                    <h2 style={{ fontSize: 17, fontWeight: 700, color: CREAM, letterSpacing: '-0.3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentLesson.title}</h2>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                  {currentLesson.video_url && (
+                    <button onClick={() => setStudioOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: typeColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: `0 4px 16px ${typeColor}50` }}>
+                      <PlayCircle size={15} /> Regarder
                     </button>
-                  </div>
+                  )}
+                  {currentLesson.pdf_url && (
+                    <a href={currentLesson.pdf_url} download style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: typeColor, textDecoration: 'none', padding: '9px 14px', border: `1px solid ${typeColor}40`, borderRadius: 9 }}>
+                      <Download size={13} /> PDF
+                    </a>
+                  )}
+                  <button onClick={() => handleComplete(currentLesson.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '9px 14px', borderRadius: 9, border: `1px solid ${completedLessons.includes(currentLesson.id) ? 'rgba(16,185,129,0.4)' : 'rgba(232,228,220,0.15)'}`, background: completedLessons.includes(currentLesson.id) ? 'rgba(16,185,129,0.1)' : 'transparent', color: completedLessons.includes(currentLesson.id) ? '#34d399' : SILVER, cursor: 'pointer', marginLeft: 'auto' }}>
+                    <CheckCircle size={13} /> {completedLessons.includes(currentLesson.id) ? 'Terminé' : 'Marquer terminé'}
+                  </button>
                 </div>
               </div>
             ) : (
@@ -274,5 +263,6 @@ export default function FormationDetailPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

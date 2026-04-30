@@ -12,6 +12,7 @@ import Link from 'next/link'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import ProofGalleryModal from '@/components/ProofGalleryModal'
 import type { Proof } from '@/components/ProofGalleryModal'
+import VideoStudio from '@/components/VideoStudio'
 import { HIGHLIGHTS } from '@/lib/highlights'
 
 const CREAM  = '#f0f4ff'
@@ -1589,29 +1590,10 @@ export default function FormationSalesPage() {
 
       {/* ══ LESSON VIDEO MODAL ══ */}
       {playingLesson && (
-        <div
-          onClick={() => setPlayingLesson(null)}
-          style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,0.9)',
-            backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 880 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: CREAM, letterSpacing: '-0.3px', margin: 0 }}>
-                {playingLesson.title}
-              </h2>
-              <button onClick={() => setPlayingLesson(null)}
-                style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(232,228,220,0.15)',
-                  background: 'rgba(232,228,220,0.06)', color: CREAM, display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', cursor: 'pointer' }}>
-                <X size={15} />
-              </button>
-            </div>
-            <VideoPlayer url={playingLesson.url} type={playingLesson.type} />
-            <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(232,228,220,0.25)', marginTop: 12 }}>
-              Échap ou clic en dehors pour fermer
-            </p>
-          </div>
-        </div>
+        <VideoStudio
+          video={{ url: playingLesson.url, title: playingLesson.title }}
+          onClose={() => setPlayingLesson(null)}
+        />
       )}
 
       {/* ══ PROOF GALLERY MODAL ══ */}

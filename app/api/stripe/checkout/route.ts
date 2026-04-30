@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
     const { data: formation, error } = await supabase
       .from('formations')
-      .select('id, title, price, thumbnail_url, content_type, coaching_packs')
+      .select('id, title, price, thumbnail_url, content_type, coaching_packs, coach_id')
       .eq('id', formation_id)
       .single()
     if (error || !formation) return NextResponse.json({ error: 'Formation not found' }, { status: 404 })
@@ -44,6 +44,14 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
+    // For coaching: fetch coach_id to redirect to scheduling after payment
+    const coachId = (formation as any).coach_id ?? ''
+
+    const isCoaching = formation.content_type === 'coaching'
+    const successUrl = isCoaching
+      ? `${origin}/schedule?formation_id=${formation_id}&coach_id=${coachId}&payment=success`
+      : `${origin}/formations/${formation_id}/learn?payment=success`
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -63,9 +71,11 @@ export async function POST(req: NextRequest) {
       metadata: {
         formation_id,
         user_id: user.id,
+        coach_id: coachId,
+        content_type: formation.content_type,
         pack_index: pack_index != null ? String(pack_index) : '',
       },
-      success_url: `${origin}/formations/${formation_id}/learn?payment=success`,
+      success_url: successUrl,
       cancel_url:  `${origin}/formations/${formation_id}`,
     })
 
