@@ -595,7 +595,7 @@ function VideoStudio({ video, onClose }: { video: { url: string; title: string }
     if (typeof window !== 'undefined') setNotes(localStorage.getItem(noteKey) ?? '')
     supabase.auth.getUser().then(({ data }) => setAuthUser(data.user))
     supabase.from('video_comments')
-      .select('*, profile:profiles(username)')
+      .select('*, profile:profiles!student_id(username)')
       .eq('video_url', video.url)
       .order('created_at', { ascending: true })
       .then(({ data }) => { if (data) setComments(data) })
@@ -613,7 +613,7 @@ function VideoStudio({ video, onClose }: { video: { url: string; title: string }
     if (!authUser || !newComment.trim() || posting) return
     setPosting(true)
     const { data } = await supabase.from('video_comments')
-      .insert({ user_id: authUser.id, video_url: video.url, content: newComment.trim() })
+      .insert({ student_id: authUser.id, video_url: video.url, content: newComment.trim() })
       .select('*, profile:profiles(username)').single()
     if (data) setComments(c => [...c, data])
     setNewComment('')
