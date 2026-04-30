@@ -26,10 +26,9 @@ export async function middleware(request: NextRequest) {
 
   const coachRoutes = ['/coach']
   const adminRoutes = ['/admin']
-  const studentRoutes = ['/formations', '/coaches', '/student']
 
   if (!user) {
-    const isProtected = [...studentRoutes, ...coachRoutes, ...adminRoutes]
+    const isProtected = [...coachRoutes, ...adminRoutes]
       .some(r => pathname.startsWith(r))
     if (isProtected) {
       return NextResponse.redirect(new URL('/login', request.url))

@@ -3,19 +3,28 @@ import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'rea
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Upload, Plus, Trash2, ZoomIn, ZoomOut, Video } from 'lucide-react'
+import { ArrowLeft, Upload, Plus, Trash2, ZoomIn, ZoomOut, Video, Check } from 'lucide-react'
 import PublishOverlay from '@/components/PublishOverlay'
+import { HIGHLIGHTS } from '@/lib/highlights'
 
-const CREAM  = '#E8E4DC'
-const SILVER = '#8A8A8A'
+const CREAM  = '#f0f4ff'
+const SILVER = 'rgba(240,244,255,0.45)'
 
 const TABS = [
-  { id: 'formation', label: 'Formation', color: '#6366f1', desc: 'Chapitres & leçons structurés' },
-  { id: 'video',     label: 'Vidéo',     color: '#10b981', desc: 'Vidéo standalone accessible' },
+  { id: 'formation', label: 'Formation', color: '#7c3aed', desc: 'Chapitres & leçons structurés' },
+  { id: 'video',     label: 'Vidéo',     color: '#06b6d4', desc: 'Vidéo standalone accessible' },
   { id: 'coaching',  label: 'Coaching',  color: '#f59e0b', desc: 'Session coaching avec packs' },
 ]
 
-const inputStyle = { width: '100%', background: 'rgba(232,228,220,0.04)', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 10, padding: '11px 16px', color: CREAM, fontSize: 14, outline: 'none', fontFamily: 'inherit' }
+const VARIANTS = ['MTT', 'Cash', 'Expresso', 'Autre']
+const LEVELS_BY_VARIANT: Record<string, { value: string; label: string }[]> = {
+  MTT:      [{ value:'Débutant', label:'Débutant — ABI ≤ 5€' }, { value:'Intermédiaire', label:'Intermédiaire — ABI 5–20€' }, { value:'Avancé', label:'Avancé — ABI > 20€' }],
+  Cash:     [{ value:'Débutant', label:'Débutant — NL2 à NL10' }, { value:'Intermédiaire', label:'Intermédiaire — NL25–NL100' }, { value:'Avancé', label:'Avancé — NL200+' }],
+  Expresso: [{ value:'Débutant', label:'Débutant — ABI ≤ 5€' }, { value:'Intermédiaire', label:'Intermédiaire — ABI 5–20€' }, { value:'Avancé', label:'Avancé — ABI > 20€' }],
+  Autre:    [{ value:'Débutant', label:'Débutant' }, { value:'Intermédiaire', label:'Intermédiaire' }, { value:'Avancé', label:'Avancé' }],
+}
+
+const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '11px 16px', color: CREAM, fontSize: 14, outline: 'none', fontFamily: 'inherit' }
 
 type Pack    = { label: string, hours: number, price: number, desc: string }
 type Lesson  = { title: string, video_url: string, is_free: boolean }
@@ -23,7 +32,7 @@ type Chapter = { lessons: Lesson[] }
 
 export default function NewFormationPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#07090e' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#04040a' }} />}>
       <NewFormationInner />
     </Suspense>
   )
@@ -42,7 +51,7 @@ function NewFormationInner() {
   const [shortDesc, setShortDesc] = useState('')
   const [price, setPrice]         = useState(0)
   const [level, setLevel]         = useState('Débutant')
-  const [variant, setVariant]     = useState('NLH')
+  const [variant, setVariant]     = useState('MTT')
   const [videoUrl, setVideoUrl]   = useState('')
   const [calUrl, setCalUrl]       = useState('')
   const [miniature, setMiniature] = useState<File|null>(null)
@@ -68,6 +77,8 @@ function NewFormationInner() {
   const dragStart                 = useRef({ x: 0, y: 0, px: 50, py: 50 })
 
   const markDirty = useCallback(() => setIsDirty(true), [])
+
+  const [highlights, setHighlights] = useState<string[]>([])
 
   const [packs, setPacks] = useState<Pack[]>([
     { label: 'Starter',     hours: 1,  price: 80,  desc: "1 session d'1h pour démarrer" },
@@ -120,24 +131,27 @@ function NewFormationInner() {
     }
     if (tab === 'video')    payload.video_url = videoUrl || null
     if (tab === 'coaching') { payload.coaching_packs = packs; payload.cal_url = calUrl || null }
+    if (highlights.length > 0) payload.highlights = highlights
 
     const { data, error: err } = await supabase.from('formations').insert(payload).select().single()
-    if (err) { setError(err.message); return null }
+    if (err) { setError('Erreur formation : ' + err.message); return null }
 
-    // Créer chapitres + leçons si formation
+    /* Insérer chapitres + leçons en attendant chaque réponse */
     if (tab === 'formation' && data) {
       for (let ci = 0; ci < chapters.length; ci++) {
         const ch = chapters[ci]
-        const { data: chData } = await supabase.from('formation_chapters').insert({
+        const { data: chData, error: chErr } = await supabase.from('formation_chapters').insert({
           formation_id: data.id,
           title: `Chapitre ${ci + 1}`,
           order_index: ci,
         }).select().single()
-        if (!chData) continue
+        if (chErr) { setError(`Chapitre ${ci + 1} : ${chErr.message}`); return null }
+        if (!chData) { setError(`Chapitre ${ci + 1} : données manquantes`); return null }
+
         for (let li = 0; li < ch.lessons.length; li++) {
           const l = ch.lessons[li]
           if (!l.title.trim()) continue
-          await supabase.from('formation_lessons').insert({
+          const { error: lErr } = await supabase.from('formation_lessons').insert({
             chapter_id: chData.id,
             formation_id: data.id,
             title: l.title,
@@ -146,6 +160,7 @@ function NewFormationInner() {
             is_free: l.is_free,
             order_index: li,
           })
+          if (lErr) { setError(`Leçon ${li + 1} (ch.${ci + 1}) : ${lErr.message}`); return null }
         }
       }
     }
@@ -156,10 +171,23 @@ function NewFormationInner() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const data = await doInsert(publishOnCreate)
+    const data = await doInsert(false)
     setLoading(false)
     if (!data) return
-    if (!publishOnCreate) router.push(`/coach/formations/${data.id}`)
+    router.push(`/coach/formations/${data.id}`)
+  }
+
+  const handlePublish = async () => {
+    if (!title.trim() || loading) return
+    setLoading(true)
+    setError('')
+    setIsDirty(false)
+    /* Tout insérer D'ABORD, overlay seulement après succès */
+    const data = await doInsert(true)
+    setLoading(false)
+    if (!data) return
+    setCreatedTitle(title)
+    setShowOverlay(true)
   }
 
   // Chapters helpers
@@ -189,8 +217,8 @@ function NewFormationInner() {
     <>
       {showLeaveModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(7,9,14,0.85)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#111418', border: '1px solid rgba(232,228,220,0.12)', borderRadius: 20, padding: '36px 40px', maxWidth: 420, width: '90%', textAlign: 'center' }}>
-            <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(232,228,220,0.06)', border: '1px solid rgba(232,228,220,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+          <div style={{ background: '#07070f', border: '1px solid rgba(240,244,255,0.08)', borderRadius: 20, padding: '36px 40px', maxWidth: 420, width: '90%', textAlign: 'center' }}>
+            <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(232,228,220,0.06)', border: '1px solid rgba(240,244,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 6v5M10 14h.01" stroke={CREAM} strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="10" r="8.5" stroke={CREAM} strokeWidth="1.5"/></svg>
             </div>
             <h3 style={{ fontSize: 17, fontWeight: 800, color: CREAM, marginBottom: 10 }}>Quitter sans sauvegarder ?</h3>
@@ -263,14 +291,14 @@ function NewFormationInner() {
                 <Section title="Tarification & options">
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                     <Field label="Prix (€)"><input type="number" min={0} value={price} onChange={e => setPrice(Number(e.target.value))} style={inputStyle} /></Field>
-                    <Field label="Niveau">
-                      <select value={level} onChange={e => setLevel(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        {['Débutant','Intermédiaire','Avancé'].map(l => <option key={l} value={l} style={{ background: '#07090e' }}>{l}</option>)}
+                    <Field label="Variante">
+                      <select value={variant} onChange={e => { setVariant(e.target.value); setLevel('Débutant') }} style={{ ...inputStyle, cursor: 'pointer' }}>
+                        {VARIANTS.map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
                       </select>
                     </Field>
-                    <Field label="Variante">
-                      <select value={variant} onChange={e => setVariant(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        {['NLH','PLO','MTT','Cash','Expresso','Live'].map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
+                    <Field label="Niveau">
+                      <select value={level} onChange={e => setLevel(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                        {(LEVELS_BY_VARIANT[variant] ?? LEVELS_BY_VARIANT.Autre).map(l => <option key={l.value} value={l.value} style={{ background: '#07090e' }}>{l.label}</option>)}
                       </select>
                     </Field>
                   </div>
@@ -288,7 +316,7 @@ function NewFormationInner() {
                             <span style={{ fontSize: 14, fontWeight: 700, color: CREAM }}>Chapitre {ci + 1}</span>
                           </div>
                           <div style={{ display: 'flex', gap: 8 }}>
-                            {ci === 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'rgba(16,185,129,0.15)', color: '#10b981', fontWeight: 700 }}>Accès gratuit</span>}
+                            {ci === 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'rgba(6,182,212,0.15)', color: '#06b6d4', fontWeight: 700 }}>Accès gratuit</span>}
                             {chapters.length > 1 && (
                               <button type="button" onClick={() => removeChapter(ci)} style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                                 <Trash2 size={11} />
@@ -314,7 +342,7 @@ function NewFormationInner() {
                                 placeholder="URL YouTube / Vimeo"
                                 style={{ ...inputStyle, flex: 1, padding: '8px 12px', fontSize: 13 }}
                               />
-                              <button type="button" onClick={() => updateLesson(ci, li, 'is_free', !lesson.is_free)} style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 99, border: `1px solid ${lesson.is_free ? 'rgba(16,185,129,0.4)' : 'rgba(232,228,220,0.1)'}`, background: lesson.is_free ? 'rgba(16,185,129,0.1)' : 'transparent', color: lesson.is_free ? '#10b981' : SILVER, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                              <button type="button" onClick={() => updateLesson(ci, li, 'is_free', !lesson.is_free)} style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 99, border: `1px solid ${lesson.is_free ? 'rgba(6,182,212,0.4)' : 'rgba(240,244,255,0.1)'}`, background: lesson.is_free ? 'rgba(6,182,212,0.1)' : 'transparent', color: lesson.is_free ? '#06b6d4' : SILVER, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
                                 {lesson.is_free ? 'Gratuit' : 'Premium'}
                               </button>
                               {chapter.lessons.length > 1 && (
@@ -333,7 +361,7 @@ function NewFormationInner() {
                       </div>
                     ))}
 
-                    <button type="button" onClick={addChapter} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1px dashed rgba(232,228,220,0.12)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer', transition: 'color 0.15s' }}
+                    <button type="button" onClick={addChapter} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1px dashed rgba(240,244,255,0.08)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer', transition: 'color 0.15s' }}
                       onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
                       onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
                       <Plus size={14} /> Ajouter un chapitre
@@ -359,14 +387,14 @@ function NewFormationInner() {
                 <Section title="Options">
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                     <Field label="Prix (€)"><input type="number" min={0} value={price} onChange={e => setPrice(Number(e.target.value))} style={inputStyle} /></Field>
-                    <Field label="Niveau">
-                      <select value={level} onChange={e => setLevel(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        {['Débutant','Intermédiaire','Avancé'].map(l => <option key={l} value={l} style={{ background: '#07090e' }}>{l}</option>)}
+                    <Field label="Variante">
+                      <select value={variant} onChange={e => { setVariant(e.target.value); setLevel('Débutant') }} style={{ ...inputStyle, cursor: 'pointer' }}>
+                        {VARIANTS.map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
                       </select>
                     </Field>
-                    <Field label="Variante">
-                      <select value={variant} onChange={e => setVariant(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        {['NLH','PLO','MTT','Cash','Expresso','Live'].map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
+                    <Field label="Niveau">
+                      <select value={level} onChange={e => setLevel(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                        {(LEVELS_BY_VARIANT[variant] ?? LEVELS_BY_VARIANT.Autre).map(l => <option key={l.value} value={l.value} style={{ background: '#07090e' }}>{l.label}</option>)}
                       </select>
                     </Field>
                   </div>
@@ -384,13 +412,13 @@ function NewFormationInner() {
                     <Field label="Description"><textarea value={desc} onChange={e => { setDesc(e.target.value); markDirty() }} placeholder="Méthode, approche, ce que l'élève va apprendre…" rows={5} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} /></Field>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                       <Field label="Variante principale">
-                        <select value={variant} onChange={e => setVariant(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                          {['NLH','PLO','MTT','Cash','Expresso','Live'].map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
+                        <select value={variant} onChange={e => { setVariant(e.target.value); setLevel('Débutant') }} style={{ ...inputStyle, cursor: 'pointer' }}>
+                          {VARIANTS.map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
                         </select>
                       </Field>
                       <Field label="Niveau ciblé">
                         <select value={level} onChange={e => setLevel(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                          {['Débutant','Intermédiaire','Avancé'].map(l => <option key={l} value={l} style={{ background: '#07090e' }}>{l}</option>)}
+                          {(LEVELS_BY_VARIANT[variant] ?? LEVELS_BY_VARIANT.Autre).map(l => <option key={l.value} value={l.value} style={{ background: '#07090e' }}>{l.label}</option>)}
                         </select>
                       </Field>
                     </div>
@@ -403,7 +431,7 @@ function NewFormationInner() {
                       <div key={i} style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 12, padding: '18px 20px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</div>
+                            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#a855f7', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</div>
                             <input value={pack.label} onChange={e => updatePack(i, 'label', e.target.value)} style={{ ...inputStyle, width: 200, padding: '6px 12px', fontSize: 13, fontWeight: 700 }} />
                           </div>
                           {packs.length > 1 && (
@@ -420,7 +448,7 @@ function NewFormationInner() {
                         {pack.hours > 0 && pack.price > 0 && <p style={{ fontSize: 11, color: SILVER, marginTop: 8 }}>{Math.round(pack.price / pack.hours)}€/h</p>}
                       </div>
                     ))}
-                    <button type="button" onClick={addPack} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1px dashed rgba(232,228,220,0.12)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer' }}
+                    <button type="button" onClick={addPack} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1px dashed rgba(240,244,255,0.08)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer' }}
                       onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
                       onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
                       <Plus size={14} /> Ajouter un pack
@@ -435,15 +463,15 @@ function NewFormationInner() {
                     <div style={{ position: 'relative' }}>
                       <button type="button" onClick={() => setShowCalTuto(p => !p)} style={{ width: 22, height: 22, borderRadius: '50%', border: '1px solid rgba(232,228,220,0.2)', background: 'rgba(232,228,220,0.06)', color: SILVER, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>?</button>
                       {showCalTuto && (
-                        <div style={{ position: 'absolute', right: 0, top: 30, width: 300, background: '#111418', border: '1px solid rgba(232,228,220,0.12)', borderRadius: 14, padding: '18px', zIndex: 50, boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}>
+                        <div style={{ position: 'absolute', right: 0, top: 30, width: 300, background: '#07070f', border: '1px solid rgba(240,244,255,0.08)', borderRadius: 14, padding: '18px', zIndex: 50, boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}>
                           <p style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 10 }}>Comment fonctionne Cal.com ?</p>
                           {['Créez un compte gratuit sur cal.com','Allez dans "Event types" → créez un événement','Configurez vos disponibilités dans "Availability"','Copiez votre lien cal.com/votre-nom ici','Les élèves réservent directement depuis votre profil'].map((s, i) => (
                             <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                              <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(245,158,11,0.2)', border: '1px solid rgba(245,158,11,0.4)', color: '#f59e0b', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i+1}</div>
+                              <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.4)', color: '#a855f7', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i+1}</div>
                               <p style={{ fontSize: 12, color: 'rgba(232,228,220,0.7)', lineHeight: 1.5 }}>{s}</p>
                             </div>
                           ))}
-                          <a href="https://cal.com" target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: 12, textAlign: 'center', fontSize: 12, color: '#f59e0b', textDecoration: 'none', padding: '7px', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8 }}>Ouvrir cal.com →</a>
+                          <a href="https://cal.com" target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: 12, textAlign: 'center', fontSize: 12, color: '#a855f7', textDecoration: 'none', padding: '7px', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8 }}>Ouvrir cal.com →</a>
                         </div>
                       )}
                     </div>
@@ -464,38 +492,26 @@ function NewFormationInner() {
               </>
             )}
 
+            {/* ── Atouts — commun à tous les types ── */}
+            <Section title="Atouts mis en avant">
+              <HighlightsPicker
+                selected={highlights}
+                onChange={setHighlights}
+                color={activeTab.color}
+              />
+            </Section>
+
             {error && <p style={{ color: '#ef4444', fontSize: 13 }}>{error}</p>}
 
             <div style={{ height: 1, background: 'rgba(232,228,220,0.08)' }} />
             <div style={{ display: 'flex', gap: 12 }}>
               <button type="button" onClick={goBack} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Annuler</button>
-              <button type="submit" disabled={loading || !title.trim()} onClick={() => setPublishOnCreate(false)} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.15)', background: 'transparent', color: CREAM, fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: !title.trim() ? 0.4 : 1 }}>
-                {loading && !publishOnCreate ? 'Création…' : 'Brouillon'}
+              <button type="submit" disabled={loading || !title.trim()} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.15)', background: 'transparent', color: CREAM, fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: !title.trim() ? 0.4 : 1 }}>
+                {loading ? 'Création…' : 'Brouillon'}
               </button>
-              <button type="button" disabled={!title.trim()} onClick={async () => {
-                if (!title.trim()) return
-                setCreatedTitle(title)
-                setShowOverlay(true)
-                setIsDirty(false)
-                const supabaseClient = createClient()
-                const thumbnail_url = miniature ? await uploadMiniature() : null
-                const payload: any = { coach_id: user?.id, title, description: desc, short_desc: shortDesc, price: Number(price), level, variant, thumbnail_url, published: true, content_type: tab, duration_minutes: 0, modules_count: tab === 'formation' ? chapters.length : 0, thumbnail_crop: { zoom, x: position.x, y: position.y } }
-                if (tab === 'video') payload.video_url = videoUrl || null
-                if (tab === 'coaching') { payload.coaching_packs = packs; payload.cal_url = calUrl || null }
-                const { data } = await supabaseClient.from('formations').insert(payload).select().single()
-                if (data && tab === 'formation') {
-                  for (let ci = 0; ci < chapters.length; ci++) {
-                    const { data: chData } = await supabaseClient.from('formation_chapters').insert({ formation_id: data.id, title: `Chapitre ${ci + 1}`, order_index: ci }).select().single()
-                    if (!chData) continue
-                    for (let li = 0; li < chapters[ci].lessons.length; li++) {
-                      const l = chapters[ci].lessons[li]
-                      if (!l.title.trim()) continue
-                      await supabaseClient.from('formation_lessons').insert({ chapter_id: chData.id, formation_id: data.id, title: l.title, video_url: l.video_url || null, video_type: l.video_url?.includes('vimeo') ? 'vimeo' : 'youtube', is_free: l.is_free, order_index: li })
-                    }
-                  }
-                }
-              }} style={{ flex: 2, padding: '13px', borderRadius: 10, border: 'none', background: activeTab.color, color: '#fff', fontSize: 14, fontWeight: 800, cursor: !title.trim() ? 'not-allowed' : 'pointer', opacity: !title.trim() ? 0.4 : 1, boxShadow: `0 4px 20px ${activeTab.color}50` }}>
-                {`Publier la ${activeTab.label.toLowerCase()} →`}
+              <button type="button" disabled={!title.trim() || loading} onClick={handlePublish}
+                style={{ flex: 2, padding: '13px', borderRadius: 10, border: 'none', background: activeTab.color, color: '#fff', fontSize: 14, fontWeight: 800, cursor: (!title.trim() || loading) ? 'not-allowed' : 'pointer', opacity: (!title.trim() || loading) ? 0.4 : 1, boxShadow: `0 4px 20px ${activeTab.color}50` }}>
+                {loading ? 'Publication…' : `Publier la ${activeTab.label.toLowerCase()} →`}
               </button>
             </div>
           </form>
@@ -515,7 +531,7 @@ function MiniatureEditor({ preview, zoom, position, dragging, onThumb, onZoom, o
   onMouseUp: () => void,
   height?: number
 }) {
-  const SILVER = '#8A8A8A', CREAM = '#E8E4DC'
+  const SILVER = 'rgba(240,244,255,0.45)', CREAM = '#f0f4ff'
   if (!preview) {
     return (
       <label style={{ display: 'block', cursor: 'pointer' }}>
@@ -570,17 +586,68 @@ function Thumb({ preview, onChange, height = 180, label = 'Cliquer pour uploader
       <div style={{ width: '100%', height, borderRadius: 14, border: '2px dashed rgba(232,228,220,0.1)', backgroundImage: preview ? `url(${preview})` : undefined, backgroundColor: preview ? undefined : 'rgba(232,228,220,0.02)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'border-color 0.2s' }}
         onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.3)'}
         onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.1)'}>
-        {!preview && <><Upload size={22} color="#8A8A8A" /><span style={{ fontSize: 13, color: '#8A8A8A' }}>{label}</span></>}
+        {!preview && <><Upload size={22} color="rgba(240,244,255,0.45)" /><span style={{ fontSize: 13, color: 'rgba(240,244,255,0.45)' }}>{label}</span></>}
       </div>
       <input type="file" accept="image/*" onChange={onChange} style={{ display: 'none' }} />
     </label>
   )
 }
 
+function HighlightsPicker({
+  selected, onChange, color,
+}: { selected: string[]; onChange: (ids: string[]) => void; color: string }) {
+  const toggle = (id: string) => {
+    if (selected.includes(id)) onChange(selected.filter(s => s !== id))
+    else if (selected.length < 5) onChange([...selected, id])
+  }
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: SILVER, margin: 0 }}>
+          Choisissez 1 à 5 atouts affichés sur la page de vente.
+        </p>
+        <span style={{
+          fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99,
+          background: selected.length > 0 ? `${color}18` : 'rgba(232,228,220,0.05)',
+          color: selected.length > 0 ? color : SILVER,
+          border: `1px solid ${selected.length > 0 ? color + '40' : 'rgba(232,228,220,0.1)'}`,
+        }}>
+          {selected.length}/5
+        </span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        {HIGHLIGHTS.map(h => {
+          const active   = selected.includes(h.id)
+          const disabled = !active && selected.length >= 5
+          return (
+            <button key={h.id} type="button" onClick={() => toggle(h.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px', borderRadius: 10, textAlign: 'left',
+                border: `1px solid ${active ? color + '55' : 'rgba(232,228,220,0.08)'}`,
+                background: active ? `${color}12` : 'rgba(232,228,220,0.02)',
+                color: active ? CREAM : disabled ? 'rgba(232,228,220,0.2)' : SILVER,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.45 : 1,
+                transition: 'all 0.15s',
+              }}>
+              <h.Icon size={14} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: active ? 600 : 400, lineHeight: 1.3, flex: 1 }}>
+                {h.label}
+              </span>
+              {active && <Check size={12} color={color} style={{ flexShrink: 0 }} />}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function Section({ title, children }: { title: string, children: React.ReactNode }) {
   return (
     <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 16, padding: '22px 24px' }}>
-      <h3 style={{ fontSize: 12, fontWeight: 700, color: '#8A8A8A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 18 }}>{title}</h3>
+      <h3 style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,244,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 18 }}>{title}</h3>
       {children}
     </div>
   )
@@ -589,7 +656,7 @@ function Section({ title, children }: { title: string, children: React.ReactNode
 function Field({ label, children }: { label: string, children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ fontSize: 10, fontWeight: 700, color: '#8A8A8A', textTransform: 'uppercase' as const, letterSpacing: '0.08em', display: 'block', marginBottom: 7 }}>{label}</label>
+      <label style={{ fontSize: 10, fontWeight: 700, color: 'rgba(240,244,255,0.45)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', display: 'block', marginBottom: 7 }}>{label}</label>
       {children}
     </div>
   )

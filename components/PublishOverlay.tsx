@@ -63,9 +63,9 @@ export default function PublishOverlay({ type, title, onDone }: Props) {
       ) : (
         <>
           {/* Succès */}
-          <div style={{ width: 100, height: 100, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', border: '2px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'checkIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275), successGlow 2s ease-in-out infinite 0.4s' }}>
+          <div style={{ width: 100, height: 100, borderRadius: '50%', background: 'rgba(6,182,212,0.15)', border: '2px solid #06b6d4', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'checkIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275), successGlow 2s ease-in-out infinite 0.4s' }}>
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <path d="M8 20L16 28L32 12" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ strokeDasharray: 40, strokeDashoffset: 0, animation: 'none' }} />
+              <path d="M8 20L16 28L32 12" stroke="#06b6d4" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ strokeDasharray: 40, strokeDashoffset: 0, animation: 'none' }} />
             </svg>
           </div>
           <div style={{ textAlign: 'center' }}>
@@ -75,7 +75,7 @@ export default function PublishOverlay({ type, title, onDone }: Props) {
             <p style={{ fontSize: 15, color: SILVER, marginBottom: 6 }}>
               Votre {label} <span style={{ color: CREAM, fontWeight: 600 }}>"{title}"</span>
             </p>
-            <p style={{ fontSize: 15, color: '#10b981', fontWeight: 600 }}>est maintenant en ligne.</p>
+            <p style={{ fontSize: 15, color: '#06b6d4', fontWeight: 600 }}>est maintenant en ligne.</p>
           </div>
         </>
       )}

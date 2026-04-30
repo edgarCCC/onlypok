@@ -1,19 +1,19 @@
 'use client'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Search, ChevronRight, ChevronLeft, HelpCircle, Menu, X, Check, PlayCircle, Users, BookOpen } from 'lucide-react'
+import { Search, ChevronRight, ChevronLeft, HelpCircle, Menu, X, Check, PlayCircle, Users, BookOpen, Star, MessageSquare, Clock, TrendingUp, Award } from 'lucide-react'
 import FormationCard from '@/components/formations/FormationCard'
+import FourAcesLoader from '@/components/FourAcesLoader'
 import Link from 'next/link'
 
-const CREAM  = '#E8E4DC'
-const SILVER = '#8A8A8A'
+const CREAM  = '#f0f4ff'
+const SILVER = 'rgba(240,244,255,0.45)'
 
 const VARIANT_OPTIONS = [
-  { id: 'MTT',      label: 'MTT',        desc: 'Tournois multi-tables',    color: '#f59e0b' },
-  { id: 'Cash',     label: 'Cash Game',  desc: 'Tables cash 6-max / HU',  color: '#10b981' },
-  { id: 'Expresso', label: 'Expresso',   desc: 'Sit & Go hyper-turbo',    color: '#ef4444' },
-  { id: 'Live',     label: 'Live',       desc: 'Poker en casino / cercle', color: '#3b82f6' },
-  { id: 'PLO',      label: 'PLO',        desc: 'Pot-Limit Omaha',         color: '#8b5cf6' },
+  { id: 'MTT',      label: 'MTT',      desc: 'Tournois multi-tables',  color: '#7c3aed' },
+  { id: 'Cash',     label: 'Cash',     desc: 'Tables cash 6-max / HU', color: '#06b6d4' },
+  { id: 'Expresso', label: 'Expresso', desc: 'Sit & Go hyper-turbo',   color: '#e11d48' },
+  { id: 'Autre',    label: 'Autre',    desc: 'Podcast, live, analyse…', color: '#7c3aed' },
 ]
 
 const FIELDS: Record<string, { key: string, label: string, placeholder: string, options: string[] }[]> = {
@@ -35,21 +35,23 @@ const FIELDS: Record<string, { key: string, label: string, placeholder: string, 
 }
 
 const TAB_COLORS: Record<string, string> = {
-  formations: '#6366f1',
-  videos:     '#10b981',
+  formations: '#7c3aed',
+  videos:     '#06b6d4',
   coaching:   '#f59e0b',
 }
 
 export default function FormationsPage() {
   const supabase = useMemo(() => createClient(), [])
   const [formations, setFormations] = useState<any[]>([])
+  const [allReviews, setAllReviews] = useState<any[]>([])
   const [loading, setLoading]       = useState(true)
-  const [tab, setTab]               = useState<'formations'|'videos'|'coaching'>('formations')
+  const [tab, setTab]               = useState<'formations'|'videos'|'coaching'>('videos')
   const [showMenu, setShowMenu]     = useState(false)
   const [activeField, setActiveField] = useState<string|null>(null)
   const [filters, setFilters]       = useState<Record<string,string>>({})
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false)
+  const [playingVideo, setPlayingVideo] = useState<{ url: string; title: string } | null>(null)
   const searchRef = useRef<HTMLDivElement>(null)
 
   const selectedVariantColor = VARIANT_OPTIONS.find(v => v.id === filters.variant)?.color
@@ -60,10 +62,16 @@ export default function FormationsPage() {
     const load = async () => {
       const { data } = await supabase
         .from('formations')
-        .select('*, coach:profiles(username)')
+        .select('*, coach:profiles(id, username)')
         .eq('published', true)
         .order('created_at', { ascending: false })
       setFormations(data ?? [])
+
+      const { data: reviews } = await supabase
+        .from('reviews')
+        .select('rating, category_ratings, coach_id, content_type')
+      setAllReviews(reviews ?? [])
+
       setLoading(false)
     }
     load()
@@ -76,6 +84,12 @@ export default function FormationsPage() {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPlayingVideo(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
   }, [])
 
   useEffect(() => {
@@ -99,9 +113,14 @@ export default function FormationsPage() {
     return matchTab && matchV && matchP && matchD
   })
 
-  const top10      = filtered.slice(0, 10)
-  const nouveautes = [...filtered].reverse().slice(0, 8)
-  const pourVous   = filtered.slice(2, 10)
+  const tabReviews = useMemo(() => {
+    const coachIds = new Set(filtered.map((f: any) => f.coach?.id).filter(Boolean))
+    const expectedType = tab === 'videos' ? 'video' : tab === 'coaching' ? 'coaching' : 'formation'
+    return allReviews.filter(r =>
+      coachIds.has(r.coach_id) &&
+      (r.content_type ?? 'formation') === expectedType
+    )
+  }, [filtered, allReviews, tab])
 
   const setFilter = (key: string, val: string) => {
     setFilters(prev => ({ ...prev, [key]: prev[key] === val ? '' : val }))
@@ -138,10 +157,10 @@ export default function FormationsPage() {
         <div style={{ display: 'flex', alignItems: 'center', height: 80, padding: '0 40px', gap: 24 }}>
 
           {/* Logo */}
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
-            <span style={{ fontSize: 30, fontWeight: 300, color: SILVER, letterSpacing: '-1px', lineHeight: 1 }}>[</span>
-            <span style={{ fontSize: 28, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', padding: '0 5px' }}>OnlyPok</span>
-            <span style={{ fontSize: 30, fontWeight: 300, color: SILVER, letterSpacing: '-1px', lineHeight: 1 }}>]</span>
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0 }} />
+            <span style={{ fontFamily: 'var(--font-syne, sans-serif)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: CREAM, letterSpacing: '0.12em', padding: '3px 10px', borderRadius: 6, border: '1px solid rgba(124,58,237,0.55)' }}>COACH</span>
           </Link>
 
           {/* Centre */}
@@ -161,9 +180,9 @@ export default function FormationsPage() {
 
             {/* Pilule compacte */}
             <div style={{ position: 'absolute', transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: !showBigSearch ? 1 : 0, pointerEvents: !showBigSearch ? 'auto' : 'none', transform: !showBigSearch ? 'translateY(0) scale(1)' : 'translateY(-16px) scale(0.92)' }}>
-              <button onClick={() => setIsSearchOverlayOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(232,228,220,0.06)', border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+              <button onClick={() => setIsSearchOverlayOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(240,244,255,0.05)', border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{filters.variant || 'Variante'}</span>
-                <div style={{ width: 1, height: 16, background: `rgba(232,228,220,0.15)` }} />
+                <div style={{ width: 1, height: 16, background: `rgba(240,244,255,0.12)` }} />
                 <span style={{ fontSize: 13, color: SILVER }}>Rechercher…</span>
                 <div style={{ width: 34, height: 34, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 12px ${accentColor}60` }}>
                   <Search size={15} color="#fff" />
@@ -189,8 +208,8 @@ export default function FormationsPage() {
                 <Menu size={16} />
               </button>
               {showMenu && (
-                <div style={{ position: 'absolute', top: 46, right: 0, background: '#111418', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 14, padding: 6, minWidth: 200, zIndex: 200, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
-                  <div style={{ padding: '8px 14px 12px', borderBottom: `1px solid rgba(232,228,220,0.06)`, marginBottom: 6 }}>
+                <div style={{ position: 'absolute', top: 46, right: 0, background: '#07070f', border: `1px solid rgba(240,244,255,0.08)`, borderRadius: 14, padding: 6, minWidth: 200, zIndex: 200, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
+                  <div style={{ padding: '8px 14px 12px', borderBottom: `1px solid rgba(240,244,255,0.05)`, marginBottom: 6 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: CREAM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Menu</span>
                   </div>
                   {[['Mon profil', '/student/profile'], ['Mes formations', '/formations'], ['Messages', '/student/messages'], ['Tracker', '/student/track'], ['Déconnexion', '/login']].map(([label, href]) => (
@@ -236,15 +255,15 @@ export default function FormationsPage() {
                         top: 'calc(100% + 14px)',
                         left: 0,
                         right: 0,
-                        background: '#111418',
-                        border: `1px solid rgba(232,228,220,0.1)`,
+                        background: '#07070f',
+                        border: `1px solid rgba(240,244,255,0.08)`,
                         borderRadius: 20,
                         padding: 14,
                         zIndex: 110,
                         boxShadow: '0 30px 60px rgba(0,0,0,0.8)',
                         animation: 'airbnbPop 0.25s ease',
                       }}>
-                        <div style={{ padding: '4px 8px 12px', borderBottom: `1px solid rgba(232,228,220,0.06)`, marginBottom: 10 }}>
+                        <div style={{ padding: '4px 8px 12px', borderBottom: `1px solid rgba(240,244,255,0.05)`, marginBottom: 10 }}>
                           <span style={{ fontSize: 11, fontWeight: 700, color: CREAM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{field.label}</span>
                         </div>
 
@@ -303,9 +322,7 @@ export default function FormationsPage() {
       ══════════════════════ */}
       <main style={{ paddingTop: 220, paddingLeft: 40, paddingRight: 40, paddingBottom: 100, position: 'relative', zIndex: 1 }}>
         {loading ? (
-          <div style={{ display: 'flex', gap: 16 }}>
-            {[...Array(4)].map((_, i) => <div key={i} style={{ minWidth: 260, height: 200, background: 'rgba(232,228,220,0.03)', borderRadius: 14, flexShrink: 0 }} />)}
-          </div>
+          <FourAcesLoader fullPage={false} />
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '100px 0' }}>
             <div style={{ fontSize: 48, opacity: 0.1, marginBottom: 16 }}>♠</div>
@@ -322,6 +339,7 @@ export default function FormationsPage() {
                 formations={filtered.slice(0, 10)}
                 accentColor={accentColor}
                 isTop10={filtered.length >= 3}
+                onPlayVideo={setPlayingVideo}
               />
             )}
             {filtered.filter(f => f.price === 0).length > 0 && (
@@ -330,6 +348,7 @@ export default function FormationsPage() {
                 subtitle="Commence sans rien débourser"
                 formations={filtered.filter(f => f.price === 0)}
                 accentColor={accentColor}
+                onPlayVideo={setPlayingVideo}
               />
             )}
             {filtered.filter(f => f.price > 0).length > 0 && (
@@ -338,6 +357,7 @@ export default function FormationsPage() {
                 subtitle="Le meilleur du contenu pro"
                 formations={filtered.filter(f => f.price > 0)}
                 accentColor={accentColor}
+                onPlayVideo={setPlayingVideo}
               />
             )}
             {[...filtered].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0,8).length > 0 && (
@@ -346,24 +366,36 @@ export default function FormationsPage() {
                 subtitle="Ajoutés récemment"
                 formations={[...filtered].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0,8)}
                 accentColor={accentColor}
+                onPlayVideo={setPlayingVideo}
               />
             )}
           </div>
         )}
       </main>
 
+      {/* ══════════════════════
+          VIDEO MODAL
+      ══════════════════════ */}
+      {playingVideo && (
+        <VideoModal video={playingVideo} onClose={() => setPlayingVideo(null)} />
+      )}
+
       <style>{`
         @keyframes airbnbPop { from { opacity:0; transform:translateY(-8px) scale(0.98); } to { opacity:1; transform:translateY(0) scale(1); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes modalIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
       `}</style>
     </div>
   )
 }
 
-function NetflixRow({ title, subtitle, formations, accentColor, isTop10 }: { title: string, subtitle: string, formations: any[], accentColor: string, isTop10?: boolean }) {
+function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayVideo }: {
+  title: string, subtitle: string, formations: any[], accentColor: string, isTop10?: boolean
+  onPlayVideo?: (v: { url: string; title: string }) => void
+}) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const scroll    = (dir: 'left'|'right') => scrollRef.current?.scrollBy({ left: dir === 'right' ? 800 : -800, behavior: 'smooth' })
-  const CREAM = '#E8E4DC', SILVER = '#8A8A8A'
+  const CREAM = '#f0f4ff', SILVER = 'rgba(240,244,255,0.45)'
 
   return (
     <div>
@@ -389,12 +421,18 @@ function NetflixRow({ title, subtitle, formations, accentColor, isTop10 }: { tit
         <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 50, background: 'linear-gradient(to left, #07090e, transparent)', zIndex: 2, pointerEvents: 'none' }} />
         <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 8 }}>
           {formations.map((f, i) => (
-            <div key={f.id} style={{ minWidth: 290, position: 'relative', flexShrink: 0 }}>
+            <div key={f.id} style={{ width: 290, flexShrink: 0, position: 'relative' }}>
               {isTop10 && (
                 <div style={{ position: 'absolute', left: -10, bottom: 10, fontSize: 110, fontWeight: 900, color: 'rgba(232,228,220,0.05)', zIndex: 0, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{i + 1}</div>
               )}
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <FormationCard f={f} accentColor={accentColor} />
+                <FormationCard
+                  f={f}
+                  accentColor={accentColor}
+                  onPlay={f.price === 0 && f.content_type === 'video' && f.video_url
+                    ? () => onPlayVideo?.({ url: f.video_url, title: f.title })
+                    : undefined}
+                />
               </div>
             </div>
           ))}
@@ -404,8 +442,191 @@ function NetflixRow({ title, subtitle, formations, accentColor, isTop10 }: { tit
   )
 }
 
+/* ─────────────────────────────────────────────────────────── */
+/*  RATING HERO BLOCK                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+const RATING_CATS = [
+  { key: 'pedagogy',      label: 'Pédagogie',    Icon: BookOpen },
+  { key: 'clarity',       label: 'Clarté',        Icon: Star },
+  { key: 'communication', label: 'Communication', Icon: MessageSquare },
+  { key: 'progress',      label: 'Progression',   Icon: TrendingUp },
+  { key: 'punctuality',   label: 'Ponctualité',   Icon: Clock },
+  { key: 'value',         label: 'Qualité-prix',  Icon: Award },
+]
+
+function getRatingBadge(avg: number, tab: string) {
+  const noun = tab === 'coaching' ? 'coachs' : tab === 'videos' ? 'vidéos' : 'formations'
+  if (avg >= 4.8) return { title: 'Excellence certifiée', desc: `Les ${noun} sur OnlyPok font partie des meilleures ressources poker de la communauté.` }
+  if (avg >= 4.5) return { title: 'Très recommandé',      desc: `La communauté évalue très positivement les ${noun} disponibles sur OnlyPok.` }
+  if (avg >= 4.0) return { title: 'Bien évalué',           desc: `Les ${noun} reçoivent une note favorable de la part de la communauté.` }
+  return            { title: 'Évalué par la communauté',   desc: `La communauté a partagé ses retours sur les ${noun} disponibles.` }
+}
+
+function RatingHeroBlock({ reviews, accentColor, tab }: { reviews: any[], accentColor: string, tab: string }) {
+  const CREAM = '#f0f4ff', SILVER = 'rgba(240,244,255,0.45)'
+  if (reviews.length === 0) return null
+
+  const avg = reviews.reduce((a, r) => a + r.rating, 0) / reviews.length
+
+  const catAvgs = RATING_CATS.map(cat => {
+    const withCat = reviews.filter(r => r.category_ratings?.[cat.key])
+    const catAvg  = withCat.length > 0
+      ? withCat.reduce((a, r) => a + r.category_ratings[cat.key], 0) / withCat.length
+      : avg
+    return { ...cat, avg: catAvg }
+  })
+
+  const dist = [5, 4, 3, 2, 1].map(star => ({
+    star,
+    count: reviews.filter(r => Math.round(r.rating) === star).length,
+    pct:   (reviews.filter(r => Math.round(r.rating) === star).length / reviews.length) * 100,
+  }))
+
+  const maxCount = Math.max(...dist.map(d => d.count), 1)
+
+  const { title, desc } = getRatingBadge(avg, tab)
+
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.02)',
+      border: '1px solid rgba(232,228,220,0.08)',
+      borderRadius: 24,
+      padding: '48px 44px 40px',
+    }}>
+      {/* ── Score centré ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 36 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 14 }}>
+          <span style={{ fontSize: 52, lineHeight: 1, color: accentColor, opacity: 0.55, userSelect: 'none' }}>♠</span>
+          <span style={{ fontSize: 88, fontWeight: 900, color: CREAM, letterSpacing: '-4px', lineHeight: 1 }}>
+            {avg.toFixed(2).replace('.', ',')}
+          </span>
+          <span style={{ fontSize: 52, lineHeight: 1, color: accentColor, opacity: 0.55, userSelect: 'none' }}>♠</span>
+        </div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: CREAM, marginBottom: 8 }}>{title}</div>
+        <div style={{ fontSize: 13, color: SILVER, lineHeight: 1.65, maxWidth: 420, textAlign: 'center' }}>{desc}</div>
+        <div style={{ fontSize: 11, color: SILVER, opacity: 0.5, marginTop: 8 }}>
+          Basé sur {reviews.length} avis
+        </div>
+      </div>
+
+      {/* ── Séparateur ── */}
+      <div style={{ borderTop: '1px solid rgba(232,228,220,0.07)', marginBottom: 32 }} />
+
+      {/* ── Grille : distribution + catégories ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 40, alignItems: 'start' }}>
+
+        {/* Distribution étoiles */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 800, color: SILVER, textTransform: 'uppercase',
+            letterSpacing: '0.1em', marginBottom: 14 }}>Évaluation globale</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {dist.map(d => (
+              <div key={d.star} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 11, color: SILVER, width: 8, flexShrink: 0, textAlign: 'right' }}>{d.star}</span>
+                <div style={{ flex: 1, height: 4, background: 'rgba(232,228,220,0.08)', borderRadius: 99, overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${(d.count / maxCount) * 100}%`,
+                    background: `linear-gradient(to right, ${accentColor}, ${accentColor}99)`,
+                    borderRadius: 99,
+                    transition: 'width 0.5s ease',
+                  }} />
+                </div>
+                <span style={{ fontSize: 10, color: 'rgba(232,228,220,0.28)', width: 18, textAlign: 'right', flexShrink: 0 }}>{d.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Catégories */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 0 }}>
+          {catAvgs.map((cat) => (
+            <div key={cat.key} style={{
+              display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 20,
+              borderLeft: `1px solid rgba(232,228,220,0.07)`,
+            }}>
+              <span style={{ fontSize: 24, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px' }}>
+                {cat.avg.toFixed(1)}
+              </span>
+              <span style={{ fontSize: 11, color: SILVER, lineHeight: 1.4 }}>{cat.label}</span>
+              <cat.Icon size={17} color={accentColor} style={{ opacity: 0.75 }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function getEmbedUrl(url: string): string {
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/)
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0`
+  const vm = url.match(/vimeo\.com\/(\d+)/)
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}?autoplay=1`
+  return url
+}
+
+function VideoModal({ video, onClose }: { video: { url: string; title: string }; onClose: () => void }) {
+  const embedUrl = getEmbedUrl(video.url)
+  const isNative = !video.url.match(/youtube|youtu\.be|vimeo/)
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 300,
+        background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(10px)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '0 24px',
+        animation: 'fadeIn 0.2s ease',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 920,
+          animation: 'modalIn 0.25s cubic-bezier(0.2,0.8,0.2,1)',
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f0f4ff', letterSpacing: '-0.3px', margin: 0 }}>
+            {video.title}
+          </h2>
+          <button
+            onClick={onClose}
+            style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(240,244,255,0.12)', background: 'rgba(240,244,255,0.05)', color: '#f0f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 18, lineHeight: 1, flexShrink: 0 }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Player */}
+        <div style={{ aspectRatio: '16/9', borderRadius: 16, overflow: 'hidden', background: '#000', boxShadow: '0 32px 80px rgba(0,0,0,0.8)' }}>
+          {isNative ? (
+            <video src={video.url} controls autoPlay style={{ width: '100%', height: '100%', display: 'block' }} />
+          ) : (
+            <iframe
+              src={embedUrl}
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+              style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+            />
+          )}
+        </div>
+
+        {/* Hint */}
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(232,228,220,0.25)', marginTop: 14 }}>
+          Appuie sur Échap ou clique en dehors pour fermer
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function PlaceholderRow({ title, subtitle, icon, height = 180 }: { title: string, subtitle: string, icon: React.ReactNode, height?: number }) {
-  const CREAM = '#E8E4DC', SILVER = '#8A8A8A'
+  const CREAM = '#f0f4ff', SILVER = 'rgba(240,244,255,0.45)'
   return (
     <div>
       <div style={{ marginBottom: 22 }}>
@@ -416,7 +637,7 @@ function PlaceholderRow({ title, subtitle, icon, height = 180 }: { title: string
       </div>
       <div style={{ display: 'flex', gap: 20 }}>
         {[1,2,3,4].map(i => (
-          <div key={i} style={{ minWidth: 290, height, borderRadius: 20, border: `1px dashed rgba(232,228,220,0.08)`, background: 'rgba(232,228,220,0.015)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <div key={i} style={{ width: 290, flexShrink: 0, height, borderRadius: 20, border: `1px dashed rgba(232,228,220,0.08)`, background: 'rgba(232,228,220,0.015)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
             <span style={{ fontSize: 28, color: 'rgba(138,138,138,0.2)' }}>+</span>
             <span style={{ color: 'rgba(138,138,138,0.4)', fontSize: 13 }}>Contenu à venir</span>
           </div>
