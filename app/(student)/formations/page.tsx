@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Search, ChevronRight, ChevronLeft, HelpCircle, Menu, X, Check, PlayCircle, Users, BookOpen, Star, MessageSquare, Clock, TrendingUp, Award } from 'lucide-react'
+import { Search, ChevronRight, ChevronLeft, HelpCircle, Menu, X, Check, PlayCircle, Users, BookOpen, Star, MessageSquare, Clock, TrendingUp, Award, Send, FileText } from 'lucide-react'
 import FormationCard from '@/components/formations/FormationCard'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import Link from 'next/link'
@@ -386,7 +386,7 @@ export default function FormationsPage() {
           VIDEO MODAL
       ══════════════════════ */}
       {playingVideo && (
-        <VideoModal video={playingVideo} onClose={() => setPlayingVideo(null)} />
+        <VideoStudio video={playingVideo} onClose={() => setPlayingVideo(null)} />
       )}
 
       <style>{`
@@ -576,59 +576,165 @@ function getEmbedUrl(url: string): string {
   return url
 }
 
-function VideoModal({ video, onClose }: { video: { url: string; title: string }; onClose: () => void }) {
-  const embedUrl = getEmbedUrl(video.url)
-  const isNative = !video.url.match(/youtube|youtu\.be|vimeo/)
+function VideoStudio({ video, onClose }: { video: { url: string; title: string }; onClose: () => void }) {
+  const supabase  = useMemo(() => createClient(), [])
+  const embedUrl  = getEmbedUrl(video.url)
+  const isNative  = !video.url.match(/youtube|youtu\.be|vimeo/)
+  const noteKey   = `onlypok_note_${video.url.slice(-60)}`
+
+  const C = '#f0f4ff', S = 'rgba(240,244,255,0.45)', D = 'rgba(240,244,255,0.2)', V = '#7c3aed'
+
+  const [tab,        setTab]        = useState<'notes' | 'comments'>('notes')
+  const [notes,      setNotes]      = useState('')
+  const [comments,   setComments]   = useState<any[]>([])
+  const [newComment, setNewComment] = useState('')
+  const [authUser,   setAuthUser]   = useState<any>(null)
+  const [posting,    setPosting]    = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') setNotes(localStorage.getItem(noteKey) ?? '')
+    supabase.auth.getUser().then(({ data }) => setAuthUser(data.user))
+    supabase.from('video_comments')
+      .select('*, profile:profiles(username)')
+      .eq('video_url', video.url)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => { if (data) setComments(data) })
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const saveNote = (val: string) => {
+    setNotes(val)
+    if (typeof window !== 'undefined') localStorage.setItem(noteKey, val)
+  }
+
+  const postComment = async () => {
+    if (!authUser || !newComment.trim() || posting) return
+    setPosting(true)
+    const { data } = await supabase.from('video_comments')
+      .insert({ user_id: authUser.id, video_url: video.url, content: newComment.trim() })
+      .select('*, profile:profiles(username)').single()
+    if (data) setComments(c => [...c, data])
+    setNewComment('')
+    setPosting(false)
+  }
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 300,
-        background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(10px)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: '0 24px',
-        animation: 'fadeIn 0.2s ease',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 920,
-          animation: 'modalIn 0.25s cubic-bezier(0.2,0.8,0.2,1)',
-        }}
-      >
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f0f4ff', letterSpacing: '-0.3px', margin: 0 }}>
-            {video.title}
-          </h2>
-          <button
-            onClick={onClose}
-            style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(240,244,255,0.12)', background: 'rgba(240,244,255,0.05)', color: '#f0f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 18, lineHeight: 1, flexShrink: 0 }}
-          >
-            <X size={16} />
-          </button>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: '#04040a', display: 'flex', flexDirection: 'column', animation: 'fadeIn 0.18s ease' }}>
+
+      {/* ── Header ── */}
+      <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 6, height: 6, borderRadius: 2, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)' }} />
+          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: C }}>ONLYPOK</span>
         </div>
+        <h2 style={{ fontSize: 13, fontWeight: 600, color: 'rgba(240,244,255,0.65)', margin: 0, maxWidth: 480, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {video.title}
+        </h2>
+        <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: S, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <X size={14} />
+        </button>
+      </div>
+
+      {/* ── Body ── */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
 
         {/* Player */}
-        <div style={{ aspectRatio: '16/9', borderRadius: 16, overflow: 'hidden', background: '#000', boxShadow: '0 32px 80px rgba(0,0,0,0.8)' }}>
-          {isNative ? (
-            <video src={video.url} controls autoPlay style={{ width: '100%', height: '100%', display: 'block' }} />
-          ) : (
-            <iframe
-              src={embedUrl}
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowFullScreen
-              style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-            />
-          )}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', background: '#020207', minWidth: 0 }}>
+          <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', background: '#000', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}>
+            {isNative
+              ? <video src={video.url} controls autoPlay style={{ width: '100%', height: '100%', display: 'block' }} />
+              : <iframe src={embedUrl} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen style={{ width: '100%', height: '100%', border: 'none', display: 'block' }} />
+            }
+          </div>
         </div>
 
-        {/* Hint */}
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(232,228,220,0.25)', marginTop: 14 }}>
-          Appuie sur Échap ou clique en dehors pour fermer
-        </p>
+        {/* ── Sidebar ── */}
+        <div style={{ width: 360, borderLeft: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', background: '#080810', flexShrink: 0 }}>
+
+          {/* Tabs */}
+          <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+            {([
+              { id: 'notes' as const,    label: 'Notes',          Icon: FileText },
+              { id: 'comments' as const, label: 'Commentaires',   Icon: MessageSquare },
+            ]).map(({ id, label, Icon }) => (
+              <button key={id} onClick={() => setTab(id)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '13px 8px', fontSize: 13, fontWeight: tab === id ? 700 : 400, color: tab === id ? C : S, background: 'transparent', border: 'none', borderBottom: `2px solid ${tab === id ? V : 'transparent'}`, cursor: 'pointer', transition: 'all 0.15s' }}>
+                <Icon size={13} /> {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+
+            {tab === 'notes' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 16, gap: 10 }}>
+                <p style={{ fontSize: 11, color: D, margin: 0, lineHeight: 1.5 }}>
+                  Sauvegardées automatiquement sur cet appareil.
+                </p>
+                <textarea
+                  value={notes}
+                  onChange={e => saveNote(e.target.value)}
+                  placeholder="Prenez des notes sur cette vidéo…&#10;&#10;Concepts clés, mains marquantes, points à retravailler…"
+                  style={{ flex: 1, minHeight: 360, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '12px 14px', color: C, fontSize: 13, fontFamily: 'inherit', resize: 'none', outline: 'none', lineHeight: 1.65, boxSizing: 'border-box' }}
+                  onFocus={e => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)')}
+                  onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+                />
+                {notes.length > 0 && (
+                  <p style={{ fontSize: 11, color: D, margin: 0, textAlign: 'right' }}>{notes.length} caractères</p>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 16, gap: 10 }}>
+
+                {/* Comment list */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto' }}>
+                  {comments.length === 0 ? (
+                    <p style={{ color: D, fontSize: 13, textAlign: 'center', margin: '32px 0' }}>Aucun commentaire encore.</p>
+                  ) : (
+                    comments.map(c => (
+                      <div key={c.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '10px 12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa' }}>{c.profile?.username ?? 'Anonyme'}</span>
+                          <span style={{ fontSize: 10, color: D }}>{new Date(c.created_at).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                        <p style={{ fontSize: 13, color: S, margin: 0, lineHeight: 1.55 }}>{c.content}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Comment input */}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 12, flexShrink: 0 }}>
+                  {authUser ? (
+                    <>
+                      <textarea
+                        value={newComment}
+                        onChange={e => setNewComment(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postComment() }}
+                        placeholder="Ajoutez un commentaire…"
+                        rows={3}
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 12px', color: C, fontSize: 13, fontFamily: 'inherit', resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.55 }}
+                        onFocus={e => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)')}
+                        onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+                      />
+                      <button onClick={postComment} disabled={!newComment.trim() || posting}
+                        style={{ marginTop: 8, width: '100%', padding: '9px', background: newComment.trim() ? V : 'rgba(124,58,237,0.15)', border: 'none', borderRadius: 8, color: newComment.trim() ? '#fff' : S, fontSize: 13, fontWeight: 600, cursor: newComment.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}>
+                        <Send size={13} /> {posting ? 'Envoi…' : 'Publier'}
+                      </button>
+                      <p style={{ fontSize: 11, color: D, margin: '6px 0 0', textAlign: 'center' }}>⌘ + Entrée pour publier</p>
+                    </>
+                  ) : (
+                    <p style={{ fontSize: 13, color: D, textAlign: 'center', margin: 0 }}>
+                      <Link href="/register" style={{ color: '#a78bfa', textDecoration: 'none' }}>Créez un compte</Link> pour commenter.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
