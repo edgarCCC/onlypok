@@ -52,6 +52,7 @@ export default function FormationsPage() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false)
   const [playingVideo, setPlayingVideo] = useState<{ url: string; title: string } | null>(null)
+  const [userRole, setUserRole] = useState<'coach' | 'student' | null>(null)
   const searchRef = useRef<HTMLDivElement>(null)
 
   const selectedVariantColor = VARIANT_OPTIONS.find(v => v.id === filters.variant)?.color
@@ -75,6 +76,12 @@ export default function FormationsPage() {
       setLoading(false)
     }
     load()
+
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      setUserRole(data?.role ?? null)
+    })
   }, [supabase])
 
   useEffect(() => {
@@ -193,10 +200,12 @@ export default function FormationsPage() {
 
           {/* Actions droite */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <Link href="/register?role=coach" style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none', padding: '8px 16px', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+            <Link
+              href={userRole === 'coach' ? '/coach/dashboard' : userRole === 'student' ? '/formations' : '/become-coach'}
+              style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none', padding: '8px 16px', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
               onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.25)` }}
               onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.1)` }}>
-              Devenir coach
+              {userRole ? 'Mon espace' : 'Devenir coach'}
             </Link>
             <button style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(232,228,220,0.03)', border: `1px solid rgba(232,228,220,0.08)`, color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
