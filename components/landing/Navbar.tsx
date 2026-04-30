@@ -1,16 +1,27 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
+import { createClient } from '@/lib/supabase/client'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
 export default function Navbar() {
-  const navRef = useRef<HTMLElement>(null)
+  const navRef  = useRef<HTMLElement>(null)
   const chipRef = useRef<HTMLDivElement>(null)
+  const [role, setRole] = useState<'coach' | 'student' | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      setRole(data?.role ?? null)
+    })
+  }, [])
 
   useGSAP(() => {
     const nav = navRef.current
@@ -37,8 +48,6 @@ export default function Navbar() {
         duration: 0.4, ease: 'power2.out',
       }),
     })
-
-
   }, { scope: navRef })
 
   const onLinkEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -49,6 +58,8 @@ export default function Navbar() {
     const line = e.currentTarget.querySelector<HTMLSpanElement>('.ul')
     if (line) gsap.to(line, { scaleX: 0, duration: 0.2, ease: 'power2.in', transformOrigin: 'right' })
   }
+
+  const spaceHref = role === 'coach' ? '/coach/dashboard' : '/formations'
 
   return (
     <nav
@@ -94,14 +105,25 @@ export default function Navbar() {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <Link
-          href="/become-coach"
-          style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)', color: '#f0f4ff', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.22)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.8)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.12)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)' }}
-        >
-          Devenir coach
-        </Link>
+        {role ? (
+          <Link
+            href={spaceHref}
+            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(240,244,255,0.85)', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)'; e.currentTarget.style.color = '#f0f4ff' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(240,244,255,0.85)' }}
+          >
+            Mon espace
+          </Link>
+        ) : (
+          <Link
+            href="/become-coach"
+            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)', color: '#f0f4ff', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.22)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.8)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.12)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)' }}
+          >
+            Devenir coach
+          </Link>
+        )}
       </div>
     </nav>
   )
