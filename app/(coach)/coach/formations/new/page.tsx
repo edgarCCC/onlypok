@@ -211,7 +211,7 @@ function NewFormationInner() {
   const addPack    = () => setPacks(p => [...p, { label: 'Nouveau pack', hours: 1, price: 0, desc: '' }])
   const removePack = (i: number) => setPacks(p => p.filter((_, idx) => idx !== i))
 
-  const goBack = () => { if (isDirty) { setPendingHref('/coach/formations'); setShowLeaveModal(true) } else router.push('/coach/formations') }
+  const goBack = () => { if (isDirty) { setPendingHref('/coach/dashboard'); setShowLeaveModal(true) } else router.push('/coach/dashboard') }
 
   return (
     <>
@@ -224,14 +224,14 @@ function NewFormationInner() {
             <h3 style={{ fontSize: 17, fontWeight: 800, color: CREAM, marginBottom: 10 }}>Quitter sans sauvegarder ?</h3>
             <p style={{ fontSize: 14, color: SILVER, lineHeight: 1.6, marginBottom: 28 }}>Vous avez des modifications non sauvegardées.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button onClick={async () => { setShowLeaveModal(false); setPublishOnCreate(false); const d = await doInsert(false); if (d) router.push('/coach/formations') }} style={{ padding: '12px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.15)', background: 'rgba(232,228,220,0.06)', color: CREAM, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Sauvegarder en brouillon</button>
+              <button onClick={async () => { setShowLeaveModal(false); setPublishOnCreate(false); const d = await doInsert(false); if (d) router.push('/coach/dashboard') }} style={{ padding: '12px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.15)', background: 'rgba(232,228,220,0.06)', color: CREAM, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Sauvegarder en brouillon</button>
               <button onClick={() => { setShowLeaveModal(false); setIsDirty(false); router.push(pendingHref) }} style={{ padding: '12px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.7)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>Ne pas enregistrer</button>
               <button onClick={() => setShowLeaveModal(false)} style={{ padding: '10px', borderRadius: 10, border: 'none', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer' }}>Continuer l'édition</button>
             </div>
           </div>
         </div>
       )}
-      {showOverlay && <PublishOverlay type={tab} title={createdTitle} onDone={() => router.push('/coach/formations')} />}
+      {showOverlay && <PublishOverlay type={tab} title={createdTitle} onDone={() => router.push('/coach/dashboard')} />}
 
       <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 50% 30% at 50% 0%, ${activeTab.color}20 0%, transparent 70%)`, transition: 'background 0.5s' }} />

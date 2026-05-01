@@ -224,7 +224,7 @@ export default function FormationsPage() {
                   <div style={{ padding: '8px 14px 12px', borderBottom: `1px solid rgba(240,244,255,0.05)`, marginBottom: 6 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: CREAM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Menu</span>
                   </div>
-                  {[['Mon profil', '/student/profile'], ['Mes formations', '/formations'], ['Messages', '/student/messages'], ['Tracker', '/student/track'], ['Déconnexion', '/login']].map(([label, href]) => (
+                  {[['Mes formations', '/formations'], ['Coaches', '/coaches'], ['Tracker', '/track'], ['Déconnexion', '/login']].map(([label, href]) => (
                     <Link key={label} href={href} style={{ display: 'block', padding: '9px 14px', fontSize: 13, color: SILVER, textDecoration: 'none', borderRadius: 8, transition: 'all 0.15s' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(232,228,220,0.05)'; (e.currentTarget as HTMLAnchorElement).style.color = CREAM }}
                       onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; (e.currentTarget as HTMLAnchorElement).style.color = SILVER }}>

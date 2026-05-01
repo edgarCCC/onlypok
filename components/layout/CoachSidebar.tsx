@@ -1,13 +1,15 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, BookOpen, Users, Calendar, Settings, LogOut, ImageIcon } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Users, Calendar, Settings, LogOut, ImageIcon, TrendingUp, Star } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
 
 const links = [
   { href: '/coach/dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
   { href: '/coach/profile',    label: 'Mon profil', icon: ImageIcon },
+  { href: '/coach/revenue',    label: 'Revenus',    icon: TrendingUp },
   { href: '/coach/students',   label: 'Élèves',     icon: Users },
+  { href: '/coach/reviews',    label: 'Avis',       icon: Star },
   { href: '/coach/calendar',   label: 'Calendrier', icon: Calendar },
   { href: '/coach/settings',   label: 'Paramètres', icon: Settings },
 ]
