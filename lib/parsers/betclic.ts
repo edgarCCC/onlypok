@@ -1,9 +1,10 @@
-// ── Betclic Spin & Rush hand history parser ──────────────────────────────────
-import type { ParsedTournament } from './winamax'
+// ── Betclic hand history parser — Expresso (Spin & Rush) + Tournois ──────────
+import type { ParsedTournament, TournamentFormat } from './winamax'
 
 export interface BetclicHand {
   gameId: string
   gameName: string
+  gameMode: 'spin' | 'tournament'
   buyIn: number
   prizePool: number
   date: Date
@@ -11,6 +12,7 @@ export interface BetclicHand {
   heroName: string
   placement: number | null
   prizeWon: number
+  bountiesWon: number
   vpip: boolean
   pfr: boolean
   threeBet: boolean
@@ -21,7 +23,7 @@ export function isBetclicFile(text: string): boolean {
   return text.includes('Site: Betclic.fr')
 }
 
-// Parse raw hands from one file — call for each file, then pass all hands to buildBetclicTournaments
+// Phase 1: parse raw hands from one file
 export function parseBetclicHands(content: string): BetclicHand[] {
   const blocks = content.split(/^------------$/m).map(b => b.trim()).filter(Boolean)
   const hands: BetclicHand[] = []
@@ -32,7 +34,7 @@ export function parseBetclicHands(content: string): BetclicHand[] {
   return hands
 }
 
-// Group all hands (potentially from multiple files) by gameId and build one ParsedTournament per Spin
+// Phase 2: group ALL hands globally by gameId — handles cross-midnight files
 export function buildBetclicTournaments(allHands: BetclicHand[]): ParsedTournament[] {
   const gameMap = new Map<string, BetclicHand[]>()
   for (const hand of allHands) {
@@ -48,19 +50,30 @@ export function buildBetclicTournaments(allHands: BetclicHand[]): ParsedTourname
     const first    = gameHands[0]
     const last     = gameHands[gameHands.length - 1]
     const heroName = gameHands.find(h => h.heroName)?.heroName ?? ''
+    const isSpin   = first.gameMode === 'spin'
 
-    const resultHand  = [...gameHands].reverse().find(h => h.placement !== null)
-    const placement   = resultHand?.placement ?? 0
-    const prizeWon    = resultHand?.prizeWon  ?? 0
-    const buyInTotal  = first.buyIn
+    // For result: take the last hand that has a recorded placement
+    const resultHand = [...gameHands].reverse().find(h => h.placement !== null)
+    const placement  = resultHand?.placement ?? 0
+    const prizeWon   = resultHand?.prizeWon  ?? 0
 
-    const durationSecs = Math.max(0, Math.round((last.date.getTime() - first.date.getTime()) / 1000))
-    const totalPlayers = Math.max(...gameHands.map(h => h.players.length), 2)
+    // Accumulate bounties across all hands (KO tournaments)
+    const bountiesWon = gameHands.reduce((acc, h) => acc + h.bountiesWon, 0)
+
+    const buyInTotal    = first.buyIn
+    const durationSecs  = Math.max(0, Math.round((last.date.getTime() - first.date.getTime()) / 1000))
+    const totalPlayers  = isSpin
+      ? Math.max(...gameHands.map(h => h.players.length), 2)
+      : 0  // unknown for MTTs from hand history alone
 
     const vpipCount     = gameHands.filter(h => h.vpip).length
     const pfrCount      = gameHands.filter(h => h.pfr).length
     const threeBetCount = gameHands.filter(h => h.threeBet).length
     const threeBetOpps  = gameHands.filter(h => h.threeBetOpportunity).length
+
+    const format = detectBetclicFormat(first.gameName, first.gameMode)
+    const type   = isSpin ? 'Spin & Rush' : 'tournament'
+    const speed  = isSpin ? 'hyper' : detectBetclicSpeed(first.gameName)
 
     results.push({
       id: gameId,
@@ -74,16 +87,16 @@ export function buildBetclicTournaments(allHands: BetclicHand[]): ParsedTourname
       totalPlayers,
       tournamentPrizePool: first.prizePool,
       prizeWon,
-      bountiesWon: 0,
-      netProfit: Math.round((prizeWon - buyInTotal) * 100) / 100,
+      bountiesWon,
+      netProfit: Math.round((prizeWon + bountiesWon - buyInTotal) * 100) / 100,
       durationSecs,
-      type: 'Spin & Rush',
-      speed: 'hyper',
-      format: 'spin_rush',
+      type,
+      speed,
+      format,
       heroName,
       handsPlayed: gameHands.length,
-      vpipPct: gameHands.length > 0 ? Math.round(vpipCount / gameHands.length * 100) : null,
-      pfrPct:  gameHands.length > 0 ? Math.round(pfrCount  / gameHands.length * 100) : null,
+      vpipPct:     gameHands.length > 0 ? Math.round(vpipCount / gameHands.length * 100) : null,
+      pfrPct:      gameHands.length > 0 ? Math.round(pfrCount  / gameHands.length * 100) : null,
       threeBetPct: threeBetOpps > 0 ? Math.round(threeBetCount / threeBetOpps * 100) : null,
       hasSummary: false,
       hasHistory: true,
@@ -91,6 +104,20 @@ export function buildBetclicTournaments(allHands: BetclicHand[]): ParsedTourname
   }
 
   return results.sort((a, b) => b.date.getTime() - a.date.getTime())
+}
+
+function detectBetclicFormat(name: string, mode: 'spin' | 'tournament'): TournamentFormat {
+  if (mode === 'spin') return 'spin_rush'
+  const u = name.toUpperCase()
+  if (u.includes('MYSTERY')) return 'mystery_ko'
+  if (u.includes('PKO') || u.includes('KO') || u.includes('BOUNTY') || u.includes('PROGRESSIF')) return 'ko'
+  return 'classic'
+}
+
+function detectBetclicSpeed(name: string): string {
+  const u = name.toUpperCase()
+  if (u.includes('TURBO') || u.includes('HYPER')) return 'turbo'
+  return 'normal'
 }
 
 function parseBetclicHand(block: string): BetclicHand | null {
@@ -101,8 +128,10 @@ function parseBetclicHand(block: string): BetclicHand | null {
   const preFlopSection = block.match(/\*\*\* PRE-FLOP \*\*\*([\s\S]*?)(?=\*\*\* (?:FLOP|TURN|RIVER|SHOWDOWN|SUMMARY)|$)/)?.[1] ?? ''
   const summarySection = block.match(/\*\*\* SUMMARY \*\*\*([\s\S]*)$/)?.[1] ?? ''
 
-  const gameModeMatch  = headerSection.match(/Game Mode:\s*(.+)/)
-  if (gameModeMatch?.[1].trim() !== 'Spin') return null   // ignore MTTs, cash games, etc.
+  const gameModeRaw = headerSection.match(/Game Mode:\s*(.+)/)?.[1].trim() ?? ''
+  // Only parse Spin (Expresso) and Tournament — skip Cash, Sit&Go, etc.
+  if (gameModeRaw !== 'Spin' && gameModeRaw !== 'Tournament') return null
+  const gameMode: 'spin' | 'tournament' = gameModeRaw === 'Spin' ? 'spin' : 'tournament'
 
   const gameIdMatch    = headerSection.match(/Game ID:\s*(\S+)/)
   const gameNameMatch  = headerSection.match(/Game Name:\s*(.+)/)
@@ -112,11 +141,11 @@ function parseBetclicHand(block: string): BetclicHand | null {
 
   if (!gameIdMatch || !dateMatch) return null
 
-  const gameId   = gameIdMatch[1].trim()
-  const gameName = gameNameMatch?.[1].trim() ?? 'Spin & Rush'
-  const buyIn    = parseFloat(buyInMatch?.[1] ?? '0')
+  const gameId    = gameIdMatch[1].trim()
+  const gameName  = gameNameMatch?.[1].trim() ?? (gameMode === 'spin' ? 'Expresso' : 'Tournoi Betclic')
+  const buyIn     = parseFloat(buyInMatch?.[1] ?? '0')
   const prizePool = parseFloat(prizePoolMatch?.[1] ?? '0')
-  const date     = new Date(dateMatch[1].replace(' ', 'T') + 'Z')
+  const date      = new Date(dateMatch[1].replace(' ', 'T') + 'Z')
 
   if (!gameId) return null
 
@@ -128,18 +157,29 @@ function parseBetclicHand(block: string): BetclicHand | null {
     if (m[2].includes('Hero')) heroName = name
   }
 
-  // Placement & prize from SUMMARY
+  // Placement, prize & bounties from SUMMARY
   let placement: number | null = null
   let prizeWon = 0
+  let bountiesWon = 0
   if (heroName && summarySection) {
     const escaped = heroName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const m = summarySection.match(
+
+    // Final placement line: "Name finished Xth [and wins Y.YY EUR/€]"
+    const placementMatch = summarySection.match(
       new RegExp(`${escaped}\\s+finished\\s+(\\d+)(?:st|nd|rd|th)(?:\\s+and wins\\s+([\\d.]+)\\s*(?:EUR|€))?`)
     )
-    if (m) {
-      placement = parseInt(m[1])
-      prizeWon  = m[2] ? parseFloat(m[2]) : 0
+    if (placementMatch) {
+      placement = parseInt(placementMatch[1])
+      prizeWon  = placementMatch[2] ? parseFloat(placementMatch[2]) : 0
     }
+
+    // Bounty lines: "Name won Bounty X.XX EUR/€" (can appear multiple times)
+    for (const bm of summarySection.matchAll(
+      new RegExp(`${escaped}\\s+won\\s+Bounty\\s+([\\d.]+)\\s*(?:EUR|€)`, 'g')
+    )) {
+      bountiesWon += parseFloat(bm[1])
+    }
+    bountiesWon = Math.round(bountiesWon * 100) / 100
   }
 
   // VPIP / PFR / 3-bet from pre-flop actions (ignore blind posts)
@@ -168,5 +208,9 @@ function parseBetclicHand(block: string): BetclicHand | null {
     }
   }
 
-  return { gameId, gameName, buyIn, prizePool, date, players, heroName, placement, prizeWon, vpip, pfr, threeBet, threeBetOpportunity }
+  return {
+    gameId, gameName, gameMode, buyIn, prizePool, date,
+    players, heroName, placement, prizeWon, bountiesWon,
+    vpip, pfr, threeBet, threeBetOpportunity,
+  }
 }

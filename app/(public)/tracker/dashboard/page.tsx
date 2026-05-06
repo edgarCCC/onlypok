@@ -82,7 +82,7 @@ function detectFormat(r: Row): string {
   const u = r.tournament_name.toUpperCase()
   if (u.includes('MYSTERY') || u.includes('MYSTÈRE')) return 'mystery_ko'
   if (u.includes('SPACE')) return 'space_ko'
-  if ((r.buy_in_bounty ?? 0) > 0) return 'ko'
+  if ((r.buy_in_bounty ?? 0) > 0 || u.includes('PKO') || u.includes(' KO') || u.includes('BOUNTY') || u.includes('PROGRESSIF')) return 'ko'
   return 'classic'
 }
 function placementColor(p: number, total: number) {
