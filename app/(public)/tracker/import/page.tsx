@@ -175,9 +175,20 @@ export default function ImportPage() {
       hero_name: t.heroName,
     }))
 
+    // Supprime d'abord toutes les entrées existantes pour les rooms importées
+    // (évite les données obsolètes d'anciens imports avec un parser incorrect)
+    const roomsInImport = [...new Set(Object.values(rooms))]
+    const { error: delErr } = await supabase
+      .from('tournament_results')
+      .delete()
+      .eq('user_id', user.id)
+      .in('room', roomsInImport)
+
+    if (delErr) { setError(delErr.message); setSaving(false); return }
+
     const { error: err } = await supabase
       .from('tournament_results')
-      .upsert(rows, { onConflict: 'user_id,tournament_id' })
+      .insert(rows)
 
     if (err) { setError(err.message); setSaving(false); return }
     setSaved(true); setSaving(false)
