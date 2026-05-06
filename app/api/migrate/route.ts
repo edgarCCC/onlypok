@@ -146,6 +146,9 @@ CREATE TABLE IF NOT EXISTS tournament_results (
   placement       INTEGER,
   total_players   INTEGER,
   prize_pool      NUMERIC(10,2) DEFAULT 0,
+  prize_won       NUMERIC(10,2) DEFAULT 0,
+  bounties_won    NUMERIC(10,2) DEFAULT 0,
+  net_profit      NUMERIC(10,2) DEFAULT 0,
   duration_secs   INTEGER DEFAULT 0,
   hands_played    INTEGER DEFAULT 0,
   vpip_pct        NUMERIC(5,2),
@@ -159,6 +162,32 @@ CREATE TABLE IF NOT EXISTS tournament_results (
 );
 CREATE INDEX IF NOT EXISTS tournament_results_user_idx ON tournament_results(user_id);
 CREATE INDEX IF NOT EXISTS tournament_results_date_idx ON tournament_results(user_id, date DESC);
+
+-- Colonnes ajoutées après création initiale (idempotent)
+ALTER TABLE tournament_results
+  ADD COLUMN IF NOT EXISTS prize_won    NUMERIC(10,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS bounties_won NUMERIC(10,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS net_profit   NUMERIC(10,2) DEFAULT 0;
+
+-- RLS tournament_results
+ALTER TABLE tournament_results ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tr_select_own" ON tournament_results;
+DROP POLICY IF EXISTS "tr_insert_own" ON tournament_results;
+DROP POLICY IF EXISTS "tr_update_own" ON tournament_results;
+CREATE POLICY "tr_select_own" ON tournament_results FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "tr_insert_own" ON tournament_results FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "tr_update_own" ON tournament_results FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- RLS tracker_sessions
+ALTER TABLE tracker_sessions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "ts_select_own" ON tracker_sessions;
+DROP POLICY IF EXISTS "ts_insert_own" ON tracker_sessions;
+DROP POLICY IF EXISTS "ts_update_own" ON tracker_sessions;
+DROP POLICY IF EXISTS "ts_delete_own" ON tracker_sessions;
+CREATE POLICY "ts_select_own" ON tracker_sessions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "ts_insert_own" ON tracker_sessions FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "ts_update_own" ON tracker_sessions FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "ts_delete_own" ON tracker_sessions FOR DELETE USING (auth.uid() = user_id);
 
 CREATE TABLE IF NOT EXISTS coach_proofs (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),

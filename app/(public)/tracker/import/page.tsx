@@ -2,6 +2,7 @@
 import Navbar from '@/components/landing/Navbar'
 import Link from 'next/link'
 import { useState, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { ArrowLeft, Upload, FileText, Check, AlertCircle, Loader2, Trophy, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -65,6 +66,7 @@ function StatPill({ val, label, color }: { val: number | null; label: string; co
 }
 
 export default function ImportPage() {
+  const router = useRouter()
   const [dragging, setDragging]   = useState(false)
   const [parsed,   setParsed]     = useState<ParsedTournament[]>([])
   const [rooms,    setRooms]      = useState<Record<string, string>>({})
@@ -179,6 +181,7 @@ export default function ImportPage() {
 
     if (err) { setError(err.message); setSaving(false); return }
     setSaved(true); setSaving(false)
+    setTimeout(() => router.push('/tracker/dashboard'), 1200)
   }
 
   const totalBuyIn   = parsed.reduce((a, t) => a + t.buyInTotal, 0)

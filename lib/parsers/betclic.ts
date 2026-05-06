@@ -134,7 +134,7 @@ function parseBetclicHand(block: string): BetclicHand | null {
   if (heroName && summarySection) {
     const escaped = heroName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const m = summarySection.match(
-      new RegExp(`${escaped}\\s+finished\\s+(\\d+)(?:st|nd|rd|th)(?:\\s+and wins\\s+([\\d.]+)\\s+EUR)?`)
+      new RegExp(`${escaped}\\s+finished\\s+(\\d+)(?:st|nd|rd|th)(?:\\s+and wins\\s+([\\d.]+)\\s*(?:EUR|€))?`)
     )
     if (m) {
       placement = parseInt(m[1])

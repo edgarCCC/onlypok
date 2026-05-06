@@ -132,26 +132,28 @@ export function parseTournamentSummary(text: string): TournamentSummary[] {
     const prizeRaw = get('Prizepool : ')
     const tournamentPrizePool = parseFloat(prizeRaw.replace(/[€\s]/g, '')) || 0
 
-    // Gains réels du joueur via la ligne "You won"
+    // Gains réels du joueur via les lignes "You won"
     // Formats possibles :
-    //   "You won 9.58€ + Bounty 4.07€"
-    //   "You won Bounty 2.50€"
-    //   "You won 4€"
-    //   (absente si le joueur ne gagne rien)
-    const wonLine = lines.find(l => l.startsWith('You won')) ?? ''
+    //   "You won 9.58 €"  "You won 9.58€"  (prize place)
+    //   "You won 9.58 € + Bounty 4.07 €"   (prize + bounty)
+    //   "You won Bounty 2.50 €"            (bounty seul, Mystery KO)
+    //   Plusieurs lignes "You won Bounty" possibles (un bounty par élim)
+    const wonLines = lines.filter(l => l.startsWith('You won'))
     let prizeWon = 0
     let bountiesWon = 0
-    if (wonLine) {
-      const wonBoth = wonLine.match(/You won ([\d.]+)€\s*\+\s*Bounty\s+([\d.]+)€/)
-      const wonBountyOnly = wonLine.match(/You won Bounty\s+([\d.]+)€/)
-      const wonPrizeOnly = wonLine.match(/You won ([\d.]+)€/)
+    for (const wonLine of wonLines) {
+      // Normalise l'espace optionnel avant € : "9.58 €" → "9.58€"
+      const norm = wonLine.replace(/\s+€/g, '€')
+      const wonBoth       = norm.match(/You won ([\d.]+)€\s*\+\s*Bounty\s+([\d.]+)€/)
+      const wonBountyOnly = norm.match(/You won Bounty\s+([\d.]+)€/)
+      const wonPrizeOnly  = norm.match(/You won ([\d.]+)€/)
       if (wonBoth) {
-        prizeWon = parseFloat(wonBoth[1])
-        bountiesWon = parseFloat(wonBoth[2])
+        prizeWon    += parseFloat(wonBoth[1])
+        bountiesWon += parseFloat(wonBoth[2])
       } else if (wonBountyOnly) {
-        bountiesWon = parseFloat(wonBountyOnly[1])
+        bountiesWon += parseFloat(wonBountyOnly[1])
       } else if (wonPrizeOnly) {
-        prizeWon = parseFloat(wonPrizeOnly[1])
+        prizeWon    += parseFloat(wonPrizeOnly[1])
       }
     }
     const netProfit = Math.round((prizeWon + bountiesWon - buyInTotal) * 100) / 100
