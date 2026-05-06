@@ -253,7 +253,7 @@ export default function ImportPage() {
             <div style={{ borderRadius: 16, background: CARD, border: `1px solid ${BORDER}`, overflow: 'hidden', marginBottom: 20 }}>
               {/* Sticky header */}
               <div style={{
-                display: 'grid', gridTemplateColumns: '1fr 76px 90px 90px 66px 76px 80px',
+                display: 'grid', gridTemplateColumns: '1fr 70px 120px 76px 60px 70px 80px',
                 padding: '10px 20px',
                 background: 'rgba(255,255,255,0.03)',
                 borderBottom: `1px solid ${BORDER}`,
@@ -275,7 +275,7 @@ export default function ImportPage() {
                     <div
                       key={t.id}
                       style={{
-                        display: 'grid', gridTemplateColumns: '1fr 76px 90px 90px 66px 76px 80px',
+                        display: 'grid', gridTemplateColumns: '1fr 70px 120px 76px 60px 70px 80px',
                         padding: '12px 20px',
                         borderBottom: i < parsed.length - 1 ? `1px solid ${BORDER}` : 'none',
                         transition: 'background 0.12s',
@@ -303,7 +303,7 @@ export default function ImportPage() {
                       {/* Format */}
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, color: fm.color, background: fm.bg, border: `1px solid ${fm.border}`, whiteSpace: 'nowrap' }}>
-                          {fm.label}{t.speed ? ` · ${t.speed}` : ''}
+                          {fm.label}
                         </span>
                       </div>
 
