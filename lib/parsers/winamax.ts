@@ -78,7 +78,7 @@ export type ParsedTournament = {
   hasHistory: boolean
 }
 
-export type TournamentFormat = 'classic' | 'ko' | 'mystery_ko' | 'space_ko'
+export type TournamentFormat = 'classic' | 'ko' | 'mystery_ko' | 'space_ko' | 'spin_rush'
 
 export function detectTournamentFormat(name: string, buyInBounty: number): TournamentFormat {
   const n = name.toUpperCase()

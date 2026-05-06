@@ -8,6 +8,7 @@ import {
   detectFileType, parseTournamentSummary, parseHandHistory, mergeTournamentData,
   type ParsedTournament, type TournamentFormat,
 } from '@/lib/parsers/winamax'
+import { isBetclicFile, parseBetclicFile } from '@/lib/parsers/betclic'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -45,10 +46,11 @@ function placementColor(placement: number, total: number) {
 }
 
 const FORMAT_META: Record<TournamentFormat, { label: string; color: string; bg: string; border: string }> = {
-  classic:    { label: 'Classique',   color: SILVER,  bg: 'rgba(240,244,255,0.05)', border: 'rgba(240,244,255,0.12)' },
+  classic:    { label: 'Classique',   color: SILVER,    bg: 'rgba(240,244,255,0.05)', border: 'rgba(240,244,255,0.12)' },
   ko:         { label: 'KO',          color: '#f87171', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.25)' },
   mystery_ko: { label: 'Mystery KO',  color: '#c084fc', bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.25)' },
-  space_ko:   { label: 'Space KO',    color: CYAN,    bg: 'rgba(6,182,212,0.08)',    border: 'rgba(6,182,212,0.25)' },
+  space_ko:   { label: 'Space KO',    color: CYAN,      bg: 'rgba(6,182,212,0.08)',    border: 'rgba(6,182,212,0.25)' },
+  spin_rush:  { label: 'Spin & Rush', color: '#fb923c', bg: 'rgba(251,146,60,0.08)',   border: 'rgba(251,146,60,0.25)' },
 }
 
 function StatPill({ val, label, color }: { val: number | null; label: string; color: string }) {
@@ -64,6 +66,7 @@ function StatPill({ val, label, color }: { val: number | null; label: string; co
 export default function ImportPage() {
   const [dragging, setDragging]   = useState(false)
   const [parsed,   setParsed]     = useState<ParsedTournament[]>([])
+  const [rooms,    setRooms]      = useState<Record<string, string>>({})
   const [heroName, setHeroName]   = useState('')
   const [loading,  setLoading]    = useState(false)
   const [saving,   setSaving]     = useState(false)
@@ -80,24 +83,37 @@ export default function ImportPage() {
 
     const summaries = []
     const allHands = []
+    const betclicResults: ParsedTournament[] = []
+    const roomMap: Record<string, string> = {}
     let hero = ''
 
     for (const file of txts) {
       const text = await file.text()
-      const type = detectFileType(text)
-      if (type === 'summary') {
-        const s = parseTournamentSummary(text)
-        summaries.push(...s)
-        if (!hero && s[0]) hero = s[0].heroName
-      } else if (type === 'history') {
-        const { heroName: h, hands } = parseHandHistory(text)
-        allHands.push(...hands)
-        if (!hero) hero = h
+      if (isBetclicFile(text)) {
+        const results = parseBetclicFile(text)
+        betclicResults.push(...results)
+        for (const r of results) roomMap[r.id] = 'betclic'
+        if (!hero && results[0]) hero = results[0].heroName
+      } else {
+        const type = detectFileType(text)
+        if (type === 'summary') {
+          const s = parseTournamentSummary(text)
+          summaries.push(...s)
+          if (!hero && s[0]) hero = s[0].heroName
+        } else if (type === 'history') {
+          const { heroName: h, hands } = parseHandHistory(text)
+          allHands.push(...hands)
+          if (!hero) hero = h
+        }
       }
     }
 
+    const winamaxResults = mergeTournamentData(summaries, allHands, hero)
+    for (const r of winamaxResults) roomMap[r.id] = 'winamax'
+
     setHeroName(hero)
-    setParsed(mergeTournamentData(summaries, allHands, hero))
+    setRooms(roomMap)
+    setParsed([...winamaxResults, ...betclicResults].sort((a, b) => b.date.getTime() - a.date.getTime()))
     setLoading(false)
   }, [])
 
@@ -116,7 +132,7 @@ export default function ImportPage() {
       user_id: user.id,
       tournament_id: t.id,
       tournament_name: t.name,
-      room: 'winamax',
+      room: rooms[t.id] ?? 'winamax',
       date: t.date.toISOString().split('T')[0],
       buy_in_prize: t.buyInPrize,
       buy_in_bounty: t.buyInBounty,
@@ -162,8 +178,8 @@ export default function ImportPage() {
         </Link>
 
         <div style={{ marginBottom: 40 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 6px' }}>Import Winamax</h1>
-          <p style={{ fontSize: 14, color: SILVER, margin: 0 }}>Glisse tes fichiers <code style={{ color: CYAN }}>.txt</code> Winamax — résumés et historiques de mains.</p>
+          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 6px' }}>Import Winamax / Betclic</h1>
+          <p style={{ fontSize: 14, color: SILVER, margin: 0 }}>Glisse tes fichiers <code style={{ color: CYAN }}>.txt</code> — Winamax (résumés + historiques) ou Betclic (Spin & Rush).</p>
         </div>
 
         {/* Drop zone */}
@@ -191,9 +207,9 @@ export default function ImportPage() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
               <Upload size={32} color={dragging ? VIOLET : DIM} />
               <p style={{ fontSize: 16, fontWeight: 700, color: dragging ? CREAM : SILVER, margin: 0 }}>
-                {dragging ? 'Lâche les fichiers ici' : 'Glisse tes fichiers .txt Winamax'}
+                {dragging ? 'Lâche les fichiers ici' : 'Glisse tes fichiers .txt Winamax ou Betclic'}
               </p>
-              <p style={{ fontSize: 12, color: DIM, margin: 0 }}>ou clique pour sélectionner — résumés + historiques de mains</p>
+              <p style={{ fontSize: 12, color: DIM, margin: 0 }}>ou clique pour sélectionner — détection automatique de la room</p>
             </div>
           )}
         </div>

@@ -39,6 +39,7 @@ const FORMAT_META: Record<string, { label: string; color: string }> = {
   space_ko:   { label: 'Space KO',   color: CYAN },
   ko:         { label: 'KO',         color: '#f87171' },
   classic:    { label: 'Classique',  color: SILVER },
+  spin_rush:  { label: 'Spin & Rush', color: '#fb923c' },
 }
 
 type Row = {
