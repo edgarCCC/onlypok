@@ -630,7 +630,7 @@ export default function CoachesClient({ initialCoaches }: { initialCoaches: any[
           }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: VIO }} />
             <span style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              Marketplace
+              Coachs
             </span>
           </div>
 
@@ -640,8 +640,8 @@ export default function CoachesClient({ initialCoaches }: { initialCoaches: any[
                 fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 900, color: CREAM,
                 letterSpacing: '-1.5px', margin: '0 0 8px', lineHeight: 1.05,
               }}>
-                Trouvez votre{' '}
-                <span style={{ color: VIO }}>coach</span>
+                Nos{' '}
+                <span style={{ color: VIO }}>coachs</span>
               </h1>
               <p style={{ fontSize: 14, color: MUTED, margin: 0 }}>
                 {initialCoaches.length} coach{initialCoaches.length > 1 ? 's' : ''} disponible{initialCoaches.length > 1 ? 's' : ''} sur la plateforme
