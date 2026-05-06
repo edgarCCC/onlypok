@@ -47,6 +47,7 @@ type Row = {
   tournament_id: string
   tournament_name: string
   date: string
+  room: string
   buy_in_total: number
   buy_in_bounty: number
   placement: number | null
@@ -76,11 +77,12 @@ function fmtDuration(secs: number) {
 function ordinal(n: number) {
   return n === 1 ? '1er' : `${n}e`
 }
-function detectFormat(name: string, buyInBounty: number): string {
-  const u = name.toUpperCase()
+function detectFormat(r: Row): string {
+  if (r.type === 'Spin & Rush') return 'spin_rush'
+  const u = r.tournament_name.toUpperCase()
   if (u.includes('MYSTERY') || u.includes('MYSTÈRE')) return 'mystery_ko'
   if (u.includes('SPACE')) return 'space_ko'
-  if (buyInBounty > 0) return 'ko'
+  if ((r.buy_in_bounty ?? 0) > 0) return 'ko'
   return 'classic'
 }
 function placementColor(p: number, total: number) {
@@ -184,6 +186,40 @@ export default function TrackerDashboard() {
     : null
   const totalDuration = filtered.reduce((a, r) => a + (r.duration_secs ?? 0), 0)
 
+  // ── Room breakdown ────────────────────────────────────────────────────────
+  const roomStats = useMemo(() => {
+    const map = new Map<string, Row[]>()
+    for (const r of filtered) {
+      const room = r.room || 'winamax'
+      if (!map.has(room)) map.set(room, [])
+      map.get(room)!.push(r)
+    }
+    return [...map.entries()].map(([room, rows]) => {
+      const profit   = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
+      const buyIn    = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
+      const roi      = buyIn > 0 ? (profit / buyIn) * 100 : 0
+      const itm      = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
+      return { room, count: rows.length, profit, roi, itm }
+    }).sort((a, b) => b.count - a.count)
+  }, [filtered])
+
+  // ── Format breakdown ──────────────────────────────────────────────────────
+  const formatStats = useMemo(() => {
+    const map = new Map<string, Row[]>()
+    for (const r of filtered) {
+      const fmt = detectFormat(r)
+      if (!map.has(fmt)) map.set(fmt, [])
+      map.get(fmt)!.push(r)
+    }
+    return [...map.entries()].map(([fmt, rows]) => {
+      const profit = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
+      const buyIn  = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
+      const roi    = buyIn > 0 ? (profit / buyIn) * 100 : 0
+      const itm    = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
+      return { fmt, count: rows.length, profit, roi, itm, meta: FORMAT_META[fmt] ?? { label: fmt, color: SILVER } }
+    }).sort((a, b) => b.count - a.count)
+  }, [filtered])
+
   // ── Chart data ────────────────────────────────────────────────────────────
   const bankrollData = useMemo(() => {
     let cumul = 0
@@ -226,7 +262,7 @@ export default function TrackerDashboard() {
               {!userId ? 'Connecte-toi pour voir ton dashboard.' : 'Importe tes fichiers Winamax pour commencer.'}
             </p>
             <Link href={userId ? '/tracker/import' : '/login'} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 28px', borderRadius: 12, background: VIOLET, color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 700 }}>
-              <Upload size={15} /> {userId ? 'Importer Winamax' : 'Se connecter'}
+              <Upload size={15} /> {userId ? 'Importer mes résultats' : 'Se connecter'}
             </Link>
           </div>
         </div>
@@ -316,6 +352,68 @@ export default function TrackerDashboard() {
             sub={`${filtered.reduce((a, r) => a + (r.hands_played ?? 0), 0).toLocaleString('fr')} mains`}
           />
         </div>
+
+        {/* ── Room + Format breakdown ─────────────────────────────────────── */}
+        {filtered.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: roomStats.length > 1 ? '1fr 1fr' : '1fr', gap: 12, marginBottom: 16 }}>
+
+            {/* Par room */}
+            <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '20px 24px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: DIM, margin: '0 0 14px' }}>Par room</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {roomStats.map(({ room, count, profit, roi, itm }) => {
+                  const isWin = room === 'winamax'
+                  const color = isWin ? VIOLET : '#fb923c'
+                  const label = isWin ? 'Winamax' : 'Betclic'
+                  return (
+                    <div key={room} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, background: `${color}08`, border: `1px solid ${color}20` }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: CREAM, minWidth: 72 }}>{label}</span>
+                      <span style={{ fontSize: 11, color: DIM, minWidth: 60 }}>{count} tournoi{count > 1 ? 's' : ''}</span>
+                      <div style={{ flex: 1, display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: profit >= 0 ? GREEN : RED, fontVariantNumeric: 'tabular-nums', minWidth: 72, textAlign: 'right' }}>
+                          {profit >= 0 ? '+' : ''}{profit.toFixed(2)}€
+                        </span>
+                        <span style={{ fontSize: 11, color: roi >= 0 ? GREEN : RED, minWidth: 52, textAlign: 'right' }}>
+                          ROI {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                        </span>
+                        <span style={{ fontSize: 11, color: DIM, minWidth: 48, textAlign: 'right' }}>
+                          ITM {itm.toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Par format */}
+            <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '20px 24px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: DIM, margin: '0 0 14px' }}>Par format</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {formatStats.map(({ fmt, count, profit, roi, itm, meta }) => (
+                  <div key={fmt} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, background: `${meta.color}08`, border: `1px solid ${meta.color}20` }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: meta.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, fontWeight: 700, color: CREAM, minWidth: 90 }}>{meta.label}</span>
+                    <span style={{ fontSize: 11, color: DIM, minWidth: 60 }}>{count} tournoi{count > 1 ? 's' : ''}</span>
+                    <div style={{ flex: 1, display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: profit >= 0 ? GREEN : RED, fontVariantNumeric: 'tabular-nums', minWidth: 72, textAlign: 'right' }}>
+                        {profit >= 0 ? '+' : ''}{profit.toFixed(2)}€
+                      </span>
+                      <span style={{ fontSize: 11, color: roi >= 0 ? GREEN : RED, minWidth: 52, textAlign: 'right' }}>
+                        ROI {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                      </span>
+                      <span style={{ fontSize: 11, color: DIM, minWidth: 48, textAlign: 'right' }}>
+                        ITM {itm.toFixed(0)}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        )}
 
         {/* ── Bankroll curve ──────────────────────────────────────────────── */}
         <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '28px 28px 16px', marginBottom: 16 }}>
@@ -425,7 +523,7 @@ export default function TrackerDashboard() {
           <div style={{ maxHeight: 520, overflowY: 'auto' }}>
             {filtered.map((r, i) => {
               const profit = r.net_profit ?? 0
-              const fmt = detectFormat(r.tournament_name, r.buy_in_bounty ?? 0)
+              const fmt = detectFormat(r)
               const fmtMeta = FORMAT_META[fmt]
               const hasPlacement = r.placement && r.total_players
               const pColor = hasPlacement ? placementColor(r.placement!, r.total_players!) : DIM
