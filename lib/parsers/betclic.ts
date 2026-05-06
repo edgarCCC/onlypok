@@ -49,7 +49,7 @@ export function buildBetclicTournaments(allHands: BetclicHand[]): ParsedTourname
     const last     = gameHands[gameHands.length - 1]
     const heroName = gameHands.find(h => h.heroName)?.heroName ?? ''
 
-    const resultHand  = gameHands.find(h => h.placement !== null)
+    const resultHand  = [...gameHands].reverse().find(h => h.placement !== null)
     const placement   = resultHand?.placement ?? 0
     const prizeWon    = resultHand?.prizeWon  ?? 0
     const buyInTotal  = first.buyIn
@@ -101,6 +101,9 @@ function parseBetclicHand(block: string): BetclicHand | null {
   const preFlopSection = block.match(/\*\*\* PRE-FLOP \*\*\*([\s\S]*?)(?=\*\*\* (?:FLOP|TURN|RIVER|SHOWDOWN|SUMMARY)|$)/)?.[1] ?? ''
   const summarySection = block.match(/\*\*\* SUMMARY \*\*\*([\s\S]*)$/)?.[1] ?? ''
 
+  const gameModeMatch  = headerSection.match(/Game Mode:\s*(.+)/)
+  if (gameModeMatch?.[1].trim() !== 'Spin') return null   // ignore MTTs, cash games, etc.
+
   const gameIdMatch    = headerSection.match(/Game ID:\s*(\S+)/)
   const gameNameMatch  = headerSection.match(/Game Name:\s*(.+)/)
   const buyInMatch     = headerSection.match(/Buy In:\s*([\d.]+)/)
@@ -119,9 +122,10 @@ function parseBetclicHand(block: string): BetclicHand | null {
 
   const players: string[] = []
   let heroName = ''
-  for (const m of playersSection.matchAll(/Seat \d+:\s*(\S+)\s*\(\d+\)\s*\[([^\]]+)\]/g)) {
-    players.push(m[1])
-    if (m[2].includes('Hero')) heroName = m[1]
+  for (const m of playersSection.matchAll(/Seat \d+:\s*([^(]+?)\s*\(\d+\)\s*\[([^\]]+)\]/g)) {
+    const name = m[1].trim()
+    players.push(name)
+    if (m[2].includes('Hero')) heroName = name
   }
 
   // Placement & prize from SUMMARY
