@@ -9,6 +9,7 @@ import {
   type ParsedTournament, type TournamentFormat,
 } from '@/lib/parsers/winamax'
 import { isBetclicFile, parseBetclicHands, buildBetclicTournaments, type BetclicHand } from '@/lib/parsers/betclic'
+import { extractTxtFromZip } from '@/lib/parsers/unzip'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -76,10 +77,26 @@ export default function ImportPage() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const processFiles = useCallback(async (files: File[]) => {
-    const txts = files.filter(f => f.name.endsWith('.txt'))
-    if (!txts.length) { setError('Aucun fichier .txt détecté.'); return }
+    const accepted = files.filter(f => f.name.endsWith('.txt') || f.name.endsWith('.zip'))
+    if (!accepted.length) { setError('Aucun fichier .txt ou .zip détecté.'); return }
     setLoading(true); setError(''); setSaved(false); setParsed([])
-    setFileCount(txts.length)
+
+    // Expand ZIPs into raw text entries
+    const texts: string[] = []
+    for (const file of accepted) {
+      if (file.name.endsWith('.zip')) {
+        try {
+          const extracted = await extractTxtFromZip(file)
+          texts.push(...extracted.map(e => e.content))
+        } catch {
+          setError(`Erreur lecture ZIP : ${file.name}`); setLoading(false); return
+        }
+      } else {
+        texts.push(await file.text())
+      }
+    }
+
+    setFileCount(texts.length)
 
     const summaries = []
     const allHands = []
@@ -87,19 +104,18 @@ export default function ImportPage() {
     const roomMap: Record<string, string> = {}
     let hero = ''
 
-    for (const file of txts) {
-      const text = await file.text()
+    for (const text of texts) {
       if (isBetclicFile(text)) {
         const hands = parseBetclicHands(text)
         allBetclicHands.push(...hands)
         if (!hero) hero = hands.find(h => h.heroName)?.heroName ?? ''
       } else {
-        const type = detectFileType(text)
-        if (type === 'summary') {
+        const kind = detectFileType(text)
+        if (kind === 'summary') {
           const s = parseTournamentSummary(text)
           summaries.push(...s)
           if (!hero && s[0]) hero = s[0].heroName
-        } else if (type === 'history') {
+        } else if (kind === 'history') {
           const { heroName: h, hands } = parseHandHistory(text)
           allHands.push(...hands)
           if (!hero) hero = h
@@ -199,7 +215,7 @@ export default function ImportPage() {
             marginBottom: 32,
           }}
         >
-          <input ref={fileRef} type="file" multiple accept=".txt" style={{ display: 'none' }}
+          <input ref={fileRef} type="file" multiple accept=".txt,.zip" style={{ display: 'none' }}
             onChange={e => e.target.files && processFiles(Array.from(e.target.files))} />
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
@@ -210,9 +226,9 @@ export default function ImportPage() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
               <Upload size={32} color={dragging ? VIOLET : DIM} />
               <p style={{ fontSize: 16, fontWeight: 700, color: dragging ? CREAM : SILVER, margin: 0 }}>
-                {dragging ? 'Lâche les fichiers ici' : 'Glisse tes fichiers .txt Winamax ou Betclic'}
+                {dragging ? 'Lâche les fichiers ici' : 'Glisse tes .txt ou .zip Winamax / Betclic'}
               </p>
-              <p style={{ fontSize: 12, color: DIM, margin: 0 }}>ou clique pour sélectionner — détection automatique de la room</p>
+              <p style={{ fontSize: 12, color: DIM, margin: 0 }}>détection automatique de la room — ZIP Betclic supporté</p>
             </div>
           )}
         </div>
