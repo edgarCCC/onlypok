@@ -181,7 +181,7 @@ export default function ImportPage() {
 
     if (err) { setError(err.message); setSaving(false); return }
     setSaved(true); setSaving(false)
-    setTimeout(() => router.push('/tracker/dashboard'), 1200)
+    router.push('/tracker/dashboard')
   }
 
   const totalBuyIn   = parsed.reduce((a, t) => a + t.buyInTotal, 0)
