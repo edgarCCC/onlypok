@@ -113,7 +113,9 @@ export default function ImportPage() {
 
     setHeroName(hero)
     setRooms(roomMap)
-    setParsed([...winamaxResults, ...betclicResults].sort((a, b) => b.date.getTime() - a.date.getTime()))
+    const merged = [...winamaxResults, ...betclicResults]
+    const deduped = [...new Map(merged.map(r => [r.id, r])).values()]
+    setParsed(deduped.sort((a, b) => b.date.getTime() - a.date.getTime()))
     setLoading(false)
   }, [])
 
