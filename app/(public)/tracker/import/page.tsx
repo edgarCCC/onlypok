@@ -8,7 +8,7 @@ import {
   detectFileType, parseTournamentSummary, parseHandHistory, mergeTournamentData,
   type ParsedTournament, type TournamentFormat,
 } from '@/lib/parsers/winamax'
-import { isBetclicFile, parseBetclicFile } from '@/lib/parsers/betclic'
+import { isBetclicFile, parseBetclicHands, buildBetclicTournaments, type BetclicHand } from '@/lib/parsers/betclic'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -83,17 +83,16 @@ export default function ImportPage() {
 
     const summaries = []
     const allHands = []
-    const betclicResults: ParsedTournament[] = []
+    const allBetclicHands: BetclicHand[] = []
     const roomMap: Record<string, string> = {}
     let hero = ''
 
     for (const file of txts) {
       const text = await file.text()
       if (isBetclicFile(text)) {
-        const results = parseBetclicFile(text)
-        betclicResults.push(...results)
-        for (const r of results) roomMap[r.id] = 'betclic'
-        if (!hero && results[0]) hero = results[0].heroName
+        const hands = parseBetclicHands(text)
+        allBetclicHands.push(...hands)
+        if (!hero) hero = hands.find(h => h.heroName)?.heroName ?? ''
       } else {
         const type = detectFileType(text)
         if (type === 'summary') {
@@ -108,14 +107,16 @@ export default function ImportPage() {
       }
     }
 
+    // Group ALL Betclic hands globally — handles Spins whose hands span multiple daily files
+    const betclicResults = buildBetclicTournaments(allBetclicHands)
+    for (const r of betclicResults) roomMap[r.id] = 'betclic'
+
     const winamaxResults = mergeTournamentData(summaries, allHands, hero)
     for (const r of winamaxResults) roomMap[r.id] = 'winamax'
 
     setHeroName(hero)
     setRooms(roomMap)
-    const merged = [...winamaxResults, ...betclicResults]
-    const deduped = [...new Map(merged.map(r => [r.id, r])).values()]
-    setParsed(deduped.sort((a, b) => b.date.getTime() - a.date.getTime()))
+    setParsed([...winamaxResults, ...betclicResults].sort((a, b) => b.date.getTime() - a.date.getTime()))
     setLoading(false)
   }, [])
 

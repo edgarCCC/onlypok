@@ -1,7 +1,7 @@
 // ── Betclic Spin & Rush hand history parser ──────────────────────────────────
 import type { ParsedTournament } from './winamax'
 
-interface BetclicHand {
+export interface BetclicHand {
   gameId: string
   gameName: string
   buyIn: number
@@ -21,17 +21,21 @@ export function isBetclicFile(text: string): boolean {
   return text.includes('Site: Betclic.fr')
 }
 
-export function parseBetclicFile(content: string): ParsedTournament[] {
+// Parse raw hands from one file — call for each file, then pass all hands to buildBetclicTournaments
+export function parseBetclicHands(content: string): BetclicHand[] {
   const blocks = content.split(/^------------$/m).map(b => b.trim()).filter(Boolean)
-
   const hands: BetclicHand[] = []
   for (const block of blocks) {
     const hand = parseBetclicHand(block)
     if (hand) hands.push(hand)
   }
+  return hands
+}
 
+// Group all hands (potentially from multiple files) by gameId and build one ParsedTournament per Spin
+export function buildBetclicTournaments(allHands: BetclicHand[]): ParsedTournament[] {
   const gameMap = new Map<string, BetclicHand[]>()
-  for (const hand of hands) {
+  for (const hand of allHands) {
     if (!gameMap.has(hand.gameId)) gameMap.set(hand.gameId, [])
     gameMap.get(hand.gameId)!.push(hand)
   }
@@ -41,20 +45,20 @@ export function parseBetclicFile(content: string): ParsedTournament[] {
   for (const [gameId, gameHands] of gameMap) {
     gameHands.sort((a, b) => a.date.getTime() - b.date.getTime())
 
-    const first = gameHands[0]
-    const last  = gameHands[gameHands.length - 1]
+    const first    = gameHands[0]
+    const last     = gameHands[gameHands.length - 1]
     const heroName = gameHands.find(h => h.heroName)?.heroName ?? ''
 
-    const resultHand = gameHands.find(h => h.placement !== null)
-    const placement  = resultHand?.placement ?? 0
-    const prizeWon   = resultHand?.prizeWon ?? 0
-    const buyInTotal = first.buyIn
+    const resultHand  = gameHands.find(h => h.placement !== null)
+    const placement   = resultHand?.placement ?? 0
+    const prizeWon    = resultHand?.prizeWon  ?? 0
+    const buyInTotal  = first.buyIn
 
     const durationSecs = Math.max(0, Math.round((last.date.getTime() - first.date.getTime()) / 1000))
-    const totalPlayers = first.players.length
+    const totalPlayers = Math.max(...gameHands.map(h => h.players.length), 2)
 
-    const vpipCount = gameHands.filter(h => h.vpip).length
-    const pfrCount  = gameHands.filter(h => h.pfr).length
+    const vpipCount     = gameHands.filter(h => h.vpip).length
+    const pfrCount      = gameHands.filter(h => h.pfr).length
     const threeBetCount = gameHands.filter(h => h.threeBet).length
     const threeBetOpps  = gameHands.filter(h => h.threeBetOpportunity).length
 
@@ -97,19 +101,21 @@ function parseBetclicHand(block: string): BetclicHand | null {
   const preFlopSection = block.match(/\*\*\* PRE-FLOP \*\*\*([\s\S]*?)(?=\*\*\* (?:FLOP|TURN|RIVER|SHOWDOWN|SUMMARY)|$)/)?.[1] ?? ''
   const summarySection = block.match(/\*\*\* SUMMARY \*\*\*([\s\S]*)$/)?.[1] ?? ''
 
-  const gameIdMatch   = headerSection.match(/Game ID:\s*(\S+)/)
-  const gameNameMatch = headerSection.match(/Game Name:\s*(.+)/)
-  const buyInMatch    = headerSection.match(/Buy In:\s*([\d.]+)/)
+  const gameIdMatch    = headerSection.match(/Game ID:\s*(\S+)/)
+  const gameNameMatch  = headerSection.match(/Game Name:\s*(.+)/)
+  const buyInMatch     = headerSection.match(/Buy In:\s*([\d.]+)/)
   const prizePoolMatch = headerSection.match(/Prize pool:\s*([\d.]+)/)
-  const dateMatch     = headerSection.match(/Date & Time:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/)
+  const dateMatch      = headerSection.match(/Date & Time:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/)
 
   if (!gameIdMatch || !dateMatch) return null
 
-  const gameId   = gameIdMatch[1]
+  const gameId   = gameIdMatch[1].trim()
   const gameName = gameNameMatch?.[1].trim() ?? 'Spin & Rush'
   const buyIn    = parseFloat(buyInMatch?.[1] ?? '0')
   const prizePool = parseFloat(prizePoolMatch?.[1] ?? '0')
   const date     = new Date(dateMatch[1].replace(' ', 'T') + 'Z')
+
+  if (!gameId) return null
 
   const players: string[] = []
   let heroName = ''
@@ -132,7 +138,7 @@ function parseBetclicHand(block: string): BetclicHand | null {
     }
   }
 
-  // Pre-flop VPIP / PFR / 3-bet (ignore blind posts)
+  // VPIP / PFR / 3-bet from pre-flop actions (ignore blind posts)
   let vpip = false, pfr = false, threeBet = false, threeBetOpportunity = false
   if (heroName && preFlopSection) {
     let raiseCount = 0
