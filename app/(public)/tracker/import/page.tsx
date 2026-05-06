@@ -195,8 +195,8 @@ export default function ImportPage() {
       <Navbar />
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '100px 24px 80px' }}>
 
-        <Link href="/tracker" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
-          <ArrowLeft size={14} /> Retour au Tracker
+        <Link href="/tracker/dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
+          <ArrowLeft size={14} /> Retour au dashboard
         </Link>
 
         <div style={{ marginBottom: 40 }}>
