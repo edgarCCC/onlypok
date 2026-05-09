@@ -220,7 +220,7 @@ function LearnInner() {
         />
       )}
 
-      <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: BG, color: CREAM, overflow: 'hidden' }}>
         <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
           background: `radial-gradient(ellipse 70% 35% at 25% -5%, ${typeColor}10 0%, transparent 65%)` }} />
 
@@ -255,12 +255,12 @@ function LearnInner() {
           )}
         </div>
 
-        {/* ── Body grid ─────────────────────────────────────────────────────── */}
+        {/* ── Body grid — fixed height, each column scrolls independently ── */}
         <div style={{ position: 'relative', zIndex: 1, display: 'grid',
-          gridTemplateColumns: '1fr 320px', minHeight: 'calc(100vh - 52px)' }}>
+          gridTemplateColumns: '1fr 320px', flex: 1, overflow: 'hidden' }}>
 
-          {/* ════ LEFT ════ */}
-          <div style={{ padding: '24px 28px 80px', borderRight: `1px solid ${BORDER}` }}>
+          {/* ════ LEFT — scrollable ════ */}
+          <div style={{ overflowY: 'auto', padding: '24px 28px 80px', borderRight: `1px solid ${BORDER}` }}>
 
             {showBanner && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20,
@@ -532,12 +532,11 @@ function LearnInner() {
           </div>
 
           {/* ════ RIGHT — chapter sidebar ════ */}
-          <div style={{ position: 'sticky', top: 52, height: 'calc(100vh - 52px)',
-            display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
 
             {/* Header */}
             <div style={{ padding: '16px 18px 12px', borderBottom: `1px solid ${BORDER}`,
-              background: BG, position: 'sticky', top: 0, zIndex: 10, flexShrink: 0 }}>
+              background: BG, flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                   <BookOpen size={13} color={typeColor} />
