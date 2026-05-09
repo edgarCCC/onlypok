@@ -1,11 +1,11 @@
 'use client'
-import { useEffect, useState, useMemo, useRef, Suspense } from 'react'
+import { useEffect, useState, useMemo, useRef, useCallback, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import {
   ArrowLeft, Lock, CheckCircle, PlayCircle, Download,
-  ChevronRight, BookOpen, FileText, Clock, StickyNote,
+  ChevronRight, BookOpen, FileText, Clock, StickyNote, ChevronDown,
 } from 'lucide-react'
 import Link from 'next/link'
 import FourAcesLoader from '@/components/FourAcesLoader'
@@ -20,6 +20,17 @@ const DIM    = 'rgba(240,244,255,0.22)'
 const EMER   = '#10b981'
 
 type ProgressRow = { lesson_id: string; completed_at: string | null }
+
+/* ── Find next unwatched lesson in chapter order ──────────────────────────── */
+function nextUnwatched(allLessons: any[], completedIds: string[], currentId?: string): any | null {
+  if (!allLessons.length) return null
+  const startIdx = currentId ? allLessons.findIndex(l => l.id === currentId) + 1 : 0
+  return (
+    allLessons.slice(startIdx).find(l => !completedIds.includes(l.id)) ??
+    allLessons.find(l => !completedIds.includes(l.id)) ??
+    null
+  )
+}
 
 export default function LearnPage() {
   return (
@@ -36,36 +47,47 @@ function LearnInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [formation, setFormation]         = useState<any>(null)
-  const [chapters,  setChapters]          = useState<any[]>([])
-  const [hasPurchased, setHasPurchased]   = useState(false)
-  const [progress, setProgress]           = useState<ProgressRow[]>([])
-  const [currentLesson, setCurrentLesson] = useState<any>(null)
-  const [studioOpen, setStudioOpen]       = useState(false)
-  const [openChapters, setOpenChapters]   = useState<string[]>([])
-  const [loading, setLoading]             = useState(true)
-  const [marking, setMarking]             = useState(false)
-  const [tab, setTab]                     = useState<'resume' | 'notes'>('resume')
-  const [notes, setNotes]                 = useState('')
-  const [notesSaved, setNotesSaved]       = useState(true)
+  const [formation, setFormation]           = useState<any>(null)
+  const [chapters, setChapters]             = useState<any[]>([])
+  const [hasPurchased, setHasPurchased]     = useState(false)
+  const [progress, setProgress]             = useState<ProgressRow[]>([])
+  const [currentLesson, setCurrentLesson]   = useState<any>(null)
+  const [studioOpen, setStudioOpen]         = useState(false)
+  const [openChapters, setOpenChapters]     = useState<string[]>([])
+  const [loading, setLoading]               = useState(true)
+  const [marking, setMarking]               = useState(false)
+  const [tab, setTab]                       = useState<'resume' | 'notes'>('resume')
+  const [notes, setNotes]                   = useState('')
+  const [notesSaved, setNotesSaved]         = useState(true)
+  const [descExpanded, setDescExpanded]     = useState(false)
   const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const showBanner = searchParams.get('payment') === 'success'
 
-  /* ── Load ─────────────────────────────────────────────────────────────────── */
+  /* ── Load ─────────────────────────────────────────────────────────────── */
   useEffect(() => {
     if (!id || authLoading) return
     const load = async () => {
       const [{ data: f }, { data: ch }] = await Promise.all([
         supabase.from('formations').select('*, coach:profiles(username, avatar_url)').eq('id', id).single(),
-        supabase.from('formation_chapters').select('*, formation_lessons(*)').eq('formation_id', id).order('order_index'),
+        supabase.from('formation_chapters')
+          .select('*, formation_lessons(id, title, video_url, pdf_url, is_free, thumbnail_url, order_index)')
+          .eq('formation_id', id).order('order_index'),
       ])
       setFormation(f)
-      setChapters(ch ?? [])
-      if (ch?.[0]) setOpenChapters([ch[0].id])
+
+      // Sort lessons within each chapter by order_index
+      const sorted = (ch ?? []).map((c: any) => ({
+        ...c,
+        formation_lessons: [...(c.formation_lessons ?? [])].sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0)),
+      }))
+      setChapters(sorted)
+      if (sorted[0]) setOpenChapters([sorted[0].id])
 
       if (f?.content_type === 'video' && f?.video_url) {
-        setCurrentLesson({ id: f.id, title: f.title, video_url: f.video_url, is_free: f.price === 0 })
+        setCurrentLesson({ id: f.id, title: f.title, video_url: f.video_url, thumbnail_url: f.thumbnail_url, is_free: f.price === 0 })
         setStudioOpen(true)
+        setLoading(false)
+        return
       }
 
       const free = f?.price === 0
@@ -80,7 +102,20 @@ function LearnInner() {
         const purchased = !!purchase || free
         setHasPurchased(purchased)
         if (!purchased) { router.replace(`/formations/${id}`); return }
-        setProgress(prog ?? [])
+
+        const progRows: ProgressRow[] = prog ?? []
+        setProgress(progRows)
+
+        // Auto-select first unwatched lesson
+        const all = sorted.flatMap((c: any) => c.formation_lessons ?? [])
+        const completedIds = progRows.map((p: ProgressRow) => p.lesson_id)
+        const next = nextUnwatched(all, completedIds)
+        if (next) {
+          setCurrentLesson(next)
+          // Open the chapter containing this lesson
+          const parentChapter = sorted.find((c: any) => c.formation_lessons?.some((l: any) => l.id === next.id))
+          if (parentChapter) setOpenChapters([parentChapter.id])
+        }
       } else {
         if (!free) { router.replace(`/formations/${id}`); return }
       }
@@ -89,7 +124,7 @@ function LearnInner() {
     load()
   }, [id, user, authLoading, supabase, router])
 
-  /* ── Load notes from localStorage ────────────────────────────────────────── */
+  /* ── Notes localStorage ───────────────────────────────────────────────── */
   useEffect(() => {
     if (!id) return
     const key = `onlypok_notes_${id}_${currentLesson?.id ?? 'general'}`
@@ -97,26 +132,23 @@ function LearnInner() {
     setNotesSaved(true)
   }, [id, currentLesson?.id])
 
-  /* ── Auto-save notes ──────────────────────────────────────────────────────── */
   const handleNotesChange = (val: string) => {
     setNotes(val)
     setNotesSaved(false)
     if (notesTimer.current) clearTimeout(notesTimer.current)
     notesTimer.current = setTimeout(() => {
-      const key = `onlypok_notes_${id}_${currentLesson?.id ?? 'general'}`
-      localStorage.setItem(key, val)
+      localStorage.setItem(`onlypok_notes_${id}_${currentLesson?.id ?? 'general'}`, val)
       setNotesSaved(true)
     }, 800)
   }
 
-  /* ── Derived ──────────────────────────────────────────────────────────────── */
-  const completedIds  = useMemo(() => progress.map(p => p.lesson_id), [progress])
-  const allLessons    = useMemo(() => chapters.flatMap(c => c.formation_lessons ?? []), [chapters])
-  const totalLessons  = allLessons.length
-  const doneLessons   = completedIds.length
-  const progressPct   = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0
+  /* ── Derived ──────────────────────────────────────────────────────────── */
+  const completedIds = useMemo(() => progress.map(p => p.lesson_id), [progress])
+  const allLessons   = useMemo(() => chapters.flatMap(c => c.formation_lessons ?? []), [chapters])
+  const totalLessons = allLessons.length
+  const doneLessons  = completedIds.length
+  const progressPct  = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0
 
-  /* Last 4 completed lessons with lesson title looked up from chapters */
   const lessonMap = useMemo(() => {
     const m = new Map<string, { title: string; chapterTitle: string }>()
     chapters.forEach(ch => (ch.formation_lessons ?? []).forEach((l: any) =>
@@ -127,33 +159,48 @@ function LearnInner() {
 
   const recentlyDone = useMemo(() =>
     progress.slice(0, 4).map(p => ({ ...p, ...lessonMap.get(p.lesson_id) })).filter(r => r.title),
-    [progress, lessonMap])
+  [progress, lessonMap])
 
-  /* ── Actions ──────────────────────────────────────────────────────────────── */
+  /* ── Actions ──────────────────────────────────────────────────────────── */
   const toggleChapter = (cid: string) =>
     setOpenChapters(prev => prev.includes(cid) ? prev.filter(x => x !== cid) : [...prev, cid])
 
-  const handleComplete = async (lessonId: string) => {
+  const handleComplete = useCallback(async (lessonId: string) => {
     if (!user || marking) return
     setMarking(true)
     const done = completedIds.includes(lessonId)
+
     if (done) {
       await supabase.from('formation_progress').delete().eq('lesson_id', lessonId).eq('user_id', user.id)
       setProgress(prev => prev.filter(p => p.lesson_id !== lessonId))
     } else {
       const now = new Date().toISOString()
-      await supabase.from('formation_progress').upsert({ user_id: user.id, lesson_id: lessonId, formation_id: id, completed: true, completed_at: now })
-      setProgress(prev => [{ lesson_id: lessonId, completed_at: now }, ...prev])
+      await supabase.from('formation_progress').upsert({
+        user_id: user.id, lesson_id: lessonId, formation_id: id,
+        completed: true, completed_at: now,
+      })
+      const newProgress = [{ lesson_id: lessonId, completed_at: now }, ...progress]
+      setProgress(newProgress)
+
+      // Auto-advance to next unwatched lesson
+      const newCompletedIds = newProgress.map(p => p.lesson_id)
+      const next = nextUnwatched(allLessons, newCompletedIds, lessonId)
+      if (next) {
+        setCurrentLesson(next)
+        const parentChapter = chapters.find(c => c.formation_lessons?.some((l: any) => l.id === next.id))
+        if (parentChapter) setOpenChapters(prev => prev.includes(parentChapter.id) ? prev : [...prev, parentChapter.id])
+      }
     }
     setMarking(false)
-  }
+  }, [user, marking, completedIds, progress, allLessons, chapters, supabase, id])
 
-  const selectLesson = (lesson: any) => {
+  const selectLesson = useCallback((lesson: any) => {
     if (!lesson.is_free && !hasPurchased) return
     setCurrentLesson(lesson)
     if (lesson.video_url) setStudioOpen(true)
-  }
+  }, [hasPurchased])
 
+  /* ── Render ───────────────────────────────────────────────────────────── */
   if (loading || !formation) return <FourAcesLoader />
 
   const typeColor  = formation.content_type === 'video' ? '#06b6d4' : '#7c3aed'
@@ -161,27 +208,29 @@ function LearnInner() {
 
   const fmtDate = (iso: string | null) => {
     if (!iso) return ''
-    const d = new Date(iso)
-    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+    return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
   }
 
   return (
     <>
       {studioOpen && currentLesson?.video_url && (
-        <VideoStudio video={{ url: currentLesson.video_url, title: currentLesson.title }} onClose={() => setStudioOpen(false)} />
+        <VideoStudio
+          video={{ url: currentLesson.video_url, title: currentLesson.title }}
+          onClose={() => setStudioOpen(false)}
+        />
       )}
 
       <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
         <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
           background: `radial-gradient(ellipse 70% 35% at 25% -5%, ${typeColor}10 0%, transparent 65%)` }} />
 
-        {/* ── Top bar ─────────────────────────────────────────────────────────── */}
+        {/* ── Top bar ───────────────────────────────────────────────────────── */}
         <div style={{ position: 'sticky', top: 0, zIndex: 50, height: 52,
-          borderBottom: `1px solid ${BORDER}`, background: 'rgba(5,7,9,0.88)',
+          borderBottom: `1px solid ${BORDER}`, background: 'rgba(5,7,9,0.9)',
           backdropFilter: 'blur(20px)', display: 'flex', alignItems: 'center', gap: 14, padding: '0 24px' }}>
           <Link href={`/formations/${id}`}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, color: SILVER, textDecoration: 'none',
-              fontSize: 12, fontWeight: 500, flexShrink: 0, transition: 'color 0.15s' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, color: SILVER,
+              textDecoration: 'none', fontSize: 12, fontWeight: 500, flexShrink: 0 }}
             onMouseEnter={e => (e.currentTarget.style.color = CREAM)}
             onMouseLeave={e => (e.currentTarget.style.color = SILVER)}>
             <ArrowLeft size={13} /> Retour
@@ -200,20 +249,19 @@ function LearnInner() {
                   transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)',
                   boxShadow: progressPct > 0 ? `0 0 6px ${typeColor}80` : 'none' }} />
               </div>
-              <span style={{ fontSize: 11, fontWeight: 700, minWidth: 28, textAlign: 'right',
+              <span style={{ fontSize: 11, fontWeight: 700, minWidth: 28,
                 color: progressPct === 100 ? EMER : typeColor }}>{progressPct}%</span>
             </div>
           )}
         </div>
 
-        {/* ── Body grid ───────────────────────────────────────────────────────── */}
+        {/* ── Body grid ─────────────────────────────────────────────────────── */}
         <div style={{ position: 'relative', zIndex: 1, display: 'grid',
           gridTemplateColumns: '1fr 320px', minHeight: 'calc(100vh - 52px)' }}>
 
           {/* ════ LEFT ════ */}
           <div style={{ padding: '24px 28px 80px', borderRight: `1px solid ${BORDER}` }}>
 
-            {/* Payment banner */}
             {showBanner && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20,
                 background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)',
@@ -226,16 +274,42 @@ function LearnInner() {
               </div>
             )}
 
-            {/* ── Lesson player / placeholder ── */}
+            {/* ── Lesson card or placeholder ── */}
             {currentLesson ? (
               <div style={{ marginBottom: 20, background: SURF, borderRadius: 14,
                 border: `1px solid ${typeColor}22`, overflow: 'hidden' }}>
                 <div style={{ height: 2, background: `linear-gradient(90deg, ${typeColor}, ${typeColor}50, transparent)` }} />
-                <div style={{ padding: '16px 20px' }}>
+                {/* Thumbnail banner */}
+                {(currentLesson.thumbnail_url || formation.thumbnail_url) && (
+                  <div style={{ position: 'relative', height: 160, overflow: 'hidden', background: '#0a0c12' }}>
+                    <img
+                      src={currentLesson.thumbnail_url ?? formation.thumbnail_url}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }}
+                    />
+                    <div style={{ position: 'absolute', inset: 0,
+                      background: `linear-gradient(to right, ${typeColor}20 0%, transparent 40%, rgba(5,7,9,0.7) 100%)` }} />
+                    {currentLesson.video_url && (
+                      <button onClick={() => setStudioOpen(true)}
+                        style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+                          justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}>
+                        <div style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.8)',
+                          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          transition: 'transform 0.2s, background 0.2s' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.1)'; (e.currentTarget as HTMLDivElement).style.background = `${typeColor}90` }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.background = 'rgba(0,0,0,0.5)' }}>
+                          <PlayCircle size={22} color="#fff" fill="rgba(255,255,255,0.9)" />
+                        </div>
+                      </button>
+                    )}
+                  </div>
+                )}
+                <div style={{ padding: '14px 18px' }}>
                   <p style={{ fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
-                    color: typeColor, fontWeight: 700, marginBottom: 4 }}>En cours</p>
-                  <h2 style={{ fontSize: 17, fontWeight: 700, color: CREAM, letterSpacing: '-0.3px',
-                    lineHeight: 1.3, marginBottom: 14 }}>{currentLesson.title}</h2>
+                    color: typeColor, fontWeight: 700, marginBottom: 3 }}>En cours</p>
+                  <h2 style={{ fontSize: 16, fontWeight: 700, color: CREAM, letterSpacing: '-0.3px',
+                    lineHeight: 1.3, marginBottom: 12 }}>{currentLesson.title}</h2>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     {currentLesson.video_url && (
                       <button onClick={() => setStudioOpen(true)}
@@ -251,10 +325,8 @@ function LearnInner() {
                     {currentLesson.pdf_url && (
                       <a href={currentLesson.pdf_url} download
                         style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px',
-                          borderRadius: 8, border: `1px solid ${BORDER}`, color: SILVER, fontSize: 12,
-                          textDecoration: 'none', transition: 'border-color 0.15s' }}
-                        onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.borderColor = `${typeColor}50`)}
-                        onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.borderColor = BORDER)}>
+                          borderRadius: 8, border: `1px solid ${BORDER}`, color: SILVER,
+                          fontSize: 12, textDecoration: 'none' }}>
                         <Download size={12} /> PDF
                       </a>
                     )}
@@ -262,10 +334,10 @@ function LearnInner() {
                       style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px',
                         borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, marginLeft: 'auto',
                         border: `1px solid ${lessonDone ? 'rgba(16,185,129,0.3)' : BORDER}`,
-                        background: lessonDone ? 'rgba(16,185,129,0.07)' : 'transparent',
+                        background: lessonDone ? 'rgba(16,185,129,0.08)' : 'transparent',
                         color: lessonDone ? EMER : SILVER, transition: 'all 0.2s', opacity: marking ? 0.5 : 1 }}>
                       <CheckCircle size={12} />
-                      {lessonDone ? 'Terminé' : 'Marquer terminé'}
+                      {lessonDone ? 'Vu ✓' : 'Noté comme vu'}
                     </button>
                   </div>
                 </div>
@@ -292,12 +364,12 @@ function LearnInner() {
               </div>
             )}
 
-            {/* ── Formation title row ── */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
+            {/* ── Formation meta ── */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
               {formation.variant && (
                 <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase',
                   padding: '3px 8px', borderRadius: 5, background: `${typeColor}14`, color: typeColor,
-                  border: `1px solid ${typeColor}28`, flexShrink: 0, marginTop: 3 }}>
+                  border: `1px solid ${typeColor}28`, flexShrink: 0, marginTop: 4 }}>
                   {formation.variant}
                 </span>
               )}
@@ -312,7 +384,7 @@ function LearnInner() {
             </p>
 
             {/* ── Tabs ── */}
-            <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${BORDER}`, marginBottom: 20 }}>
+            <div style={{ display: 'flex', borderBottom: `1px solid ${BORDER}`, marginBottom: 20 }}>
               {(['resume', 'notes'] as const).map(t => {
                 const active = tab === t
                 const label  = t === 'resume' ? 'Résumé' : 'Mes notes'
@@ -320,11 +392,12 @@ function LearnInner() {
                 return (
                   <button key={t} onClick={() => setTab(t)}
                     style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                      background: 'none', border: 'none', borderBottom: `2px solid ${active ? typeColor : 'transparent'}`,
-                      color: active ? typeColor : DIM, fontSize: 13, fontWeight: active ? 700 : 500,
-                      cursor: 'pointer', marginBottom: -1, transition: 'color 0.15s' }}>
-                    <Icon size={13} />
-                    {label}
+                      background: 'none', border: 'none',
+                      borderBottom: `2px solid ${active ? typeColor : 'transparent'}`,
+                      color: active ? typeColor : DIM, fontSize: 13,
+                      fontWeight: active ? 700 : 500, cursor: 'pointer',
+                      marginBottom: -1, transition: 'color 0.15s' }}>
+                    <Icon size={13} /> {label}
                   </button>
                 )
               })}
@@ -335,15 +408,13 @@ function LearnInner() {
               <div>
                 {/* Progress card */}
                 <div style={{ background: SURF, border: `1px solid ${BORDER}`, borderRadius: 12,
-                  padding: '16px 20px', marginBottom: 16, display: 'grid',
-                  gridTemplateColumns: 'auto 1fr auto', gap: '0 20px', alignItems: 'center' }}>
-                  {/* Big % */}
+                  padding: '16px 20px', marginBottom: 16,
+                  display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '0 20px', alignItems: 'center' }}>
                   <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: 28, fontWeight: 900, color: progressPct === 100 ? EMER : typeColor,
-                      letterSpacing: '-1px', lineHeight: 1 }}>{progressPct}%</p>
+                    <p style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1px', lineHeight: 1,
+                      color: progressPct === 100 ? EMER : typeColor }}>{progressPct}%</p>
                     <p style={{ fontSize: 10, color: DIM, marginTop: 2 }}>complété</p>
                   </div>
-                  {/* Bar + stats */}
                   <div>
                     <div style={{ height: 5, background: 'rgba(255,255,255,0.05)', borderRadius: 99, overflow: 'hidden', marginBottom: 6 }}>
                       <div style={{ height: '100%', width: `${progressPct}%`, borderRadius: 99,
@@ -352,12 +423,14 @@ function LearnInner() {
                         boxShadow: progressPct > 0 ? `0 0 8px ${typeColor}55` : 'none' }} />
                     </div>
                     <p style={{ fontSize: 11, color: DIM }}>
-                      {doneLessons} / {totalLessons} leçons{doneLessons === totalLessons && totalLessons > 0 ? ' — 🎉 Formation terminée !' : ''}
+                      {doneLessons} / {totalLessons} leçons
+                      {doneLessons === totalLessons && totalLessons > 0 ? ' — Formation terminée !' : ''}
                     </p>
                   </div>
-                  {/* Remaining */}
                   <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: 18, fontWeight: 800, color: SILVER, lineHeight: 1 }}>{totalLessons - doneLessons}</p>
+                    <p style={{ fontSize: 18, fontWeight: 800, color: SILVER, lineHeight: 1 }}>
+                      {totalLessons - doneLessons}
+                    </p>
                     <p style={{ fontSize: 10, color: DIM, marginTop: 2 }}>restantes</p>
                   </div>
                 </div>
@@ -366,21 +439,22 @@ function LearnInner() {
                 {recentlyDone.length > 0 && (
                   <div style={{ marginBottom: 16 }}>
                     <p style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
-                      color: DIM, fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Clock size={11} /> Dernières leçons complétées
+                      color: DIM, fontWeight: 700, marginBottom: 10,
+                      display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Clock size={11} /> Dernières leçons vues
                     </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      {recentlyDone.map((r, i) => (
+                      {recentlyDone.map(r => (
                         <button key={r.lesson_id}
                           onClick={() => { const l = allLessons.find((x: any) => x.id === r.lesson_id); if (l) selectLesson(l) }}
                           style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
                             borderRadius: 9, background: SURF, border: `1px solid ${BORDER}`,
-                            cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s, background 0.15s' }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = `${typeColor}30`; e.currentTarget.style.background = `${typeColor}06` }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.background = SURF }}>
-                          <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(16,185,129,0.1)',
-                            border: '1px solid rgba(16,185,129,0.22)', display: 'flex', alignItems: 'center',
-                            justifyContent: 'center', flexShrink: 0 }}>
+                            cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s' }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = `${typeColor}30`)}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = BORDER)}>
+                          <div style={{ width: 22, height: 22, borderRadius: 6,
+                            background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.22)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <CheckCircle size={11} color={EMER} />
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -399,17 +473,28 @@ function LearnInner() {
                   </div>
                 )}
 
-                {/* Description */}
+                {/* Description with "Voir plus" */}
                 {formation.description && (
                   <div style={{ padding: '14px 16px', borderRadius: 10,
                     background: SURF, border: `1px solid ${BORDER}` }}>
                     <p style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
                       color: DIM, fontWeight: 700, marginBottom: 8 }}>À propos</p>
                     <p style={{ fontSize: 13, color: SILVER, lineHeight: 1.75,
-                      display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden' }}>
+                      ...(descExpanded ? {} : {
+                        display: '-webkit-box', WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                      }) }}>
                       {formation.description}
                     </p>
+                    {formation.description.length > 200 && (
+                      <button onClick={() => setDescExpanded(v => !v)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8,
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          fontSize: 12, fontWeight: 600, color: typeColor, padding: 0 }}>
+                        <ChevronDown size={13} style={{ transform: descExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                        {descExpanded ? 'Réduire' : 'Voir plus'}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -421,8 +506,8 @@ function LearnInner() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                   <p style={{ fontSize: 12, color: DIM }}>
                     {currentLesson
-                      ? <>Notes pour <span style={{ color: SILVER, fontWeight: 600 }}>{currentLesson.title}</span></>
-                      : 'Notes générales de la formation'}
+                      ? <>Notes · <span style={{ color: SILVER, fontWeight: 600 }}>{currentLesson.title}</span></>
+                      : 'Notes générales'}
                   </p>
                   <span style={{ fontSize: 10, color: notesSaved ? EMER : DIM, transition: 'color 0.3s' }}>
                     {notesSaved ? '✓ Sauvegardé' : 'Sauvegarde…'}
@@ -431,8 +516,8 @@ function LearnInner() {
                 <textarea
                   value={notes}
                   onChange={e => handleNotesChange(e.target.value)}
-                  placeholder={`Tes notes${currentLesson ? ` sur "${currentLesson.title}"` : ''}…\n\nPoints clés, concepts importants, questions à poser…`}
-                  style={{ width: '100%', minHeight: 260, background: SURF, border: `1px solid ${BORDER}`,
+                  placeholder={`Tes notes${currentLesson ? ` sur "${currentLesson.title}"` : ''}…\n\nPoints clés, concepts importants, questions…`}
+                  style={{ width: '100%', minHeight: 240, background: SURF, border: `1px solid ${BORDER}`,
                     borderRadius: 12, padding: '14px 16px', color: CREAM, fontSize: 13, lineHeight: 1.7,
                     resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
                     transition: 'border-color 0.2s' }}
@@ -440,7 +525,7 @@ function LearnInner() {
                   onBlur={e => (e.currentTarget.style.borderColor = BORDER)}
                 />
                 <p style={{ fontSize: 11, color: DIM, marginTop: 8 }}>
-                  Les notes sont sauvegardées localement sur cet appareil.
+                  Sauvegardées localement. Change de leçon pour des notes séparées par leçon.
                 </p>
               </div>
             )}
@@ -458,7 +543,7 @@ function LearnInner() {
                   <BookOpen size={13} color={typeColor} />
                   <span style={{ fontSize: 12, fontWeight: 700, color: CREAM }}>Sommaire</span>
                 </div>
-                <span style={{ fontSize: 10, color: DIM }}>{chapters.length} ch.</span>
+                <span style={{ fontSize: 10, color: DIM }}>{chapters.length} ch. · {totalLessons} leçons</span>
               </div>
             </div>
 
@@ -490,8 +575,9 @@ function LearnInner() {
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {chapter.title}
                         </p>
-                        <p style={{ fontSize: 10, color: allDone ? EMER : done > 0 ? typeColor : DIM, marginTop: 1 }}>
-                          {done}/{lessons.length}
+                        <p style={{ fontSize: 10, marginTop: 1,
+                          color: allDone ? EMER : done > 0 ? typeColor : DIM }}>
+                          {done}/{lessons.length} vues
                         </p>
                       </div>
                       <ChevronRight size={12} color={DIM} style={{
@@ -499,43 +585,72 @@ function LearnInner() {
                         transition: 'transform 0.2s', flexShrink: 0 }} />
                     </button>
 
+                    {/* Lessons with thumbnails */}
                     {isOpen && lessons.map((lesson: any) => {
                       const locked = !lesson.is_free && !hasPurchased
                       const done   = completedIds.includes(lesson.id)
                       const active = currentLesson?.id === lesson.id
+                      const thumb  = lesson.thumbnail_url ?? formation.thumbnail_url
 
                       return (
                         <button key={lesson.id} onClick={() => selectLesson(lesson)} disabled={locked}
-                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 9,
-                            padding: '9px 18px 9px 32px',
-                            background: active ? `${typeColor}10` : 'transparent',
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '8px 18px 8px 14px',
+                            background: active ? `${typeColor}0e` : 'transparent',
                             border: 'none', borderLeft: `2px solid ${active ? typeColor : 'transparent'}`,
                             cursor: locked ? 'not-allowed' : 'pointer', textAlign: 'left',
-                            opacity: locked ? 0.38 : 1, transition: 'background 0.15s' }}
+                            opacity: locked ? 0.35 : 1, transition: 'background 0.15s' }}
                           onMouseEnter={e => { if (!locked && !active) e.currentTarget.style.background = SURF }}
                           onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}>
-                          <div style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: done ? 'rgba(16,185,129,0.1)' : active ? `${typeColor}15` : 'transparent',
-                            border: `1px solid ${done ? 'rgba(16,185,129,0.28)' : active ? `${typeColor}38` : BORDER}` }}>
-                            {done
-                              ? <CheckCircle size={9} color={EMER} />
-                              : locked
-                                ? <Lock size={8} color={DIM} />
-                                : <PlayCircle size={9} color={active ? typeColor : DIM} />
-                            }
+
+                          {/* Thumbnail */}
+                          <div style={{ width: 52, height: 30, borderRadius: 5, flexShrink: 0, overflow: 'hidden',
+                            background: '#0d0f15', border: `1px solid ${active ? `${typeColor}40` : BORDER}`,
+                            position: 'relative', transition: 'border-color 0.15s' }}>
+                            {thumb && (
+                              <img src={thumb} alt=""
+                                style={{ width: '100%', height: '100%', objectFit: 'cover',
+                                  opacity: done ? 0.4 : active ? 0.7 : 0.55 }} />
+                            )}
+                            {/* Status overlay icon */}
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex',
+                              alignItems: 'center', justifyContent: 'center' }}>
+                              {done ? (
+                                <div style={{ width: 16, height: 16, borderRadius: '50%',
+                                  background: 'rgba(16,185,129,0.9)', display: 'flex',
+                                  alignItems: 'center', justifyContent: 'center' }}>
+                                  <CheckCircle size={9} color="#fff" />
+                                </div>
+                              ) : locked ? (
+                                <Lock size={10} color={SILVER} />
+                              ) : active ? (
+                                <div style={{ width: 16, height: 16, borderRadius: '50%',
+                                  background: `${typeColor}cc`, display: 'flex',
+                                  alignItems: 'center', justifyContent: 'center' }}>
+                                  <PlayCircle size={9} color="#fff" fill="white" />
+                                </div>
+                              ) : (
+                                <PlayCircle size={12} color="rgba(255,255,255,0.5)" />
+                              )}
+                            </div>
                           </div>
-                          <span style={{ flex: 1, fontSize: 11, lineHeight: 1.4,
-                            color: active ? typeColor : done ? SILVER : CREAM,
-                            fontWeight: active ? 600 : 400,
-                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {lesson.title}
-                          </span>
-                          {lesson.is_free && !hasPurchased && (
-                            <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.1em',
-                              color: '#06b6d4', border: '1px solid rgba(6,182,212,0.28)',
-                              padding: '2px 5px', borderRadius: 3, flexShrink: 0 }}>FREE</span>
-                          )}
+
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 11, lineHeight: 1.35,
+                              color: active ? typeColor : done ? DIM : CREAM,
+                              fontWeight: active ? 600 : 400,
+                              overflow: 'hidden', textOverflow: 'ellipsis',
+                              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                              {lesson.title}
+                            </p>
+                            {lesson.is_free && !hasPurchased && (
+                              <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.1em',
+                                color: '#06b6d4', border: '1px solid rgba(6,182,212,0.28)',
+                                padding: '1px 5px', borderRadius: 3, marginTop: 3, display: 'inline-block' }}>
+                                FREE
+                              </span>
+                            )}
+                          </div>
                         </button>
                       )
                     })}
@@ -553,9 +668,10 @@ function LearnInner() {
                     style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover',
                       border: `1px solid ${typeColor}35` }} />
                 ) : (
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${typeColor}14`,
-                    border: `1px solid ${typeColor}28`, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', fontSize: 11, fontWeight: 700, color: typeColor, flexShrink: 0 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%',
+                    background: `${typeColor}14`, border: `1px solid ${typeColor}28`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 700, color: typeColor, flexShrink: 0 }}>
                     {formation.coach.username[0].toUpperCase()}
                   </div>
                 )}
