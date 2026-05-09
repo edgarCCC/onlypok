@@ -356,7 +356,7 @@ export default function CoachDashboard() {
             { key: 'alpha',    label: 'A → Z' },
           ] as const).map(o => (
             <button key={o.key} onClick={() => setSort(o.key)}
-              style={{ padding: '5px 12px', borderRadius: 8, border: `1px solid ${sort === o.key ? activeTab.color + '50' : 'rgba(232,228,220,0.08)'}`, background: sort === o.key ? `${activeTab.color}18` : 'transparent', color: sort === o.key ? activeTab.color : SILVER, fontSize: 11, fontWeight: sort === o.key ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+              style={{ padding: '9px 12px', minHeight: 36, borderRadius: 8, border: `1px solid ${sort === o.key ? activeTab.color + '50' : 'rgba(232,228,220,0.08)'}`, background: sort === o.key ? `${activeTab.color}18` : 'transparent', color: sort === o.key ? activeTab.color : SILVER, fontSize: 11, fontWeight: sort === o.key ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
               {o.label}
             </button>
           ))}
@@ -420,17 +420,17 @@ export default function CoachDashboard() {
                   {/* Actions */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                     <button onClick={() => togglePublish(f.id, f.published)} title={f.published ? 'Dépublier' : 'Publier'}
-                      style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid rgba(240,244,255,0.1)', background: 'transparent', color: f.published ? CYAN : SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
+                      style={{ width: 40, height: 40, borderRadius: 8, border: '1px solid rgba(240,244,255,0.1)', background: 'transparent', color: f.published ? CYAN : SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
                       {f.published ? <Eye size={15} /> : <EyeOff size={15} />}
                     </button>
                     <Link href={`/coach/formations/${f.id}`} title="Modifier"
-                      style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', transition: 'all 0.15s' }}
+                      style={{ width: 40, height: 40, borderRadius: 8, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', transition: 'all 0.15s' }}
                       onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = CREAM}
                       onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = SILVER}>
                       <Edit2 size={15} />
                     </Link>
                     <button onClick={() => setDeleteModal({ id: f.id, title: f.title })} title="Supprimer"
-                      style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
+                      style={{ width: 40, height: 40, borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,0.5)' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(239,68,68,0.5)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,0.2)' }}>
                       <Trash2 size={15} />

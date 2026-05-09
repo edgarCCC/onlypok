@@ -46,7 +46,7 @@ export default function CoachSettingsPage() {
 
       {section('Session', <>
         {row(<LogOut size={18}/>, 'Se déconnecter', 'Fermer cette session',
-          <button onClick={signOut} style={{ fontSize: 13, fontWeight: 600, color: '#f0f4ff', background: '#7c3aed', border: 'none', borderRadius: 8, padding: '8px 18px', cursor: 'pointer' }}>
+          <button onClick={signOut} style={{ fontSize: 13, fontWeight: 600, color: '#f0f4ff', background: '#7c3aed', border: 'none', borderRadius: 8, padding: '12px 18px', minHeight: 44, cursor: 'pointer' }}>
             Déconnexion
           </button>
         )}

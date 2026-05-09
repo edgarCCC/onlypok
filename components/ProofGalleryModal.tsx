@@ -65,17 +65,28 @@ export default function ProofGalleryModal({
       {/* ── Bouton fermer flottant ── */}
       <button onClick={onClose} style={{
         position: 'fixed', top: 24, left: 40, zIndex: 2100,
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '8px 18px', borderRadius: 99,
-        background: 'rgba(232,228,220,0.07)',
-        border: '1px solid rgba(232,228,220,0.12)',
-        color: CREAM, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-        backdropFilter: 'blur(12px)',
-        transition: 'background 0.15s',
+        display: 'flex', alignItems: 'center', gap: 7,
+        padding: '7px 16px 7px 12px', borderRadius: 99,
+        background: 'rgba(232,228,220,0.06)',
+        border: '1px solid rgba(232,228,220,0.1)',
+        color: CREAM, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+        backdropFilter: 'blur(16px)',
+        transition: 'background 0.15s, border-color 0.15s, transform 0.15s',
+        letterSpacing: '0.01em',
       }}
-        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.13)'}
-        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.07)'}>
-        <X size={14} /> Fermer
+        onMouseEnter={e => {
+          const b = e.currentTarget as HTMLButtonElement
+          b.style.background = 'rgba(232,228,220,0.12)'
+          b.style.borderColor = 'rgba(232,228,220,0.22)'
+          b.style.transform = 'translateY(-1px)'
+        }}
+        onMouseLeave={e => {
+          const b = e.currentTarget as HTMLButtonElement
+          b.style.background = 'rgba(232,228,220,0.06)'
+          b.style.borderColor = 'rgba(232,228,220,0.1)'
+          b.style.transform = 'translateY(0)'
+        }}>
+        <X size={13} /> Fermer
       </button>
 
       {/* ── Contenu scrollable ── */}
@@ -104,18 +115,28 @@ export default function ProofGalleryModal({
                     style={{
                       background: 'transparent', border: 'none', cursor: 'pointer',
                       textAlign: 'left', padding: 0,
-                      display: 'flex', flexDirection: 'column', gap: 10,
+                      display: 'flex', flexDirection: 'column', gap: 9,
+                      transition: 'transform 0.2s cubic-bezier(0.16,1,0.3,1)',
+                    }}
+                    onMouseEnter={e => {
+                      const btn = e.currentTarget as HTMLButtonElement
+                      btn.style.transform = 'translateY(-3px)'
+                      const img = btn.querySelector<HTMLDivElement>('.cat-thumb')
+                      if (img) { img.style.borderColor = 'rgba(232,228,220,0.28)'; img.style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)' }
+                    }}
+                    onMouseLeave={e => {
+                      const btn = e.currentTarget as HTMLButtonElement
+                      btn.style.transform = 'translateY(0)'
+                      const img = btn.querySelector<HTMLDivElement>('.cat-thumb')
+                      if (img) { img.style.borderColor = 'rgba(232,228,220,0.1)'; img.style.boxShadow = 'none' }
                     }}>
-                    <div style={{
+                    <div className="cat-thumb" style={{
                       width: '100%', aspectRatio: '4/3',
-                      borderRadius: 12, overflow: 'hidden',
+                      borderRadius: 10, overflow: 'hidden',
                       background: firstProof ? '#0f1218' : 'rgba(232,228,220,0.04)',
                       border: '1px solid rgba(232,228,220,0.1)',
-                      transition: 'opacity 0.2s',
-                    }}
-                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.opacity = '0.8'}
-                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.opacity = '1'}
-                    >
+                      transition: 'border-color 0.2s, box-shadow 0.2s',
+                    }}>
                       {firstProof
                         ? <img src={firstProof.url} alt={cat.label}
                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -124,7 +145,7 @@ export default function ProofGalleryModal({
                           </div>
                       }
                     </div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: CREAM, lineHeight: 1.3 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: CREAM, lineHeight: 1.3 }}>
                       {cat.label}
                     </span>
                   </button>
@@ -220,9 +241,11 @@ export default function ProofGalleryModal({
 
       <style>{`
         @keyframes galleryIn {
-          from { opacity: 0; transform: scale(0.99); }
-          to   { opacity: 1; transform: scale(1); }
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
+        .cat-thumb img { transition: transform 0.35s cubic-bezier(0.16,1,0.3,1); }
+        .cat-thumb:hover img { transform: scale(1.04); }
       `}</style>
     </div>
   )

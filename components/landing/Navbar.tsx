@@ -59,7 +59,7 @@ export default function Navbar() {
     if (line) gsap.to(line, { scaleX: 0, duration: 0.2, ease: 'power2.in', transformOrigin: 'right' })
   }
 
-  const spaceHref = role === 'coach' ? '/coach/dashboard' : '/formations'
+  const spaceHref = role === 'coach' ? '/coach/dashboard' : '/dashboard'
 
   return (
     <nav
