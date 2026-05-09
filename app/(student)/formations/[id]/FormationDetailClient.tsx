@@ -1154,10 +1154,7 @@ export default function FormationDetailClient({
   const [headerFilters, setHeaderFilters]       = useState<Record<string,string>>({})
   const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false)
   const searchRef   = useRef<HTMLDivElement>(null)
-  const ctaRef      = useRef<HTMLDivElement>(null)
-  const [ctaVisible, setCtaVisible] = useState(true)
-  const [slotPast,   setSlotPast]   = useState(false)
-  const [ctaRect,    setCtaRect]    = useState<{ right: number; width: number } | null>(null)
+  const [slotPast, setSlotPast] = useState(false)
 
   /* video preview */
   const [showDescModal,  setShowDescModal]  = useState(false)
@@ -1193,25 +1190,6 @@ export default function FormationDetailClient({
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [])
-
-  useEffect(() => {
-    if (!ctaRef.current) return
-    const obs = new IntersectionObserver(([e]) => setCtaVisible(e.isIntersecting), { threshold: 0.1 })
-    obs.observe(ctaRef.current)
-    return () => obs.disconnect()
-  }, [])
-
-  useEffect(() => {
-    const update = () => {
-      if (!ctaRef.current) return
-      const r = ctaRef.current.getBoundingClientRect()
-      setCtaRect({ right: window.innerWidth - r.right, width: r.width })
-    }
-    update()
-    window.addEventListener('resize', update)
-    window.addEventListener('scroll', update, { passive: true })
-    return () => { window.removeEventListener('resize', update); window.removeEventListener('scroll', update) }
   }, [])
 
   useEffect(() => {
@@ -1438,64 +1416,19 @@ export default function FormationDetailClient({
         transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
       }}>
 
-        {/* CTA compact — positionné exactement au-dessus de la carte sidebar */}
-        {!ctaVisible && ctaRect && (
-          <button
-            onClick={handleCTA}
-            disabled={paying}
-            style={{
-              position: 'absolute',
-              right: ctaRect.right,
-              width: ctaRect.width,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '9px 10px 9px 20px',
-              borderRadius: 40,
-              border: 'none',
-              background: typeColor,
-              color: '#fff',
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: paying ? 'wait' : 'pointer',
-              boxShadow: `0 4px 20px ${typeColor}55`,
-              animation: 'ctaPillIn 0.22s cubic-bezier(0.22,1,0.36,1)',
-              whiteSpace: 'nowrap',
-              zIndex: 10,
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.85' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1' }}>
-            <span>
-              {paying
-                ? 'Redirection…'
-                : hasPurchased
-                  ? (contentType === 'coaching' ? 'Voir mes sessions' : 'Continuer')
-                  : contentType === 'coaching' && !calSelSlot
-                    ? `Choisir un créneau`
-                    : formation.price === 0
-                      ? 'Accéder gratuitement'
-                      : contentType === 'coaching'
-                        ? `Réserver · ${applyWeekend(currentPack?.price ?? formation.price)}€`
-                        : `Acheter · ${formation.price}€`
-              }
-            </span>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'rgba(0,0,0,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 15, flexShrink: 0,
-            }}>
-              {contentType === 'coaching' && !calSelSlot && !hasPurchased ? '↑' : '→'}
-            </div>
-          </button>
-        )}
         <div style={{ display: 'flex', alignItems: 'center', height: 80, padding: '0 40px', gap: 24 }}>
 
-          {/* Logo */}
+          {/* Logo + badge Élève */}
           <Link href="/formations" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-syne, sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
           </Link>
+          {user && (
+            <span style={{ fontSize: 9, fontWeight: 700, color: '#7c3aed', padding: '2px 7px',
+              border: '1px solid rgba(124,58,237,0.35)', borderRadius: 4, letterSpacing: '0.05em', flexShrink: 0 }}>
+              Élève
+            </span>
+          )}
 
           {/* Centre : tabs ↔ pilule compacte */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
@@ -1552,14 +1485,25 @@ export default function FormationDetailClient({
           {/* Actions droite */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
 
-            <Link href="/register?role=coach"
-              style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none',
-                padding: '8px 16px', border: '1px solid rgba(240,244,255,0.08)',
-                borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(232,228,220,0.25)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(240,244,255,0.08)' }}>
-              Devenir coach
-            </Link>
+            {user ? (
+              <Link href="/dashboard"
+                style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none',
+                  padding: '8px 16px', border: '1px solid rgba(240,244,255,0.08)',
+                  borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(232,228,220,0.25)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(240,244,255,0.08)' }}>
+                Mon espace
+              </Link>
+            ) : (
+              <Link href="/register?role=coach"
+                style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none',
+                  padding: '8px 16px', border: '1px solid rgba(240,244,255,0.08)',
+                  borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(232,228,220,0.25)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(240,244,255,0.08)' }}>
+                Devenir coach
+              </Link>
+            )}
             <button
               style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
@@ -2465,7 +2409,7 @@ export default function FormationDetailClient({
         </div>
 
         {/* ── Colonne droite sticky ── */}
-        <div ref={ctaRef} style={{ position: 'sticky', top: 200 }}>
+        <div style={{ position: 'sticky', top: 200 }}>
           <div style={{
             background: 'linear-gradient(180deg, #0e1118 0%, #0a0d12 100%)',
             border: '1px solid rgba(240,244,255,0.09)',
