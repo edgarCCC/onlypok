@@ -5,7 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 export async function POST(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
   try {
-    const { formation_id, pack_index } = await req.json()
+    const { formation_id, pack_index, scheduled_at } = await req.json()
 
     const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -29,16 +29,34 @@ export async function POST(req: NextRequest) {
       if (existing) return NextResponse.json({ error: 'Already purchased' }, { status: 409 })
     }
 
-    /* price in cents */
+    /* weekend multiplier — applied server-side so it can't be bypassed */
+    const isCoachingType = formation.content_type === 'coaching'
+    let weekendMultiplier = 1
+    if (isCoachingType && formation.coach_id) {
+      const { data: coachProfile } = await supabase
+        .from('profiles')
+        .select('weekend_rate_pct')
+        .eq('id', formation.coach_id)
+        .single()
+      const pct = coachProfile?.weekend_rate_pct ?? 0
+      if (pct > 0) {
+        const now = new Date()
+        const day = now.getDay() // 0 = dimanche, 6 = samedi
+        if (day === 0 || day === 6) weekendMultiplier = 1 + pct / 100
+      }
+    }
+
+    /* price in cents — coaching: +8% platform fee */
+    const COACHING_FEE = isCoachingType ? 1.08 : 1
     let unitAmount: number
     let productName: string
-    if (formation.content_type === 'coaching' && Array.isArray(formation.coaching_packs) && pack_index != null) {
+    if (isCoachingType && Array.isArray(formation.coaching_packs) && pack_index != null) {
       const pack = formation.coaching_packs[pack_index]
       if (!pack) return NextResponse.json({ error: 'Pack not found' }, { status: 404 })
-      unitAmount = Math.round(pack.price * 100)
-      productName = `${formation.title} — ${pack.title ?? `Pack ${pack_index + 1}`}`
+      unitAmount = Math.round(pack.price * COACHING_FEE * weekendMultiplier * 100)
+      productName = `${formation.title} — ${pack.label ?? `Pack ${pack_index + 1}`}${weekendMultiplier > 1 ? ' (tarif week-end)' : ''}`
     } else {
-      unitAmount = Math.round(formation.price * 100)
+      unitAmount = Math.round(formation.price * COACHING_FEE * weekendMultiplier * 100)
       productName = formation.title
     }
 
@@ -48,13 +66,16 @@ export async function POST(req: NextRequest) {
     const coachId = (formation as any).coach_id ?? ''
 
     const isCoaching = formation.content_type === 'coaching'
+    // {CHECKOUT_SESSION_ID} is a Stripe template variable — replaced with the real session ID at redirect time
     const successUrl = isCoaching
-      ? `${origin}/schedule?formation_id=${formation_id}&coach_id=${coachId}&payment=success`
-      : `${origin}/formations/${formation_id}/learn?payment=success`
+      ? `${origin}/schedule?payment=success&session_id={CHECKOUT_SESSION_ID}`
+      : `${origin}/formations/${formation_id}?payment=success&session_id={CHECKOUT_SESSION_ID}`
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
+      /* For coaching: manual capture — funds held until coach accepts */
+      ...(isCoaching ? { payment_intent_data: { capture_method: 'manual' } } : {}),
       line_items: [
         {
           price_data: {
@@ -70,10 +91,11 @@ export async function POST(req: NextRequest) {
       ],
       metadata: {
         formation_id,
-        user_id: user.id,
-        coach_id: coachId,
+        user_id:      user.id,
+        coach_id:     coachId,
         content_type: formation.content_type,
-        pack_index: pack_index != null ? String(pack_index) : '',
+        pack_index:   pack_index != null ? String(pack_index) : '',
+        scheduled_at: scheduled_at ?? '',
       },
       success_url: successUrl,
       cancel_url:  `${origin}/formations/${formation_id}`,

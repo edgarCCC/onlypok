@@ -1335,7 +1335,9 @@ export default function FormationDetailClient({
     : null
 
   const ctaLabel = hasPurchased
-    ? contentType === 'coaching' ? 'Voir mes sessions →' : 'Continuer →'
+    ? contentType === 'coaching' ? 'Voir mes sessions →'
+    : contentType === 'video'   ? 'Regarder la vidéo →'
+    : 'Continuer la formation →'
     : formation.price === 0 ? 'Accéder gratuitement'
     : contentType === 'coaching'
       ? calSelSlot
