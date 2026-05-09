@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
@@ -8,13 +8,21 @@ import Link from 'next/link'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import VideoStudio from '@/components/VideoStudio'
 
-const CREAM = '#E8E4DC'
-const SILVER = '#8A8A8A'
+const CREAM = '#f0f4ff'
+const SILVER = 'rgba(240,244,255,0.45)'
 
 export default function FormationDetailPage() {
+  return (
+    <Suspense fallback={<FourAcesLoader />}>
+      <FormationDetailInner />
+    </Suspense>
+  )
+}
+
+function FormationDetailInner() {
   const { id } = useParams()
   const supabase = useMemo(() => createClient(), [])
-  const { user } = useUser()
+  const { user, loading: authLoading } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -31,7 +39,8 @@ export default function FormationDetailPage() {
   const [showSuccessBanner, setShowSuccessBanner] = useState(paymentSuccess)
 
   useEffect(() => {
-    if (!id) return
+    // Wait until auth resolves — user starts as null while Supabase reads the session
+    if (!id || authLoading) return
     const load = async () => {
       const { data: f } = await supabase.from('formations').select('*, coach:profiles(username, bio)').eq('id', id).single()
       setFormation(f)
@@ -40,13 +49,18 @@ export default function FormationDetailPage() {
       setChapters(ch ?? [])
       if (ch && ch[0]) setOpenChapters([ch[0].id])
 
+      if (f?.content_type === 'video' && f?.video_url) {
+        const syntheticLesson = { id: f.id, title: f.title, video_url: f.video_url, is_free: f.price === 0 }
+        setCurrentLesson(syntheticLesson)
+        setStudioOpen(true)
+      }
+
+      const free = f?.price === 0
       if (user) {
-        const { data: purchase } = await supabase.from('formation_purchases').select('id').eq('formation_id', id).eq('user_id', user.id).single()
-        const free = f?.price === 0
+        const { data: purchase } = await supabase.from('formation_purchases').select('id').eq('formation_id', id).eq('user_id', user.id).maybeSingle()
         const purchased = !!purchase || free
         setHasPurchased(purchased)
 
-        // Redirect to sales page if not purchased
         if (!purchased) {
           router.replace(`/formations/${id}`)
           return
@@ -55,8 +69,7 @@ export default function FormationDetailPage() {
         const { data: progress } = await supabase.from('formation_progress').select('lesson_id').eq('formation_id', id).eq('user_id', user.id).eq('completed', true)
         setCompletedLessons(progress?.map((p: any) => p.lesson_id) ?? [])
       } else {
-        // Not logged in and not free → redirect
-        if (f?.price !== 0) {
+        if (!free) {
           router.replace(`/formations/${id}`)
           return
         }
@@ -64,7 +77,7 @@ export default function FormationDetailPage() {
       setLoading(false)
     }
     load()
-  }, [id, user, supabase, router])
+  }, [id, user, authLoading, supabase, router])
 
   const allLessons = chapters.flatMap(c => c.formation_lessons ?? [])
   const totalLessons = allLessons.length
@@ -184,7 +197,7 @@ export default function FormationDetailPage() {
                 {formation.variant && <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: `${typeColor}18`, color: typeColor, border: `1px solid ${typeColor}40` }}>{formation.variant}</span>}
                 {formation.level && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 99, background: 'rgba(232,228,220,0.06)', color: SILVER, border: '1px solid rgba(232,228,220,0.1)' }}>{formation.level}</span>}
               </div>
-              <h1 style={{ fontSize: 26, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', marginBottom: 10 }}>{formation.title}</h1>
+              <h1 style={{ fontSize: 26, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', marginBottom: 10, fontFamily: 'var(--font-syne,sans-serif)' }}>{formation.title}</h1>
               {formation.description && <p style={{ fontSize: 14, color: SILVER, lineHeight: 1.7 }}>{formation.description}</p>}
               <p style={{ fontSize: 13, color: 'rgba(138,138,138,0.6)', marginTop: 10 }}>Par {formation.coach?.username ?? 'Coach'} · {totalLessons} leçons</p>
             </div>
@@ -212,7 +225,17 @@ export default function FormationDetailPage() {
               <div style={{ background: 'rgba(232,228,220,0.03)', border: `1px solid ${typeColor}30`, borderRadius: 16, padding: '20px', marginBottom: 16, textAlign: 'center' }}>
                 <p style={{ fontSize: 22, fontWeight: 800, color: CREAM, marginBottom: 4 }}>{formation.price}€</p>
                 <p style={{ fontSize: 12, color: SILVER, marginBottom: 16 }}>Accès illimité à toutes les leçons</p>
-                <button style={{ width: '100%', padding: '12px', borderRadius: 10, border: 'none', background: typeColor, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: `0 4px 20px ${typeColor}50` }}>
+                <button
+                  onClick={async () => {
+                    const res = await fetch('/api/stripe/checkout', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ formation_id: id }),
+                    })
+                    const data = await res.json()
+                    if (data.url) window.location.href = data.url
+                  }}
+                  style={{ width: '100%', padding: '12px', borderRadius: 10, border: 'none', background: typeColor, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: `0 4px 20px ${typeColor}50` }}>
                   Acheter la formation
                 </button>
               </div>

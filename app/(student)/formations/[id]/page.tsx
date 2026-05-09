@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import FormationDetailClient from './FormationDetailClient'
 import { notFound } from 'next/navigation'
 
@@ -37,10 +37,12 @@ export default async function FormationDetailPage({
         stripeSession.metadata?.user_id === user.id &&
         stripeSession.metadata?.formation_id === id
       ) {
-        await supabase.from('formation_purchases').insert({
+        // Admin client bypasses RLS — insert is server-verified via Stripe signature
+        const admin = createAdminSupabaseClient()
+        await admin.from('formation_purchases').insert({
           formation_id: id,
           user_id: user.id,
-        }).select().maybeSingle() // ignore duplicate key error (23505) silently
+        })
       }
     } catch {
       // Non-blocking — webhook will cover production; log silently
