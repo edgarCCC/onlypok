@@ -226,8 +226,10 @@ function CoachHeader({ profile }: { profile: any }) {
 
       {/* ── Right ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff', boxShadow: '0 0 0 2px rgba(124,58,237,0.25)', flexShrink: 0 }}>
-          {initials}
+        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff', boxShadow: '0 0 0 2px rgba(124,58,237,0.25)', flexShrink: 0, overflow: 'hidden' }}>
+          {profile?.avatar_url
+            ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : initials}
         </div>
         <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(232,234,240,0.4)' }}>
           {profile?.username ?? 'Coach'}
