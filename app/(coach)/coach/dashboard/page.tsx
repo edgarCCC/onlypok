@@ -6,7 +6,7 @@ import Link from 'next/link'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import {
   TrendingUp, Users, BookOpen, Star, Plus,
-  Eye, EyeOff, Trash2, Edit2, ChevronRight, Calendar, ExternalLink,
+  Eye, EyeOff, Trash2, Edit2, ChevronRight, Calendar,
 } from 'lucide-react'
 
 const CREAM  = '#f0f4ff'
@@ -230,8 +230,6 @@ export default function CoachDashboard() {
 
           {(() => {
             const coachingSessions = recentPurchases.filter(p => p.formations?.content_type === 'coaching')
-            const hasCalUrl = coachingSessions.some(p => p.formations?.cal_url)
-            const globalCalUrl = formations.find(f => f.content_type === 'coaching' && f.cal_url)?.cal_url ?? null
 
             return (
               <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(245,158,11,0.12)', borderRadius: 16, padding: '22px' }}>
@@ -240,12 +238,10 @@ export default function CoachDashboard() {
                     <Calendar size={14} color="#f59e0b" />
                     <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Sessions coaching à planifier</h2>
                   </div>
-                  {globalCalUrl && (
-                    <a href={globalCalUrl} target="_blank" rel="noreferrer"
-                      style={{ fontSize: 10, color: '#f59e0b', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, padding: '4px 10px', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 7 }}>
-                      Cal.com <ExternalLink size={9} />
-                    </a>
-                  )}
+                  <Link href="/coach/calendar"
+                    style={{ fontSize: 10, color: '#f59e0b', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, padding: '4px 10px', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 7 }}>
+                    Voir le calendrier
+                  </Link>
                 </div>
 
                 {coachingSessions.length === 0 ? (
@@ -258,7 +254,6 @@ export default function CoachDashboard() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                     {coachingSessions.slice(0, 6).map((p, i) => {
                       const username = p.profiles?.username ?? 'Élève'
-                      const calUrl   = p.formations?.cal_url
                       const date     = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : ''
                       const isRecent = (Date.now() - new Date(p.created_at).getTime()) < 3 * 24 * 3600 * 1000
                       return (
@@ -274,14 +269,10 @@ export default function CoachDashboard() {
                             <span style={{ fontSize: 10, color: SILVER, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.formations?.title ?? 'Coaching'}</span>
                           </div>
                           <span style={{ fontSize: 10, color: SILVER, flexShrink: 0 }}>{date}</span>
-                          {calUrl ? (
-                            <a href={calUrl} target="_blank" rel="noreferrer"
-                              style={{ fontSize: 10, fontWeight: 700, color: '#f59e0b', textDecoration: 'none', padding: '4px 10px', borderRadius: 7, border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.08)', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                              Planifier
-                            </a>
-                          ) : (
-                            <span style={{ fontSize: 10, color: 'rgba(245,158,11,0.3)', flexShrink: 0 }}>Pas de Cal.com</span>
-                          )}
+                          <Link href="/coach/calendar"
+                            style={{ fontSize: 10, fontWeight: 700, color: '#f59e0b', textDecoration: 'none', padding: '4px 10px', borderRadius: 7, border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.08)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                            Planifier →
+                          </Link>
                         </div>
                       )
                     })}
