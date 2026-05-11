@@ -203,8 +203,9 @@ function LearnInner() {
   /* ── Render ───────────────────────────────────────────────────────────── */
   if (loading || !formation) return <FourAcesLoader />
 
-  const typeColor  = formation.content_type === 'video' ? '#06b6d4' : '#7c3aed'
-  const lessonDone = currentLesson ? completedIds.includes(currentLesson.id) : false
+  const isVideoType = formation.content_type === 'video'
+  const typeColor   = isVideoType ? '#06b6d4' : '#7c3aed'
+  const lessonDone  = currentLesson ? completedIds.includes(currentLesson.id) : false
 
   const fmtDate = (iso: string | null) => {
     if (!iso) return ''
@@ -257,10 +258,11 @@ function LearnInner() {
 
         {/* ── Body grid — fixed height, each column scrolls independently ── */}
         <div style={{ position: 'relative', zIndex: 1, display: 'grid',
-          gridTemplateColumns: '1fr 320px', flex: 1, overflow: 'hidden' }}>
+          gridTemplateColumns: isVideoType ? '1fr' : '1fr 320px', flex: 1, overflow: 'hidden' }}>
 
           {/* ════ LEFT — scrollable ════ */}
-          <div style={{ overflowY: 'auto', padding: '24px 28px 80px', borderRight: `1px solid ${BORDER}` }}>
+          <div style={{ overflowY: 'auto', padding: '24px 28px 80px', borderRight: isVideoType ? 'none' : `1px solid ${BORDER}` }}>
+          <div style={{ maxWidth: isVideoType ? 760 : '100%', margin: isVideoType ? '0 auto' : undefined }}>
 
             {showBanner && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20,
@@ -281,7 +283,7 @@ function LearnInner() {
                 <div style={{ height: 2, background: `linear-gradient(90deg, ${typeColor}, ${typeColor}50, transparent)` }} />
                 {/* Thumbnail banner */}
                 {(currentLesson.thumbnail_url || formation.thumbnail_url) && (
-                  <div style={{ position: 'relative', height: 160, overflow: 'hidden', background: '#0a0c12' }}>
+                  <div style={{ position: 'relative', height: isVideoType ? 110 : 160, overflow: 'hidden', background: '#0a0c12' }}>
                     <img
                       src={currentLesson.thumbnail_url ?? formation.thumbnail_url}
                       alt=""
@@ -529,10 +531,10 @@ function LearnInner() {
                 </p>
               </div>
             )}
-          </div>
+          </div></div>
 
-          {/* ════ RIGHT — chapter sidebar ════ */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* ════ RIGHT — chapter sidebar (formation seulement) ════ */}
+          {!isVideoType && <div style={{ display: 'flex', flexDirection: 'column' }}>
 
             {/* Header */}
             <div style={{ padding: '16px 18px 12px', borderBottom: `1px solid ${BORDER}`,
@@ -683,7 +685,7 @@ function LearnInner() {
                 </div>
               </div>
             )}
-          </div>
+          </div>}
         </div>
       </div>
     </>
