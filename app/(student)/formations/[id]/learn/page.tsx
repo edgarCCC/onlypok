@@ -40,6 +40,79 @@ export default function LearnPage() {
   )
 }
 
+/* ── Panneau notes (colonne droite pour les vidéos) ─────────────────────── */
+function VideoNotes({ formationId, currentLesson, typeColor }: {
+  formationId: string
+  currentLesson: any
+  typeColor: string
+}) {
+  const [notes, setNotes]         = useState('')
+  const [saved, setSaved]         = useState(true)
+  const [collapsed, setCollapsed] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const key = `onlypok_notes_${formationId}_video`
+    setNotes(localStorage.getItem(key) ?? '')
+    setSaved(true)
+  }, [formationId])
+
+  const handleChange = (val: string) => {
+    setNotes(val)
+    setSaved(false)
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(() => {
+      localStorage.setItem(`onlypok_notes_${formationId}_video`, val)
+      setSaved(true)
+    }, 800)
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', borderLeft: `1px solid ${BORDER}` }}>
+      {/* Header */}
+      <div style={{ padding: '14px 18px 12px', borderBottom: `1px solid ${BORDER}`, background: BG, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <StickyNote size={13} color={typeColor} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: CREAM }}>Mes notes</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 10, color: saved ? EMER : DIM, transition: 'color 0.3s' }}>
+              {saved ? '✓ Sauvegardé' : 'Sauvegarde…'}
+            </span>
+            <button onClick={() => setCollapsed(v => !v)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: DIM, padding: 2, display: 'flex' }}>
+              <ChevronDown size={13} style={{ transform: collapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 0.2s' }} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {!collapsed && (
+        <div style={{ flex: 1, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto' }}>
+          <p style={{ fontSize: 11, color: DIM, lineHeight: 1.5 }}>
+            {currentLesson ? <>Notes sur <span style={{ color: SILVER, fontWeight: 600 }}>"{currentLesson.title}"</span></> : 'Notes générales'}
+          </p>
+          <textarea
+            value={notes}
+            onChange={e => handleChange(e.target.value)}
+            placeholder={'Points clés, timestamps, questions…'}
+            style={{
+              flex: 1, minHeight: 200, background: SURF, border: `1px solid ${BORDER}`,
+              borderRadius: 10, padding: '12px 14px', color: CREAM, fontSize: 12,
+              lineHeight: 1.75, resize: 'none', outline: 'none', fontFamily: 'inherit',
+              boxSizing: 'border-box', transition: 'border-color 0.2s',
+            }}
+            onFocus={e => (e.currentTarget.style.borderColor = `${typeColor}45`)}
+            onBlur={e => (e.currentTarget.style.borderColor = BORDER)}
+          />
+          <p style={{ fontSize: 10, color: DIM }}>Sauvegardées localement dans ton navigateur.</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function LearnInner() {
   const { id } = useParams<{ id: string }>()
   const supabase = useMemo(() => createClient(), [])
@@ -83,14 +156,9 @@ function LearnInner() {
       setChapters(sorted)
       if (sorted[0]) setOpenChapters([sorted[0].id])
 
-      if (f?.content_type === 'video' && f?.video_url) {
-        setCurrentLesson({ id: f.id, title: f.title, video_url: f.video_url, thumbnail_url: f.thumbnail_url, is_free: f.price === 0 })
-        setStudioOpen(true)
-        setLoading(false)
-        return
-      }
-
       const free = f?.price === 0
+
+      /* ── Vérification achat (toujours, pour toutes les vidéos payantes) ── */
       if (user) {
         const [{ data: purchase }, { data: prog }] = await Promise.all([
           supabase.from('formation_purchases').select('id').eq('formation_id', id).eq('user_id', user.id).maybeSingle(),
@@ -102,6 +170,15 @@ function LearnInner() {
         const purchased = !!purchase || free
         setHasPurchased(purchased)
         if (!purchased) { router.replace(`/formations/${id}`); return }
+
+        /* Vidéo simple (content_type === 'video') : ouvre le player directement */
+        if (f?.content_type === 'video' && f?.video_url) {
+          setCurrentLesson({ id: f.id, title: f.title, video_url: f.video_url, thumbnail_url: f.thumbnail_url, is_free: true })
+          setStudioOpen(true)
+          setProgress(prog ?? [])
+          setLoading(false)
+          return
+        }
 
         const progRows: ProgressRow[] = prog ?? []
         setProgress(progRows)
@@ -258,11 +335,10 @@ function LearnInner() {
 
         {/* ── Body grid — fixed height, each column scrolls independently ── */}
         <div style={{ position: 'relative', zIndex: 1, display: 'grid',
-          gridTemplateColumns: isVideoType ? '1fr' : '1fr 320px', flex: 1, overflow: 'hidden' }}>
+          gridTemplateColumns: '1fr 320px', flex: 1, overflow: 'hidden' }}>
 
           {/* ════ LEFT — scrollable ════ */}
-          <div style={{ overflowY: 'auto', padding: '24px 28px 80px', borderRight: isVideoType ? 'none' : `1px solid ${BORDER}` }}>
-          <div style={{ maxWidth: isVideoType ? 760 : '100%', margin: isVideoType ? '0 auto' : undefined }}>
+          <div style={{ overflowY: 'auto', padding: '24px 28px 80px', borderRight: `1px solid ${BORDER}` }}>
 
             {showBanner && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20,
@@ -531,10 +607,10 @@ function LearnInner() {
                 </p>
               </div>
             )}
-          </div></div>
+          </div>
 
-          {/* ════ RIGHT — chapter sidebar (formation seulement) ════ */}
-          {!isVideoType && <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* ════ RIGHT — sommaire (formation) ou notes (vidéo) ════ */}
+          {isVideoType ? <VideoNotes formationId={id} currentLesson={currentLesson} typeColor={typeColor} /> : <div style={{ display: 'flex', flexDirection: 'column' }}>
 
             {/* Header */}
             <div style={{ padding: '16px 18px 12px', borderBottom: `1px solid ${BORDER}`,
