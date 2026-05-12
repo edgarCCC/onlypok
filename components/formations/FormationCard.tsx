@@ -15,7 +15,7 @@ type Formation = {
   thumbnail_crop?: { zoom?: number; x?: number; y?: number } | null
   duration_minutes: number
   modules_count: number
-  coach?: { username: string | null }
+  coach?: { username: string | null; avatar_url?: string | null }
 }
 
 const VARIANT_COLORS: Record<string, string> = {
@@ -34,9 +34,12 @@ export default function FormationCard({
   const isPlayable = isFree && f.content_type === 'video' && !!f.video_url && !!onPlay
   const color      = VARIANT_COLORS[f.variant ?? ''] ?? accentColor ?? '#7c3aed'
 
-  const crop   = f.thumbnail_crop
-  const bgSize = crop?.zoom != null ? `${crop.zoom * 100}%` : 'cover'
-  const bgPos  = crop != null ? `${crop.x ?? 50}% ${crop.y ?? 50}%` : 'center'
+  const crop        = f.thumbnail_crop
+  const bgSize      = crop?.zoom != null ? `${crop.zoom * 100}%` : 'cover'
+  const bgPos       = crop != null ? `${crop.x ?? 50}% ${crop.y ?? 50}%` : 'center'
+  const coachAvatar = f.coach?.avatar_url ?? null
+  const isCoaching  = f.content_type === 'coaching'
+  const heroImage   = f.thumbnail_url ?? (isCoaching ? coachAvatar : null)
 
   const cardStyle: React.CSSProperties = {
     background: hovered ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.028)',
@@ -54,16 +57,16 @@ export default function FormationCard({
   const thumbnail = (
     <div style={{
       height: 152,
-      background: f.thumbnail_url ? undefined : `linear-gradient(145deg, ${color}18 0%, rgba(5,7,9,0.6) 100%)`,
-      backgroundImage: f.thumbnail_url ? `url(${f.thumbnail_url})` : undefined,
-      backgroundSize: f.thumbnail_url ? bgSize : undefined,
-      backgroundPosition: f.thumbnail_url ? bgPos : undefined,
+      background: heroImage ? undefined : `linear-gradient(145deg, ${color}18 0%, rgba(5,7,9,0.6) 100%)`,
+      backgroundImage: heroImage ? `url(${heroImage})` : undefined,
+      backgroundSize: heroImage === coachAvatar ? 'cover' : (heroImage ? bgSize : undefined),
+      backgroundPosition: heroImage === coachAvatar ? 'center top' : (heroImage ? bgPos : undefined),
       backgroundRepeat: 'no-repeat',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       position: 'relative',
       borderBottom: '1px solid rgba(255,255,255,0.05)',
     }}>
-      {!f.thumbnail_url && (
+      {!heroImage && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 36, opacity: 0.14, color }}>♠</span>
           {f.variant && (
