@@ -123,7 +123,10 @@ export default function CoachProfilePage() {
     ]).then(([{ data: c }, { data: r }, { data: f }]) => {
       if (!c) { router.push('/404'); return }
       setCoach(c as Coach)
-      setReviews((r ?? []) as Review[])
+      setReviews((r ?? []).map((rev: any) => ({
+        ...rev,
+        student: Array.isArray(rev.student) ? (rev.student[0] ?? null) : (rev.student ?? null),
+      })) as Review[])
       setFormations((f ?? []) as Formation[])
       setLoading(false)
     })
