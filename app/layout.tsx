@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Mono, Syne, Space_Grotesk } from 'next/font/google'
 import './globals.css'
+import Providers from './providers'
 
 const dmMono = DM_Mono({
   subsets: ['latin'],
@@ -22,13 +23,25 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: 'OnlyPok — La plateforme des joueurs de poker',
-  description: 'Formations, coaching et outils pour progresser au poker.',
+  description: 'Formations, coaching et outils pour progresser au poker. Apprenez des meilleurs, progressez vite.',
+  openGraph: {
+    title: 'OnlyPok — La plateforme des joueurs de poker',
+    description: 'Formations, coaching et outils pour progresser au poker. Apprenez des meilleurs, progressez vite.',
+    siteName: 'OnlyPok',
+    locale: 'fr_FR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'OnlyPok — La plateforme des joueurs de poker',
+    description: 'Formations, coaching et outils pour progresser au poker.',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={`${dmMono.variable} ${syne.variable} ${spaceGrotesk.variable}`}>
-      <body style={{ fontFamily: 'var(--font-space, sans-serif)', margin: 0 }}>{children}</body>
+      <body><Providers>{children}</Providers></body>
     </html>
   )
 }
