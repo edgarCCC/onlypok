@@ -245,20 +245,13 @@ function CoachingCard({ f }: { f: Formation }) {
           display: 'flex', flexDirection: 'column',
         }}>
 
-        {/* Colour band */}
+        {/* Colour band — gradient only, avatar goes in the circle below */}
         <div style={{
-          height: 72,
-          background: f.coach?.avatar_url
-            ? `url(${f.coach.avatar_url}) center top / cover no-repeat`
-            : `linear-gradient(135deg, ${color}30 0%, ${color}0c 65%, transparent 100%)`,
+          height: 68,
+          background: `linear-gradient(135deg, ${color}30 0%, ${color}0c 65%, transparent 100%)`,
           position: 'relative', flexShrink: 0,
         }}>
-          {f.coach?.avatar_url && (
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(7,9,14,0.7) 100%)' }} />
-          )}
-          {!f.coach?.avatar_url && (
-            <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 55% 140% at 8% 50%, ${color}1c, transparent)` }} />
-          )}
+          <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 55% 140% at 8% 50%, ${color}1c, transparent)` }} />
           {isPro && (
             <div style={{
               position: 'absolute', top: 10, left: 14,
