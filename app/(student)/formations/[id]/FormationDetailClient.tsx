@@ -1252,7 +1252,7 @@ export default function FormationDetailClient({
     }
     const { data: r, error: rErr } = await supabase
       .from('reviews')
-      .select('*, student:profiles!student_id(username, created_at)')
+      .select('*, student:profiles!student_id(username, avatar_url, created_at)')
       .eq('coach_id', formation.coach.id)
       .order('created_at', { ascending: false })
       .limit(20)
@@ -1947,9 +1947,8 @@ export default function FormationDetailClient({
             </span>
           </div>
           <h1 style={{
-            fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, color: CREAM,
-            letterSpacing: '-1.5px', lineHeight: 1.08, marginBottom: 16,
-            fontFamily: 'var(--font-syne,sans-serif)',
+            fontSize: 'clamp(20px, 2.2vw, 30px)', fontWeight: 700, color: CREAM,
+            letterSpacing: '-0.5px', lineHeight: 1.25, marginBottom: 16,
           }}>
             {formation.title}
           </h1>
@@ -2001,6 +2000,31 @@ export default function FormationDetailClient({
               </>
             )}
           </div>
+
+          {/* First review snippet above fold */}
+          {reviews.length > 0 && reviews[0]?.comment && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 22,
+              padding: '12px 16px', borderRadius: 12,
+              background: `${typeColor}06`, border: `1px solid ${typeColor}18`, maxWidth: 580 }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+                background: reviews[0].student?.avatar_url ? 'transparent' : `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 700, color: '#fff' }}>
+                {reviews[0].student?.avatar_url
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={reviews[0].student.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : (reviews[0].student?.username ?? 'E')[0].toUpperCase()}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 13, color: 'rgba(240,244,255,0.65)', fontStyle: 'italic', lineHeight: 1.55, margin: '0 0 5px' }}>
+                  &ldquo;{reviews[0].comment.length > 130 ? reviews[0].comment.slice(0, 130) + '…' : reviews[0].comment}&rdquo;
+                </p>
+                <p style={{ fontSize: 11, color: SILVER, margin: 0, fontWeight: 600 }}>
+                  {reviews[0].student?.username ?? 'Élève'} · <span style={{ color: '#f59e0b' }}>{'★'.repeat(Math.round(reviews[0].rating))}</span>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -2488,7 +2512,7 @@ export default function FormationDetailClient({
                   letterSpacing: '0.01em', marginBottom: checkoutError ? 12 : 20,
                   position: 'relative', overflow: 'hidden',
                 }}
-                onMouseEnter={e => { if (!ctaDisabled) { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 12px 40px ${typeColor}55, inset 0 1px 0 rgba(255,255,255,0.2)` } }}
+                onMouseEnter={e => { if (!ctaDisabled) { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 16px 48px ${typeColor}65, inset 0 1px 0 rgba(255,255,255,0.25)` } }}
                 onMouseLeave={e => { if (!ctaDisabled) { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 32px ${typeColor}45, inset 0 1px 0 rgba(255,255,255,0.15)` } }}>
                 {paying ? (
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
