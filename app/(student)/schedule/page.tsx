@@ -149,7 +149,7 @@ function Dashboard() {
           .eq('student_id', user.id)
           .in('status', ['paid_pending_schedule', 'scheduled', 'completed'])
           .order('created_at', { ascending: false })
-        bRows = fallback.data ?? []
+        bRows = (fallback.data ?? []) as any[]
       }
 
       // Purchases
