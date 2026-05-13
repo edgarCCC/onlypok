@@ -1420,7 +1420,12 @@ export default function FormationDetailClient({
 
         <div style={{ display: 'flex', alignItems: 'center', height: 80, padding: '0 40px', gap: 24 }}>
 
-          {/* Logo + badge Élève */}
+          {/* Back + Logo + badge Élève */}
+          <button onClick={() => router.back()} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, color: SILVER, flexShrink: 0, transition: 'color 0.15s, background 0.15s' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.05)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER; (e.currentTarget as HTMLButtonElement).style.background = 'none' }}>
+            <ArrowLeft size={15} />
+          </button>
           <Link href="/formations" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-syne, sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
