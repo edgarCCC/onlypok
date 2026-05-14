@@ -24,7 +24,10 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  const coachRoutes = ['/coach']
+  // Ne pas exécuter la logique de redirection sur les routes API
+  if (pathname.startsWith('/api/')) return supabaseResponse
+
+  const coachRoutes = ['/coach/']
   const adminRoutes = ['/admin']
 
   if (!user) {
@@ -43,12 +46,6 @@ export async function middleware(request: NextRequest) {
     .single()
 
   const role = profile?.role
-
-  if (pathname === '/login' || pathname === '/register') {
-    if (role === 'coach') return NextResponse.redirect(new URL('/coach/dashboard', request.url))
-    if (role === 'admin') return NextResponse.redirect(new URL('/admin/dashboard', request.url))
-    return NextResponse.redirect(new URL('/formations', request.url))
-  }
 
   if (coachRoutes.some(r => pathname.startsWith(r)) && role !== 'coach' && role !== 'admin') {
     return NextResponse.redirect(new URL('/formations', request.url))
