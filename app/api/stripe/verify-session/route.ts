@@ -65,27 +65,28 @@ export async function POST(req: NextRequest) {
       if (pack?.hours && pack.hours > 1) sessionsCount = pack.hours
     }
 
-    // Idempotency: count bookings already created for this Stripe session
-    const { count: existingCount } = await adminSupabase
-      .from('bookings').select('id', { count: 'exact', head: true })
-      .eq('stripe_session_id', session_id)
+    // Idempotency: if the anchor booking (stripe_session_id = session_id) already exists, skip
+    const { data: anchor } = await adminSupabase
+      .from('bookings').select('id').eq('stripe_session_id', session_id).maybeSingle()
 
-    const toCreate = sessionsCount - (existingCount ?? 0)
-    for (let i = 0; i < toCreate; i++) {
-      const isFirst = (existingCount ?? 0) + i === 0
-      const { error: bookingError } = await adminSupabase.from('bookings').insert({
-        formation_id:             formationId,
-        student_id:               userId,
-        coach_id:                 coachId,
-        pack_index:               packIndex,
-        status:                   scheduledAt && isFirst ? 'scheduled' : 'paid_pending_schedule',
-        scheduled_at:             scheduledAt && isFirst ? scheduledAt : null,
-        stripe_session_id:        session_id,
-        stripe_payment_intent_id: paymentIntentId,
-      })
-      if (bookingError && bookingError.code !== '23505') {
-        console.error('[verify-session] booking insert error:', bookingError.message)
-        return NextResponse.json({ error: bookingError.message }, { status: 500 })
+    if (!anchor) {
+      // Create all N bookings — only the first carries stripe_session_id (unique constraint)
+      for (let i = 0; i < sessionsCount; i++) {
+        const isFirst = i === 0
+        const { error: bookingError } = await adminSupabase.from('bookings').insert({
+          formation_id:             formationId,
+          student_id:               userId,
+          coach_id:                 coachId,
+          pack_index:               packIndex,
+          status:                   scheduledAt && isFirst ? 'scheduled' : 'paid_pending_schedule',
+          scheduled_at:             scheduledAt && isFirst ? scheduledAt : null,
+          stripe_session_id:        isFirst ? session_id : null,
+          stripe_payment_intent_id: paymentIntentId,
+        })
+        if (bookingError) {
+          console.error('[verify-session] booking insert error:', bookingError.message)
+          return NextResponse.json({ error: bookingError.message }, { status: 500 })
+        }
       }
     }
 
