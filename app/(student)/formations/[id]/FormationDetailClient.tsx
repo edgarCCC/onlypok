@@ -1719,35 +1719,43 @@ export default function FormationDetailClient({
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(7,9,14,0.88)',
           backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
           <div style={{ background: '#0f1218', border: `1px solid ${typeColor}35`, borderRadius: 20, padding: '32px', maxWidth: 400, width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: `${typeColor}18`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Calendar size={18} color={typeColor} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: `${typeColor}18`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Calendar size={18} color={typeColor} />
+                </div>
+                <h3 style={{ fontSize: 17, fontWeight: 800, color: CREAM, letterSpacing: '-0.3px', margin: 0 }}>
+                  Sessions existantes
+                </h3>
               </div>
-              <h3 style={{ fontSize: 17, fontWeight: 800, color: CREAM, letterSpacing: '-0.3px', margin: 0 }}>
-                Crédits disponibles
-              </h3>
+              <button onClick={() => setShowCreditConfirm(false)}
+                style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(240,244,255,0.08)',
+                  background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                <X size={14} />
+              </button>
             </div>
             <p style={{ fontSize: 14, color: SILVER, lineHeight: 1.6, margin: '0 0 24px' }}>
-              Tu as encore{' '}
+              Tu as déjà{' '}
               <span style={{ color: CREAM, fontWeight: 700 }}>
-                {pendingCount} crédit{pendingCount > 1 ? 's' : ''} de coaching
+                {pendingCount} session{pendingCount > 1 ? 's' : ''} avec ce coach
               </span>{' '}
-              à planifier. Veux-tu vraiment en acheter d'autres ?
+              en attente de planification. Es-tu sûr de vouloir acheter ce pack en plus ?
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
                 onClick={async () => { setShowCreditConfirm(false); await doStripeCheckout(creditConfirmTarget === 'slot') }}
                 style={{ width: '100%', padding: '13px', borderRadius: 11, border: 'none',
                   background: typeColor, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-                Oui, acheter d'autres crédits
+                Acheter ce pack
               </button>
               <button
-                onClick={() => { setShowCreditConfirm(false); router.push('/schedule') }}
+                onClick={() => setShowCreditConfirm(false)}
                 style={{ width: '100%', padding: '13px', borderRadius: 11,
                   border: '1px solid rgba(232,228,220,0.12)', background: 'transparent',
                   color: SILVER, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-                Non, voir mes sessions →
+                Annuler
               </button>
             </div>
           </div>
