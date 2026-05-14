@@ -1346,15 +1346,13 @@ export default function FormationDetailClient({
   })
 
   /* CTA */
-  const needsSlot = contentType === 'coaching' && !hasPurchased && formation.price !== 0
+  const needsSlot = contentType === 'coaching' && formation.price !== 0
   const slotLabel = calSelSlot
     ? `${calSelSlot.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · ${calSelSlot.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
     : null
 
-  const ctaLabel = hasPurchased
-    ? contentType === 'coaching' ? 'Voir mes sessions →'
-    : contentType === 'video'   ? 'Regarder la vidéo →'
-    : 'Continuer la formation →'
+  const ctaLabel = (hasPurchased && contentType !== 'coaching')
+    ? contentType === 'video' ? 'Regarder la vidéo →' : 'Continuer la formation →'
     : formation.price === 0 ? 'Accéder gratuitement'
     : contentType === 'coaching'
       ? calSelSlot
@@ -1388,13 +1386,12 @@ export default function FormationDetailClient({
   }
 
   const handleCTA = async () => {
-    if (hasPurchased || formation.price === 0) {
-      if (contentType === 'coaching') {
-        router.push('/schedule')
-      } else {
+    // Non-coaching: navigate if already purchased or free
+    if (contentType !== 'coaching') {
+      if (hasPurchased || formation.price === 0) {
         router.push(`/formations/${id}/learn`)
+        return
       }
-      return
     }
 
     if (contentType === 'coaching' && !calSelSlot) {
@@ -2612,7 +2609,7 @@ export default function FormationDetailClient({
               </button>
 
               {/* Acheter sans créneau — visible si coaching non acheté et pas de slot sélectionné */}
-              {!hasPurchased && contentType === 'coaching' && formation.price !== 0 && !calSelSlot && (
+              {contentType === 'coaching' && formation.price !== 0 && !calSelSlot && (
                 <button onClick={handleBuyLater} disabled={paying} style={{
                   width: '100%', padding: '13px', borderRadius: 12,
                   border: `1.5px solid ${typeColor}`,
