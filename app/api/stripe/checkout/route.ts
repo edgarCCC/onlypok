@@ -13,10 +13,15 @@ export async function POST(req: NextRequest) {
 
     const { data: formation, error } = await supabase
       .from('formations')
-      .select('id, title, price, thumbnail_url, content_type, coaching_packs, coach_id')
+      .select('id, title, price, thumbnail_url, content_type, coaching_packs, coach_id, coach:profiles!coach_id(avatar_url)')
       .eq('id', formation_id)
       .single()
     if (error || !formation) return NextResponse.json({ error: 'Formation not found' }, { status: 404 })
+
+    const coachAvatar = (() => {
+      const c = (formation as any).coach
+      return Array.isArray(c) ? c[0]?.avatar_url : c?.avatar_url
+    })()
 
     /* already purchased */
     if (formation.content_type !== 'coaching') {
@@ -83,7 +88,10 @@ export async function POST(req: NextRequest) {
             unit_amount: unitAmount,
             product_data: {
               name: productName,
-              ...(formation.thumbnail_url ? { images: [formation.thumbnail_url] } : {}),
+              ...(() => {
+                const img = isCoaching ? (coachAvatar ?? formation.thumbnail_url) : formation.thumbnail_url
+                return img ? { images: [img] } : {}
+              })(),
             },
           },
           quantity: 1,

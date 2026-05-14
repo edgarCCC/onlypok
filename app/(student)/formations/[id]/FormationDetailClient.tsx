@@ -2550,12 +2550,27 @@ export default function FormationDetailClient({
               {/* Acheter sans créneau — visible si coaching non acheté et pas de slot sélectionné */}
               {!hasPurchased && contentType === 'coaching' && formation.price !== 0 && !calSelSlot && (
                 <button onClick={handleBuyLater} disabled={paying} style={{
-                  width: '100%', padding: '10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)',
-                  background: 'rgba(255,255,255,0.03)', color: SILVER, fontSize: 12, fontWeight: 600,
-                  cursor: paying ? 'wait' : 'pointer', marginBottom: 16, transition: 'all 0.15s',
+                  width: '100%', padding: '13px', borderRadius: 12,
+                  border: `1.5px solid ${typeColor}`,
+                  background: `${typeColor}18`,
+                  color: typeColor, fontSize: 13, fontWeight: 700,
+                  cursor: paying ? 'wait' : 'pointer', marginBottom: 16,
+                  transition: 'all 0.18s cubic-bezier(0.4,0,0.2,1)',
+                  boxShadow: `0 0 0 0 ${typeColor}00`,
+                  letterSpacing: '0.01em',
                 }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.18)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
+                  onMouseEnter={e => {
+                    const b = e.currentTarget as HTMLButtonElement
+                    b.style.background = `${typeColor}30`
+                    b.style.boxShadow = `0 0 24px ${typeColor}40`
+                    b.style.transform = 'translateY(-1px)'
+                  }}
+                  onMouseLeave={e => {
+                    const b = e.currentTarget as HTMLButtonElement
+                    b.style.background = `${typeColor}18`
+                    b.style.boxShadow = `0 0 0 0 ${typeColor}00`
+                    b.style.transform = 'translateY(0)'
+                  }}>
                   Acheter et planifier plus tard →
                 </button>
               )}
