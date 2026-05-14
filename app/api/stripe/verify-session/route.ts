@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
           pack_index:               packIndex,
           status:                   scheduledAt && isFirst ? 'scheduled' : 'paid_pending_schedule',
           scheduled_at:             scheduledAt && isFirst ? scheduledAt : null,
-          stripe_session_id:        isFirst ? session_id : null,
+          stripe_session_id:        isFirst ? session_id : `${session_id}_${i}`,
           stripe_payment_intent_id: paymentIntentId,
         })
         if (bookingError) {
