@@ -2611,6 +2611,23 @@ export default function FormationDetailClient({
                 ) : ctaLabel}
               </button>
 
+              {/* Acheter à nouveau — visible si coaching déjà acheté */}
+              {hasPurchased && contentType === 'coaching' && formation.price !== 0 && (
+                <button onClick={handleBuyLater} disabled={paying} style={{
+                  width: '100%', padding: '13px', borderRadius: 12,
+                  border: `1.5px solid ${typeColor}`,
+                  background: `${typeColor}18`,
+                  color: typeColor, fontSize: 13, fontWeight: 700,
+                  cursor: paying ? 'wait' : 'pointer', marginBottom: 16,
+                  transition: 'all 0.18s cubic-bezier(0.4,0,0.2,1)',
+                  letterSpacing: '0.01em',
+                }}
+                  onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = `${typeColor}30`; b.style.boxShadow = `0 0 24px ${typeColor}40`; b.style.transform = 'translateY(-1px)' }}
+                  onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = `${typeColor}18`; b.style.boxShadow = 'none'; b.style.transform = 'translateY(0)' }}>
+                  Acheter à nouveau →
+                </button>
+              )}
+
               {/* Acheter sans créneau — visible si coaching non acheté et pas de slot sélectionné */}
               {contentType === 'coaching' && formation.price !== 0 && !calSelSlot && !hasPurchased && (
                 <button onClick={handleBuyLater} disabled={paying} style={{
