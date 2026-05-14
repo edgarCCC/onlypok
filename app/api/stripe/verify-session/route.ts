@@ -65,13 +65,13 @@ export async function POST(req: NextRequest) {
       if (pack?.hours && pack.hours > 1) sessionsCount = pack.hours
     }
 
-    // Idempotency: count existing bookings for this payment, create only the missing ones
-    const { count: existingCount } = await adminSupabase
-      .from('bookings')
-      .select('id', { count: 'exact', head: true })
-      .or(`stripe_session_id.eq.${session_id},stripe_session_id.like.${session_id}_%`)
+    // Idempotency: count existing bookings for this payment (two queries to avoid OR+LIKE encoding issues)
+    const [{ count: anchorCount }, { count: suffixedCount }] = await Promise.all([
+      adminSupabase.from('bookings').select('id', { count: 'exact', head: true }).eq('stripe_session_id', session_id),
+      adminSupabase.from('bookings').select('id', { count: 'exact', head: true }).like('stripe_session_id', `${session_id}_%`),
+    ])
 
-    const startIdx = existingCount ?? 0
+    const startIdx = (anchorCount ?? 0) + (suffixedCount ?? 0)
     if (startIdx < sessionsCount) {
       for (let i = startIdx; i < sessionsCount; i++) {
         const isFirst = i === 0
@@ -86,6 +86,7 @@ export async function POST(req: NextRequest) {
           stripe_payment_intent_id: paymentIntentId,
         })
         if (bookingError) {
+          if (bookingError.code === '23505') continue // already exists, skip
           console.error('[verify-session] booking insert error:', bookingError.message)
           return NextResponse.json({ error: bookingError.message }, { status: 500 })
         }
