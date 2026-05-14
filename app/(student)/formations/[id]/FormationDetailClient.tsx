@@ -1351,17 +1351,16 @@ export default function FormationDetailClient({
     ? `${calSelSlot.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · ${calSelSlot.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
     : null
 
-  const ctaLabel = (() => {
-    if (hasPurchased && contentType !== 'coaching') {
-      return contentType === 'video' ? 'Regarder la vidéo →' : 'Continuer la formation →'
-    }
-    if (formation.price === 0) return 'Accéder gratuitement'
-    if (contentType === 'coaching') {
-      if (calSelSlot) return `Réserver · ${slotLabel} — ${applyWeekend(currentPack?.price ?? formation.price)}€`
-      return hasPurchased ? 'Acheter un autre pack' : 'Sélectionne un créneau ↓'
-    }
-    return `Acheter — ${formation.price}€`
-  })()
+  const ctaLabel = hasPurchased
+    ? contentType === 'coaching' ? 'Voir mes sessions →'
+    : contentType === 'video'   ? 'Regarder la vidéo →'
+    : 'Continuer la formation →'
+    : formation.price === 0 ? 'Accéder gratuitement'
+    : contentType === 'coaching'
+      ? calSelSlot
+        ? `Réserver · ${slotLabel} — ${applyWeekend(currentPack?.price ?? formation.price)}€`
+        : 'Sélectionne un créneau ↓'
+      : `Acheter — ${formation.price}€`
 
   const ctaDisabled = paying || (needsSlot && !calSelSlot)
 
@@ -1389,13 +1388,13 @@ export default function FormationDetailClient({
   }
 
   const handleCTA = async () => {
-    // Already purchased / free → navigate to content (non-coaching) or start new coaching purchase
     if (hasPurchased || formation.price === 0) {
-      if (contentType !== 'coaching') {
+      if (contentType === 'coaching') {
+        router.push('/schedule')
+      } else {
         router.push(`/formations/${id}/learn`)
-        return
       }
-      // Coaching + hasPurchased: fall through to purchase flow below
+      return
     }
 
     if (contentType === 'coaching' && !calSelSlot) {
