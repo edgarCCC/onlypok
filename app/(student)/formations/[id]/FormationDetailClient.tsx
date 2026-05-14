@@ -1389,6 +1389,26 @@ export default function FormationDetailClient({
     }
   }
 
+  const handleBuyLater = async () => {
+    if (!user) { router.push('/login'); return }
+    setPaying(true)
+    setCheckoutError(null)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formation_id: id, pack_index: selectedPack }),
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+      else setCheckoutError(data.error ?? 'Une erreur est survenue. Réessaie.')
+    } catch {
+      setCheckoutError('Erreur réseau. Vérifie ta connexion et réessaie.')
+    } finally {
+      setPaying(false)
+    }
+  }
+
   /* video on sales page */
   const showVideoOnPage = contentType === 'video' && formation.video_url
   const videoType = formation.video_url?.includes('vimeo') ? 'vimeo' : 'youtube'
@@ -2526,6 +2546,19 @@ export default function FormationDetailClient({
                   </span>
                 ) : ctaLabel}
               </button>
+
+              {/* Acheter sans créneau — visible si coaching non acheté et pas de slot sélectionné */}
+              {!hasPurchased && contentType === 'coaching' && formation.price !== 0 && !calSelSlot && (
+                <button onClick={handleBuyLater} disabled={paying} style={{
+                  width: '100%', padding: '10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.03)', color: SILVER, fontSize: 12, fontWeight: 600,
+                  cursor: paying ? 'wait' : 'pointer', marginBottom: 16, transition: 'all 0.15s',
+                }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.18)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
+                  Acheter et planifier plus tard →
+                </button>
+              )}
 
               {checkoutError && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '9px 13px', marginBottom: 16, fontSize: 12, color: '#fca5a5' }}>

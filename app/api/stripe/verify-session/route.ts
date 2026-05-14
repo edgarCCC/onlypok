@@ -52,27 +52,36 @@ export async function POST(req: NextRequest) {
 
   // For coaching: ensure booking exists
   if (contentType === 'coaching' && coachId) {
-    // Check if already created by webhook
-    const { data: existing } = await adminSupabase
-      .from('bookings')
-      .select('id, status')
+    const paymentIntentId = typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : (session.payment_intent as any)?.id ?? null
+
+    // Determine how many sessions this pack covers
+    let sessionsCount = 1
+    if (packIndex !== null) {
+      const { data: formData } = await adminSupabase
+        .from('formations').select('coaching_packs').eq('id', formationId).single()
+      const pack = (formData?.coaching_packs as any[])?.[packIndex]
+      if (pack?.hours && pack.hours > 1) sessionsCount = pack.hours
+    }
+
+    // Idempotency: count bookings already created for this Stripe session
+    const { count: existingCount } = await adminSupabase
+      .from('bookings').select('id', { count: 'exact', head: true })
       .eq('stripe_session_id', session_id)
-      .maybeSingle()
 
-    if (!existing) {
-      const paymentIntentId = typeof session.payment_intent === 'string'
-        ? session.payment_intent
-        : (session.payment_intent as any)?.id ?? null
-
+    const toCreate = sessionsCount - (existingCount ?? 0)
+    for (let i = 0; i < toCreate; i++) {
+      const isFirst = (existingCount ?? 0) + i === 0
       const { error: bookingError } = await adminSupabase.from('bookings').insert({
-        formation_id:              formationId,
-        student_id:                userId,
-        coach_id:                  coachId,
-        pack_index:                packIndex,
-        status:                    scheduledAt ? 'scheduled' : 'paid_pending_schedule',
-        scheduled_at:              scheduledAt,
-        stripe_session_id:         session_id,
-        stripe_payment_intent_id:  paymentIntentId,
+        formation_id:             formationId,
+        student_id:               userId,
+        coach_id:                 coachId,
+        pack_index:               packIndex,
+        status:                   scheduledAt && isFirst ? 'scheduled' : 'paid_pending_schedule',
+        scheduled_at:             scheduledAt && isFirst ? scheduledAt : null,
+        stripe_session_id:        session_id,
+        stripe_payment_intent_id: paymentIntentId,
       })
       if (bookingError && bookingError.code !== '23505') {
         console.error('[verify-session] booking insert error:', bookingError.message)
