@@ -1133,6 +1133,9 @@ export default function FormationDetailClient({
   /* payment */
   const [paying, setPaying] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [pendingCount,        setPendingCount]        = useState(0)
+  const [showCreditConfirm,   setShowCreditConfirm]   = useState(false)
+  const [creditConfirmTarget, setCreditConfirmTarget] = useState<'slot'|'later'>('later')
 
   /* native slot picker */
   const [calSlots,    setCalSlots]    = useState<Date[]>([])
@@ -1219,6 +1222,20 @@ export default function FormationDetailClient({
     }
     load()
   }, [initialFormation?.coach?.id, initialFormation?.content_type, supabase])
+
+  /* ─── pending coaching credits for this coach ─── */
+  useEffect(() => {
+    if (!user || (initialFormation?.content_type ?? 'formation') !== 'coaching') return
+    const coachId = initialFormation?.coach?.id
+    if (!coachId) return
+    supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('student_id', user.id)
+      .eq('coach_id', coachId)
+      .eq('status', 'paid_pending_schedule')
+      .then(({ count }) => setPendingCount(count ?? 0))
+  }, [user, initialFormation?.coach?.id, initialFormation?.content_type, supabase])
 
   /* ─── update userHasReview when auth user becomes available ── */
   useEffect(() => {
@@ -1347,6 +1364,29 @@ export default function FormationDetailClient({
 
   const ctaDisabled = paying || (needsSlot && !calSelSlot)
 
+  const doStripeCheckout = async (withSlot: boolean) => {
+    setPaying(true)
+    setCheckoutError(null)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formation_id:  id,
+          pack_index:    contentType === 'coaching' ? selectedPack : undefined,
+          scheduled_at:  withSlot ? (calSelSlot?.toISOString() ?? undefined) : undefined,
+        }),
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+      else setCheckoutError(data.error ?? 'Une erreur est survenue. Réessaie.')
+    } catch {
+      setCheckoutError('Erreur réseau. Vérifie ta connexion et réessaie.')
+    } finally {
+      setPaying(false)
+    }
+  }
+
   const handleCTA = async () => {
     if (hasPurchased || formation.price === 0) {
       if (contentType === 'coaching') {
@@ -1367,46 +1407,22 @@ export default function FormationDetailClient({
     }
     if (!user) { router.push('/login'); return }
 
-    setPaying(true)
-    setCheckoutError(null)
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          formation_id:  id,
-          pack_index:    contentType === 'coaching' ? selectedPack : undefined,
-          scheduled_at:  calSelSlot?.toISOString() ?? undefined,
-        }),
-      })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-      else setCheckoutError(data.error ?? 'Une erreur est survenue. Réessaie.')
-    } catch {
-      setCheckoutError('Erreur réseau. Vérifie ta connexion et réessaie.')
-    } finally {
-      setPaying(false)
+    if (contentType === 'coaching' && pendingCount > 0) {
+      setCreditConfirmTarget('slot')
+      setShowCreditConfirm(true)
+      return
     }
+    await doStripeCheckout(true)
   }
 
   const handleBuyLater = async () => {
     if (!user) { router.push('/login'); return }
-    setPaying(true)
-    setCheckoutError(null)
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formation_id: id, pack_index: selectedPack }),
-      })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-      else setCheckoutError(data.error ?? 'Une erreur est survenue. Réessaie.')
-    } catch {
-      setCheckoutError('Erreur réseau. Vérifie ta connexion et réessaie.')
-    } finally {
-      setPaying(false)
+    if (pendingCount > 0) {
+      setCreditConfirmTarget('later')
+      setShowCreditConfirm(true)
+      return
     }
+    await doStripeCheckout(false)
   }
 
   /* video on sales page */
@@ -1698,6 +1714,46 @@ export default function FormationDetailClient({
       )}
 
       {/* ══ REVIEW MODAL ══ */}
+      {/* ── Credit confirmation modal ── */}
+      {showCreditConfirm && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(7,9,14,0.88)',
+          backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
+          <div style={{ background: '#0f1218', border: `1px solid ${typeColor}35`, borderRadius: 20, padding: '32px', maxWidth: 400, width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: `${typeColor}18`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Calendar size={18} color={typeColor} />
+              </div>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: CREAM, letterSpacing: '-0.3px', margin: 0 }}>
+                Crédits disponibles
+              </h3>
+            </div>
+            <p style={{ fontSize: 14, color: SILVER, lineHeight: 1.6, margin: '0 0 24px' }}>
+              Tu as encore{' '}
+              <span style={{ color: CREAM, fontWeight: 700 }}>
+                {pendingCount} crédit{pendingCount > 1 ? 's' : ''} de coaching
+              </span>{' '}
+              à planifier. Veux-tu vraiment en acheter d'autres ?
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                onClick={async () => { setShowCreditConfirm(false); await doStripeCheckout(creditConfirmTarget === 'slot') }}
+                style={{ width: '100%', padding: '13px', borderRadius: 11, border: 'none',
+                  background: typeColor, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+                Oui, acheter d'autres crédits
+              </button>
+              <button
+                onClick={() => { setShowCreditConfirm(false); router.push('/schedule') }}
+                style={{ width: '100%', padding: '13px', borderRadius: 11,
+                  border: '1px solid rgba(232,228,220,0.12)', background: 'transparent',
+                  color: SILVER, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                Non, voir mes sessions →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(7,9,14,0.88)',
           backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>

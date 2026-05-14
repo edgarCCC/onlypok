@@ -65,13 +65,15 @@ export async function POST(req: NextRequest) {
       if (pack?.hours && pack.hours > 1) sessionsCount = pack.hours
     }
 
-    // Idempotency: if the anchor booking (stripe_session_id = session_id) already exists, skip
-    const { data: anchor } = await adminSupabase
-      .from('bookings').select('id').eq('stripe_session_id', session_id).maybeSingle()
+    // Idempotency: count existing bookings for this payment, create only the missing ones
+    const { count: existingCount } = await adminSupabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .or(`stripe_session_id.eq.${session_id},stripe_session_id.like.${session_id}_%`)
 
-    if (!anchor) {
-      // Create all N bookings — only the first carries stripe_session_id (unique constraint)
-      for (let i = 0; i < sessionsCount; i++) {
+    const startIdx = existingCount ?? 0
+    if (startIdx < sessionsCount) {
+      for (let i = startIdx; i < sessionsCount; i++) {
         const isFirst = i === 0
         const { error: bookingError } = await adminSupabase.from('bookings').insert({
           formation_id:             formationId,
@@ -80,7 +82,7 @@ export async function POST(req: NextRequest) {
           pack_index:               packIndex,
           status:                   scheduledAt && isFirst ? 'scheduled' : 'paid_pending_schedule',
           scheduled_at:             scheduledAt && isFirst ? scheduledAt : null,
-          stripe_session_id:        isFirst ? session_id : `${session_id}_${i}`,
+          stripe_session_id:        i === 0 ? session_id : `${session_id}_${i}`,
           stripe_payment_intent_id: paymentIntentId,
         })
         if (bookingError) {

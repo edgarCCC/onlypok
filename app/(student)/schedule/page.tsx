@@ -66,6 +66,7 @@ type Booking = {
   status: string
   formation_id: string
   coach_id: string
+  stripe_session_id: string | null
   meeting_url: string | null
   formation: { title: string; content_type: string; price: number } | null
   coach: { username: string | null; avatar_url: string | null } | null
@@ -135,7 +136,7 @@ function Dashboard() {
       // Bookings — simple select without FK join to avoid PostgREST cache issues
       const bookingRes = await supabase
         .from('bookings')
-        .select('id, created_at, scheduled_at, status, formation_id, coach_id, pack_index, meeting_url')
+        .select('id, created_at, scheduled_at, status, formation_id, coach_id, pack_index, stripe_session_id, meeting_url')
         .eq('student_id', user.id)
         .in('status', ['paid_pending_schedule', 'scheduled', 'completed'])
         .order('created_at', { ascending: false })
@@ -145,7 +146,7 @@ function Dashboard() {
       if (bookingRes.error?.code === '42703') {
         const fallback = await supabase
           .from('bookings')
-          .select('id, created_at, scheduled_at, status, formation_id, coach_id, pack_index')
+          .select('id, created_at, scheduled_at, status, formation_id, coach_id, pack_index, stripe_session_id')
           .eq('student_id', user.id)
           .in('status', ['paid_pending_schedule', 'scheduled', 'completed'])
           .order('created_at', { ascending: false })
@@ -165,12 +166,48 @@ function Dashboard() {
 
       const [{ data: formations }, { data: coaches }] = await Promise.all([
         formationIds.length
-          ? supabase.from('formations').select('id, title, content_type, price').in('id', formationIds)
+          ? supabase.from('formations').select('id, title, content_type, price, coaching_packs').in('id', formationIds)
           : Promise.resolve({ data: [] as any[] }),
         coachIds.length
           ? supabase.from('profiles').select('id, username, avatar_url').in('id', coachIds)
           : Promise.resolve({ data: [] as any[] }),
       ])
+
+      // Auto-repair: fill incomplete coaching booking sets (e.g. 10h pack with only 1 booking)
+      try {
+        const anchors = bRows.filter((b: any) =>
+          b.stripe_session_id && !/_\d+$/.test(b.stripe_session_id as string)
+        )
+        let repaired = false
+        for (const anchor of anchors) {
+          if (anchor.pack_index == null) continue
+          const form = (formations ?? []).find((f: any) => f.id === anchor.formation_id)
+          const pack = (form as any)?.coaching_packs?.[anchor.pack_index]
+          const expected = pack?.hours ?? 1
+          if (expected <= 1) continue
+          const actual = bRows.filter((b: any) =>
+            b.stripe_session_id === anchor.stripe_session_id ||
+            (b.stripe_session_id as string | null)?.startsWith(anchor.stripe_session_id + '_')
+          ).length
+          if (actual < expected) {
+            await fetch('/api/stripe/verify-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ session_id: anchor.stripe_session_id }),
+            })
+            repaired = true
+          }
+        }
+        if (repaired) {
+          const r2 = await supabase
+            .from('bookings')
+            .select('id, created_at, scheduled_at, status, formation_id, coach_id, pack_index, stripe_session_id, meeting_url')
+            .eq('student_id', user.id)
+            .in('status', ['paid_pending_schedule', 'scheduled', 'completed'])
+            .order('created_at', { ascending: false })
+          if (r2.data) bRows = r2.data
+        }
+      } catch { /* non-blocking */ }
 
       const fMap = new Map<string, Booking['formation']>((formations ?? []).map((f: any) => [f.id, f]))
       const cMap = new Map<string, Booking['coach']>((coaches ?? []).map((c: any) => [c.id, c]))
@@ -182,6 +219,7 @@ function Dashboard() {
         status: r.status,
         formation_id: r.formation_id,
         coach_id: r.coach_id,
+        stripe_session_id: r.stripe_session_id ?? null,
         meeting_url: r.meeting_url ?? null,
         formation: fMap.get(r.formation_id) ?? null,
         coach: cMap.get(r.coach_id) ?? null,
