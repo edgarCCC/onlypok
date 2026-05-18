@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   Calendar, Clock, CheckCircle, AlertCircle, ChevronLeft, ChevronRight,
-  Loader2, BookOpen, Video, Zap, ArrowRight, CalendarDays, ChevronDown, Link2, User,
+  Loader2, BookOpen, Video, Zap, ArrowRight, CalendarDays, ChevronDown, Link2, User, FileText,
 } from 'lucide-react'
 
 const CREAM  = '#f0f4ff'
@@ -129,8 +129,15 @@ function Dashboard() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: pendingSession }),
           })
-          if (res.ok) localStorage.removeItem('onlypok_pending_session')
-        } catch { /* non-blocking */ }
+          if (res.ok) {
+            localStorage.removeItem('onlypok_pending_session')
+          } else {
+            const body = await res.json().catch(() => ({}))
+            console.error('[schedule] verify-session failed', res.status, body)
+          }
+        } catch (e) {
+          console.error('[schedule] verify-session network error', e)
+        }
       }
 
       // Bookings — simple select without FK join to avoid PostgREST cache issues
@@ -138,7 +145,7 @@ function Dashboard() {
         .from('bookings')
         .select('id, created_at, scheduled_at, status, formation_id, coach_id, pack_index, stripe_session_id, meeting_url')
         .eq('student_id', user.id)
-        .in('status', ['paid_pending_schedule', 'scheduled', 'completed'])
+        .in('status', ['pending_coach_approval', 'paid_pending_schedule', 'scheduled', 'completed'])
         .order('created_at', { ascending: false })
 
 // If meeting_url column doesn't exist yet, retry without it
@@ -148,15 +155,15 @@ function Dashboard() {
           .from('bookings')
           .select('id, created_at, scheduled_at, status, formation_id, coach_id, pack_index, stripe_session_id')
           .eq('student_id', user.id)
-          .in('status', ['paid_pending_schedule', 'scheduled', 'completed'])
+          .in('status', ['pending_coach_approval', 'paid_pending_schedule', 'scheduled', 'completed'])
           .order('created_at', { ascending: false })
         bRows = (fallback.data ?? []) as any[]
       }
 
-      // Purchases
+      // Purchases — coach nested inside formation to avoid invalid cross-table join
       const { data: pRows } = await supabase
         .from('formation_purchases')
-        .select(`id, created_at, formation:formations(id, title, content_type, price, coach_id), coach:profiles!formations.coach_id(username)`)
+        .select(`id, created_at, formation:formations(id, title, content_type, price, coach_id, coach:profiles!coach_id(username))`)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
@@ -199,12 +206,20 @@ function Dashboard() {
           }
         }
         if (repaired) {
-          const r2 = await supabase
+          let r2 = await supabase
             .from('bookings')
             .select('id, created_at, scheduled_at, status, formation_id, coach_id, pack_index, stripe_session_id, meeting_url')
             .eq('student_id', user.id)
-            .in('status', ['paid_pending_schedule', 'scheduled', 'completed'])
+            .in('status', ['pending_coach_approval', 'paid_pending_schedule', 'scheduled', 'completed'])
             .order('created_at', { ascending: false })
+          if (r2.error?.code === '42703') {
+            r2 = await supabase
+              .from('bookings')
+              .select('id, created_at, scheduled_at, status, formation_id, coach_id, pack_index, stripe_session_id')
+              .eq('student_id', user.id)
+              .in('status', ['pending_coach_approval', 'paid_pending_schedule', 'scheduled', 'completed'])
+              .order('created_at', { ascending: false })
+          }
           if (r2.data) bRows = r2.data
         }
       } catch { /* non-blocking */ }
@@ -229,12 +244,15 @@ function Dashboard() {
         const ct = Array.isArray(p.formation) ? p.formation[0]?.content_type : p.formation?.content_type
         return ct !== 'coaching'
       })
-      setPurchases(nonCoaching.map((r: any): Purchase => ({
-        id: r.id,
-        created_at: r.created_at,
-        formation: Array.isArray(r.formation) ? r.formation[0] ?? null : r.formation ?? null,
-        coach: Array.isArray(r.coach) ? r.coach[0] ?? null : r.coach ?? null,
-      })))
+      setPurchases(nonCoaching.map((r: any): Purchase => {
+        const form = Array.isArray(r.formation) ? r.formation[0] ?? null : r.formation ?? null
+        return {
+          id: r.id,
+          created_at: r.created_at,
+          formation: form,
+          coach: Array.isArray(form?.coach) ? form.coach[0] ?? null : form?.coach ?? null,
+        }
+      }))
       setLoading(false)
     }
     load()
@@ -247,9 +265,16 @@ function Dashboard() {
     </div>
   )
 
-  const pending   = bookings.filter(b => b.status === 'paid_pending_schedule')
-  const scheduled = bookings.filter(b => b.status === 'scheduled')
-  const completed = bookings.filter(b => b.status === 'completed')
+  const now         = new Date()
+  const awaiting    = bookings.filter(b => b.status === 'pending_coach_approval')
+  const pending     = bookings.filter(b => b.status === 'paid_pending_schedule')
+  const scheduled   = bookings.filter(b => b.status === 'scheduled')
+  const upcoming    = scheduled.filter(b => !!b.scheduled_at && new Date(b.scheduled_at) > now)
+  const pastSched   = scheduled.filter(b => !b.scheduled_at || new Date(b.scheduled_at) <= now)
+  const completed   = bookings.filter(b => b.status === 'completed')
+  const pastAll     = [...pastSched, ...completed].sort((a, b) =>
+    (b.scheduled_at ?? '').localeCompare(a.scheduled_at ?? '')
+  )
 
   const Card = ({ children, accent = false }: { children: React.ReactNode; accent?: boolean }) => (
     <div style={{ background: 'rgba(232,228,220,0.025)', border: `1px solid rgba(232,228,220,${accent ? '0.12' : '0.07'})`, borderRadius: 14, padding: '16px 20px', transition: 'border-color 0.15s' }}
@@ -278,8 +303,8 @@ function Dashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12, padding: '14px 20px', marginBottom: 28 }}>
             <CheckCircle size={20} color={EMER} />
             <div>
-              <p style={{ fontSize: 14, color: '#34d399', fontWeight: 700, margin: 0 }}>Session confirmée !</p>
-              <p style={{ fontSize: 12, color: SILVER, margin: '2px 0 0' }}>Ton créneau a été enregistré. Tu le retrouves ci-dessous dans "Planifiées".</p>
+              <p style={{ fontSize: 14, color: '#34d399', fontWeight: 700, margin: 0 }}>Paiement reçu !</p>
+              <p style={{ fontSize: 12, color: SILVER, margin: '2px 0 0' }}>Ta demande est en attente d'approbation par le coach. Tu pourras choisir un créneau une fois acceptée.</p>
             </div>
           </div>
         )}
@@ -291,11 +316,12 @@ function Dashboard() {
         </div>
 
         {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 36 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 36 }}>
           {[
-            { label: 'Sessions',     value: bookings.length,  color: PURPLE, icon: Zap },
-            { label: 'Planifiées',   value: scheduled.length, color: EMER,   icon: CheckCircle },
+            { label: 'En attente',   value: awaiting.length,  color: '#f97316', icon: Clock },
             { label: 'À planifier',  value: pending.length,   color: AMBER,  icon: AlertCircle },
+            { label: 'À venir',      value: upcoming.length,  color: EMER,   icon: CheckCircle },
+            { label: 'Passées',      value: pastAll.length,   color: PURPLE, icon: Zap },
             { label: 'Formations',   value: purchases.length, color: CYAN,   icon: BookOpen },
           ].map(({ label, value, color, icon: Icon }) => (
             <div key={label} style={{ background: 'rgba(232,228,220,0.025)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 14, padding: '16px 18px' }}>
@@ -309,6 +335,35 @@ function Dashboard() {
             </div>
           ))}
         </div>
+
+        {/* Awaiting coach approval */}
+        {awaiting.length > 0 && (
+          <div style={{ marginBottom: 36 }}>
+            <SectionLabel text="En attente d'approbation" color="#f97316" count={awaiting.length} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {awaiting.map(b => (
+                <Card key={b.id} accent>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(249,115,22,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Clock size={16} color="#f97316" />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: CREAM }}>
+                        {b.formation?.title ?? 'Coaching'}
+                      </p>
+                      <p style={{ margin: '3px 0 0', fontSize: 12, color: SILVER }}>
+                        {b.coach?.username ? `Coach : ${b.coach.username}` : ''} · Paiement retenu, en attente d'acceptation
+                      </p>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: 'rgba(249,115,22,0.12)', color: '#f97316', border: '1px solid rgba(249,115,22,0.25)', whiteSpace: 'nowrap' }}>
+                      En attente
+                    </span>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Pending — needs scheduling */}
         {pending.length > 0 && (
@@ -341,12 +396,12 @@ function Dashboard() {
           </div>
         )}
 
-        {/* Scheduled */}
-        {scheduled.length > 0 && (
+        {/* Scheduled — upcoming only */}
+        {upcoming.length > 0 && (
           <div style={{ marginBottom: 36 }}>
-            <SectionLabel text="Planifiées" color={EMER} count={scheduled.length} />
+            <SectionLabel text="À venir" color={EMER} count={upcoming.length} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {scheduled.map(b => {
+              {upcoming.map(b => {
                 const isOpen = expandedId === b.id
                 const initials = (b.coach?.username ?? '?').slice(0, 2).toUpperCase()
                 return (
@@ -375,54 +430,70 @@ function Dashboard() {
                     </button>
 
                     {/* Detail panel */}
-                    {isOpen && (
-                      <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(240,244,255,0.07)' }}>
-                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    {isOpen && (() => {
+                      const isPastSession = !!b.scheduled_at && new Date(b.scheduled_at) < new Date()
+                      return (
+                        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(240,244,255,0.07)' }}>
+                          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
 
-                          {/* Coach card — clickable */}
-                          <button
-                            onClick={() => router.push(`/coaches/${b.coach_id}`)}
-                            style={{ flex: '1 1 160px', background: 'rgba(240,244,255,0.04)', borderRadius: 10, border: '1px solid rgba(240,244,255,0.07)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s', }}
-                            onMouseEnter={e => (e.currentTarget.style.borderColor = `${PURPLE}50`)}
-                            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(240,244,255,0.07)')}
-                          >
-                            {b.coach?.avatar_url
-                              ? <img src={b.coach.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                              : (
-                                <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${PURPLE}25`, border: `1px solid ${PURPLE}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, fontWeight: 700, color: PURPLE }}>
-                                  {initials}
-                                </div>
-                              )
-                            }
-                            <div>
-                              <div style={{ fontSize: 11, color: SILVER, marginBottom: 2 }}>Coach</div>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{b.coach?.username ?? '—'}</div>
-                            </div>
-                          </button>
+                            {/* Coach card — clickable */}
+                            <button
+                              onClick={() => router.push(`/coaches/${b.coach_id}`)}
+                              style={{ flex: '1 1 160px', background: 'rgba(240,244,255,0.04)', borderRadius: 10, border: '1px solid rgba(240,244,255,0.07)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s', }}
+                              onMouseEnter={e => (e.currentTarget.style.borderColor = `${PURPLE}50`)}
+                              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(240,244,255,0.07)')}
+                            >
+                              {b.coach?.avatar_url
+                                ? <img src={b.coach.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                                : (
+                                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${PURPLE}25`, border: `1px solid ${PURPLE}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, fontWeight: 700, color: PURPLE }}>
+                                    {initials}
+                                  </div>
+                                )
+                              }
+                              <div>
+                                <div style={{ fontSize: 11, color: SILVER, marginBottom: 2 }}>Coach</div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{b.coach?.username ?? '—'}</div>
+                              </div>
+                            </button>
 
-                          {/* Date/time card */}
-                          {b.scheduled_at && (
-                            <div style={{ flex: '1 1 160px', background: 'rgba(240,244,255,0.04)', borderRadius: 10, border: '1px solid rgba(240,244,255,0.07)', padding: '12px 14px' }}>
-                              <div style={{ fontSize: 11, color: SILVER, marginBottom: 4 }}>Date & heure</div>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: EMER }}>{fmtDT(b.scheduled_at)}</div>
-                            </div>
-                          )}
-                        </div>
+                            {/* Date/time card */}
+                            {b.scheduled_at && (
+                              <div style={{ flex: '1 1 160px', background: 'rgba(240,244,255,0.04)', borderRadius: 10, border: '1px solid rgba(240,244,255,0.07)', padding: '12px 14px' }}>
+                                <div style={{ fontSize: 11, color: SILVER, marginBottom: 4 }}>Date & heure</div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: isPastSession ? SILVER : EMER }}>{fmtDT(b.scheduled_at)}</div>
+                              </div>
+                            )}
+                          </div>
 
-                        {/* Meeting link */}
-                        <div style={{ marginTop: 10, background: 'rgba(240,244,255,0.04)', borderRadius: 10, border: b.meeting_url ? `1px solid ${CYAN}30` : '1px solid rgba(240,244,255,0.07)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <Link2 size={15} color={b.meeting_url ? CYAN : SILVER} style={{ flexShrink: 0 }} />
-                          {b.meeting_url ? (
-                            <a href={b.meeting_url} target="_blank" rel="noopener noreferrer"
-                              style={{ fontSize: 13, fontWeight: 700, color: CYAN, textDecoration: 'none', wordBreak: 'break-all' }}>
-                              Rejoindre la session
-                            </a>
+                          {/* Meeting link or notes */}
+                          {isPastSession ? (
+                            <button
+                              onClick={() => router.push(`/coaching/${b.id}`)}
+                              style={{ marginTop: 10, width: '100%', background: 'rgba(124,58,237,0.07)', borderRadius: 10, border: `1px solid ${PURPLE}30`, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', transition: 'border-color 0.15s' }}
+                              onMouseEnter={e => (e.currentTarget.style.borderColor = `${PURPLE}55`)}
+                              onMouseLeave={e => (e.currentTarget.style.borderColor = `${PURPLE}30`)}
+                            >
+                              <FileText size={15} color={PURPLE} style={{ flexShrink: 0 }} />
+                              <span style={{ fontSize: 13, fontWeight: 700, color: PURPLE }}>Voir mes notes de coaching</span>
+                              <ArrowRight size={12} color={PURPLE} style={{ marginLeft: 'auto' }} />
+                            </button>
                           ) : (
-                            <span style={{ fontSize: 13, color: SILVER }}>Lien de session — partagé par le coach avant la séance</span>
+                            <div style={{ marginTop: 10, background: 'rgba(240,244,255,0.04)', borderRadius: 10, border: b.meeting_url ? `1px solid ${CYAN}30` : '1px solid rgba(240,244,255,0.07)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <Link2 size={15} color={b.meeting_url ? CYAN : SILVER} style={{ flexShrink: 0 }} />
+                              {b.meeting_url ? (
+                                <a href={b.meeting_url} target="_blank" rel="noopener noreferrer"
+                                  style={{ fontSize: 13, fontWeight: 700, color: CYAN, textDecoration: 'none', wordBreak: 'break-all' }}>
+                                  Rejoindre la session
+                                </a>
+                              ) : (
+                                <span style={{ fontSize: 13, color: SILVER }}>Lien de session — partagé par le coach avant la séance</span>
+                              )}
+                            </div>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )
+                    })()}
                   </Card>
                 )
               })}
@@ -430,24 +501,35 @@ function Dashboard() {
           </div>
         )}
 
-        {/* Completed */}
-        {completed.length > 0 && (
+        {/* Past sessions (past scheduled + completed) */}
+        {pastAll.length > 0 && (
           <div style={{ marginBottom: 36 }}>
-            <SectionLabel text="Terminées" color={CYAN} count={completed.length} />
+            <SectionLabel text="Passées" color={CYAN} count={pastAll.length} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {completed.map(b => (
+              {pastAll.map(b => (
                 <Card key={b.id}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 9, background: `${CYAN}15`, border: `1px solid ${CYAN}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <CheckCircle size={16} color={CYAN} />
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: CREAM }}>{b.formation?.title ?? 'Session coaching'}</span>
                         <StatusBadge status={b.status} />
                       </div>
-                      <span style={{ fontSize: 12, color: SILVER }}>Coach : {b.coach?.username ?? '—'}</span>
+                      <span style={{ fontSize: 12, color: SILVER }}>
+                        Coach : {b.coach?.username ?? '—'}
+                        {b.scheduled_at && <> · <span style={{ color: SILVER }}>{fmtDT(b.scheduled_at)}</span></>}
+                      </span>
                     </div>
+                    <button
+                      onClick={() => router.push(`/coaching/${b.id}`)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: `${PURPLE}15`, border: `1px solid ${PURPLE}30`, color: PURPLE, fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0, transition: 'border-color 0.15s' }}
+                      onMouseEnter={e => (e.currentTarget.style.borderColor = `${PURPLE}55`)}
+                      onMouseLeave={e => (e.currentTarget.style.borderColor = `${PURPLE}30`)}
+                    >
+                      <FileText size={12} /> Notes
+                    </button>
                   </div>
                 </Card>
               ))}

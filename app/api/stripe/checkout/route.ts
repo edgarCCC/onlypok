@@ -67,10 +67,12 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-    // For coaching: fetch coach_id to redirect to scheduling after payment
-    const coachId = (formation as any).coach_id ?? ''
-
+    const coachId    = (formation as any).coach_id ?? ''
     const isCoaching = formation.content_type === 'coaching'
+
+    if (isCoaching && !coachId) {
+      console.error('[stripe/checkout] formation has no coach_id — booking will be orphaned', { formation_id })
+    }
     // {CHECKOUT_SESSION_ID} is a Stripe template variable — replaced with the real session ID at redirect time
     const successUrl = isCoaching
       ? `${origin}/schedule?payment=success&session_id={CHECKOUT_SESSION_ID}`

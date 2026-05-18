@@ -9,37 +9,58 @@ export async function POST(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
 
   const { session_id } = await req.json()
-  if (!session_id) return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
+  if (!session_id) {
+    console.error('[verify-session] missing session_id in request body')
+    return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
+  }
 
-  const supabase     = await createServerSupabaseClient()
+  const supabase      = await createServerSupabaseClient()
   const adminSupabase = createAdminSupabaseClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
+  if (!user) {
+    console.error('[verify-session] unauthenticated — cookie missing or expired', { session_id })
+    return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
+  }
 
   let session: Stripe.Checkout.Session
   try {
     session = await stripe.checkout.sessions.retrieve(session_id)
-  } catch {
+  } catch (e: any) {
+    console.error('[verify-session] stripe session not found', { session_id, err: e.message })
     return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   }
 
-  if (session.payment_status !== 'paid') {
+  // For coaching (manual capture): payment_status stays 'unpaid' until capture — check session.status instead
+  const isAuthorized = session.payment_status === 'paid' || session.status === 'complete'
+  if (!isAuthorized) {
+    console.error('[verify-session] not paid', {
+      session_id,
+      payment_status: session.payment_status,
+      session_status: session.status,
+    })
     return NextResponse.json({ error: 'Not paid' }, { status: 402 })
   }
 
   const meta        = session.metadata ?? {}
   const formationId = meta.formation_id
   const userId      = meta.user_id
-  const coachId     = meta.coach_id
-  const contentType = meta.content_type
+  // Normalise empty strings from Stripe metadata to proper values
+  const coachId     = meta.coach_id      || null
+  const contentType = meta.content_type  || null
   const packIndex   = meta.pack_index !== '' ? Number(meta.pack_index) : null
-  const scheduledAt = meta.scheduled_at !== '' ? meta.scheduled_at : null
+  const scheduledAt = meta.scheduled_at  || null
 
   // Security: the logged-in user must match the session user
-  if (userId !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (userId !== user.id) {
+    console.error('[verify-session] user mismatch', { metaUserId: userId, authUserId: user.id, session_id })
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
-  if (!formationId || !userId) return NextResponse.json({ error: 'Missing metadata' }, { status: 400 })
+  if (!formationId || !userId) {
+    console.error('[verify-session] missing metadata', { formationId, userId, meta })
+    return NextResponse.json({ error: 'Missing metadata' }, { status: 400 })
+  }
 
   // Always ensure purchase row exists
   const { error: purchaseError } = await adminSupabase.from('formation_purchases').insert({
@@ -47,11 +68,17 @@ export async function POST(req: NextRequest) {
     user_id:      userId,
   })
   if (purchaseError && purchaseError.code !== '23505') {
-    console.error('[verify-session] purchase insert error:', purchaseError.message)
+    console.error('[verify-session] purchase insert error:', purchaseError.message, purchaseError.code)
   }
 
-  // For coaching: ensure booking exists
-  if (contentType === 'coaching' && coachId) {
+  // For coaching: ensure booking(s) exist
+  if (contentType === 'coaching') {
+    if (!coachId) {
+      console.error('[verify-session] coachId is null/empty — booking will be created without coach_id', {
+        session_id, formationId, meta,
+      })
+    }
+
     const paymentIntentId = typeof session.payment_intent === 'string'
       ? session.payment_intent
       : (session.payment_intent as any)?.id ?? null
@@ -59,38 +86,77 @@ export async function POST(req: NextRequest) {
     // Determine how many sessions this pack covers
     let sessionsCount = 1
     if (packIndex !== null) {
-      const { data: formData } = await adminSupabase
+      const { data: formData, error: formError } = await adminSupabase
         .from('formations').select('coaching_packs').eq('id', formationId).single()
+      if (formError) console.error('[verify-session] coaching_packs fetch error:', formError.message)
       const pack = (formData?.coaching_packs as any[])?.[packIndex]
+      if (!pack) console.error('[verify-session] pack not found at index', packIndex, 'formation', formationId)
       if (pack?.hours && pack.hours > 1) sessionsCount = pack.hours
     }
 
-    // Idempotency: count existing bookings for this payment (two queries to avoid OR+LIKE encoding issues)
-    const [{ count: anchorCount }, { count: suffixedCount }] = await Promise.all([
+    // Idempotency: count existing bookings for this payment
+    const [anchorRes, suffixRes] = await Promise.all([
       adminSupabase.from('bookings').select('id', { count: 'exact', head: true }).eq('stripe_session_id', session_id),
       adminSupabase.from('bookings').select('id', { count: 'exact', head: true }).like('stripe_session_id', `${session_id}_%`),
     ])
+    if (anchorRes.error) console.error('[verify-session] idempotency anchor query error:', anchorRes.error.message)
+    if (suffixRes.error) console.error('[verify-session] idempotency suffix query error:', suffixRes.error.message)
 
-    const startIdx = (anchorCount ?? 0) + (suffixedCount ?? 0)
-    if (startIdx < sessionsCount) {
-      for (let i = startIdx; i < sessionsCount; i++) {
-        const isFirst = i === 0
-        const { error: bookingError } = await adminSupabase.from('bookings').insert({
-          formation_id:             formationId,
-          student_id:               userId,
-          coach_id:                 coachId,
-          pack_index:               packIndex,
-          status:                   scheduledAt && isFirst ? 'scheduled' : 'paid_pending_schedule',
-          scheduled_at:             scheduledAt && isFirst ? scheduledAt : null,
-          stripe_session_id:        i === 0 ? session_id : `${session_id}_${i}`,
-          stripe_payment_intent_id: paymentIntentId,
-        })
-        if (bookingError) {
-          if (bookingError.code === '23505') continue // already exists, skip
-          console.error('[verify-session] booking insert error:', bookingError.message)
-          return NextResponse.json({ error: bookingError.message }, { status: 500 })
+    const startIdx = (anchorRes.count ?? 0) + (suffixRes.count ?? 0)
+    console.log('[verify-session] booking count', { startIdx, sessionsCount, session_id })
+
+    if (startIdx >= sessionsCount) {
+      console.log('[verify-session] all bookings already exist, returning early', { startIdx, sessionsCount })
+      return NextResponse.json({ ok: true, type: 'coaching', coach_id: coachId, formation_id: formationId })
+    }
+
+    for (let i = startIdx; i < sessionsCount; i++) {
+      const isFirst = i === 0
+      const full: Record<string, unknown> = {
+        formation_id:             formationId,
+        student_id:               userId,
+        coach_id:                 coachId,
+        pack_index:               packIndex,
+        status:                   'pending_coach_approval',
+        scheduled_at:             isFirst ? scheduledAt : null,
+        stripe_session_id:        i === 0 ? session_id : `${session_id}_${i}`,
+        stripe_payment_intent_id: paymentIntentId,
+      }
+
+      let { error: bookingError } = await adminSupabase.from('bookings').insert(full)
+
+      // Gracefully degrade if schema hasn't been migrated yet (column doesn't exist)
+      if (bookingError?.code === '42703') {
+        console.error('[verify-session] 42703 column missing, retrying reduced payload:', bookingError.message)
+        const msg      = bookingError.message ?? ''
+        const reduced  = { ...full }
+        if (msg.includes('stripe_payment_intent_id')) delete reduced.stripe_payment_intent_id
+        if (msg.includes('pack_index'))               delete reduced.pack_index
+        if (msg.includes('stripe_session_id'))        delete reduced.stripe_session_id
+        ;({ error: bookingError } = await adminSupabase.from('bookings').insert(reduced))
+        // Last resort: absolute minimum columns
+        if (bookingError?.code === '42703') {
+          console.error('[verify-session] 42703 again, trying minimal payload:', bookingError.message)
+          ;({ error: bookingError } = await adminSupabase.from('bookings').insert({
+            formation_id: formationId,
+            student_id:   userId,
+            coach_id:     coachId,
+            status:       'pending_coach_approval',
+            scheduled_at: isFirst ? scheduledAt : null,
+          }))
         }
       }
+
+      if (bookingError) {
+        if (bookingError.code === '23505') {
+          console.log('[verify-session] booking already exists (23505), skipping slot', i)
+          continue
+        }
+        console.error('[verify-session] booking insert FAILED', { i, error: bookingError.message, code: bookingError.code })
+        return NextResponse.json({ error: bookingError.message }, { status: 500 })
+      }
+
+      console.log('[verify-session] booking created successfully', { i, session_id, formationId, coachId })
     }
 
     return NextResponse.json({ ok: true, type: 'coaching', coach_id: coachId, formation_id: formationId })
