@@ -45,20 +45,26 @@ export default function BecomeCoachPage() {
     })
     if (signUpError) { setError(signUpError.message); setLoading(false); return }
     if (data.user) {
-      await supabase.from('profiles').upsert({
-        id: data.user.id, email, username,
-        role: 'coach', xp: 0, onboarding_completed: false,
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        full_name: `${firstName.trim()} ${lastName.trim()}`,
-        birth_date: birthDate || null,
-        marketing_opt_out: marketingOptOut,
-      })
+      try {
+        await supabase.from('profiles').upsert({
+          id: data.user.id, email, username,
+          role: 'coach', xp: 0, onboarding_completed: false,
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          full_name: `${firstName.trim()} ${lastName.trim()}`,
+          birth_date: birthDate || null,
+          marketing_opt_out: marketingOptOut,
+        })
+        router.push('/coach/onboarding')
+      } catch {
+        setError('Une erreur est survenue lors de la création du profil.')
+        setLoading(false)
+      }
     }
-    router.push('/coach/onboarding')
   }
 
   return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: '#04040a' }}>
     <div style={{ width: '100%', maxWidth: 460 }}>
       {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
@@ -66,7 +72,7 @@ export default function BecomeCoachPage() {
           <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0 }} />
           <span style={{ fontFamily: 'var(--font-syne, sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: '#f0f4ff' }}>ONLYPOK</span>
         </Link>
-        <h1 style={{ color: '#f0f4ff', fontSize: 20, fontWeight: 700, margin: '14px 0 6px' }}>Devenir coach</h1>
+        <h1 style={{ color: '#f0f4ff', fontSize: 24, fontWeight: 800, margin: '14px 0 6px', fontFamily: 'var(--font-syne,sans-serif)', letterSpacing: '-0.5px' }}>Devenir coach</h1>
         <p style={{ color: 'rgba(240,244,255,0.4)', fontSize: 13, margin: 0 }}>Partagez votre expertise, construisez votre audience</p>
       </div>
 
@@ -132,6 +138,7 @@ export default function BecomeCoachPage() {
           <Link href="/login" style={{ color: 'rgba(240,244,255,0.6)', textDecoration: 'underline' }}>Se connecter</Link>
         </p>
       </div>
+    </div>
     </div>
   )
 }

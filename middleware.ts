@@ -27,11 +27,12 @@ export async function middleware(request: NextRequest) {
   // Ne pas exécuter la logique de redirection sur les routes API
   if (pathname.startsWith('/api/')) return supabaseResponse
 
-  const coachRoutes = ['/coach/']
-  const adminRoutes = ['/admin']
+  const coachRoutes   = ['/coach/']
+  const adminRoutes   = ['/admin']
+  const studentRoutes = ['/dashboard', '/schedule', '/track', '/train', '/messages', '/coaching']
 
   if (!user) {
-    const isProtected = [...coachRoutes, ...adminRoutes]
+    const isProtected = [...coachRoutes, ...adminRoutes, ...studentRoutes]
       .some(r => pathname.startsWith(r))
     if (isProtected) {
       return NextResponse.redirect(new URL('/login', request.url))

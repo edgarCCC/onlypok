@@ -189,7 +189,7 @@ function GTOTrainerMockup() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
       <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
-        {['UTG','HJ','CO','BTN','SB'].map((pos, i) => (
+        {['LJ','HJ','CO','BTN','SB'].map((pos, i) => (
           <div key={pos} style={{
             padding: '4px 10px', borderRadius: 6, fontSize: 10,
             fontFamily: 'var(--font-dm-mono,monospace)', fontWeight: 700,

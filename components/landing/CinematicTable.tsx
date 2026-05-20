@@ -1,11 +1,11 @@
 'use client'
 
-import { useRef, useState, useMemo } from 'react'
+import { useRef, useState, useMemo, useEffect } from 'react'
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 
 const FEATURES = [
   {
-    seat: 'UTG',
+    seat: 'LJ',
     accent: '#d4a853',
     title: 'Bibliothèque Vidéo',
     desc: 'Centaines d\'heures de contenu stratégique filmé en conditions réelles par des professionnels certifiés.',
@@ -79,6 +79,14 @@ export default function CinematicTable() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeIdx, setActiveIdx] = useState(0)
   const [rot, setRot] = useState(0)
+  const [scale, setScale] = useState(1)
+
+  useEffect(() => {
+    const compute = () => setScale(Math.min(1, (window.innerWidth - 32) / 900))
+    compute()
+    window.addEventListener('resize', compute)
+    return () => window.removeEventListener('resize', compute)
+  }, [])
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -143,7 +151,8 @@ export default function CinematicTable() {
         </div>
 
         {/* Main scene: SVG table + motion seats */}
-        <div style={{ position: 'relative', width: 900, height: 516, flexShrink: 0 }}>
+        <div style={{ position: 'relative', width: 900 * scale, height: 516 * scale, flexShrink: 0 }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: 900, height: 516, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
 
           {/* ── Premium SVG poker table ── */}
           <svg
@@ -428,6 +437,7 @@ export default function CinematicTable() {
               </motion.div>
             )
           })}
+          </div>{/* end inner scale wrapper */}
         </div>
 
         {/* ── Glassmorphism HUD Panel ── */}

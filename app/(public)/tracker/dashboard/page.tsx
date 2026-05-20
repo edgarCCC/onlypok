@@ -1,5 +1,4 @@
 'use client'
-import Navbar from '@/components/landing/Navbar'
 import Link from 'next/link'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -222,11 +221,14 @@ export default function TrackerDashboard() {
       map.get(room)!.push(r)
     }
     return [...map.entries()].map(([room, rows]) => {
-      const profit   = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
-      const buyIn    = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
-      const roi      = buyIn > 0 ? (profit / buyIn) * 100 : 0
-      const itm      = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
-      return { room, count: rows.length, profit, roi, itm }
+      const profit      = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
+      const buyIn       = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
+      const roi         = buyIn > 0 ? (profit / buyIn) * 100 : 0
+      const itm         = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
+      const timedRows   = rows.filter(r => (r.duration_secs ?? 0) > 0)
+      const totalSecs   = timedRows.reduce((a, r) => a + r.duration_secs, 0)
+      const profitHour  = totalSecs > 0 ? (profit / (totalSecs / 3600)) : null
+      return { room, count: rows.length, profit, roi, itm, profitHour }
     }).sort((a, b) => b.count - a.count)
   }, [filtered])
 
@@ -239,11 +241,41 @@ export default function TrackerDashboard() {
       map.get(fmt)!.push(r)
     }
     return [...map.entries()].map(([fmt, rows]) => {
-      const profit = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
-      const buyIn  = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
-      const roi    = buyIn > 0 ? (profit / buyIn) * 100 : 0
-      const itm    = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
-      return { fmt, count: rows.length, profit, roi, itm, meta: FORMAT_META[fmt] ?? { label: fmt, color: SILVER } }
+      const profit      = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
+      const buyIn       = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
+      const roi         = buyIn > 0 ? (profit / buyIn) * 100 : 0
+      const itm         = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
+      const timedRows   = rows.filter(r => (r.duration_secs ?? 0) > 0)
+      const totalSecs   = timedRows.reduce((a, r) => a + r.duration_secs, 0)
+      const profitHour  = totalSecs > 0 ? (profit / (totalSecs / 3600)) : null
+      return { fmt, count: rows.length, profit, roi, itm, profitHour, meta: FORMAT_META[fmt] ?? { label: fmt, color: SILVER } }
+    }).sort((a, b) => b.count - a.count)
+  }, [filtered])
+
+  // ── Room × format breakdown ───────────────────────────────────────────────
+  const combinedStats = useMemo(() => {
+    type CKey = string // e.g. "winamax|spin_rush"
+    const map = new Map<CKey, Row[]>()
+    for (const r of filtered) {
+      const room = r.room || 'winamax'
+      const fmt  = detectFormat(r)
+      const key  = `${room}|${fmt}`
+      if (!map.has(key)) map.set(key, [])
+      map.get(key)!.push(r)
+    }
+    return [...map.entries()].map(([key, rows]) => {
+      const [room, fmt] = key.split('|')
+      const profit      = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
+      const buyIn       = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
+      const roi         = buyIn > 0 ? (profit / buyIn) * 100 : 0
+      const itm         = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
+      const timedRows   = rows.filter(r => (r.duration_secs ?? 0) > 0)
+      const totalSecs   = timedRows.reduce((a, r) => a + r.duration_secs, 0)
+      const profitHour  = totalSecs > 0 ? (profit / (totalSecs / 3600)) : null
+      const roomColor   = room === 'betclic' ? '#fb923c' : VIOLET
+      const roomLabel   = room === 'betclic' ? 'Betclic' : 'Winamax'
+      const fmtMeta     = FORMAT_META[fmt] ?? { label: fmt, color: SILVER }
+      return { key, room, fmt, roomLabel, roomColor, fmtMeta, count: rows.length, profit, roi, itm, profitHour }
     }).sort((a, b) => b.count - a.count)
   }, [filtered])
 
@@ -313,7 +345,6 @@ export default function TrackerDashboard() {
   if (!loading && filtered.length === 0) {
     return (
       <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
-        <Navbar />
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '100px 24px 80px' }}>
           <Link href="/tracker" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 40 }}>
             <ArrowLeft size={14} /> Retour
@@ -337,7 +368,6 @@ export default function TrackerDashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
-      <Navbar />
 
       <div style={{ maxWidth: 1160, margin: '0 auto', padding: '96px 24px 80px' }}>
 
@@ -347,7 +377,7 @@ export default function TrackerDashboard() {
             <Link href="/tracker" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: DIM, textDecoration: 'none', fontSize: 12, marginBottom: 10 }}>
               <ArrowLeft size={12} /> Tracker
             </Link>
-            <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-0.8px', margin: 0 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-0.8px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>
               Dashboard{' '}
               <span style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 Tournois
@@ -420,56 +450,81 @@ export default function TrackerDashboard() {
 
         {/* ── Room + Format breakdown ─────────────────────────────────────── */}
         {filtered.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: roomStats.length > 1 ? '1fr 1fr' : '1fr', gap: 12, marginBottom: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
 
-            {/* Par room */}
-            <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '20px 24px' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: DIM, margin: '0 0 14px' }}>Par room</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {roomStats.map(({ room, count, profit, roi, itm }) => {
-                  const isWin = room === 'winamax'
-                  const color = isWin ? VIOLET : '#fb923c'
-                  const label = isWin ? 'Winamax' : 'Betclic'
-                  return (
-                    <div key={room} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, background: `${color}08`, border: `1px solid ${color}20` }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 13, fontWeight: 700, color: CREAM, minWidth: 72 }}>{label}</span>
-                      <span style={{ fontSize: 11, color: DIM, minWidth: 60 }}>{count} tournoi{count > 1 ? 's' : ''}</span>
-                      <div style={{ flex: 1, display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: profit >= 0 ? GREEN : RED, fontVariantNumeric: 'tabular-nums', minWidth: 72, textAlign: 'right' }}>
+            {/* Par room (avec profit/heure) */}
+            <div style={{ display: 'grid', gridTemplateColumns: roomStats.length > 1 ? '1fr 1fr' : '1fr', gap: 12 }}>
+              {roomStats.map(({ room, count, profit, roi, itm, profitHour }) => {
+                const isWin = room === 'winamax'
+                const color = isWin ? VIOLET : '#fb923c'
+                const label = isWin ? 'Winamax' : 'Betclic'
+                return (
+                  <div key={room} style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '20px 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: color }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: DIM }}>{label}</span>
+                      <span style={{ fontSize: 11, color: DIM, marginLeft: 'auto' }}>{count} tournoi{count > 1 ? 's' : ''}</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+                      <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: '10px 12px' }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: DIM, margin: '0 0 4px' }}>Profit</p>
+                        <p style={{ fontSize: 14, fontWeight: 900, color: profit >= 0 ? GREEN : RED, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
                           {profit >= 0 ? '+' : ''}{profit.toFixed(2)}€
-                        </span>
-                        <span style={{ fontSize: 11, color: roi >= 0 ? GREEN : RED, minWidth: 52, textAlign: 'right' }}>
-                          ROI {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
-                        </span>
-                        <span style={{ fontSize: 11, color: DIM, minWidth: 48, textAlign: 'right' }}>
-                          ITM {itm.toFixed(0)}%
-                        </span>
+                        </p>
+                      </div>
+                      <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: '10px 12px' }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: DIM, margin: '0 0 4px' }}>ROI</p>
+                        <p style={{ fontSize: 14, fontWeight: 900, color: roi >= 0 ? GREEN : RED, margin: 0 }}>
+                          {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                        </p>
+                      </div>
+                      <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: '10px 12px' }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: DIM, margin: '0 0 4px' }}>ITM</p>
+                        <p style={{ fontSize: 14, fontWeight: 900, color: itm >= 15 ? GREEN : itm >= 10 ? AMBER : RED, margin: 0 }}>
+                          {itm.toFixed(0)}%
+                        </p>
+                      </div>
+                      <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: '10px 12px' }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: DIM, margin: '0 0 4px' }}>€/heure</p>
+                        <p style={{ fontSize: 14, fontWeight: 900, color: profitHour === null ? DIM : profitHour >= 0 ? GREEN : RED, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
+                          {profitHour === null ? '—' : `${profitHour >= 0 ? '+' : ''}${profitHour.toFixed(2)}€`}
+                        </p>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
+                  </div>
+                )
+              })}
             </div>
 
-            {/* Par format */}
+            {/* Par room × format (tableau détaillé) */}
             <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '20px 24px' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: DIM, margin: '0 0 14px' }}>Par format</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {formatStats.map(({ fmt, count, profit, roi, itm, meta }) => (
-                  <div key={fmt} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, background: `${meta.color}08`, border: `1px solid ${meta.color}20` }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: meta.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, fontWeight: 700, color: CREAM, minWidth: 90 }}>{meta.label}</span>
-                    <span style={{ fontSize: 11, color: DIM, minWidth: 60 }}>{count} tournoi{count > 1 ? 's' : ''}</span>
-                    <div style={{ flex: 1, display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: DIM, margin: '0 0 14px' }}>Par room &amp; format</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {combinedStats.map(({ key, roomLabel, roomColor, fmtMeta, count, profit, roi, itm, profitHour }) => (
+                  <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, background: `${fmtMeta.color}06`, border: `1px solid ${fmtMeta.color}18` }}>
+                    {/* Room dot */}
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: roomColor, flexShrink: 0 }} />
+                    {/* Room label */}
+                    <span style={{ fontSize: 11, fontWeight: 700, color: roomColor, minWidth: 52 }}>{roomLabel}</span>
+                    {/* Format badge */}
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, color: fmtMeta.color, background: `${fmtMeta.color}15`, border: `1px solid ${fmtMeta.color}28`, whiteSpace: 'nowrap' }}>
+                      {fmtMeta.label}
+                    </span>
+                    {/* Count */}
+                    <span style={{ fontSize: 11, color: DIM, minWidth: 56 }}>{count} tournoi{count > 1 ? 's' : ''}</span>
+                    {/* Stats — pushed right */}
+                    <div style={{ flex: 1, display: 'flex', gap: 14, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 12, fontWeight: 700, color: profit >= 0 ? GREEN : RED, fontVariantNumeric: 'tabular-nums', minWidth: 72, textAlign: 'right' }}>
                         {profit >= 0 ? '+' : ''}{profit.toFixed(2)}€
                       </span>
-                      <span style={{ fontSize: 11, color: roi >= 0 ? GREEN : RED, minWidth: 52, textAlign: 'right' }}>
+                      <span style={{ fontSize: 11, color: roi >= 0 ? GREEN : RED, minWidth: 58, textAlign: 'right' }}>
                         ROI {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
                       </span>
-                      <span style={{ fontSize: 11, color: DIM, minWidth: 48, textAlign: 'right' }}>
+                      <span style={{ fontSize: 11, color: itm >= 15 ? GREEN : itm >= 10 ? AMBER : DIM, minWidth: 46, textAlign: 'right' }}>
                         ITM {itm.toFixed(0)}%
+                      </span>
+                      <span style={{ fontSize: 11, color: profitHour === null ? DIM : profitHour >= 0 ? CYAN : RED, minWidth: 68, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                        {profitHour === null ? '—' : `${profitHour >= 0 ? '+' : ''}${profitHour.toFixed(2)}€/h`}
                       </span>
                     </div>
                   </div>

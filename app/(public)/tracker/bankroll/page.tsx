@@ -1,5 +1,4 @@
 'use client'
-import Navbar from '@/components/landing/Navbar'
 import Link from 'next/link'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -88,7 +87,6 @@ export default function BankrollPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
-      <Navbar />
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '100px 24px 80px' }}>
 
         <Link href="/tracker" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
@@ -97,7 +95,7 @@ export default function BankrollPage() {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 4px' }}>Suivi Bankroll</h1>
+            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 4px', fontFamily: 'var(--font-syne,sans-serif)' }}>Suivi Bankroll</h1>
             <p style={{ fontSize: 13, color: SILVER, margin: 0 }}>Courbe de progression sur {sessions.length} sessions</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

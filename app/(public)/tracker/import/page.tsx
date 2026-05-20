@@ -1,5 +1,4 @@
 'use client'
-import Navbar from '@/components/landing/Navbar'
 import Link from 'next/link'
 import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -192,7 +191,6 @@ export default function ImportPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
-      <Navbar />
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '100px 24px 80px' }}>
 
         <Link href="/tracker/dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
@@ -200,7 +198,7 @@ export default function ImportPage() {
         </Link>
 
         <div style={{ marginBottom: 40 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 6px' }}>Import Winamax / Betclic</h1>
+          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 6px', fontFamily: 'var(--font-syne,sans-serif)' }}>Import Winamax / Betclic</h1>
           <p style={{ fontSize: 14, color: SILVER, margin: 0 }}>Glisse tes fichiers <code style={{ color: CYAN }}>.txt</code> — Winamax (résumés + historiques) ou Betclic (Spin & Rush).</p>
         </div>
 

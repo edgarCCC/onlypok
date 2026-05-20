@@ -2,12 +2,12 @@
 import { useState, useMemo } from 'react'
 import {
   Search, Star, BookOpen, Clock, Flame, X, ChevronRight,
-  Award, Users, TrendingUp, Package, Mail,
+  Award, Users, TrendingUp, Package,
 } from 'lucide-react'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const BG       = '#07090e'
-const CREAM    = '#E8E4DC'
+const CREAM    = '#f0f4ff'
 const MUTED    = 'rgba(232,228,220,0.45)'
 const SILVER   = 'rgba(232,228,220,0.28)'
 const DIM      = 'rgba(232,228,220,0.07)'
@@ -457,19 +457,19 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
           zIndex: 2,
         }}>
           <a
-            href={`mailto:contact@onlypok.com?subject=Demande de coaching — ${encodeURIComponent(coach.username ?? 'Coach')}`}
+            href={`/coaches/${coach.id}`}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
               width: '100%', padding: '15px', borderRadius: 14, border: 'none',
-              background: VIO, color: '#fff', fontSize: 14, fontWeight: 800,
+              background: `linear-gradient(135deg, ${VIO}, ${CYAN})`, color: '#fff', fontSize: 14, fontWeight: 800,
               textDecoration: 'none', letterSpacing: '-0.2px',
-              boxShadow: `0 4px 24px ${VIO}50`,
+              boxShadow: `0 4px 24px ${VIO}40`,
               transition: 'opacity 0.15s',
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.88' }}
             onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1' }}
           >
-            <Mail size={15} /> Contacter ce coach
+            <ChevronRight size={15} /> Voir le profil & réserver
           </a>
         </div>
       </div>

@@ -3,6 +3,12 @@ import Stripe from 'stripe'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { sendStudentBookingAcceptedEmail } from '@/lib/email'
 
+function createMeetingUrl(bookingId: string): string {
+  // Jitsi Meet — free, no API key, unguessable room name
+  const room = `onlypok-${bookingId.replace(/-/g, '').slice(0, 20)}`
+  return `https://meet.jit.si/${room}`
+}
+
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -13,7 +19,7 @@ export async function POST(req: NextRequest) {
 
   const { data: booking } = await supabase
     .from('bookings')
-    .select('id, coach_id, student_id, stripe_payment_intent_id, status, formation_id')
+    .select('id, coach_id, student_id, stripe_payment_intent_id, status, formation_id, scheduled_at')
     .eq('id', booking_id)
     .eq('coach_id', user.id)
     .eq('status', 'pending_coach_approval')
@@ -21,19 +27,28 @@ export async function POST(req: NextRequest) {
 
   if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
+  // Capture Stripe payment
   if (booking.stripe_payment_intent_id) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
     try {
       await stripe.paymentIntents.capture(booking.stripe_payment_intent_id)
     } catch (err: any) {
-      console.error('[bookings/accept] stripe capture failed:', err.message)
-      return NextResponse.json({ error: 'Stripe capture failed: ' + err.message }, { status: 500 })
+      // Already captured = idempotent success
+      if (err?.message?.includes('already been captured') || err?.code === 'charge_already_captured') {
+        console.log('[bookings/accept] payment already captured, continuing')
+      } else {
+        console.error('[bookings/accept] stripe capture failed:', err.message)
+        return NextResponse.json({ error: 'Stripe capture failed: ' + err.message }, { status: 500 })
+      }
     }
   }
 
+  // Generate meeting URL (Jitsi — free, no API key required)
+  const meetingUrl = createMeetingUrl(booking_id)
+
   const { error } = await supabase
     .from('bookings')
-    .update({ status: 'paid_pending_schedule' })
+    .update({ status: 'scheduled', ...(meetingUrl ? { meeting_url: meetingUrl } : {}) })
     .eq('id', booking_id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -47,9 +62,9 @@ export async function POST(req: NextRequest) {
   await supabase.from('notifications').insert({
     user_id: booking.student_id,
     type:    'booking_accepted',
-    title:   'Coaching accepté !',
-    body:    `Votre coaching "${formation?.title ?? 'coaching'}" a été accepté. Choisissez un créneau dans votre planning.`,
-    data:    { booking_id },
+    title:   'Coaching confirmé !',
+    body:    `Votre session "${formation?.title ?? 'coaching'}" est confirmée.${booking.scheduled_at ? ' Retrouvez le lien de visio dans votre planning.' : ''}`,
+    data:    { booking_id, meeting_url: meetingUrl },
   })
 
   sendStudentBookingAcceptedEmail({
@@ -59,5 +74,5 @@ export async function POST(req: NextRequest) {
     bookingId:      booking_id,
   }).catch(err => console.error('[bookings/accept] email error:', err.message))
 
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, meeting_url: meetingUrl })
 }

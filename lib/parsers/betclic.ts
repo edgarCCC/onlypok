@@ -60,7 +60,9 @@ export function buildBetclicTournaments(allHands: BetclicHand[]): ParsedTourname
     // Accumulate bounties across all hands (KO tournaments)
     const bountiesWon = gameHands.reduce((acc, h) => acc + h.bountiesWon, 0)
 
-    const buyInTotal    = first.buyIn
+    // Betclic repeats the same Buy In value in every hand header for a given gameId.
+    // Take it once — do not accumulate across hands.
+    const buyInTotal = first.buyIn
     const durationSecs  = Math.max(0, Math.round((last.date.getTime() - first.date.getTime()) / 1000))
     const totalPlayers  = isSpin
       ? Math.max(...gameHands.map(h => h.players.length), 2)
@@ -173,9 +175,9 @@ function parseBetclicHand(block: string): BetclicHand | null {
       prizeWon  = placementMatch[2] ? parseFloat(placementMatch[2]) : 0
     }
 
-    // Bounty lines: "Name won Bounty X.XX EUR/€" (can appear multiple times)
+    // Bounty lines: "HeroName wins €X.XX for eliminating SomePlayer..."
     for (const bm of summarySection.matchAll(
-      new RegExp(`${escaped}\\s+won\\s+Bounty\\s+([\\d.]+)\\s*(?:EUR|€)`, 'g')
+      new RegExp(`${escaped}\\s+wins\\s+€([\\d.]+)\\s+for\\s+eliminating`, 'g')
     )) {
       bountiesWon += parseFloat(bm[1])
     }

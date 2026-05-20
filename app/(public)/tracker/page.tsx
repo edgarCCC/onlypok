@@ -1,5 +1,4 @@
 'use client'
-import Navbar from '@/components/landing/Navbar'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -75,7 +74,6 @@ export default function TrackerPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
-      <Navbar />
 
       {/* Hero */}
       <section style={{ paddingTop: 140, paddingBottom: 80, textAlign: 'center', padding: '140px clamp(20px,5vw,80px) 80px' }}>
@@ -83,7 +81,7 @@ export default function TrackerPage() {
           <TrendingUp size={13} color={VIOLET} />
           <span style={{ fontSize: 12, fontWeight: 700, color: VIOLET, letterSpacing: '0.08em' }}>TRACKER POKER</span>
         </div>
-        <h1 style={{ fontSize: 'clamp(36px,6vw,72px)', fontWeight: 900, letterSpacing: '-2px', lineHeight: 1.05, margin: '0 0 20px' }}>
+        <h1 style={{ fontSize: 'clamp(36px,6vw,72px)', fontWeight: 900, letterSpacing: '-2px', lineHeight: 1.05, margin: '0 0 20px', fontFamily: 'var(--font-syne,sans-serif)' }}>
           Ton jeu,{' '}
           <span style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             sous contrôle.

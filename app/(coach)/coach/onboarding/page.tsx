@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import {
@@ -17,29 +17,30 @@ const CARD   = 'rgba(255,255,255,0.03)'
 const BORDER = 'rgba(255,255,255,0.08)'
 
 /* ─── Données ─── */
+// Les IDs doivent correspondre EXACTEMENT aux valeurs stockées dans profiles.rooms / profiles.variants
 const ROOMS = [
-  { id: 'pokerstars', label: 'PokerStars' },
-  { id: 'ggpoker',    label: 'GGPoker' },
-  { id: 'winamax',    label: 'Winamax' },
-  { id: 'pmu',        label: 'PMU Poker' },
+  { id: 'PokerStars', label: 'PokerStars' },
+  { id: 'GGPoker',    label: 'GGPoker' },
+  { id: 'Winamax',    label: 'Winamax' },
+  { id: 'PMU Poker',  label: 'PMU Poker' },
   { id: '888poker',   label: '888poker' },
-  { id: 'partypoker', label: 'PartyPoker' },
-  { id: 'ipoker',     label: 'iPoker' },
-  { id: 'unibet',     label: 'Unibet' },
-  { id: 'betclic',    label: 'Betclic' },
+  { id: 'PartyPoker', label: 'PartyPoker' },
+  { id: 'iPoker',     label: 'iPoker' },
+  { id: 'Unibet',     label: 'Unibet' },
+  { id: 'Betclic',    label: 'Betclic' },
   { id: 'bwin',       label: 'bwin' },
-  { id: 'autre',      label: 'Autre' },
+  { id: 'Autre',      label: 'Autre' },
 ]
 
 const VARIANTS = [
-  { id: 'mtt',     label: 'MTT',          desc: 'Tournois multi-tables' },
-  { id: 'cash',    label: 'Cash NLH',     desc: '6-max / Heads-Up' },
-  { id: 'expresso',label: 'Expresso',     desc: 'Jackpot Sit & Go' },
-  { id: 'plo',     label: 'PLO',          desc: 'Pot Limit Omaha' },
-  { id: 'sng',     label: 'SNG',          desc: 'Sit & Go classiques' },
-  { id: 'hu',      label: 'Heads-Up',     desc: 'Duel 1 contre 1' },
-  { id: 'mixed',   label: 'Mixed Games',  desc: 'HORSE, 8-game…' },
-  { id: 'pko',     label: 'PKO / Bounty', desc: 'Tournois à primes' },
+  { id: 'MTT',      label: 'MTT',      desc: 'Tournois multi-tables' },
+  { id: 'NLH',      label: 'NLH',      desc: 'No Limit Hold\'em' },
+  { id: 'Cash',     label: 'Cash',     desc: '6-max / Heads-Up' },
+  { id: 'Expresso', label: 'Expresso', desc: 'Jackpot Sit & Go' },
+  { id: 'PLO',      label: 'PLO',      desc: 'Pot Limit Omaha' },
+  { id: 'SNG',      label: 'SNG',      desc: 'Sit & Go classiques' },
+  { id: 'Heads-Up', label: 'Heads-Up', desc: 'Duel 1 contre 1' },
+  { id: 'PKO',      label: 'PKO',      desc: 'Tournois à primes' },
 ]
 
 type AdvItem = { id: string; label: string; Icon: React.ComponentType<{ size?: number; color?: string }> }
@@ -56,12 +57,12 @@ const ADVANTAGES: AdvItem[] = [
   { id: 'mental',    label: 'Mental game & gestion bankroll',     Icon: TrendingUp },
 ]
 
+// Les valeurs doivent correspondre aux catégories du profil (profiles.coach_proofs.category)
 const PROOF_CATS = [
-  { value: 'sharscope', label: 'SharkScope',          note: 'Obligatoire',  max: null },
-  { value: 'perf',      label: 'Meilleures perfs',    note: 'Max 6',        max: 6 },
-  { value: 'setup',     label: 'Photo du setup',      note: 'Conseillé',    max: null },
-  { value: 'palmares',  label: 'Palmarès',            note: null,           max: null },
-  { value: 'eleves',    label: 'Résultats élèves',    note: null,           max: null },
+  { value: 'stats',     label: 'Stats officielles',      note: 'Obligatoire · SharkScope, HM3/PT4 ou Hendon Mob', max: 5,    unlimited: false },
+  { value: 'longterme', label: 'Long terme',             note: '6 mois minimum',                                 max: 3,    unlimited: false },
+  { value: 'perf',      label: 'Meilleures perfs',       note: 'Plus gros gains · top résultats',                max: 4,    unlimited: false },
+  { value: 'eleves',    label: 'Transformations élèves', note: 'Avec accord de l\'élève',                       max: null, unlimited: true  },
 ]
 
 /* ─── Types ─── */
@@ -99,9 +100,10 @@ const phaseProgress = (step: number, phase: number) => {
 export default function OnboardingPage() {
   const supabase = useMemo(() => createClient(), [])
   const { user, profile } = useUser()
-  const fileRef  = useRef<HTMLInputElement>(null)
+  const fileRef        = useRef<HTMLInputElement>(null)
   const uploadedKeys   = useRef<Set<string>>(new Set())
-  const uploadCategory = useRef<string>('sharscope')
+  const uploadCategory = useRef<string>('stats')
+  const initialized    = useRef(false)
 
   const [step,     setStep]     = useState(0)
   const [form,     setForm]     = useState<FormData>(EMPTY)
@@ -109,6 +111,70 @@ export default function OnboardingPage() {
   const [uploading,setUploading]= useState(false)
   const [saving,   setSaving]   = useState(false)
   const [catError, setCatError] = useState('')
+  const [loading,  setLoading]  = useState(true)
+
+  /* ── Init : charge le profil existant + step sauvegardé ── */
+  useEffect(() => {
+    if (!user || initialized.current) return
+    initialized.current = true
+    ;(async () => {
+      const [{ data: p }, { data: pr }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('coach_proofs').select('*').eq('coach_id', user.id).order('order_index'),
+      ])
+
+      // Guard rôle — un élève ne peut pas accéder à l'onboarding coach
+      if (p?.role && p.role !== 'coach') {
+        window.location.href = '/formations'
+        return
+      }
+
+      // Si onboarding déjà terminé → redirige vers le profil
+      if (p?.onboarding_completed) {
+        window.location.href = '/coach/profile'
+        return
+      }
+
+      // Restore step depuis localStorage
+      const savedStep = localStorage.getItem(`pokme_onboarding_step_${user.id}`)
+      if (savedStep !== null) setStep(Number(savedStep))
+
+      // Pré-remplir le form avec les données déjà en base
+      if (p) {
+        setForm({
+          rooms:        p.rooms ?? [],
+          yearsExp:     p.years_experience ?? 3,
+          isPro:        p.is_pro ?? null,
+          variants:     p.variants ?? [],
+          advantages:   p.advantages ?? [],
+          bio:          p.bio ?? '',
+          vision:       p.vision ?? '',
+          coachingMode: p.coaching_mode ?? null,
+          hourlyRate:   String(p.hourly_rate ?? 80),
+          weekendPct:   p.weekend_rate_pct ?? 0,
+          packages:     p.coaching_packages ?? [],
+          phone:        p.phone ?? '',
+          addressLine:  p.address_line ?? '',
+          city:         p.city ?? '',
+          zipCode:      p.zip_code ?? '',
+          country:      p.country ?? 'France',
+          isCompany:    p.is_company ?? null,
+          companyName:  p.company_name ?? '',
+          siret:        p.siret ?? '',
+          vatNumber:    p.vat_number ?? '',
+        })
+      }
+
+      setProofs(pr ?? [])
+      setLoading(false)
+    })()
+  }, [user, supabase])
+
+  /* ── Sauvegarde automatique du step courant ── */
+  useEffect(() => {
+    if (!user || loading) return
+    localStorage.setItem(`pokme_onboarding_step_${user.id}`, String(step))
+  }, [step, user, loading])
 
   const canNext = (() => {
     if (step === 1) return form.rooms.length > 0
@@ -130,31 +196,59 @@ export default function OnboardingPage() {
 
   const go = (dir: 1 | -1) => setStep(s => Math.max(0, Math.min(TOTAL - 1, s + dir)))
 
+  const saveFormToProfile = async () => {
+    if (!user) return
+    await supabase.from('profiles').update({
+      bio:               form.bio || null,
+      vision:            form.vision || null,
+      years_experience:  form.yearsExp,
+      is_pro:            form.isPro,
+      rooms:             form.rooms,
+      variants:          form.variants,
+      advantages:        form.advantages,
+      coaching_mode:     form.coachingMode,
+      hourly_rate:       Number(form.hourlyRate) || null,
+      weekend_rate_pct:  form.weekendPct,
+      coaching_packages: form.packages,
+      phone:             form.phone || null,
+      address_line:      form.addressLine || null,
+      city:              form.city || null,
+      zip_code:          form.zipCode || null,
+      country:           form.country,
+      is_company:        form.isCompany,
+      company_name:      form.companyName || null,
+      siret:             form.siret || null,
+      vat_number:        form.vatNumber || null,
+    }).eq('id', user.id)
+  }
+
   const finish = async () => {
     if (!user) return
     setSaving(true)
     await supabase.from('profiles').update({
-      bio: form.bio || null,
-      years_experience: form.yearsExp,
-      is_pro: form.isPro,
-      rooms: form.rooms,
-      variants: form.variants,
-      advantages: form.advantages,
-      coaching_mode: form.coachingMode,
-      hourly_rate: Number(form.hourlyRate) || null,
-      weekend_rate_pct: form.weekendPct,
+      bio:               form.bio || null,
+      vision:            form.vision || null,
+      years_experience:  form.yearsExp,
+      is_pro:            form.isPro,
+      rooms:             form.rooms,
+      variants:          form.variants,
+      advantages:        form.advantages,
+      coaching_mode:     form.coachingMode,
+      hourly_rate:       Number(form.hourlyRate) || null,
+      weekend_rate_pct:  form.weekendPct,
       coaching_packages: form.packages,
-      phone: form.phone || null,
-      address_line: form.addressLine || null,
-      city: form.city || null,
-      zip_code: form.zipCode || null,
-      country: form.country,
-      is_company: form.isCompany,
-      company_name: form.companyName || null,
-      siret: form.siret || null,
-      vat_number: form.vatNumber || null,
+      phone:             form.phone || null,
+      address_line:      form.addressLine || null,
+      city:              form.city || null,
+      zip_code:          form.zipCode || null,
+      country:           form.country,
+      is_company:        form.isCompany,
+      company_name:      form.companyName || null,
+      siret:             form.siret || null,
+      vat_number:        form.vatNumber || null,
       onboarding_completed: true,
     }).eq('id', user.id)
+    localStorage.removeItem(`pokme_onboarding_step_${user.id}`)
     // Upsert coaching listing in marketplace
     const username = (profile as any)?.username ?? 'Coach'
     const { data: existing } = await supabase.from('formations')
@@ -181,10 +275,7 @@ export default function OnboardingPage() {
 
   const saveAndQuit = async () => {
     if (!user) return
-    await supabase.from('profiles').update({
-      rooms: form.rooms, variants: form.variants,
-      bio: form.bio || null,
-    }).eq('id', user.id)
+    await saveFormToProfile()
     window.location.href = '/coach/dashboard'
   }
 
@@ -364,7 +455,7 @@ export default function OnboardingPage() {
                     )}
                     {catProofs.length > 0 && (
                       <span style={{ fontSize: 11, color: SILVER, marginLeft: 'auto' }}>
-                        {catProofs.length}{cat.max ? ` / ${cat.max}` : ''}
+                        {catProofs.length}{cat.unlimited ? ' · illimité' : cat.max ? ` / ${cat.max}` : ''}
                       </span>
                     )}
                   </div>
@@ -659,6 +750,16 @@ export default function OnboardingPage() {
   }
 
   const isLast = step === TOTAL - 1
+
+  if (loading || !user) return (
+    <div style={{ minHeight: '100vh', background: '#04040a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+        <div style={{ width: 32, height: 32, border: '2px solid rgba(124,58,237,0.2)', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+        <p style={{ color: 'rgba(240,244,255,0.3)', fontSize: 13, margin: 0 }}>Chargement de ton profil…</p>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  )
 
   return (
     <div style={{ minHeight: '100vh', background: '#04040a', color: CREAM, display: 'flex', flexDirection: 'column' }}>

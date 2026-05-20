@@ -1,5 +1,4 @@
 'use client'
-import Navbar from '@/components/landing/Navbar'
 import Link from 'next/link'
 import { useState, useCallback } from 'react'
 import { ArrowLeft, RotateCcw, Play, Shuffle, Brain, Calculator, ChevronRight, Zap } from 'lucide-react'
@@ -309,7 +308,6 @@ export default function EquityPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
-      <Navbar />
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '100px 24px 80px' }}>
 
         <Link href="/trainer" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
@@ -319,7 +317,7 @@ export default function EquityPage() {
         {/* ── Header ── */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 28 }}>
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 4px' }}>Équité</h1>
+            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 4px', fontFamily: 'var(--font-syne,sans-serif)' }}>Équité</h1>
             <p style={{ fontSize: 13, color: SILVER, margin: 0 }}>
               {mode === 'calc' ? `Calculateur Monte Carlo · ${fmtK(iters)} itérations` : 'Mode entraînement — estime l\'équité sans aide'}
             </p>

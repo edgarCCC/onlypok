@@ -47,29 +47,49 @@ export async function POST(req: NextRequest) {
       console.error('[stripe/webhook] purchase insert error:', purchaseError.message)
     }
 
-    /* Pour les coachings : booking en attente d'approbation coach (like Airbnb) */
+    /* Pour les coachings : créer N bookings selon pack.hours */
     if (contentType === 'coaching' && coachId) {
       const paymentIntentId = typeof session.payment_intent === 'string'
         ? session.payment_intent
         : (session.payment_intent as any)?.id ?? null
 
-      const { error: bookingError } = await supabase.from('bookings').insert({
-        formation_id:              formationId,
-        student_id:                userId,
-        coach_id:                  coachId,
-        pack_index:                packIndex,
-        status:                    scheduledAt ? 'scheduled' : 'paid_pending_schedule',
-        scheduled_at:              scheduledAt,
-        stripe_session_id:         session.id,
-        stripe_payment_intent_id:  paymentIntentId,
-      })
-      if (bookingError && bookingError.code !== '23505') {
-        console.error('[stripe/webhook] booking insert error:', bookingError.message)
+      /* Fetch formation first to determine sessions count */
+      const { data: formation } = await supabase
+        .from('formations').select('title, coaching_packs').eq('id', formationId).single()
+
+      let sessionsCount = 1
+      const pack = packIndex !== null && Array.isArray(formation?.coaching_packs)
+        ? (formation!.coaching_packs as any[])[packIndex]
+        : null
+      if (pack?.hours && pack.hours > 1) sessionsCount = pack.hours
+
+      /* Idempotency: count existing bookings for this session */
+      const [{ count: anchorCount }, { count: suffixedCount }] = await Promise.all([
+        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('stripe_session_id', session.id),
+        supabase.from('bookings').select('id', { count: 'exact', head: true }).like('stripe_session_id', `${session.id}_%`),
+      ])
+
+      const startIdx = (anchorCount ?? 0) + (suffixedCount ?? 0)
+      if (startIdx < sessionsCount) {
+        for (let i = startIdx; i < sessionsCount; i++) {
+          const isFirst = i === 0
+          const { error: bookingError } = await supabase.from('bookings').insert({
+            formation_id:             formationId,
+            student_id:               userId,
+            coach_id:                 coachId,
+            pack_index:               packIndex,
+            status:                   'paid_pending_schedule',
+            scheduled_at:             isFirst ? (scheduledAt ?? null) : null,
+            stripe_session_id:        i === 0 ? session.id : `${session.id}_${i}`,
+            stripe_payment_intent_id: paymentIntentId,
+          })
+          if (bookingError && bookingError.code !== '23505') {
+            console.error('[stripe/webhook] booking insert error:', bookingError.message)
+          }
+        }
       }
 
       /* Notification pour le coach */
-      const { data: formation } = await supabase
-        .from('formations').select('title, coaching_packs').eq('id', formationId).single()
       const { data: student } = await supabase
         .from('profiles').select('username').eq('id', userId).single()
 
@@ -82,10 +102,6 @@ export async function POST(req: NextRequest) {
       })
 
       /* Email au coach */
-      const pack = packIndex != null && Array.isArray((formation as any)?.coaching_packs)
-        ? (formation as any).coaching_packs[packIndex]
-        : null
-
       sendCoachNewBookingEmail({
         coachId,
         studentUsername: student?.username ?? 'Un élève',

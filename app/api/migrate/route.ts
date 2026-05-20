@@ -206,6 +206,104 @@ ALTER TABLE coach_proofs
   ADD COLUMN IF NOT EXISTS validation_status TEXT DEFAULT 'pending',
   ADD COLUMN IF NOT EXISTS rejection_reason  TEXT,
   ADD COLUMN IF NOT EXISTS reviewed_at       TIMESTAMPTZ;
+
+-- Photos complémentaires par offre de coaching
+ALTER TABLE formations
+  ADD COLUMN IF NOT EXISTS gallery_urls JSONB DEFAULT '[]';
+
+-- Disponibilités des coachs (plages horaires hebdomadaires)
+CREATE TABLE IF NOT EXISTS availabilities (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  coach_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  day_of_week INTEGER NOT NULL CHECK (day_of_week BETWEEN 1 AND 7),
+  slot        TEXT NOT NULL,
+  booked      BOOLEAN DEFAULT false,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(coach_id, day_of_week, slot)
+);
+CREATE INDEX IF NOT EXISTS availabilities_coach_idx ON availabilities(coach_id);
+
+ALTER TABLE availabilities ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "avail_select_all"   ON availabilities;
+DROP POLICY IF EXISTS "avail_insert_own"   ON availabilities;
+DROP POLICY IF EXISTS "avail_update_own"   ON availabilities;
+DROP POLICY IF EXISTS "avail_delete_own"   ON availabilities;
+CREATE POLICY "avail_select_all" ON availabilities FOR SELECT USING (true);
+CREATE POLICY "avail_insert_own" ON availabilities FOR INSERT WITH CHECK (auth.uid() = coach_id);
+CREATE POLICY "avail_update_own" ON availabilities FOR UPDATE USING (auth.uid() = coach_id);
+CREATE POLICY "avail_delete_own" ON availabilities FOR DELETE USING (auth.uid() = coach_id);
+
+-- Sessions de coaching réservées
+CREATE TABLE IF NOT EXISTS bookings (
+  id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  formation_id             UUID REFERENCES formations(id) ON DELETE CASCADE,
+  student_id               UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  coach_id                 UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  pack_index               INTEGER,
+  status                   TEXT DEFAULT 'paid_pending_schedule',
+  scheduled_at             TIMESTAMPTZ,
+  stripe_session_id        TEXT,
+  stripe_payment_intent_id TEXT,
+  created_at               TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS bookings_student_idx ON bookings(student_id);
+CREATE INDEX IF NOT EXISTS bookings_coach_idx   ON bookings(coach_id);
+
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "bookings_select_own" ON bookings;
+DROP POLICY IF EXISTS "bookings_insert_own" ON bookings;
+DROP POLICY IF EXISTS "bookings_update_own" ON bookings;
+CREATE POLICY "bookings_select_own" ON bookings FOR SELECT USING (auth.uid() = student_id OR auth.uid() = coach_id);
+CREATE POLICY "bookings_insert_own" ON bookings FOR INSERT WITH CHECK (true);
+CREATE POLICY "bookings_update_own" ON bookings FOR UPDATE USING (auth.uid() = student_id OR auth.uid() = coach_id);
+
+-- Progression vidéo (watch time par leçon)
+CREATE TABLE IF NOT EXISTS video_progress (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id          UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  lesson_id        UUID REFERENCES formation_lessons(id) ON DELETE CASCADE,
+  formation_id     UUID REFERENCES formations(id) ON DELETE CASCADE,
+  watched_seconds  INTEGER DEFAULT 0,
+  duration_seconds INTEGER DEFAULT 0,
+  updated_at       TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, lesson_id)
+);
+CREATE INDEX IF NOT EXISTS video_progress_user_idx ON video_progress(user_id);
+
+ALTER TABLE video_progress ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "vp_select_own" ON video_progress;
+DROP POLICY IF EXISTS "vp_upsert_own" ON video_progress;
+CREATE POLICY "vp_select_own" ON video_progress FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "vp_upsert_own" ON video_progress FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- Colonnes bookings ajoutées progressivement (idempotent)
+ALTER TABLE bookings
+  ADD COLUMN IF NOT EXISTS pack_index               INTEGER,
+  ADD COLUMN IF NOT EXISTS stripe_session_id        TEXT,
+  ADD COLUMN IF NOT EXISTS stripe_payment_intent_id TEXT,
+  ADD COLUMN IF NOT EXISTS meeting_url              TEXT,
+  ADD COLUMN IF NOT EXISTS coach_feedback           TEXT,
+  ADD COLUMN IF NOT EXISTS feedback_at              TIMESTAMPTZ;
+
+-- messages coach <-> étudiant
+CREATE TABLE IF NOT EXISTS messages (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  from_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  to_id      UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  content    TEXT NOT NULL,
+  read       BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS messages_from_idx ON messages(from_id);
+CREATE INDEX IF NOT EXISTS messages_to_idx   ON messages(to_id);
+
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "messages_select_own" ON messages;
+DROP POLICY IF EXISTS "messages_insert_own" ON messages;
+DROP POLICY IF EXISTS "messages_update_own" ON messages;
+CREATE POLICY "messages_select_own" ON messages FOR SELECT USING (auth.uid() = from_id OR auth.uid() = to_id);
+CREATE POLICY "messages_insert_own" ON messages FOR INSERT WITH CHECK (auth.uid() = from_id);
+CREATE POLICY "messages_update_own" ON messages FOR UPDATE USING (auth.uid() = to_id);
 `
 
 export async function GET() {

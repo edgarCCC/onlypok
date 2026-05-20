@@ -1,8 +1,8 @@
 import {
-  Clock, Shield, RefreshCw, Smartphone, MessageSquare, MessageCircle,
-  Users, Award, FileText, Download, Lock, PlayCircle, Eye,
-  User, Calendar, Phone, TrendingUp, BarChart2, Zap, BookOpen,
-  CheckCircle, Radio, Database, PenLine, Send,
+  Shield, MessageSquare, Send, Users, PenLine, Download, BarChart2,
+  Radio, PlayCircle, Eye, User, Calendar, Phone, TrendingUp,
+  CheckCircle, Database, Zap, BookOpen, MessageCircle,
+  Clock, RefreshCw, Smartphone, Award, Lock, FileText,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -13,7 +13,8 @@ export interface Highlight {
   desc: string
 }
 
-export const HIGHLIGHTS: Highlight[] = [
+/* ── Commun aux trois types ── */
+const ALL: Highlight[] = [
   { id: 'lifetime',    Icon: Clock,         label: 'Accès à vie',              desc: 'Regardez et re-regardez le contenu sans limite de temps' },
   { id: 'refund',      Icon: Shield,        label: 'Satisfait ou remboursé',   desc: 'Remboursement garanti sous 7 jours sans condition' },
   { id: 'updates',     Icon: RefreshCw,     label: 'Mises à jour incluses',    desc: 'Le contenu est enrichi et mis à jour régulièrement' },
@@ -40,3 +41,69 @@ export const HIGHLIGHTS: Highlight[] = [
   { id: 'hd',          Icon: FileText,      label: 'Vidéo HD',                 desc: 'Toutes les vidéos en haute définition' },
   { id: 'chat',        Icon: MessageCircle, label: 'Chat avec le coach',       desc: 'Messagerie directe avec le coach pendant la formation' },
 ]
+
+function pick(ids: string[]): Highlight[] {
+  return ids.map(id => ALL.find(h => h.id === id)!).filter(Boolean)
+}
+
+/* ── Coaching : sessions individuelles, suivi, relationnel ── */
+export const HIGHLIGHTS_COACHING: Highlight[] = pick([
+  'individual',   // Suivi individuel — cœur du coaching
+  'replay',       // Replay inclus — session enregistrée
+  'handreview',   // Analyse de mains — activité centrale
+  'progress',     // Suivi de progression
+  'structured',   // Programme structuré
+  'solver',       // Études solver incluses
+  'database',     // Base de mains
+  'exercises',    // Exercices pratiques (homework)
+  'files',        // Fichiers téléchargeables (ranges)
+  'whatsapp',     // Hotline WhatsApp
+  'chat',         // Chat avec le coach
+  'discord',      // Support Discord
+  'telegram',     // Groupe Telegram
+  'community',    // Communauté privée
+  'cancel',       // Annulation gratuite
+  'priority',     // Priorité réservation
+  'guarantee',    // Garantie résultats
+  'refund',       // Satisfait ou remboursé
+])
+
+/* ── Formation : cours structuré en chapitres ── */
+export const HIGHLIGHTS_FORMATION: Highlight[] = pick([
+  'lifetime',     // Accès à vie
+  'updates',      // Mises à jour incluses
+  'mobile',       // Accès mobile
+  'structured',   // Programme structuré
+  'exercises',    // Exercices pratiques
+  'files',        // Fichiers téléchargeables
+  'solver',       // Études solver
+  'database',     // Base de mains
+  'certificate',  // Attestation de fin
+  'exclusive',    // Contenu exclusif
+  'hd',           // Vidéo HD
+  'live',         // Sessions live (Q&A, masterclass)
+  'discord',      // Support Discord
+  'telegram',     // Groupe Telegram
+  'community',    // Communauté privée
+  'chat',         // Chat avec le coach
+  'refund',       // Satisfait ou remboursé
+  'guarantee',    // Garantie résultats
+])
+
+/* ── Vidéo standalone ── */
+export const HIGHLIGHTS_VIDEO: Highlight[] = pick([
+  'lifetime',     // Accès à vie
+  'updates',      // Mises à jour incluses
+  'mobile',       // Accès mobile
+  'hd',           // Vidéo HD
+  'exclusive',    // Contenu exclusif
+  'files',        // Fichiers téléchargeables
+  'solver',       // Études solver
+  'discord',      // Support Discord
+  'telegram',     // Groupe Telegram
+  'community',    // Communauté privée
+  'refund',       // Satisfait ou remboursé
+])
+
+/* Rétrocompatibilité — liste complète */
+export const HIGHLIGHTS: Highlight[] = ALL

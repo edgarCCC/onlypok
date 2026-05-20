@@ -76,7 +76,8 @@ export default function IdentityBuilder() {
         </div>
 
         {/* Card + Panel layout */}
-        <div style={{
+        <style>{`@media(max-width:860px){.ib-grid{grid-template-columns:1fr!important;gap:32px!important}}`}</style>
+        <div className="ib-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(0, 1fr) 380px',
           gap: 56,

@@ -5,54 +5,129 @@ import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
 
 const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
+const SILVER = 'rgba(240,244,255,0.38)'
+const DIM    = 'rgba(240,244,255,0.22)'
+const VIOLET = '#7c3aed'
+const GOLD   = '#f59e0b'
 
-const TYPE: Record<string, { label: string; color: string }> = {
-  formation: { label: 'Formation', color: '#7c3aed' },
-  video:     { label: 'Vidéo',     color: '#06b6d4' },
-  coaching:  { label: 'Coaching',  color: '#f59e0b' },
-}
-
-type Filter = 'reviews' | 'formation' | 'coaching' | 'video'
+const INITIAL_COUNT = 6
+const TRUNCATE_CHARS = 220
 
 function timeAgo(iso: string) {
-  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
-  if (d === 0) return "aujourd'hui"
-  if (d === 1) return 'hier'
-  if (d < 30)  return `il y a ${d}j`
-  const m = Math.floor(d / 30)
-  if (m < 12)  return `il y a ${m} mois`
-  return `il y a ${Math.floor(m / 12)} an${Math.floor(m / 12) > 1 ? 's' : ''}`
+  const d    = new Date(iso)
+  const now  = new Date()
+  const diff = now.getTime() - d.getTime()
+  const days = Math.floor(diff / 86400000)
+  if (days < 1)  return "aujourd'hui"
+  if (days < 7)  return `il y a ${days} j`
+  if (days < 30) return `il y a ${Math.floor(days / 7)} sem.`
+  return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 }
 
-function ReviewRow({ username, date, rating, comment, color, label }: {
-  username: string; date: string; rating?: number; comment: string; color: string; label: string
-}) {
-  return (
-    <div style={{ display: 'flex', gap: 16, padding: '32px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-      <span style={{ fontSize: 80, color: SILVER, fontWeight: 200, lineHeight: 1, flexShrink: 0, marginTop: -8 }}>[</span>
+function memberLabel(createdAt?: string | null) {
+  if (!createdAt) return null
+  const months = Math.max(0,
+    (new Date().getFullYear() - new Date(createdAt).getFullYear()) * 12
+    + (new Date().getMonth() - new Date(createdAt).getMonth())
+  )
+  if (months < 1)  return 'nouveau membre'
+  if (months < 12) return `${months} mois sur OnlyPok`
+  const y = Math.floor(months / 12)
+  return `${y} an${y > 1 ? 's' : ''} sur OnlyPok`
+}
 
-      <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-          {rating != null && (
-            <div style={{ display: 'flex', gap: 3 }}>
-              {[1,2,3,4,5].map(j => (
-                <svg key={j} width="13" height="13" viewBox="0 0 14 14" fill={j <= rating ? color : 'rgba(255,255,255,0.1)'}>
-                  <polygon points="7,1 8.8,5.5 13.5,5.5 9.8,8.5 11.2,13 7,10.2 2.8,13 4.2,8.5 0.5,5.5 5.2,5.5"/>
-                </svg>
-              ))}
-            </div>
-          )}
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', color }}>{label}</span>
-          <span style={{ fontSize: 11, color: SILVER }}>{timeAgo(date)}</span>
+function Stars({ rating, size = 12 }: { rating: number; size?: number }) {
+  return (
+    <span style={{ display: 'inline-flex', gap: 2 }}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <svg key={i} width={size} height={size} viewBox="0 0 14 14"
+          fill={i < Math.round(rating) ? GOLD : 'rgba(240,244,255,0.12)'}>
+          <polygon points="7,1 8.8,5.5 13.5,5.5 9.8,8.5 11.2,13 7,10.2 2.8,13 4.2,8.5 0.5,5.5 5.2,5.5" />
+        </svg>
+      ))}
+    </span>
+  )
+}
+
+function ReviewCard({ r }: { r: any }) {
+  const [expanded, setExpanded] = useState(false)
+
+  const rawName    = r.student?.username ?? 'Élève'
+  const username   = rawName.charAt(0).toUpperCase() + rawName.slice(1)
+  const initial    = username[0]?.toUpperCase() ?? 'E'
+  const avatarUrl  = r.student?.avatar_url ?? null
+  const since      = memberLabel(r.student?.created_at)
+  const rating     = r.rating != null ? Number(r.rating) : null
+  const text       = r.comment || r.content || ''
+  const date       = r.created_at ? timeAgo(r.created_at) : ''
+  const coachHours = r.coaching_hours ?? null
+
+  const needsTruncate = text.length > TRUNCATE_CHARS
+
+  return (
+    <div style={{ padding: '0 0 28px', borderBottom: '1px solid rgba(240,244,255,0.07)' }}>
+
+      {/* Avatar + identity */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+          background: avatarUrl ? 'transparent' : `linear-gradient(135deg,${VIOLET},#06b6d4)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, fontWeight: 700, color: '#fff', overflow: 'hidden',
+          border: '1.5px solid rgba(240,244,255,0.1)',
+        }}>
+          {avatarUrl
+            // eslint-disable-next-line @next/next/no-img-element
+            ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : initial
+          }
         </div>
-        <div style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 10, letterSpacing: '0.04em' }}>{username}</div>
-        <p style={{ fontSize: 15, color: 'rgba(240,244,255,0.6)', lineHeight: 1.75, margin: 0 }}>
-          {comment || 'Aucun commentaire.'}
-        </p>
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 700, color: CREAM, margin: 0, lineHeight: 1.3 }}>
+            {username}
+          </p>
+          {(since || coachHours != null) && (
+            <p style={{ fontSize: 12, color: SILVER, margin: '2px 0 0', lineHeight: 1 }}>
+              {coachHours != null ? `${coachHours}h de coaching` : since}
+            </p>
+          )}
+        </div>
       </div>
 
-      <span style={{ fontSize: 80, color: SILVER, fontWeight: 200, lineHeight: 1, flexShrink: 0, alignSelf: 'flex-end', marginBottom: -8 }}>]</span>
+      {/* Rating + date */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        {rating != null && <Stars rating={rating} />}
+        <span style={{ fontSize: 12, color: DIM }}>·</span>
+        <span style={{ fontSize: 12, color: SILVER }}>{date}</span>
+      </div>
+
+      {/* Review text */}
+      {text ? (
+        <div>
+          <p style={{
+            fontSize: 14, color: 'rgba(240,244,255,0.75)', lineHeight: 1.6, margin: 0,
+            display: '-webkit-box', WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: expanded ? 'unset' : 3,
+            overflow: expanded ? 'visible' : 'hidden',
+          } as React.CSSProperties}>
+            {text}
+          </p>
+          {needsTruncate && (
+            <button
+              onClick={() => setExpanded(e => !e)}
+              style={{
+                marginTop: 6, background: 'none', border: 'none', padding: 0,
+                fontSize: 13, fontWeight: 600, color: CREAM,
+                cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3,
+              }}
+            >
+              {expanded ? 'Réduire' : 'Lire la suite'}
+            </button>
+          )}
+        </div>
+      ) : (
+        <p style={{ fontSize: 13, color: DIM, fontStyle: 'italic', margin: 0 }}>Aucun commentaire.</p>
+      )}
     </div>
   )
 }
@@ -60,44 +135,42 @@ function ReviewRow({ username, date, rating, comment, color, label }: {
 export default function ReviewsPage() {
   const supabase = useMemo(() => createClient(), [])
   const { user } = useUser()
-  const [loading, setLoading]           = useState(true)
-  const [reviews, setReviews]           = useState<any[]>([])
-  const [videoComments, setVideoComments] = useState<any[]>([])
-  const [filter, setFilter]             = useState<Filter>('reviews')
+
+  const [loading, setLoading]   = useState(true)
+  const [reviews, setReviews]   = useState<any[]>([])
+  const [vcoms,   setVcoms]     = useState<any[]>([])
+  const [showAll, setShowAll]   = useState(false)
 
   useEffect(() => {
     if (!user) return
     ;(async () => {
-      const [{ data: rev }, { data: vcoms }] = await Promise.all([
-        supabase
-          .from('reviews')
-          .select('*, student:profiles!student_id(username)')
+      const [{ data: rev }, { data: vc }] = await Promise.all([
+        supabase.from('reviews')
+          .select('*, student:profiles!student_id(username, avatar_url, created_at)')
           .eq('coach_id', user.id)
           .order('created_at', { ascending: false }),
-        supabase
-          .from('video_comments')
-          .select('*, student:profiles!student_id(username), formation:formations(title)')
+        supabase.from('video_comments')
+          .select('*, student:profiles!student_id(username, avatar_url, created_at)')
           .eq('coach_id', user.id)
           .order('created_at', { ascending: false }),
       ])
       setReviews(rev ?? [])
-      setVideoComments(vcoms ?? [])
+      setVcoms(vc ?? [])
       setLoading(false)
     })()
   }, [user, supabase])
 
-  const reviewsFiltered = filter === 'formation'
-    ? reviews.filter(r => (r.content_type ?? 'formation') === 'formation')
-    : filter === 'coaching'
-    ? reviews.filter(r => r.content_type === 'coaching')
-    : reviews
+  const all = useMemo(() =>
+    [...reviews, ...vcoms].sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+  , [reviews, vcoms])
 
-  const FILTERS = [
-    { id: 'reviews'  as Filter, label: 'Tous les avis',  count: reviews.length },
-    { id: 'formation'as Filter, label: 'Formations',     count: reviews.filter(r => (r.content_type ?? 'formation') === 'formation').length },
-    { id: 'coaching' as Filter, label: 'Coaching',       count: reviews.filter(r => r.content_type === 'coaching').length },
-    { id: 'video'    as Filter, label: 'Commentaires vidéo', count: videoComments.length },
-  ]
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((s, r) => s + (r.rating ?? 0), 0) / reviews.length
+    : null
+
+  const visible = showAll ? all : all.slice(0, INITIAL_COUNT)
 
   if (loading) return (
     <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -105,81 +178,76 @@ export default function ReviewsPage() {
     </div>
   )
 
-  const isEmpty = filter === 'video' ? videoComments.length === 0 : reviewsFiltered.length === 0
-
   return (
-    <div style={{ minHeight: '100vh', background: '#04040a', color: CREAM, padding: '40px' }}>
-      <div style={{ maxWidth: 860, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
+      <div style={{ maxWidth: 1160, margin: '0 auto', padding: '48px 48px 80px' }}>
 
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
-          <p style={{ fontSize: 11, color: SILVER, marginBottom: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Réputation</p>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 44, color: SILVER, fontWeight: 200 }}>[</span>
-            <h1 style={{ fontSize: 44, fontWeight: 700, color: CREAM, letterSpacing: '-1px', fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>Mes avis</h1>
-            <span style={{ fontSize: 44, color: SILVER, fontWeight: 200 }}>]</span>
-          </div>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,255,0.28)', margin: '0 0 10px' }}>Espace coach</p>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: '0 0 8px', fontFamily: 'var(--font-syne,sans-serif)' }}>
+            Avis
+          </h1>
+          {avgRating != null && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Stars rating={avgRating} size={14} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: CREAM }}>{avgRating.toFixed(2)}</span>
+              <span style={{ fontSize: 14, color: SILVER }}>·</span>
+              <span style={{ fontSize: 14, color: SILVER, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                {all.length} avis
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Filtres */}
-        <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: 4, gap: 2, marginBottom: 32, flexWrap: 'wrap' }}>
-          {FILTERS.map(f => {
-            const active = filter === f.id
-            return (
-              <button key={f.id} onClick={() => setFilter(f.id)} style={{
-                padding: '7px 18px', borderRadius: 8, border: 'none', fontSize: 12,
-                fontWeight: active ? 600 : 400, cursor: 'pointer',
-                background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
-                color: active ? CREAM : SILVER,
-              }}>
-                {f.label} <span style={{ opacity: 0.4, fontSize: 10 }}>{f.count}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Empty */}
-        {isEmpty && (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <p style={{ color: SILVER, fontSize: 14 }}>
-              {filter === 'video' ? "Aucun commentaire vidéo pour l'instant" : "Aucun avis pour l'instant"}
-            </p>
+        {/* Empty state */}
+        {all.length === 0 && (
+          <div style={{
+            background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)',
+            borderRadius: 16, padding: '60px', textAlign: 'center',
+          }}>
+            <p style={{ color: CREAM, fontSize: 14, fontWeight: 600, margin: '0 0 6px' }}>Aucun avis pour le moment</p>
+            <p style={{ color: SILVER, fontSize: 13, margin: 0 }}>Les avis de vos élèves apparaîtront ici</p>
           </div>
         )}
 
-        {/* Avis */}
-        {filter !== 'video' && (
-          <div>
-            {reviewsFiltered.map((r, i) => (
-              <ReviewRow
-                key={i}
-                username={r.student?.username ?? 'Élève'}
-                date={r.created_at}
-                rating={Math.round(r.rating ?? 0)}
-                comment={r.comment}
-                color={TYPE[r.content_type ?? 'formation']?.color ?? TYPE.formation.color}
-                label={(TYPE[r.content_type ?? 'formation']?.label ?? 'Formation').toUpperCase()}
-              />
-            ))}
-          </div>
-        )}
+        {/* 2-col grid */}
+        {all.length > 0 && (
+          <>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '0 64px',
+            }}>
+              {visible.map((r, i) => (
+                <ReviewCard key={r.id ?? i} r={r} />
+              ))}
+            </div>
 
-        {/* Commentaires vidéo */}
-        {filter === 'video' && (
-          <div>
-            {videoComments.map((c, i) => (
-              <ReviewRow
-                key={i}
-                username={c.student?.username ?? 'Élève'}
-                date={c.created_at}
-                comment={c.content}
-                color={TYPE.video.color}
-                label={c.formation?.title?.toUpperCase() ?? 'VIDÉO'}
-              />
-            ))}
-          </div>
+            {/* Show more */}
+            {all.length > INITIAL_COUNT && (
+              <div style={{ marginTop: 32 }}>
+                <button
+                  onClick={() => setShowAll(s => !s)}
+                  style={{
+                    padding: '14px 24px', borderRadius: 10,
+                    border: '1px solid rgba(240,244,255,0.2)',
+                    background: 'transparent', color: CREAM,
+                    fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(240,244,255,0.05)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
+                >
+                  {showAll
+                    ? 'Réduire les avis'
+                    : `Afficher les ${all.length} avis`
+                  }
+                </button>
+              </div>
+            )}
+          </>
         )}
-
       </div>
     </div>
   )

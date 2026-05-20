@@ -3,9 +3,9 @@ import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'rea
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Upload, Plus, Trash2, ZoomIn, ZoomOut, Video, Check } from 'lucide-react'
+import { ArrowLeft, Upload, Plus, Trash2, ZoomIn, ZoomOut, Video, Check, CalendarCheck, Zap, Minus } from 'lucide-react'
 import PublishOverlay from '@/components/PublishOverlay'
-import { HIGHLIGHTS } from '@/lib/highlights'
+import { HIGHLIGHTS_COACHING, HIGHLIGHTS_FORMATION, HIGHLIGHTS_VIDEO } from '@/lib/highlights'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -27,8 +27,13 @@ const LEVELS_BY_VARIANT: Record<string, { value: string; label: string }[]> = {
 const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '11px 16px', color: CREAM, fontSize: 14, outline: 'none', fontFamily: 'inherit' }
 
 type Pack    = { label: string, hours: number, price: number, desc: string }
+type Pkg     = { id: string; name: string; sessions: number; price: string; desc: string }
 type Lesson  = { title: string, video_url: string, is_free: boolean }
 type Chapter = { lessons: Lesson[] }
+
+const CARD_BG  = 'rgba(232,228,220,0.03)'
+const CARD_BD  = 'rgba(232,228,220,0.08)'
+const VIOLET   = '#7c3aed'
 
 export default function NewFormationPage() {
   return (
@@ -78,6 +83,20 @@ function NewFormationInner() {
 
   const markDirty = useCallback(() => setIsDirty(true), [])
 
+  // Pre-fill coaching offer from profile
+  useEffect(() => {
+    if (!user) return
+    supabase.from('profiles').select('coaching_mode, hourly_rate, weekend_rate_pct, coaching_packages, cal_url').eq('id', user.id).single()
+      .then(({ data: p }: { data: any }) => {
+        if (!p) return
+        if (p.coaching_mode)      setCoachingMode(p.coaching_mode)
+        if (p.hourly_rate)        setHourlyRate(String(p.hourly_rate))
+        if (p.weekend_rate_pct)   setWeekendPct(p.weekend_rate_pct)
+        if (p.coaching_packages?.length) setPackages(p.coaching_packages)
+        if (p.cal_url)            setCalUrl(p.cal_url)
+      })
+  }, [user, supabase])
+
   const [highlights, setHighlights] = useState<string[]>([])
 
   const [packs, setPacks] = useState<Pack[]>([
@@ -85,6 +104,17 @@ function NewFormationInner() {
     { label: 'Progression', hours: 5,  price: 350, desc: '5 sessions pour progresser vite' },
     { label: 'Elite',       hours: 10, price: 600, desc: '10 sessions — engagement total' },
   ])
+
+  // Coaching offer
+  const [coachingMode, setCoachingMode] = useState<'auto' | 'manual' | null>('manual')
+  const [hourlyRate,   setHourlyRate]   = useState('80')
+  const [weekendPct,   setWeekendPct]   = useState(0)
+  const [packages,     setPackages]     = useState<Pkg[]>([])
+
+  // Photos complémentaires (coaching only)
+  const [galleryFiles,    setGalleryFiles]    = useState<{ file: File; preview: string }[]>([])
+  const [galleryUploading, setGalleryUploading] = useState(false)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const activeTab = TABS.find(t => t.id === tab)!
 
@@ -117,6 +147,23 @@ function NewFormationInner() {
     return data.publicUrl
   }
 
+  const uploadGallery = async (formationId: string): Promise<string[]> => {
+    if (!user || galleryFiles.length === 0) return []
+    setGalleryUploading(true)
+    const urls: string[] = []
+    for (const { file } of galleryFiles) {
+      const ext  = file.name.split('.').pop()
+      const path = `${user.id}/gallery/${formationId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error: upErr } = await supabase.storage.from('formations-thumbnails').upload(path, file, { upsert: true })
+      if (!upErr) {
+        const { data } = supabase.storage.from('formations-thumbnails').getPublicUrl(path)
+        urls.push(data.publicUrl)
+      }
+    }
+    setGalleryUploading(false)
+    return urls
+  }
+
   const doInsert = async (published: boolean) => {
     if (!user || !title.trim()) return null
     const thumbnail_url = miniature ? await uploadMiniature() : null
@@ -135,6 +182,24 @@ function NewFormationInner() {
 
     const { data, error: err } = await supabase.from('formations').insert(payload).select().single()
     if (err) { setError('Erreur formation : ' + err.message); return null }
+
+    // Upload gallery photos for coaching
+    if (tab === 'coaching' && data && galleryFiles.length > 0) {
+      const gallery_urls = await uploadGallery(data.id)
+      if (gallery_urls.length > 0) {
+        await supabase.from('formations').update({ gallery_urls }).eq('id', data.id)
+      }
+    }
+
+    // Persist coaching offer settings to profile
+    if (tab === 'coaching' && data) {
+      await supabase.from('profiles').update({
+        coaching_mode:     coachingMode,
+        hourly_rate:       Number(hourlyRate) || null,
+        weekend_rate_pct:  weekendPct,
+        coaching_packages: packages,
+      }).eq('id', user.id)
+    }
 
     /* Insérer chapitres + leçons en attendant chaque réponse */
     if (tab === 'formation' && data) {
@@ -243,7 +308,7 @@ function NewFormationInner() {
               <ArrowLeft size={16} />
             </button>
             <div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px' }}>Nouveau contenu</h1>
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', fontFamily: 'var(--font-syne,sans-serif)' }}>Nouveau contenu</h1>
               <p style={{ fontSize: 13, color: SILVER, marginTop: 2 }}>{activeTab.desc}</p>
             </div>
           </div>
@@ -407,7 +472,6 @@ function NewFormationInner() {
               <>
                 <Section title="Présentation">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <MiniatureEditor preview={thumbPreview} zoom={zoom} position={position} dragging={dragging} onThumb={handleThumb} onZoom={setZoom} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={() => setDragging(false)} />
                     <Field label="Titre de l'offre *"><input value={title} onChange={e => { setTitle(e.target.value); markDirty() }} required placeholder="Ex : Coaching MTT — Du fish au final table" style={inputStyle} /></Field>
                     <Field label="Description"><textarea value={desc} onChange={e => { setDesc(e.target.value); markDirty() }} placeholder="Méthode, approche, ce que l'élève va apprendre…" rows={5} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} /></Field>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -425,79 +489,152 @@ function NewFormationInner() {
                   </div>
                 </Section>
 
-                <Section title="Packs & tarifs">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {packs.map((pack, i) => (
-                      <div key={i} style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 12, padding: '18px 20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#a855f7', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</div>
-                            <input value={pack.label} onChange={e => updatePack(i, 'label', e.target.value)} style={{ ...inputStyle, width: 200, padding: '6px 12px', fontSize: 13, fontWeight: 700 }} />
-                          </div>
-                          {packs.length > 1 && (
-                            <button type="button" onClick={() => removePack(i)} style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                              <Trash2 size={12} />
-                            </button>
-                          )}
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12 }}>
-                          <Field label="Heures"><input type="number" min={1} value={pack.hours} onChange={e => updatePack(i, 'hours', Number(e.target.value))} style={inputStyle} /></Field>
-                          <Field label="Prix (€)"><input type="number" min={0} value={pack.price} onChange={e => updatePack(i, 'price', Number(e.target.value))} style={inputStyle} /></Field>
-                          <Field label="Description"><input value={pack.desc} onChange={e => updatePack(i, 'desc', e.target.value)} placeholder="Ce que comprend ce pack" style={inputStyle} /></Field>
-                        </div>
-                        {pack.hours > 0 && pack.price > 0 && <p style={{ fontSize: 11, color: SILVER, marginTop: 8 }}>{Math.round(pack.price / pack.hours)}€/h</p>}
+                <Section title="Photos complémentaires" subtitle="Jusqu'à 4 photos visibles sur ta page de vente (sessions, résultats, méthode…)">
+                  <input ref={galleryInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }}
+                    onChange={e => {
+                      const files = Array.from(e.target.files ?? []).slice(0, 4 - galleryFiles.length)
+                      const items = files.map(f => ({ file: f, preview: URL.createObjectURL(f) }))
+                      setGalleryFiles(prev => [...prev, ...items].slice(0, 4))
+                      e.target.value = ''
+                    }} />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                    {galleryFiles.map((g, i) => (
+                      <div key={i} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={g.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button type="button" onClick={() => setGalleryFiles(prev => prev.filter((_, j) => j !== i))}
+                          style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14 }}>
+                          ×
+                        </button>
                       </div>
                     ))}
-                    <button type="button" onClick={addPack} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1px dashed rgba(240,244,255,0.08)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
-                      onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
-                      <Plus size={14} /> Ajouter un pack
-                    </button>
+                    {galleryFiles.length < 4 && (
+                      <button type="button" onClick={() => galleryInputRef.current?.click()}
+                        style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed rgba(240,244,255,0.1)', background: 'rgba(240,244,255,0.02)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: SILVER, transition: 'border-color 0.2s' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.3)'}
+                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.1)'}>
+                        <Upload size={18} />
+                        <span style={{ fontSize: 11 }}>Ajouter</span>
+                      </button>
+                    )}
+                  </div>
+                </Section>
+
+                <Section title="Offre coaching" subtitle="Tarif, mode de réservation, forfaits multi-sessions">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+                    {/* Mode de réservation */}
+                    <Field label="Mode de réservation">
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        {([
+                          { v: 'manual' as const, Icon: CalendarCheck, label: 'Validation manuelle', badge: 'Recommandé' as string | undefined },
+                          { v: 'auto'   as const, Icon: Zap,           label: 'Acceptation directe', badge: undefined },
+                        ]).map(({ v, Icon, label, badge }) => (
+                          <button key={v} type="button" onClick={() => setCoachingMode(v)}
+                            style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: 12, border: `1.5px solid ${coachingMode === v ? VIOLET : CARD_BD}`, background: coachingMode === v ? 'rgba(124,58,237,0.12)' : CARD_BG, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left' }}>
+                            <Icon size={18} color={coachingMode === v ? '#a78bfa' : SILVER} />
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: coachingMode === v ? CREAM : SILVER }}>{label}</div>
+                              {badge && <span style={{ fontSize: 9, fontWeight: 700, color: '#4ade80', letterSpacing: '0.05em' }}>{badge}</span>}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </Field>
+
+                    {/* Tarif + supplément week-end */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                      <Field label="Tarif horaire (€/h)">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 20, color: SILVER, fontWeight: 300 }}>€</span>
+                          <input type="number" min="0" max="9999" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)}
+                            style={{ ...inputStyle, fontSize: 24, fontWeight: 800, textAlign: 'center', padding: '10px', width: '100%' }} />
+                          <span style={{ fontSize: 13, color: SILVER }}>/h</span>
+                        </div>
+                        {Number(hourlyRate) > 0 && (
+                          <p style={{ fontSize: 11, color: SILVER, marginTop: 6 }}>
+                            Élève paie ≈ <strong style={{ color: CREAM }}>€{Math.round(Number(hourlyRate) * 1.08)}</strong> (frais +8 %)
+                          </p>
+                        )}
+                      </Field>
+                      <Field label={`Supplément week-end (${weekendPct}%)`}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <OfferStepper onClick={() => setWeekendPct(p => Math.max(0, p - 5))}><Minus size={14} /></OfferStepper>
+                          <span style={{ fontSize: 24, fontWeight: 800, color: CREAM, minWidth: 48, textAlign: 'center' }}>+{weekendPct}%</span>
+                          <OfferStepper onClick={() => setWeekendPct(p => Math.min(50, p + 5))}><Plus size={14} /></OfferStepper>
+                        </div>
+                      </Field>
+                    </div>
+
+                    {/* Forfaits multi-sessions */}
+                    <Field label="Forfaits multi-sessions">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {packages.map((pkg, i) => (
+                          <div key={pkg.id} style={{ background: CARD_BG, border: `1px solid ${CARD_BD}`, borderRadius: 12, padding: '16px' }}>
+                            <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                              <input value={pkg.name}
+                                onChange={e => setPackages(ps => ps.map((p, j) => j === i ? { ...p, name: e.target.value } : p))}
+                                placeholder="Nom du forfait (ex : Pack Starter)"
+                                style={inputStyle} />
+                              <button type="button" onClick={() => setPackages(ps => ps.filter((_, j) => j !== i))}
+                                style={{ padding: '0 12px', borderRadius: 8, border: 'none', background: 'rgba(239,68,68,0.08)', color: '#ef4444', cursor: 'pointer', flexShrink: 0 }}>
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                              <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(240,244,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase' as const, display: 'block', marginBottom: 8 }}>Sessions</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
+                                  <OfferStepper onClick={() => setPackages(ps => ps.map((p, j) => j === i ? { ...p, sessions: Math.max(1, p.sessions - 1) } : p))}><Minus size={12} /></OfferStepper>
+                                  <span style={{ fontSize: 20, fontWeight: 800, color: CREAM, minWidth: 28, textAlign: 'center' }}>{pkg.sessions}</span>
+                                  <OfferStepper onClick={() => setPackages(ps => ps.map((p, j) => j === i ? { ...p, sessions: p.sessions + 1 } : p))}><Plus size={12} /></OfferStepper>
+                                </div>
+                              </div>
+                              <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(240,244,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase' as const, display: 'block', marginBottom: 8 }}>Prix total (€)</label>
+                                <input value={pkg.price} placeholder="ex : 320"
+                                  onChange={e => setPackages(ps => ps.map((p, j) => j === i ? { ...p, price: e.target.value } : p))}
+                                  style={{ ...inputStyle, marginTop: 4 }} />
+                              </div>
+                            </div>
+                            {Number(hourlyRate) > 0 && Number(pkg.price) > 0 && (() => {
+                              const full = pkg.sessions * Number(hourlyRate)
+                              const saved = full - Number(pkg.price)
+                              const pct  = Math.round((saved / full) * 100)
+                              if (saved <= 0) return null
+                              return <div style={{ fontSize: 11, color: '#4ade80', marginTop: 8 }}>Économie de {saved} € (−{pct} %)</div>
+                            })()}
+                          </div>
+                        ))}
+                        <button type="button"
+                          onClick={() => setPackages(ps => [...ps, { id: Date.now().toString(), name: '', sessions: 5, price: String(Math.round(Number(hourlyRate || 80) * 4.5)), desc: '' }])}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 10, border: `1.5px dashed ${CARD_BD}`, background: 'transparent', color: SILVER, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                          <Plus size={15} /> Ajouter un forfait
+                        </button>
+                      </div>
+                    </Field>
                   </div>
                 </Section>
 
                 {/* Cal.com */}
-                <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 16, padding: '22px 24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                    <h3 style={{ fontSize: 12, fontWeight: 700, color: SILVER, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Calendrier Cal.com</h3>
-                    <div style={{ position: 'relative' }}>
-                      <button type="button" onClick={() => setShowCalTuto(p => !p)} style={{ width: 22, height: 22, borderRadius: '50%', border: '1px solid rgba(232,228,220,0.2)', background: 'rgba(232,228,220,0.06)', color: SILVER, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>?</button>
-                      {showCalTuto && (
-                        <div style={{ position: 'absolute', right: 0, top: 30, width: 300, background: '#07070f', border: '1px solid rgba(240,244,255,0.08)', borderRadius: 14, padding: '18px', zIndex: 50, boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}>
-                          <p style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 10 }}>Comment fonctionne Cal.com ?</p>
-                          {['Créez un compte gratuit sur cal.com','Allez dans "Event types" → créez un événement','Configurez vos disponibilités dans "Availability"','Copiez votre lien cal.com/votre-nom ici','Les élèves réservent directement depuis votre profil'].map((s, i) => (
-                            <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                              <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.4)', color: '#a855f7', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i+1}</div>
-                              <p style={{ fontSize: 12, color: 'rgba(232,228,220,0.7)', lineHeight: 1.5 }}>{s}</p>
-                            </div>
-                          ))}
-                          <a href="https://cal.com" target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: 12, textAlign: 'center', fontSize: 12, color: '#a855f7', textDecoration: 'none', padding: '7px', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8 }}>Ouvrir cal.com →</a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <Field label="Votre lien Cal.com">
-                    <input value={calUrl} onChange={e => setCalUrl(e.target.value)} placeholder="https://cal.com/ton-username" style={inputStyle} />
-                  </Field>
-                  {calUrl && calUrl.startsWith('http') ? (
-                    <div style={{ marginTop: 14, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(232,228,220,0.1)', height: 560 }}>
-                      <iframe src={calUrl} style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }} title="Cal.com" />
-                    </div>
-                  ) : (
-                    <div style={{ marginTop: 14, height: 120, borderRadius: 12, border: '2px dashed rgba(232,228,220,0.08)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                      <p style={{ fontSize: 13, color: SILVER }}>Entrez votre lien pour voir l'aperçu</p>
-                    </div>
-                  )}
+                <div style={{ background: 'rgba(124,58,237,0.04)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 16, padding: '20px 24px' }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 }}>Calendrier intégré OnlyPok</p>
+                  <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.65, margin: 0 }}>
+                    Les élèves choisissent leur créneau directement sur ta page coaching — aucun compte externe requis.
+                    Configure tes disponibilités dans ton{' '}
+                    <a href="/coach/calendar" style={{ color: '#a855f7', textDecoration: 'underline' }}>calendrier coach</a>.
+                  </p>
                 </div>
               </>
             )}
 
-            {/* ── Atouts — commun à tous les types ── */}
+            {/* ── Atouts — filtrés par type ── */}
             <Section title="Atouts mis en avant">
               <HighlightsPicker
                 selected={highlights}
                 onChange={setHighlights}
                 color={activeTab.color}
+                options={tab === 'coaching' ? HIGHLIGHTS_COACHING : tab === 'video' ? HIGHLIGHTS_VIDEO : HIGHLIGHTS_FORMATION}
               />
             </Section>
 
@@ -521,6 +658,17 @@ function NewFormationInner() {
   )
 }
 
+
+function OfferStepper({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" onClick={onClick}
+      style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(240,244,255,0.1)', background: 'rgba(240,244,255,0.03)', color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = VIOLET; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.15)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.1)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(240,244,255,0.03)' }}>
+      {children}
+    </button>
+  )
+}
 
 function MiniatureEditor({ preview, zoom, position, dragging, onThumb, onZoom, onMouseDown, onMouseMove, onMouseUp, height = 220 }: {
   preview: string, zoom: number, position: { x: number, y: number }, dragging: boolean,
@@ -594,8 +742,8 @@ function Thumb({ preview, onChange, height = 180, label = 'Cliquer pour uploader
 }
 
 function HighlightsPicker({
-  selected, onChange, color,
-}: { selected: string[]; onChange: (ids: string[]) => void; color: string }) {
+  selected, onChange, color, options,
+}: { selected: string[]; onChange: (ids: string[]) => void; color: string; options: typeof HIGHLIGHTS_COACHING }) {
   const toggle = (id: string) => {
     if (selected.includes(id)) onChange(selected.filter(s => s !== id))
     else if (selected.length < 5) onChange([...selected, id])
@@ -616,7 +764,7 @@ function HighlightsPicker({
         </span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-        {HIGHLIGHTS.map(h => {
+        {options.map(h => {
           const active   = selected.includes(h.id)
           const disabled = !active && selected.length >= 5
           return (
@@ -644,10 +792,11 @@ function HighlightsPicker({
   )
 }
 
-function Section({ title, children }: { title: string, children: React.ReactNode }) {
+function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 16, padding: '22px 24px' }}>
-      <h3 style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,244,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 18 }}>{title}</h3>
+      <h3 style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,244,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: subtitle ? 4 : 18 }}>{title}</h3>
+      {subtitle && <p style={{ fontSize: 12, color: 'rgba(240,244,255,0.28)', marginBottom: 18 }}>{subtitle}</p>}
       {children}
     </div>
   )

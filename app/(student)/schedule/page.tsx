@@ -316,15 +316,14 @@ function Dashboard() {
         </div>
 
         {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 36 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10, marginBottom: 36 }}>
           {[
-            { label: 'En attente',   value: awaiting.length,  color: '#f97316', icon: Clock },
-            { label: 'À planifier',  value: pending.length,   color: AMBER,  icon: AlertCircle },
-            { label: 'À venir',      value: upcoming.length,  color: EMER,   icon: CheckCircle },
-            { label: 'Passées',      value: pastAll.length,   color: PURPLE, icon: Zap },
-            { label: 'Formations',   value: purchases.length, color: CYAN,   icon: BookOpen },
+            { label: 'Action requise', value: awaiting.length + pending.length, color: AMBER,  icon: AlertCircle },
+            { label: 'À venir',        value: upcoming.length,                  color: EMER,   icon: CheckCircle },
+            { label: 'Passées',        value: pastAll.length,                   color: PURPLE, icon: Zap },
+            { label: 'Formations',     value: purchases.length,                 color: CYAN,   icon: BookOpen },
           ].map(({ label, value, color, icon: Icon }) => (
-            <div key={label} style={{ background: 'rgba(232,228,220,0.025)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 14, padding: '16px 18px' }}>
+            <div key={label} style={{ background: `${color}05`, border: `1px solid ${color}18`, borderRadius: 14, padding: '16px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
                 <div style={{ width: 24, height: 24, borderRadius: 6, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Icon size={11} color={color} />

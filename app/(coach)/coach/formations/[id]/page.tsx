@@ -5,10 +5,13 @@ import { useUser } from '@/hooks/useUser'
 import { useParams } from 'next/navigation'
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Upload,
-  Eye, EyeOff, Video, ZoomIn, ZoomOut, Save, Users, DollarSign,
+  Eye, EyeOff, Video, ZoomIn, ZoomOut, Save, Users, DollarSign, Check,
 } from 'lucide-react'
 import Link from 'next/link'
 import FourAcesLoader from '@/components/FourAcesLoader'
+import { HIGHLIGHTS_COACHING, HIGHLIGHTS_FORMATION, HIGHLIGHTS_VIDEO } from '@/lib/highlights'
+
+type Pack = { label: string; hours: number; price: number; desc: string }
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -46,6 +49,14 @@ export default function EditFormationPage() {
   const [saved, setSaved]           = useState(false)
   const [contentType, setContentType] = useState<ContentType>('formation')
 
+  const [highlights, setHighlights] = useState<string[]>([])
+  const [packs, setPacks]           = useState<Pack[]>([])
+
+  const [galleryUrls,     setGalleryUrls]     = useState<string[]>([])
+  const [galleryNew,      setGalleryNew]      = useState<{ file: File; preview: string }[]>([])
+  const [galleryUploading, setGalleryUploading] = useState(false)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
+
   const [newChapterTitle, setNewChapterTitle] = useState('')
   const [addingLesson, setAddingLesson]       = useState<string | null>(null)
   const [newLesson, setNewLesson] = useState({ title: '', video_url: '', video_type: 'youtube', is_free: false })
@@ -71,6 +82,14 @@ export default function EditFormationPage() {
       setFormation(f)
       if (f?.content_type) setContentType(f.content_type as ContentType)
       if (f?.thumbnail_crop) { setZoom(f.thumbnail_crop.zoom ?? 1); setPosition({ x: f.thumbnail_crop.x ?? 50, y: f.thumbnail_crop.y ?? 50 }) }
+      if (Array.isArray(f?.highlights)) setHighlights(f.highlights)
+      if (Array.isArray(f?.gallery_urls)) setGalleryUrls(f.gallery_urls)
+      if (Array.isArray(f?.coaching_packs) && f.coaching_packs.length > 0) setPacks(f.coaching_packs)
+      else if (f?.content_type === 'coaching') setPacks([
+        { label: 'Starter',     hours: 1,  price: 80,  desc: "1 session d'1h pour démarrer" },
+        { label: 'Progression', hours: 5,  price: 350, desc: '5 sessions pour progresser vite' },
+        { label: 'Elite',       hours: 10, price: 600, desc: '10 sessions — engagement total' },
+      ])
       const { data: ch } = await supabase
         .from('formation_chapters')
         .select('*, formation_lessons(*)')
@@ -84,25 +103,37 @@ export default function EditFormationPage() {
 
   /* Autosave debounced */
   const saveTimer = useRef<any>(null)
-  const autoSave = useCallback((updated: any) => {
+  const autoSave = useCallback((updated: any, updatedPacks?: Pack[], updatedHighlights?: string[]) => {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(async () => {
       setSaving(true)
       await supabase.from('formations').update({
-        title:       updated.title,
-        description: updated.description,
-        short_desc:  updated.short_desc,
-        price:       updated.price,
-        level:       updated.level,
-        variant:     updated.variant,
-        video_url:   updated.video_url ?? null,
-        cal_url:     updated.cal_url ?? null,
+        title:          updated.title,
+        description:    updated.description,
+        short_desc:     updated.short_desc,
+        price:          updated.price,
+        level:          updated.level,
+        variant:        updated.variant,
+        video_url:      updated.video_url ?? null,
+        cal_url:        updated.cal_url ?? null,
+        coaching_packs: updatedPacks ?? null,
+        highlights:     updatedHighlights ?? null,
       }).eq('id', id)
       setSaving(false)
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
     }, 800)
   }, [id, supabase])
+
+  const savePacks = useCallback((updated: Pack[]) => {
+    setPacks(updated)
+    if (formation) autoSave(formation, updated, highlights)
+  }, [formation, highlights, autoSave])
+
+  const saveHighlights = useCallback((updated: string[]) => {
+    setHighlights(updated)
+    if (formation) autoSave(formation, packs, updated)
+  }, [formation, packs, autoSave])
 
   const updateField = (key: string, value: any) => {
     const updated = { ...formation, [key]: value }
@@ -153,6 +184,33 @@ export default function EditFormationPage() {
   }
   const handleMouseUp = () => { setDragging(false); saveCrop(zoom, position) }
   const handleZoomChange = (z: number) => { setZoom(z); saveCrop(z, position) }
+
+  /* Gallery photos (coaching) */
+  const uploadAndSaveGallery = async (newFiles: { file: File; preview: string }[]) => {
+    if (!user || newFiles.length === 0) return
+    setGalleryUploading(true)
+    const uploaded: string[] = []
+    for (const { file } of newFiles) {
+      const ext  = file.name.split('.').pop()
+      const path = `${user.id}/gallery/${id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error } = await supabase.storage.from('formations-thumbnails').upload(path, file, { upsert: true })
+      if (!error) {
+        const { data } = supabase.storage.from('formations-thumbnails').getPublicUrl(path)
+        uploaded.push(data.publicUrl)
+      }
+    }
+    const next = [...galleryUrls, ...uploaded].slice(0, 4)
+    await supabase.from('formations').update({ gallery_urls: next }).eq('id', id)
+    setGalleryUrls(next)
+    setGalleryNew([])
+    setGalleryUploading(false)
+  }
+
+  const removeGalleryUrl = async (url: string) => {
+    const next = galleryUrls.filter(u => u !== url)
+    await supabase.from('formations').update({ gallery_urls: next }).eq('id', id)
+    setGalleryUrls(next)
+  }
 
   /* Chapters */
   const addChapter = async () => {
@@ -206,7 +264,7 @@ export default function EditFormationPage() {
               <ArrowLeft size={16} />
             </Link>
             <div>
-              <h1 style={{ fontSize: 20, fontWeight: 800, color: CREAM, letterSpacing: '-0.4px', margin: 0 }}>{formation.title || 'Sans titre'}</h1>
+              <h1 style={{ fontSize: 20, fontWeight: 800, color: CREAM, letterSpacing: '-0.4px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>{formation.title || 'Sans titre'}</h1>
               <div style={{ display: 'flex', gap: 8, marginTop: 5, alignItems: 'center' }}>
                 <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: `${activeType.color}18`, color: activeType.color, fontWeight: 700 }}>{activeType.label}</span>
                 <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: formation.published ? 'rgba(6,182,212,0.15)' : 'rgba(240,244,255,0.06)', color: formation.published ? '#06b6d4' : SILVER }}>
@@ -400,32 +458,120 @@ export default function EditFormationPage() {
               </div>
             )}
 
-            {/* ── Cal.com (coaching uniquement) ────────────────── */}
+            {/* ── Packs & Cal.com (coaching uniquement) ─────────── */}
             {contentType === 'coaching' && (
-              <div style={card()}>
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 18 }}>Calendrier Cal.com</h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <div>
-                    <p style={label()}>Lien Cal.com</p>
-                    <input
-                      value={formation.cal_url ?? ''}
-                      onChange={e => setFormation((p: any) => ({ ...p, cal_url: e.target.value }))}
-                      onBlur={async e => { await supabase.from('formations').update({ cal_url: e.target.value || null }).eq('id', id); setSaved(true); setTimeout(() => setSaved(false), 2000) }}
-                      placeholder="https://cal.com/ton-username"
-                      style={field()} />
+              <>
+                {/* Photos complémentaires */}
+                <div style={card()}>
+                  <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 6 }}>Photos complémentaires</h2>
+                  <p style={{ fontSize: 12, color: SILVER, marginBottom: 16 }}>Jusqu'à 4 photos visibles sur ta page de vente (sessions, résultats, méthode…)</p>
+                  <input ref={galleryInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }}
+                    onChange={e => {
+                      const files = Array.from(e.target.files ?? []).slice(0, 4 - galleryUrls.length - galleryNew.length)
+                      const items = files.map(f => ({ file: f, preview: URL.createObjectURL(f) }))
+                      const next = [...galleryNew, ...items].slice(0, 4 - galleryUrls.length)
+                      setGalleryNew(next)
+                      e.target.value = ''
+                    }} />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: galleryNew.length > 0 ? 12 : 0 }}>
+                    {/* Photos existantes en DB */}
+                    {galleryUrls.map((url, i) => (
+                      <div key={url} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button type="button" onClick={() => removeGalleryUrl(url)}
+                          style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, lineHeight: 1 }}>
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    {/* Nouvelles photos en attente */}
+                    {galleryNew.map((g, i) => (
+                      <div key={i} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117', opacity: 0.7 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={g.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button type="button" onClick={() => setGalleryNew(prev => prev.filter((_, j) => j !== i))}
+                          style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, lineHeight: 1 }}>
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    {/* Bouton ajouter */}
+                    {(galleryUrls.length + galleryNew.length) < 4 && (
+                      <button type="button" onClick={() => galleryInputRef.current?.click()}
+                        style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed rgba(240,244,255,0.1)', background: 'rgba(240,244,255,0.02)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: SILVER, transition: 'border-color 0.2s' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.3)'}
+                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.1)'}>
+                        <Upload size={18} />
+                        <span style={{ fontSize: 11 }}>Ajouter</span>
+                      </button>
+                    )}
                   </div>
-                  {formation.cal_url?.startsWith('http') ? (
-                    <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(232,228,220,0.08)', height: 560 }}>
-                      <iframe src={formation.cal_url} style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }} title="Cal.com" />
-                    </div>
-                  ) : (
-                    <div style={{ height: 100, borderRadius: 12, border: '2px dashed rgba(232,228,220,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <p style={{ fontSize: 12, color: SILVER }}>Entrez votre lien Cal.com pour voir l'aperçu</p>
-                    </div>
+                  {galleryNew.length > 0 && (
+                    <button type="button" onClick={() => uploadAndSaveGallery(galleryNew)} disabled={galleryUploading}
+                      style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#000', fontSize: 13, fontWeight: 700, cursor: galleryUploading ? 'wait' : 'pointer', opacity: galleryUploading ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Save size={14} /> {galleryUploading ? 'Upload…' : `Sauvegarder (${galleryNew.length} photo${galleryNew.length > 1 ? 's' : ''})`}
+                    </button>
                   )}
                 </div>
-              </div>
+
+                {/* Packs */}
+                <div style={card()}>
+                  <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 18 }}>Packs & tarifs</h2>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {packs.map((pack, i) => (
+                      <div key={i} style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 12, padding: '18px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</div>
+                            <input value={pack.label} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, label: e.target.value } : p))} style={field({ width: 200, padding: '6px 12px', fontSize: 13, fontWeight: 700 })} />
+                          </div>
+                          {packs.length > 1 && (
+                            <button onClick={() => savePacks(packs.filter((_, idx) => idx !== i))} style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                              <Trash2 size={12} />
+                            </button>
+                          )}
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12 }}>
+                          <div><p style={label()}>Heures</p><input type="number" min={1} value={pack.hours} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, hours: Number(e.target.value) } : p))} style={field()} /></div>
+                          <div><p style={label()}>Prix (€)</p><input type="number" min={0} value={pack.price} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, price: Number(e.target.value) } : p))} style={field()} /></div>
+                          <div><p style={label()}>Description</p><input value={pack.desc} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, desc: e.target.value } : p))} placeholder="Ce que comprend ce pack" style={field()} /></div>
+                        </div>
+                        {pack.hours > 0 && pack.price > 0 && <p style={{ fontSize: 11, color: SILVER, marginTop: 8 }}>{Math.round(pack.price / pack.hours)}€/h</p>}
+                      </div>
+                    ))}
+                    <button onClick={() => savePacks([...packs, { label: 'Nouveau pack', hours: 1, price: 0, desc: '' }])}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1px dashed rgba(240,244,255,0.08)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
+                      onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
+                      <Plus size={14} /> Ajouter un pack
+                    </button>
+                  </div>
+                </div>
+
+                {/* Calendrier natif */}
+                <div style={{ ...card(), background: 'rgba(124,58,237,0.04)', borderColor: 'rgba(124,58,237,0.2)' }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 }}>Calendrier intégré OnlyPok</p>
+                  <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.65, margin: 0 }}>
+                    Les élèves choisissent leur créneau directement sur ta page coaching.
+                    Configure tes disponibilités dans ton{' '}
+                    <a href="/coach/calendar" style={{ color: '#a855f7', textDecoration: 'underline' }}>calendrier coach</a>.
+                  </p>
+                </div>
+              </>
             )}
+
+            {/* ── Atouts mis en avant ───────────────────────────── */}
+            <div style={card()}>
+              <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 6 }}>Atouts mis en avant</h2>
+              <p style={{ fontSize: 12, color: SILVER, marginBottom: 18 }}>Choisissez 1 à 5 atouts affichés sur la page de vente.</p>
+              <HighlightsPicker
+                selected={highlights}
+                onChange={saveHighlights}
+                color={contentType === 'coaching' ? '#f59e0b' : contentType === 'video' ? '#06b6d4' : '#7c3aed'}
+                options={contentType === 'coaching' ? HIGHLIGHTS_COACHING : contentType === 'video' ? HIGHLIGHTS_VIDEO : HIGHLIGHTS_FORMATION}
+              />
+            </div>
           </div>
 
           {/* ── RIGHT — sidebar ───────────────────────────────── */}
@@ -576,6 +722,40 @@ function MiniatureEditor({ preview, zoom, position, dragging, enhancing, onFile,
         </label>
       </div>
       <p style={{ fontSize: 10, color: 'rgba(138,138,138,0.4)', marginTop: 5 }}>Glissez pour repositionner · zoom avec le slider</p>
+    </div>
+  )
+}
+
+function HighlightsPicker({
+  selected, onChange, color, options,
+}: { selected: string[]; onChange: (ids: string[]) => void; color: string; options: { id: string; label: string; Icon: React.ElementType }[] }) {
+  const toggle = (id: string) => {
+    if (selected.includes(id)) onChange(selected.filter(s => s !== id))
+    else if (selected.length < 5) onChange([...selected, id])
+  }
+  const SILVER = 'rgba(240,244,255,0.45)'
+  const CREAM  = '#f0f4ff'
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: selected.length > 0 ? `${color}18` : 'rgba(232,228,220,0.05)', color: selected.length > 0 ? color : SILVER, border: `1px solid ${selected.length > 0 ? color + '40' : 'rgba(232,228,220,0.1)'}` }}>
+          {selected.length}/5
+        </span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        {options.map(h => {
+          const active   = selected.includes(h.id)
+          const disabled = !active && selected.length >= 5
+          return (
+            <button key={h.id} type="button" onClick={() => toggle(h.id)}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, textAlign: 'left', border: `1px solid ${active ? color + '55' : 'rgba(232,228,220,0.08)'}`, background: active ? `${color}12` : 'rgba(232,228,220,0.02)', color: active ? CREAM : disabled ? 'rgba(232,228,220,0.2)' : SILVER, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.45 : 1, transition: 'all 0.15s' }}>
+              <h.Icon size={14} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: active ? 600 : 400, lineHeight: 1.3, flex: 1 }}>{h.label}</span>
+              {active && <Check size={12} color={color} style={{ flexShrink: 0 }} />}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

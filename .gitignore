@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local claude/agents config (ne pas versionner)
+.claude/
+.agents/
+graphify-out/
+ROADMAP.html
+public/logos.html
+public/logos/
+PRODUCT.md

@@ -1,5 +1,4 @@
 'use client'
-import Navbar from '@/components/landing/Navbar'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -67,7 +66,6 @@ export default function TrainerPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
-      <Navbar />
 
       {/* Hero */}
       <section style={{ padding: '140px clamp(20px,5vw,80px) 80px', textAlign: 'center' }}>
@@ -75,7 +73,7 @@ export default function TrainerPage() {
           <Brain size={13} color={CYAN} />
           <span style={{ fontSize: 12, fontWeight: 700, color: CYAN, letterSpacing: '0.08em' }}>TRAINER POKER</span>
         </div>
-        <h1 style={{ fontSize: 'clamp(36px,6vw,72px)', fontWeight: 900, letterSpacing: '-2px', lineHeight: 1.05, margin: '0 0 20px' }}>
+        <h1 style={{ fontSize: 'clamp(36px,6vw,72px)', fontWeight: 900, letterSpacing: '-2px', lineHeight: 1.05, margin: '0 0 20px', fontFamily: 'var(--font-syne,sans-serif)' }}>
           Entraîne-toi.{' '}
           <span style={{ background: `linear-gradient(135deg, ${CYAN}, ${VIOLET})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             Monte de stakes.

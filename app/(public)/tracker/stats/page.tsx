@@ -1,5 +1,4 @@
 'use client'
-import Navbar from '@/components/landing/Navbar'
 import Link from 'next/link'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -67,7 +66,6 @@ export default function StatsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
-      <Navbar />
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '100px 24px 80px' }}>
 
         <Link href="/tracker" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
@@ -75,7 +73,7 @@ export default function StatsPage() {
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: 0 }}>Stats HUD</h1>
+          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>Stats HUD</h1>
           {user && (
             <button onClick={save} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: saved ? '#4ade8033' : VIOLET, color: saved ? '#4ade80' : '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
               <Save size={13} /> {saved ? 'Sauvegardé ✓' : 'Sauvegarder'}

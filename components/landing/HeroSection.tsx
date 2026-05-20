@@ -1,9 +1,10 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
+import { createClient } from '@/lib/supabase/client'
 
 gsap.registerPlugin(useGSAP)
 
@@ -80,6 +81,17 @@ export default function HeroSection({ playerCount, recentUsers }: HeroProps) {
   const blob1Ref = useRef<HTMLDivElement>(null)
   const blob2Ref = useRef<HTMLDivElement>(null)
   const cardsRef = useRef<HTMLDivElement>(null)
+  const [role, setRole] = useState<'coach' | 'student' | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async (res: Awaited<ReturnType<typeof supabase.auth.getUser>>) => {
+      const user = res.data?.user
+      if (!user) return
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      setRole(profile?.role ?? null)
+    })
+  }, [])
 
   useGSAP(() => {
     const tl = gsap.timeline({ delay: 0.3 })
@@ -210,7 +222,7 @@ export default function HeroSection({ playerCount, recentUsers }: HeroProps) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 48, flexWrap: 'wrap' }}>
             <Link
-              href="/register"
+              href={role === 'coach' ? '/coach/dashboard' : role === 'student' ? '/formations' : '/register'}
               className="hero-cta"
               style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -225,25 +237,27 @@ export default function HeroSection({ playerCount, recentUsers }: HeroProps) {
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(124,58,237,0.55)' }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(124,58,237,0.4)' }}
             >
-              Commencer maintenant
+              {role === 'coach' ? 'Mon tableau de bord →' : role === 'student' ? 'Mes formations →' : 'Commencer maintenant'}
             </Link>
-            <Link
-              href="/formations"
-              className="hero-cta"
-              style={{
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                padding: '14px 28px', borderRadius: 10,
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: 'rgba(240,244,255,0.7)', textDecoration: 'none',
-                fontSize: 14, fontWeight: 500, lineHeight: 1,
-                transition: 'border-color 0.2s, color 0.2s',
-                whiteSpace: 'nowrap', flexShrink: 0,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = '#f0f4ff' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(240,244,255,0.7)' }}
-            >
-              Explorer les formations →
-            </Link>
+            {role !== 'coach' && (
+              <Link
+                href="/formations"
+                className="hero-cta"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '14px 28px', borderRadius: 10,
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(240,244,255,0.7)', textDecoration: 'none',
+                  fontSize: 14, fontWeight: 500, lineHeight: 1,
+                  transition: 'border-color 0.2s, color 0.2s',
+                  whiteSpace: 'nowrap', flexShrink: 0,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = '#f0f4ff' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(240,244,255,0.7)' }}
+              >
+                Explorer les formations →
+              </Link>
+            )}
           </div>
 
           {playerCount > 0 && (

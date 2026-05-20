@@ -1,6 +1,5 @@
 'use client';
 
-import Navbar from '@/components/landing/Navbar';
 import Link from 'next/link';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { ArrowLeft, Target, Brain, Layers, Lock, Eraser, Save, Upload, Download, Trash2, ChevronDown, Settings, X, Share2 } from 'lucide-react';
@@ -590,7 +589,7 @@ export default function RangesPage() {
 
   const start = () => {
     if (!positions.length || !stacks.length) { alert('Sélectionne au moins une position et une profondeur.'); return; }
-    setScore(0); setMistakes([]); setIdx(0); setDrillQuizMode(false); setRevealed(true); setMode('training'); generate();
+    setScore(0); setMistakes([]); setIdx(0); setDrillQuizMode(true); setRevealed(false); setQuizPts(0); setQuizRounds(0); setQuizStreak(0); setQuizBestStreak(0); setQuizResults([]); setQuizCount(count); setQuizUserAction(null); setQuizGrade(null); setMode('training'); generate();
   };
 
   const act = (action: string) => {
@@ -740,7 +739,6 @@ export default function RangesPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: CREAM, fontFamily: 'DM Sans, system-ui, sans-serif' }}>
-      <Navbar />
 
       {/* ── Permanent mode bar ── */}
       <div style={{ position: 'sticky', top: 68, zIndex: 45, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', height: 50, background: 'rgba(7,9,14,0.92)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${BORDER}` }}>
@@ -924,7 +922,7 @@ export default function RangesPage() {
                     </button>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <RangeGrid rk={rk} hand={scenario.gridHand} revealed={revealed} onToggle={() => setRevealed(v => !v)} />
+                    <RangeGrid rk={rk} hand={scenario.gridHand} revealed={revealed} onToggle={drillQuizMode ? undefined : () => setRevealed(v => !v)} />
                   </div>
                 </div>
               </div>

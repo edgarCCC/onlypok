@@ -1,5 +1,4 @@
 'use client'
-import Navbar from '@/components/landing/Navbar'
 import Link from 'next/link'
 import { useState } from 'react'
 import { ArrowLeft, RefreshCw, Check, X } from 'lucide-react'
@@ -124,7 +123,6 @@ export default function QuizPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
-      <Navbar />
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '100px 24px 80px' }}>
 
         <Link href="/trainer" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
@@ -133,7 +131,7 @@ export default function QuizPage() {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 4px' }}>Quiz de Mains</h1>
+            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 4px', fontFamily: 'var(--font-syne,sans-serif)' }}>Quiz de Mains</h1>
             <p style={{ fontSize: 13, color: SILVER, margin: 0 }}>Quelle est la bonne action ?</p>
           </div>
           {score.total > 0 && (
@@ -193,13 +191,20 @@ export default function QuizPage() {
           </div>
 
           {/* Explanation */}
-          {answered && (
-            <div style={{ borderRadius: 12, padding: '16px', background: q.correct === selected ? 'rgba(74,222,128,0.06)' : 'rgba(124,58,237,0.06)', border: `1px solid ${q.correct === selected ? 'rgba(74,222,128,0.2)' : 'rgba(124,58,237,0.2)'}`, marginBottom: 16 }}>
-              <p style={{ fontSize: 13, color: SILVER, margin: 0, lineHeight: 1.6 }}>
-                <strong style={{ color: CREAM }}>Explication :</strong> {q.explanation}
-              </p>
-            </div>
-          )}
+          {answered && (() => {
+            const ok = q.correct === selected
+            return (
+              <div style={{ borderRadius: 12, padding: '16px', background: ok ? 'rgba(74,222,128,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${ok ? 'rgba(74,222,128,0.35)' : 'rgba(239,68,68,0.35)'}`, marginBottom: 16 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: ok ? '#4ade80' : '#ef4444', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {ok ? <Check size={14} /> : <X size={14} />}
+                  {ok ? 'Correct !' : 'Incorrect'}
+                </p>
+                <p style={{ fontSize: 13, color: SILVER, margin: 0, lineHeight: 1.6 }}>
+                  <strong style={{ color: CREAM }}>Explication :</strong> {q.explanation}
+                </p>
+              </div>
+            )
+          })()}
 
           {answered && (
             <button onClick={next} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 10, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
