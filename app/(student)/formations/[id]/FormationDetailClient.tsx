@@ -1234,7 +1234,7 @@ export default function FormationDetailClient({
       .eq('student_id', user.id)
       .eq('coach_id', coachId)
       .eq('status', 'paid_pending_schedule')
-      .then(({ count }) => setPendingCount(count ?? 0))
+      .then(({ count }: { count: number | null }) => setPendingCount(count ?? 0))
   }, [user, initialFormation?.coach?.id, initialFormation?.content_type, supabase])
 
   /* ─── update userHasReview when auth user becomes available ── */

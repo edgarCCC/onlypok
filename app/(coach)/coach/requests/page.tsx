@@ -488,7 +488,7 @@ export default function CoachRequestsPage() {
       const sMap = new Map((students   ?? []).map((s: any) => [s.id, s]))
 
       if (!alive) return
-      setBookings(rows.map(r => ({
+      setBookings(rows.map((r: any) => ({
         ...r,
         formation: fMap.get(r.formation_id) ?? null,
         student:   sMap.get(r.student_id)   ?? null,

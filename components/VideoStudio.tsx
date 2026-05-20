@@ -42,12 +42,12 @@ export default function VideoStudio({ video, onClose }: { video: { url: string; 
       setNotes(localStorage.getItem(noteKey) ?? '')
       setSynthCount(parseInt(localStorage.getItem(synthKey) ?? '0', 10))
     }
-    supabase.auth.getUser().then(({ data: d }) => setAuthUser(d.user))
+    supabase.auth.getUser().then(({ data: d }: { data: any }) => setAuthUser(d.user))
     supabase.from('video_comments')
       .select('*, profile:profiles!student_id(username)')
       .eq('video_url', video.url)
       .order('created_at', { ascending: true })
-      .then(({ data }) => { if (data) setComments(data) })
+      .then(({ data }: { data: any }) => { if (data) setComments(data) })
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

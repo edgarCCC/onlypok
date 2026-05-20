@@ -120,9 +120,7 @@ export default function StudentDashboard() {
         supabase.from('profiles').select('username, avatar_url').eq('id', uid).single(),
 
         supabase.from('bookings')
-          .select(`id, scheduled_at, status, coach_id,
-            formation:formations(title),
-            coach:profiles!coach_id(id, username, avatar_url)`)
+          .select('id, scheduled_at, status, coach_id, formation_id')
           .eq('student_id', uid)
           .in('status', ['paid_pending_schedule', 'scheduled', 'completed'])
           .order('scheduled_at', { ascending: true })
@@ -162,12 +160,28 @@ export default function StudentDashboard() {
       setUsername(prof?.username ?? null)
       setAvatar(prof?.avatar_url ?? null)
 
-      const nb = (r: any): Booking => ({
+      // Fetch formation titles + coach profiles separately to avoid FK join issues
+      const bookingRows = bRows ?? []
+      const bFormationIds = [...new Set(bookingRows.map((b: any) => b.formation_id).filter(Boolean))]
+      const bCoachIds     = [...new Set(bookingRows.map((b: any) => b.coach_id).filter(Boolean))]
+
+      const [{ data: bFormations }, { data: bCoaches }] = await Promise.all([
+        bFormationIds.length
+          ? supabase.from('formations').select('id, title').in('id', bFormationIds)
+          : Promise.resolve({ data: [] as any[] }),
+        bCoachIds.length
+          ? supabase.from('profiles').select('id, username, avatar_url').in('id', bCoachIds)
+          : Promise.resolve({ data: [] as any[] }),
+      ])
+
+      const bfMap = new Map((bFormations ?? []).map((f: any) => [f.id, f]))
+      const bcMap = new Map((bCoaches   ?? []).map((c: any) => [c.id, c]))
+
+      const allBookings: Booking[] = bookingRows.map((r: any) => ({
         id: r.id, scheduled_at: r.scheduled_at ?? null, status: r.status, coach_id: r.coach_id,
-        formation: Array.isArray(r.formation) ? r.formation[0] ?? null : r.formation ?? null,
-        coach:     Array.isArray(r.coach)     ? r.coach[0]     ?? null : r.coach     ?? null,
-      })
-      const allBookings = (bRows ?? []).map(nb)
+        formation: bfMap.get(r.formation_id) ?? null,
+        coach:     bcMap.get(r.coach_id)     ?? null,
+      }))
       setBookings(allBookings)
 
       // Build coaches map (grouped by coach_id)
@@ -183,13 +197,13 @@ export default function StudentDashboard() {
           })
         }
         const entry = coachMap.get(b.coach_id)!
-        if (b.status === 'scheduled' && !entry.nextSession) entry.nextSession = b
+        if (b.status === 'scheduled' && !entry.nextSession && !!b.scheduled_at && new Date(b.scheduled_at) > new Date()) entry.nextSession = b
         if (b.status === 'paid_pending_schedule') entry.pendingCount++
       }
       // Attach last message per coach
       const msgs = msgRows ?? []
       for (const [coachId, entry] of coachMap) {
-        const m = msgs.find(m => m.from_id === coachId || m.to_id === coachId)
+        const m = msgs.find((m: any) => m.from_id === coachId || m.to_id === coachId)
         if (m) entry.lastMessage = { content: m.content, created_at: m.created_at, from_me: m.from_id === uid }
       }
       setCoaches([...coachMap.values()])
@@ -233,10 +247,11 @@ export default function StudentDashboard() {
     </div>
   )
 
-  const scheduled       = bookings.filter(b => b.status === 'scheduled')
+  const now             = new Date()
+  const scheduled       = bookings.filter(b => b.status === 'scheduled' && !!b.scheduled_at && new Date(b.scheduled_at) > now)
   const pending         = bookings.filter(b => b.status === 'paid_pending_schedule')
   const nextSession     = scheduled[0] ?? null
-  const courseFormations = formations.filter(f => f.content_type !== 'video')
+  const courseFormations = formations.filter(f => f.content_type !== 'video' && f.content_type !== 'coaching')
   const videoFormations  = formations.filter(f => f.content_type === 'video')
   const totalLessons    = formations.reduce((s, f) => s + f.completedLessons, 0)
 
@@ -327,9 +342,14 @@ export default function StudentDashboard() {
                     avec <span style={{ color: CREAM }}>{nextSession.coach?.username ?? '—'}</span> · <span style={{ textTransform: 'capitalize' }}>{fmtDate(nextSession.scheduled_at!)} à {fmtTime(nextSession.scheduled_at!)}</span>
                   </p>
                 </div>
-                <Link href="/schedule" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 10, background: EMER, color: '#fff', fontSize: 12, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                  Voir le planning <ArrowRight size={12} />
-                </Link>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <Link href={`/coaching/${nextSession.id}`} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 10, background: SURFACE, border: `1px solid ${BORDER_H}`, color: CREAM, fontSize: 12, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                    Préparer →
+                  </Link>
+                  <Link href="/schedule" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 10, background: EMER, color: '#fff', fontSize: 12, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                    Voir le planning <ArrowRight size={12} />
+                  </Link>
+                </div>
               </div>
             ) : (
               <div style={{ padding: '24px 28px', borderRadius: 18, background: 'linear-gradient(135deg,rgba(245,158,11,0.07),rgba(124,58,237,0.05))', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
@@ -353,10 +373,10 @@ export default function StudentDashboard() {
         {/* ══════════════════════════════════════════════ */}
         {/* ── MES COACHS ───────────────────────────────── */}
         {/* ══════════════════════════════════════════════ */}
-        <Section title="Mes Coachs" href="/formations?tab=coaching" count={coaches.length} empty={coaches.length === 0}
+        <Section title="Mes Coachs" href="/coaches" count={coaches.length} empty={coaches.length === 0}
           emptyIcon={<Users size={22} color={DIM} />}
           emptyText="Aucun coach yet"
-          emptyAction={{ label: 'Trouver un coach', href: '/formations?tab=coaching' }}>
+          emptyAction={{ label: 'Trouver un coach', href: '/coaches' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
             {coaches.slice(0, 3).map(coach => (
               <CoachCard key={coach.id} coach={coach} />
@@ -391,6 +411,22 @@ export default function StudentDashboard() {
             ))}
           </div>
         </Section>
+
+        {/* ══════════════════════════════════════════════ */}
+        {/* ── LEÇONS RÉCENTES ─────────────────────────── */}
+        {/* ══════════════════════════════════════════════ */}
+        {lessons.length > 0 && (
+          <Section title="Leçons récentes" href="/formations" count={lessons.length} empty={false}
+            emptyIcon={<BookOpen size={22} color={DIM} />}
+            emptyText=""
+            emptyAction={{ label: '', href: '/formations' }}>
+            <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 16, overflow: 'hidden' }}>
+              {lessons.slice(0, 5).map(lesson => (
+                <LessonRow key={lesson.lessonId} lesson={lesson} />
+              ))}
+            </div>
+          </Section>
+        )}
 
         {/* ── NAV RAPIDE ──────────────────────────────── */}
         <div style={{ marginTop: 48, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
@@ -509,14 +545,24 @@ function CoachCard({ coach }: { coach: CoachItem }) {
         </div>
       )}
 
-      {/* CTA */}
-      <Link href={hasPending ? `/schedule?coach_id=${coach.id}` : `/coaches/${coach.id}`}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, background: `${accent}18`, border: `1px solid ${accent}30`, color: accent, fontSize: 12, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s' }}
-        onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = `${accent}28` }}
-        onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = `${accent}18` }}>
-        {hasPending ? 'Planifier ma session' : hasNext ? 'Voir le planning' : 'Réserver une session'}
-        <ArrowRight size={12} />
-      </Link>
+      {/* CTAs */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {hasNext && coach.nextSession && (
+          <Link href={`/coaching/${coach.nextSession.id}`}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, background: `${EMER}12`, border: `1px solid ${EMER}28`, color: EMER, fontSize: 12, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s' }}
+            onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = `${EMER}22` }}
+            onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = `${EMER}12` }}>
+            Préparer ma session <ArrowRight size={12} />
+          </Link>
+        )}
+        <Link href={hasPending ? `/schedule?coach_id=${coach.id}` : `/coaches/${coach.id}`}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, background: `${accent}18`, border: `1px solid ${accent}30`, color: accent, fontSize: 12, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s' }}
+          onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = `${accent}28` }}
+          onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = `${accent}18` }}>
+          {hasPending ? 'Planifier ma session' : hasNext ? 'Voir le planning' : 'Réserver une session'}
+          <ArrowRight size={12} />
+        </Link>
+      </div>
     </div>
   )
 }
