@@ -6,7 +6,7 @@ import DVDBounce from '@/components/DVDBounce'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   LayoutDashboard, ImageIcon, TrendingUp, Users, Star,
-  Calendar, Settings, BookOpen, MessageSquare, Bell,
+  Calendar, Settings, MessageSquare, Bell,
   ClipboardList, Video, ChevronDown, LogOut,
   BarChart2, Target, Zap,
 } from 'lucide-react'
@@ -37,7 +37,6 @@ const NAV_GROUPS = [
     icon: TrendingUp,
     color: '#10b981',
     items: [
-      { href: '/coach/formations', label: 'Mes formations', icon: BookOpen,    desc: 'Gérer vos contenus' },
       { href: '/coach/revenue',    label: 'Revenus',        icon: TrendingUp,  desc: 'Suivi des paiements' },
       { href: '/coach/students',   label: 'Élèves',         icon: Users,       desc: 'Vos apprenants' },
       { href: '/coach/reviews',    label: 'Avis',           icon: Star,        desc: 'Évaluations reçues' },

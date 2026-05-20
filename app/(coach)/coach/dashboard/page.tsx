@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import {
   TrendingUp, Users, BookOpen, Star, Plus,
@@ -53,15 +54,30 @@ function KpiCard({ label, value, sub, color, icon: Icon }: {
 /* ── Revenue bar chart ────────────────────────────────── */
 function RevenueChart({ data, color }: { data: { month: string; rev: number }[]; color: string }) {
   const max = Math.max(...data.map(d => d.rev), 1)
+  const BAR_H = 56
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 90, paddingBottom: 22 }}>
-      {data.map(d => (
-        <div key={d.month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 0 }}>
-          <span style={{ fontSize: 9, color, fontWeight: 700 }}>{d.rev > 0 ? `${d.rev}€` : ''}</span>
-          <div style={{ width: '100%', borderRadius: '4px 4px 0 0', background: `linear-gradient(to top, ${color}, ${color}55)`, height: `${Math.max((d.rev / max) * 70, d.rev > 0 ? 4 : 2)}px`, opacity: d.rev > 0 ? 1 : 0.12, transition: 'height 0.4s ease' }} />
-          <span style={{ fontSize: 9, color: SILVER, whiteSpace: 'nowrap' }}>{d.month}</span>
-        </div>
-      ))}
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0, height: BAR_H + 34 }}>
+      {data.map(d => {
+        const h = d.rev > 0 ? Math.max((d.rev / max) * BAR_H, 5) : 2
+        return (
+          <div key={d.month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, minWidth: 0 }}>
+            <span style={{ fontSize: 8, color, fontWeight: 700, marginBottom: 3, height: 11, lineHeight: '11px' }}>
+              {d.rev > 0 ? `${d.rev}€` : ''}
+            </span>
+            {/* track */}
+            <div style={{ position: 'relative', width: 12, height: BAR_H, display: 'flex', alignItems: 'flex-end' }}>
+              <div style={{ position: 'absolute', inset: 0, borderRadius: 6, background: 'rgba(255,255,255,0.04)' }} />
+              <div style={{
+                position: 'relative', width: '100%', borderRadius: 6,
+                background: d.rev > 0 ? `linear-gradient(to top, ${color}, ${color}88)` : 'transparent',
+                height: h,
+                transition: 'height 0.45s cubic-bezier(0.2,0.8,0.2,1)',
+              }} />
+            </div>
+            <span style={{ fontSize: 8, color: SILVER, whiteSpace: 'nowrap', marginTop: 5 }}>{d.month}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -81,6 +97,7 @@ function SectionDivider({ label }: { label: string }) {
 export default function CoachDashboard() {
   const supabase = useMemo(() => createClient(), [])
   const { user, profile } = useUser()
+  const router = useRouter()
 
   const [loading, setLoading]         = useState(true)
   const [formations, setFormations]   = useState<any[]>([])
@@ -96,13 +113,14 @@ export default function CoachDashboard() {
   useEffect(() => {
     if (!user) return
     const load = async () => {
-      const [{ data: f }, { data: p }, { data: r }] = await Promise.all([
+      const [{ data: f }, { data: r }, purchasesRes] = await Promise.all([
         supabase.from('formations').select('*, formation_purchases(count)').eq('coach_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('formation_purchases').select('*, formations(title, content_type, coach_id, cal_url), profiles(username)').eq('formations.coach_id', user.id).order('created_at', { ascending: false }).limit(20),
         supabase.from('reviews').select('rating, created_at').eq('coach_id', user.id),
+        fetch('/api/coach/purchases?limit=20').catch(() => null),
       ])
+      const { purchases: p } = purchasesRes?.ok ? await purchasesRes.json() : { purchases: [] }
       setFormations(f ?? [])
-      setRecent((p ?? []).filter(x => x.formations))
+      setRecent(p ?? [])
       setReviews(r ?? [])
       setLoading(false)
     }
@@ -110,8 +128,12 @@ export default function CoachDashboard() {
   }, [user, supabase])
 
   /* ── Global computed ───────────────────────────────── */
-  const totalRevenue   = formations.reduce((a, f) => a + (f.price ?? 0) * (f.formation_purchases?.[0]?.count ?? 0), 0)
-  const totalStudents  = formations.reduce((a, f) => a + (f.formation_purchases?.[0]?.count ?? 0), 0)
+  /* Revenue calculé sur les achats réels (montant Stripe > prix formation si dispo) */
+  const totalRevenue   = recentPurchases.reduce((a, p) => {
+    const form = Array.isArray(p.formations) ? p.formations[0] : p.formations
+    return a + (p.amount_paid ?? form?.price ?? 0)
+  }, 0)
+  const totalStudents  = recentPurchases.length
   const publishedCount = formations.filter(f => f.published).length
   const avgRating      = reviews.length > 0 ? reviews.reduce((s, r) => s + (r.rating ?? 0), 0) / reviews.length : 0
 
@@ -119,12 +141,17 @@ export default function CoachDashboard() {
   const thisMonthKey  = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   const studentsMonth = recentPurchases.filter(p => p.created_at?.slice(0, 7) === thisMonthKey).length
 
-  /* 6-month revenue (global, not filtered by tab) */
+  /* 6-month revenue depuis les achats réels */
   const monthlyRevenue = Array.from({ length: 6 }).map((_, i) => {
     const d = new Date(now); d.setMonth(d.getMonth() - (5 - i))
     const key   = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     const label = d.toLocaleDateString('fr-FR', { month: 'short' })
-    const rev   = formations.reduce((a, f) => f.created_at?.slice(0, 7) === key ? a + (f.price ?? 0) * (f.formation_purchases?.[0]?.count ?? 0) : a, 0)
+    const rev   = recentPurchases
+      .filter(p => p.created_at?.slice(0, 7) === key)
+      .reduce((a, p) => {
+        const form = Array.isArray(p.formations) ? p.formations[0] : p.formations
+        return a + (p.amount_paid ?? form?.price ?? 0)
+      }, 0)
     return { month: label, rev }
   })
 
@@ -173,6 +200,9 @@ export default function CoachDashboard() {
     ? profile.username.charAt(0).toUpperCase() + profile.username.slice(1)
     : 'Coach'
 
+  const hour = new Date().getHours()
+  const salutation = hour < 12 ? 'Bonjour,' : hour < 18 ? 'Bon après-midi,' : 'Bonsoir,'
+
   if (loading) return (
     <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <FourAcesLoader fullPage={false} />
@@ -191,12 +221,10 @@ export default function CoachDashboard() {
 
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 11, color: SILVER, marginBottom: 8, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Tableau de bord</p>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 52, color: SILVER, fontWeight: 200, lineHeight: 1 }}>[</span>
-            <h1 style={{ fontSize: 52, fontWeight: 700, color: CREAM, letterSpacing: '-1px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>{greeting}</h1>
-            <span style={{ fontSize: 52, color: SILVER, fontWeight: 200, lineHeight: 1 }}>]</span>
-          </div>
+          <p style={{ fontSize: 11, color: SILVER, marginBottom: 10, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Tableau de bord</p>
+          <h1 style={{ fontSize: 52, fontWeight: 700, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>
+            <span style={{ fontWeight: 300, color: SILVER }}>{salutation} </span>{greeting}
+          </h1>
         </div>
 
         {/* KPI row */}
@@ -210,18 +238,28 @@ export default function CoachDashboard() {
         {/* Revenue chart + recent enrollments */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
 
-          <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 16, padding: '22px' }}>
+          <div
+            onClick={() => router.push('/coach/revenue')}
+            style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 16, padding: '22px', cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = `${VIOLET}40`; (e.currentTarget as HTMLDivElement).style.background = 'rgba(124,58,237,0.05)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.07)'; (e.currentTarget as HTMLDivElement).style.background = 'rgba(232,228,220,0.03)' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
               <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Revenus sur 6 mois</h2>
-              <span style={{ fontSize: 10, color: SILVER }}>{now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 10, color: SILVER, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                  {now.toLocaleDateString('fr-FR', { month: 'long' })} {now.getFullYear()}
+                </span>
+                <ChevronRight size={12} color={SILVER} strokeWidth={1.8} />
+              </div>
             </div>
             {totalRevenue === 0 ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 5, marginBottom: 12, opacity: 0.1 }}>
-                  {[20, 35, 15, 45, 10, 30].map((h, i) => <div key={i} style={{ width: 18, height: h, background: CREAM, borderRadius: '3px 3px 0 0' }} />)}
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 5, marginBottom: 12, opacity: 0.08 }}>
+                  {[20, 35, 15, 45, 10, 30].map((h, i) => <div key={i} style={{ width: 12, height: h, background: CREAM, borderRadius: '3px 3px 0 0' }} />)}
                 </div>
-                <p style={{ color: SILVER, fontSize: 12 }}>Pas encore de vente</p>
-                <p style={{ color: 'rgba(138,138,138,0.4)', fontSize: 11, marginTop: 4 }}>Le graphe s'affiche dès la première vente</p>
+                <p style={{ color: SILVER, fontSize: 12, marginBottom: 4 }}>Pas encore de vente</p>
+                <p style={{ color: 'rgba(138,138,138,0.35)', fontSize: 11 }}>Voir le détail →</p>
               </div>
             ) : (
               <RevenueChart data={monthlyRevenue} color={VIOLET} />
@@ -229,7 +267,10 @@ export default function CoachDashboard() {
           </div>
 
           {(() => {
-            const coachingSessions = recentPurchases.filter(p => p.formations?.content_type === 'coaching')
+            const coachingSessions = recentPurchases.filter(p => {
+              const form = Array.isArray(p.formations) ? p.formations[0] : p.formations
+              return form?.content_type === 'coaching'
+            })
 
             return (
               <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(245,158,11,0.12)', borderRadius: 16, padding: '22px' }}>
@@ -253,7 +294,10 @@ export default function CoachDashboard() {
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                     {coachingSessions.slice(0, 6).map((p, i) => {
-                      const username = p.profiles?.username ?? 'Élève'
+                      const prof     = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles
+                      const form     = Array.isArray(p.formations) ? p.formations[0] : p.formations
+                      const username = prof?.username ?? 'Élève'
+                      const title    = form?.title ?? 'Session coaching'
                       const date     = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : ''
                       const isRecent = (Date.now() - new Date(p.created_at).getTime()) < 3 * 24 * 3600 * 1000
                       return (
@@ -266,10 +310,10 @@ export default function CoachDashboard() {
                               <span style={{ fontSize: 12, fontWeight: 600, color: CREAM }}>{username}</span>
                               {isRecent && <span style={{ fontSize: 8, fontWeight: 800, padding: '1px 6px', borderRadius: 99, background: 'rgba(245,158,11,0.2)', color: '#f59e0b', letterSpacing: '0.08em' }}>NOUVEAU</span>}
                             </div>
-                            <span style={{ fontSize: 10, color: SILVER, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.formations?.title ?? 'Coaching'}</span>
+                            <span style={{ fontSize: 10, color: SILVER, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
                           </div>
                           <span style={{ fontSize: 10, color: SILVER, flexShrink: 0 }}>{date}</span>
-                          <Link href="/coach/calendar"
+                          <Link href="/coach/requests"
                             style={{ fontSize: 10, fontWeight: 700, color: '#f59e0b', textDecoration: 'none', padding: '4px 10px', borderRadius: 7, border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.08)', flexShrink: 0, whiteSpace: 'nowrap' }}>
                             Planifier →
                           </Link>
@@ -376,12 +420,9 @@ export default function CoachDashboard() {
 
               return (
                 <div key={f.id}
-                  style={{ display: 'flex', alignItems: 'center', gap: 18, background: 'rgba(232,228,220,0.025)', border: '1px solid rgba(232,228,220,0.06)', borderRadius: 14, padding: '16px 22px', transition: 'all 0.15s', position: 'relative', overflow: 'hidden' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.12)'}
-                  onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.06)'}>
-
-                  {/* Left color bar */}
-                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: typeColor, borderRadius: '14px 0 0 14px', opacity: 0.7 }} />
+                  style={{ display: 'flex', alignItems: 'center', gap: 18, background: `${typeColor}05`, border: `1px solid ${typeColor}18`, borderRadius: 14, padding: '16px 22px', transition: 'all 0.15s', position: 'relative', overflow: 'hidden' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = `${typeColor}08`; (e.currentTarget as HTMLDivElement).style.borderColor = `${typeColor}28` }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = `${typeColor}05`; (e.currentTarget as HTMLDivElement).style.borderColor = `${typeColor}18` }}>
 
                   {/* Thumbnail */}
                   <div style={{ width: 52, height: 52, borderRadius: 10, flexShrink: 0, overflow: 'hidden', background: f.thumbnail_url ? 'transparent' : `${typeColor}15` }}>
