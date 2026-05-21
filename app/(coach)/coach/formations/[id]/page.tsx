@@ -5,7 +5,7 @@ import { useUser } from '@/hooks/useUser'
 import { useParams } from 'next/navigation'
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Upload,
-  Eye, EyeOff, Video, ZoomIn, ZoomOut, Save, Users, DollarSign, Check,
+  Eye, EyeOff, Video, ZoomIn, ZoomOut, Save, Users, DollarSign, Check, Pencil,
 } from 'lucide-react'
 import Link from 'next/link'
 import FourAcesLoader from '@/components/FourAcesLoader'
@@ -57,9 +57,15 @@ export default function EditFormationPage() {
   const [galleryUploading, setGalleryUploading] = useState(false)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
-  const [newChapterTitle, setNewChapterTitle] = useState('')
-  const [addingLesson, setAddingLesson]       = useState<string | null>(null)
+  const [newChapterTitle, setNewChapterTitle]         = useState('')
+  const [editingChapterId, setEditingChapterId]       = useState<string | null>(null)
+  const [editingChapterTitle, setEditingChapterTitle] = useState('')
+  const [addingLesson, setAddingLesson]               = useState<string | null>(null)
   const [newLesson, setNewLesson] = useState({ title: '', video_url: '', video_type: 'youtube', is_free: false })
+  const [editingLessonId, setEditingLessonId]         = useState<string | null>(null)
+  const [editingLesson, setEditingLesson]             = useState({ title: '', video_url: '', video_type: 'youtube', is_free: false })
+
+  const [publishError, setPublishError] = useState<string | null>(null)
 
   const [zoom, setZoom]           = useState(1)
   const [position, setPosition]   = useState({ x: 50, y: 50 })
@@ -138,7 +144,7 @@ export default function EditFormationPage() {
   const updateField = (key: string, value: any) => {
     const updated = { ...formation, [key]: value }
     setFormation(updated)
-    autoSave(updated)
+    autoSave(updated, packs, highlights)
   }
 
   const changeType = async (t: ContentType) => {
@@ -148,6 +154,18 @@ export default function EditFormationPage() {
 
   const togglePublish = async () => {
     const next = !formation.published
+    if (next) {
+      const { count } = await supabase
+        .from('coach_proofs')
+        .select('id', { count: 'exact', head: true })
+        .eq('coach_id', user?.id ?? '')
+        .eq('category', 'stats')
+      if (!count || count === 0) {
+        setPublishError('Ajoute au moins 1 screenshot de stats officielles dans ton profil avant de publier.')
+        return
+      }
+      setPublishError(null)
+    }
     await supabase.from('formations').update({ published: next }).eq('id', id)
     setFormation((p: any) => ({ ...p, published: next }))
   }
@@ -224,6 +242,13 @@ export default function EditFormationPage() {
     await supabase.from('formation_chapters').delete().eq('id', chId)
     setChapters(p => p.filter(c => c.id !== chId))
   }
+  const renameChapter = async (chId: string) => {
+    const title = editingChapterTitle.trim()
+    if (!title) return
+    await supabase.from('formation_chapters').update({ title }).eq('id', chId)
+    setChapters(p => p.map(c => c.id === chId ? { ...c, title } : c))
+    setEditingChapterId(null)
+  }
   const addLesson = async (chId: string) => {
     if (!newLesson.title.trim()) return
     const order = chapters.find(c => c.id === chId)?.formation_lessons?.length ?? 0
@@ -237,6 +262,26 @@ export default function EditFormationPage() {
   const deleteLesson = async (chId: string, lId: string) => {
     await supabase.from('formation_lessons').delete().eq('id', lId)
     setChapters(p => p.map(c => c.id === chId ? { ...c, formation_lessons: c.formation_lessons.filter((l: any) => l.id !== lId) } : c))
+  }
+  const updateLesson = async (chId: string, lId: string) => {
+    const title = editingLesson.title.trim()
+    if (!title) return
+    await supabase.from('formation_lessons').update({
+      title,
+      video_url:  editingLesson.video_url || null,
+      video_type: editingLesson.video_type,
+      is_free:    editingLesson.is_free,
+    }).eq('id', lId)
+    setChapters(p => p.map(c => c.id === chId
+      ? { ...c, formation_lessons: c.formation_lessons.map((l: any) => l.id === lId
+          ? { ...l, title, video_url: editingLesson.video_url || null, video_type: editingLesson.video_type, is_free: editingLesson.is_free }
+          : l) }
+      : c))
+    setEditingLessonId(null)
+  }
+  const startEditLesson = (lesson: any) => {
+    setEditingLessonId(lesson.id)
+    setEditingLesson({ title: lesson.title, video_url: lesson.video_url ?? '', video_type: lesson.video_type ?? 'youtube', is_free: lesson.is_free ?? false })
   }
   const toggleLessonFree = async (chId: string, lesson: any) => {
     await supabase.from('formation_lessons').update({ is_free: !lesson.is_free }).eq('id', lesson.id)
@@ -358,7 +403,7 @@ export default function EditFormationPage() {
                     <select value={formation.variant ?? 'MTT'} onChange={e => {
                       const next = { ...formation, variant: e.target.value, level: 'Débutant' }
                       setFormation(next)
-                      autoSave(next)
+                      autoSave(next, packs, highlights)
                     }} style={field({ cursor: 'pointer' })}>
                       {VARIANTS.map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
                     </select>
@@ -386,7 +431,31 @@ export default function EditFormationPage() {
                     <div key={ch.id} style={{ border: '1px solid rgba(232,228,220,0.07)', borderRadius: 12, overflow: 'hidden' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', background: 'rgba(232,228,220,0.025)', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
                         <GripVertical size={13} color={SILVER} style={{ opacity: 0.35 }} />
-                        <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: CREAM }}>{ci + 1}. {ch.title}</span>
+                        {editingChapterId === ch.id ? (
+                          <input
+                            autoFocus
+                            value={editingChapterTitle}
+                            onChange={e => setEditingChapterTitle(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') renameChapter(ch.id); if (e.key === 'Escape') setEditingChapterId(null) }}
+                            onBlur={() => renameChapter(ch.id)}
+                            style={{ flex: 1, background: 'rgba(232,228,220,0.06)', border: '1px solid rgba(124,58,237,0.45)', borderRadius: 6, padding: '4px 8px', color: CREAM, fontSize: 13, fontWeight: 700, outline: 'none' }}
+                          />
+                        ) : (
+                          <span
+                            style={{ flex: 1, fontSize: 13, fontWeight: 700, color: CREAM, cursor: 'pointer' }}
+                            title="Cliquer pour renommer"
+                            onDoubleClick={() => { setEditingChapterId(ch.id); setEditingChapterTitle(ch.title) }}>
+                            {ci + 1}. {ch.title}
+                          </span>
+                        )}
+                        <button
+                          onClick={() => { setEditingChapterId(ch.id); setEditingChapterTitle(ch.title) }}
+                          style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(232,228,220,0.08)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
+                          onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
+                          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}
+                          title="Renommer">
+                          <Pencil size={11} />
+                        </button>
                         <span style={{ fontSize: 11, color: SILVER }}>{ch.formation_lessons?.length ?? 0} leçons</span>
                         <button onClick={() => deleteChapter(ch.id)}
                           style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
@@ -398,18 +467,61 @@ export default function EditFormationPage() {
 
                       <div>
                         {(ch.formation_lessons ?? []).map((lesson: any) => (
-                          <div key={lesson.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 18px', borderBottom: '1px solid rgba(232,228,220,0.04)' }}>
-                            <Video size={12} color={SILVER} style={{ opacity: 0.4, flexShrink: 0 }} />
-                            <span style={{ flex: 1, fontSize: 12, color: CREAM }}>{lesson.title}</span>
-                            {lesson.video_url && <span style={{ fontSize: 10, color: SILVER, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lesson.video_url}</span>}
-                            <button onClick={() => toggleLessonFree(ch.id, lesson)}
-                              style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, border: `1px solid ${lesson.is_free ? 'rgba(6,182,212,0.4)' : 'rgba(232,228,220,0.1)'}`, background: lesson.is_free ? 'rgba(6,182,212,0.1)' : 'transparent', color: lesson.is_free ? '#06b6d4' : SILVER, cursor: 'pointer', transition: 'all 0.15s', letterSpacing: '0.06em' }}>
-                              {lesson.is_free ? 'GRATUIT' : 'PREMIUM'}
-                            </button>
-                            <button onClick={() => deleteLesson(ch.id, lesson.id)}
-                              style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'transparent', color: 'rgba(239,68,68,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                              <Trash2 size={10} />
-                            </button>
+                          <div key={lesson.id} style={{ borderBottom: '1px solid rgba(232,228,220,0.04)' }}>
+                            {editingLessonId === lesson.id ? (
+                              <div style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <input
+                                  autoFocus
+                                  value={editingLesson.title}
+                                  onChange={e => setEditingLesson(p => ({ ...p, title: e.target.value }))}
+                                  onKeyDown={e => { if (e.key === 'Enter') updateLesson(ch.id, lesson.id); if (e.key === 'Escape') setEditingLessonId(null) }}
+                                  placeholder="Titre de la leçon"
+                                  style={field({ fontSize: 12 })} />
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                  <input
+                                    value={editingLesson.video_url}
+                                    onChange={e => setEditingLesson(p => ({ ...p, video_url: e.target.value }))}
+                                    placeholder="URL YouTube ou Vimeo"
+                                    style={field({ flex: 1, fontSize: 12 })} />
+                                  <select value={editingLesson.video_type} onChange={e => setEditingLesson(p => ({ ...p, video_type: e.target.value }))} style={field({ width: 100, cursor: 'pointer', fontSize: 12 })}>
+                                    <option value="youtube" style={{ background: '#07090e' }}>YouTube</option>
+                                    <option value="vimeo" style={{ background: '#07090e' }}>Vimeo</option>
+                                    <option value="upload" style={{ background: '#07090e' }}>Upload</option>
+                                  </select>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: SILVER }}>
+                                    <input type="checkbox" checked={editingLesson.is_free} onChange={e => setEditingLesson(p => ({ ...p, is_free: e.target.checked }))} />
+                                    Leçon gratuite
+                                  </label>
+                                  <div style={{ flex: 1 }} />
+                                  <button onClick={() => setEditingLessonId(null)} style={{ padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, fontSize: 11, cursor: 'pointer' }}>Annuler</button>
+                                  <button onClick={() => updateLesson(ch.id, lesson.id)} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: CREAM, color: '#07090e', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <Check size={11} /> Sauvegarder
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 18px' }}
+                                onMouseEnter={e => (e.currentTarget.querySelector('.lesson-edit-btn') as HTMLElement | null)?.style.setProperty('opacity', '1')}
+                                onMouseLeave={e => (e.currentTarget.querySelector('.lesson-edit-btn') as HTMLElement | null)?.style.setProperty('opacity', '0')}>
+                                <Video size={12} color={SILVER} style={{ opacity: 0.4, flexShrink: 0 }} />
+                                <span style={{ flex: 1, fontSize: 12, color: CREAM }}>{lesson.title}</span>
+                                {lesson.video_url && <span style={{ fontSize: 10, color: SILVER, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lesson.video_url}</span>}
+                                <button className="lesson-edit-btn" onClick={() => startEditLesson(lesson)}
+                                  style={{ width: 24, height: 24, borderRadius: 5, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: 0, transition: 'opacity 0.15s' }}>
+                                  <Pencil size={10} />
+                                </button>
+                                <button onClick={() => toggleLessonFree(ch.id, lesson)}
+                                  style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, border: `1px solid ${lesson.is_free ? 'rgba(6,182,212,0.4)' : 'rgba(232,228,220,0.1)'}`, background: lesson.is_free ? 'rgba(6,182,212,0.1)' : 'transparent', color: lesson.is_free ? '#06b6d4' : SILVER, cursor: 'pointer', transition: 'all 0.15s', letterSpacing: '0.06em' }}>
+                                  {lesson.is_free ? 'GRATUIT' : 'PREMIUM'}
+                                </button>
+                                <button onClick={() => deleteLesson(ch.id, lesson.id)}
+                                  style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'transparent', color: 'rgba(239,68,68,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                  <Trash2 size={10} />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ))}
 
@@ -587,6 +699,14 @@ export default function EditFormationPage() {
               <p style={{ fontSize: 11, color: SILVER, marginTop: 10, textAlign: 'center' }}>
                 {formation.published ? 'Visible sur la marketplace' : 'Non visible — brouillon'}
               </p>
+              {publishError && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 10, padding: '10px 12px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                  <span style={{ fontSize: 11, color: '#fca5a5', lineHeight: 1.5 }}>
+                    ⚠ {publishError}
+                  </span>
+                  <Link href="/coach/profile" style={{ fontSize: 11, color: '#ef4444', fontWeight: 700, textDecoration: 'none', flexShrink: 0, alignSelf: 'flex-start' }}>→ Profil</Link>
+                </div>
+              )}
             </div>
 
             {/* Stats */}
