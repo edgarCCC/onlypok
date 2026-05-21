@@ -7,7 +7,6 @@ import {
   Check, Save, Loader2, CheckCircle, Clock,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import StudentHeader from '@/components/layout/StudentHeader'
 
 /* ─── Tokens ─────────────────────────────────────── */
 const BG      = '#07090e'
@@ -223,8 +222,6 @@ export default function PrepPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
-      <StudentHeader />
-
       <div style={{ maxWidth: 780, margin: '0 auto', padding: '40px clamp(16px,3vw,40px) 120px' }}>
 
         {/* ── Back + header ─────────────────────── */}

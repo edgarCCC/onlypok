@@ -6,7 +6,7 @@ export default function StudentLayoutClient({ children }: { children: React.Reac
   const pathname = usePathname()
 
   // these pages have their own inline fixed header
-  const hideHeader = pathname.startsWith('/formations') || pathname.startsWith('/coaches')
+  const hideHeader = pathname.startsWith('/formations') || pathname.startsWith('/coaches') || pathname.startsWith('/coaching')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#07090e' }}>
