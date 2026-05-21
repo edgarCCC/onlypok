@@ -245,7 +245,7 @@ export default function DashboardClient({
                       )
                     })}
                     {coachingSessions.length > 6 && (
-                      <Link href="/coach/formations" style={{ fontSize: 11, color: SILVER, textDecoration: 'none', textAlign: 'center', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                      <Link href="#content" style={{ fontSize: 11, color: SILVER, textDecoration: 'none', textAlign: 'center', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                         +{coachingSessions.length - 6} autres <ChevronRight size={11} />
                       </Link>
                     )}

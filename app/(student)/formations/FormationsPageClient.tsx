@@ -400,11 +400,11 @@ export default function FormationsPageClient({
                 onPlayVideo={setPlayingVideo}
               />
             )}
-            {[...filtered].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0,8).length > 0 && (
+            {filtered.length > 0 && (
               <NetflixRow
                 title="Nouveautés"
                 subtitle="Ajoutés récemment"
-                formations={[...filtered].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0,8)}
+                formations={[...filtered].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())}
                 accentColor={accentColor}
                 onPlayVideo={setPlayingVideo}
               />
