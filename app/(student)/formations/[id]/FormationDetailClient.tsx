@@ -995,15 +995,18 @@ function VideoComments({ formationId, coachId, videoUrl }: { formationId: string
   const [comments, setComments]   = useState<any[]>([])
   const [text, setText]           = useState('')
   const [sending, setSending]     = useState(false)
+  const [loadError, setLoadError] = useState(false)
 
   const load = async () => {
+    setLoadError(false)
     let query = supabase
       .from('video_comments')
       .select('id, content, created_at, student_id')
       .order('created_at', { ascending: false })
     query = videoUrl ? query.eq('video_url', videoUrl) : query.eq('formation_id', formationId)
     const { data, error } = await query
-    if (error || !data?.length) { setComments([]); return }
+    if (error) { setLoadError(true); setComments([]); return }
+    if (!data?.length) { setComments([]); return }
     const studentIds = [...new Set(data.map((c: any) => c.student_id).filter(Boolean))]
     const { data: profiles } = await supabase.from('profiles').select('id, username').in('id', studentIds)
     const profileMap: Record<string, string> = {}
@@ -1062,7 +1065,9 @@ function VideoComments({ formationId, coachId, videoUrl }: { formationId: string
       )}
 
       {/* Liste */}
-      {comments.length === 0 ? (
+      {loadError ? (
+        <p style={{ color: '#f59e0b', fontSize: 12 }}>Les commentaires sont temporairement indisponibles. Un admin doit activer la politique RLS sur video_comments via /coach/admin.</p>
+      ) : comments.length === 0 ? (
         <p style={{ color: SILVER, fontSize: 13 }}>Pas encore de commentaires — sois le premier !</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
