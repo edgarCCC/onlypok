@@ -99,17 +99,18 @@ function VideoNotes({ formationId, currentLesson, typeColor, collapsed, setColla
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    const key = `onlypok_notes_${formationId}_video`
+    const key = `onlypok_notes_${formationId}_${currentLesson?.id ?? 'general'}`
     setNotes(localStorage.getItem(key) ?? '')
     setSaved(true)
-  }, [formationId])
+  }, [formationId, currentLesson?.id])
 
   const handleChange = (val: string) => {
     setNotes(val)
     setSaved(false)
+    const lessonId = currentLesson?.id
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(() => {
-      localStorage.setItem(`onlypok_notes_${formationId}_video`, val)
+      localStorage.setItem(`onlypok_notes_${formationId}_${lessonId ?? 'general'}`, val)
       setSaved(true)
     }, 800)
   }
