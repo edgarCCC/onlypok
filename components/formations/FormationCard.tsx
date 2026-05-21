@@ -64,6 +64,9 @@ export default function FormationCard({
     boxShadow: hovered
       ? `0 16px 40px rgba(0,0,0,0.6), 0 0 0 1px ${color}22, 0 8px 20px ${color}18`
       : '0 2px 8px rgba(0,0,0,0.3)',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
   }
 
   const thumbnail = (
@@ -149,7 +152,7 @@ export default function FormationCard({
   )
 
   const content = (
-    <div style={{ padding: '14px 14px 13px' }}>
+    <div style={{ padding: '14px 14px 13px', flex: 1, display: 'flex', flexDirection: 'column' }}>
       <h3 style={{
         fontSize: 13, fontWeight: 700,
         color: '#e8eaf0',
@@ -170,7 +173,7 @@ export default function FormationCard({
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         paddingTop: 10,
         borderTop: '1px solid rgba(255,255,255,0.06)',
-        marginTop: f.short_desc ? 0 : 8,
+        marginTop: 'auto',
       }}>
         <span style={{
           fontSize: 10.5, color: 'rgba(232,234,240,0.36)',
@@ -202,7 +205,7 @@ export default function FormationCard({
 
   if (isPlayable) {
     return (
-      <div onClick={onPlay} style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}>
+      <div onClick={onPlay} style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', height: '100%' }}>
         {inner}
       </div>
     )
@@ -213,7 +216,7 @@ export default function FormationCard({
   }
 
   return (
-    <Link href={`/formations/${f.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+    <Link href={`/formations/${f.id}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
       {inner}
     </Link>
   )
@@ -229,7 +232,7 @@ function CoachingCard({ f }: { f: Formation }) {
   const variants  = (f.coach?.variants ?? []) as string[]
 
   return (
-    <Link href={`/formations/${f.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+    <Link href={`/formations/${f.id}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -242,7 +245,7 @@ function CoachingCard({ f }: { f: Formation }) {
           transition: 'all 0.22s cubic-bezier(0.34,1.56,0.64,1)',
           transform: hovered ? 'translateY(-5px)' : 'none',
           boxShadow: hovered ? `0 20px 56px ${color}1a, 0 4px 16px rgba(0,0,0,0.4)` : '0 2px 8px rgba(0,0,0,0.3)',
-          display: 'flex', flexDirection: 'column',
+          display: 'flex', flexDirection: 'column', height: '100%',
         }}>
 
         {/* Colour band — gradient only, avatar goes in the circle below */}

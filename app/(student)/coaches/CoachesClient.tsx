@@ -75,6 +75,7 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
         boxShadow: hovered ? `0 20px 56px ${color}1a, 0 4px 16px rgba(0,0,0,0.4)` : '0 2px 8px rgba(0,0,0,0.3)',
         display: 'flex',
         flexDirection: 'column',
+        height: '100%',
       }}
     >
       {/* ── Colour band ── */}
@@ -186,6 +187,7 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
 
         {/* Stats row */}
         <div style={{
+          marginTop: 'auto',
           display: 'flex', gap: 0, padding: '10px 0',
           borderTop: `1px solid ${DIM}`, borderBottom: `1px solid ${DIM}`, marginBottom: 14,
         }}>
@@ -262,7 +264,6 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
         position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 100,
         width: 480, background: '#0c0e14',
         borderLeft: `1px solid ${DIM}`,
-        boxShadow: `-32px 0 80px rgba(0,0,0,0.7)`,
         display: 'flex', flexDirection: 'column',
         overflowY: 'auto',
         scrollbarWidth: 'none',
