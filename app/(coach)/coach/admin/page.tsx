@@ -16,6 +16,12 @@ const MIGRATIONS = [
     desc: "Étend la contrainte formations_variant_check pour inclure NLH, PLO, SNG, Heads-Up, PKO. Active aussi les RLS policies sur video_comments.",
     endpoint: '/api/migrate/fix-variant-constraint',
   },
+  {
+    id: 'add-highlights-column',
+    label: 'Colonne highlights formations',
+    desc: "Ajoute la colonne highlights (jsonb) sur la table formations si elle n'existe pas encore. Nécessaire pour que les Atouts des formations fonctionnent.",
+    endpoint: '/api/migrate/add-highlights-column',
+  },
 ]
 
 function MigrationCard({ migration }: { migration: typeof MIGRATIONS[0] }) {
