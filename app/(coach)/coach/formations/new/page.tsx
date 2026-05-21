@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'rea
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Upload, Plus, Trash2, ZoomIn, ZoomOut, Video, Check, CalendarCheck, Zap, Minus } from 'lucide-react'
+import { ArrowLeft, Upload, Plus, Trash2, ZoomIn, ZoomOut, Video, Check, CalendarCheck, Zap, Minus, Loader2 } from 'lucide-react'
 import PublishOverlay from '@/components/PublishOverlay'
 import { HIGHLIGHTS_COACHING, HIGHLIGHTS_FORMATION, HIGHLIGHTS_VIDEO } from '@/lib/highlights'
 
@@ -16,20 +16,25 @@ const TABS = [
   { id: 'coaching',  label: 'Coaching',  color: '#f59e0b', desc: 'Session coaching avec packs' },
 ]
 
-const VARIANTS = ['MTT', 'Cash', 'Expresso', 'Autre']
+const VARIANTS = ['MTT', 'NLH', 'Cash', 'Expresso', 'PLO', 'SNG', 'Heads-Up', 'PKO', 'Autre']
+const LEVELS_BASE = [{ value:'Débutant', label:'Débutant' }, { value:'Intermédiaire', label:'Intermédiaire' }, { value:'Avancé', label:'Avancé' }]
 const LEVELS_BY_VARIANT: Record<string, { value: string; label: string }[]> = {
   MTT:      [{ value:'Débutant', label:'Débutant — ABI ≤ 5€' }, { value:'Intermédiaire', label:'Intermédiaire — ABI 5–20€' }, { value:'Avancé', label:'Avancé — ABI > 20€' }],
+  NLH:      [{ value:'Débutant', label:'Débutant — NL2–NL10' }, { value:'Intermédiaire', label:'Intermédiaire — NL25–NL100' }, { value:'Avancé', label:'Avancé — NL200+' }],
   Cash:     [{ value:'Débutant', label:'Débutant — NL2 à NL10' }, { value:'Intermédiaire', label:'Intermédiaire — NL25–NL100' }, { value:'Avancé', label:'Avancé — NL200+' }],
   Expresso: [{ value:'Débutant', label:'Débutant — ABI ≤ 5€' }, { value:'Intermédiaire', label:'Intermédiaire — ABI 5–20€' }, { value:'Avancé', label:'Avancé — ABI > 20€' }],
-  Autre:    [{ value:'Débutant', label:'Débutant' }, { value:'Intermédiaire', label:'Intermédiaire' }, { value:'Avancé', label:'Avancé' }],
+  PLO:      [{ value:'Débutant', label:'Débutant — PLO25–PLO50' }, { value:'Intermédiaire', label:'Intermédiaire — PLO100–PLO200' }, { value:'Avancé', label:'Avancé — PLO500+' }],
+  SNG:      LEVELS_BASE,
+  'Heads-Up': LEVELS_BASE,
+  PKO:      [{ value:'Débutant', label:'Débutant — ABI ≤ 5€' }, { value:'Intermédiaire', label:'Intermédiaire — ABI 5–20€' }, { value:'Avancé', label:'Avancé — ABI > 20€' }],
+  Autre:    LEVELS_BASE,
 }
 
 const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '11px 16px', color: CREAM, fontSize: 14, outline: 'none', fontFamily: 'inherit' }
 
-type Pack    = { label: string, hours: number, price: number, desc: string }
 type Pkg     = { id: string; name: string; sessions: number; price: string; desc: string }
 type Lesson  = { title: string, video_url: string, is_free: boolean }
-type Chapter = { lessons: Lesson[] }
+type Chapter = { title: string; lessons: Lesson[] }
 
 const CARD_BG  = 'rgba(232,228,220,0.03)'
 const CARD_BD  = 'rgba(232,228,220,0.08)'
@@ -72,7 +77,7 @@ function NewFormationInner() {
   const [pendingHref, setPendingHref]         = useState('')
 
   // Chapitres — Chapitre 1 déjà créé et débloqué
-  const [chapters, setChapters] = useState<Chapter[]>([{ lessons: [{ title: '', video_url: '', is_free: true }] }])
+  const [chapters, setChapters] = useState<Chapter[]>([{ title: 'Chapitre 1', lessons: [{ title: '', video_url: '', is_free: true }] }])
 
   // Crop miniature
   const [cropMode, setCropMode]   = useState(false)
@@ -99,17 +104,15 @@ function NewFormationInner() {
 
   const [highlights, setHighlights] = useState<string[]>([])
 
-  const [packs, setPacks] = useState<Pack[]>([
-    { label: 'Starter',     hours: 1,  price: 80,  desc: "1 session d'1h pour démarrer" },
-    { label: 'Progression', hours: 5,  price: 350, desc: '5 sessions pour progresser vite' },
-    { label: 'Elite',       hours: 10, price: 600, desc: '10 sessions — engagement total' },
-  ])
-
   // Coaching offer
   const [coachingMode, setCoachingMode] = useState<'auto' | 'manual' | null>('manual')
   const [hourlyRate,   setHourlyRate]   = useState('80')
   const [weekendPct,   setWeekendPct]   = useState(0)
-  const [packages,     setPackages]     = useState<Pkg[]>([])
+  const [packages,     setPackages]     = useState<Pkg[]>([
+    { id: '1', name: 'Starter',     sessions: 1,  price: '80',  desc: "1 session d'1h pour démarrer" },
+    { id: '2', name: 'Progression', sessions: 5,  price: '350', desc: '5 sessions pour progresser vite' },
+    { id: '3', name: 'Elite',       sessions: 10, price: '600', desc: '10 sessions — engagement total' },
+  ])
 
   // Photos complémentaires (coaching only)
   const [galleryFiles,    setGalleryFiles]    = useState<{ file: File; preview: string }[]>([])
@@ -117,6 +120,13 @@ function NewFormationInner() {
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const activeTab = TABS.find(t => t.id === tab)!
+
+  const canSubmit = useMemo(() => {
+    if (!title.trim() || !desc.trim()) return false
+    if (tab === 'video' && !videoUrl.trim()) return false
+    if (tab === 'formation' && !chapters.some(ch => ch.lessons.some(l => l.title.trim()))) return false
+    return true
+  }, [title, desc, videoUrl, tab, chapters])
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -166,6 +176,8 @@ function NewFormationInner() {
 
   const doInsert = async (published: boolean) => {
     if (!user || !title.trim()) return null
+    if (!desc.trim()) { setError('La description est requise'); return null }
+    if (tab === 'video' && !videoUrl.trim()) { setError("L'URL de la vidéo est requise"); return null }
     const thumbnail_url = miniature ? await uploadMiniature() : null
     if (miniature && !thumbnail_url) return null
 
@@ -177,11 +189,26 @@ function NewFormationInner() {
       thumbnail_crop: { zoom, x: position.x, y: position.y },
     }
     if (tab === 'video')    payload.video_url = videoUrl || null
-    if (tab === 'coaching') { payload.coaching_packs = packs; payload.cal_url = calUrl || null }
+    if (tab === 'coaching') {
+      payload.coaching_packs = packages.map(pkg => ({
+        label: pkg.name,
+        hours: pkg.sessions,
+        price: Number(pkg.price),
+        desc:  pkg.desc,
+      }))
+      payload.cal_url = calUrl || null
+    }
     if (highlights.length > 0) payload.highlights = highlights
 
     const { data, error: err } = await supabase.from('formations').insert(payload).select().single()
-    if (err) { setError('Erreur formation : ' + err.message); return null }
+    if (err) {
+      if (err.message.includes('formations_variant_check') || err.code === '23514') {
+        setError("Variant non supporté par la base de données. Un admin doit exécuter la migration /api/migrate/fix-variant-constraint.")
+      } else {
+        setError('Erreur formation : ' + err.message)
+      }
+      return null
+    }
 
     // Upload gallery photos for coaching
     if (tab === 'coaching' && data && galleryFiles.length > 0) {
@@ -207,7 +234,7 @@ function NewFormationInner() {
         const ch = chapters[ci]
         const { data: chData, error: chErr } = await supabase.from('formation_chapters').insert({
           formation_id: data.id,
-          title: `Chapitre ${ci + 1}`,
+          title: ch.title.trim() || `Chapitre ${ci + 1}`,
           order_index: ci,
         }).select().single()
         if (chErr) { setError(`Chapitre ${ci + 1} : ${chErr.message}`); return null }
@@ -243,7 +270,7 @@ function NewFormationInner() {
   }
 
   const handlePublish = async () => {
-    if (!title.trim() || loading) return
+    if (!canSubmit || loading) return
     setLoading(true)
     setError('')
     setIsDirty(false)
@@ -256,7 +283,8 @@ function NewFormationInner() {
   }
 
   // Chapters helpers
-  const addChapter = () => setChapters(p => [...p, { lessons: [{ title: '', video_url: '', is_free: false }] }])
+  const addChapter = () => setChapters(p => [...p, { title: `Chapitre ${p.length + 1}`, lessons: [{ title: '', video_url: '', is_free: false }] }])
+  const updateChapterTitle = (ci: number, val: string) => setChapters(p => p.map((c, i) => i === ci ? { ...c, title: val } : c))
   const addLesson  = (ci: number) => setChapters(p => p.map((c, i) => i === ci ? { ...c, lessons: [...c.lessons, { title: '', video_url: '', is_free: false }] } : c))
   const removeLesson = (ci: number, li: number) => setChapters(p => p.map((c, i) => i === ci ? { ...c, lessons: c.lessons.filter((_, j) => j !== li) } : c))
   const updateLesson = (ci: number, li: number, key: keyof Lesson, val: any) =>
@@ -271,10 +299,6 @@ function NewFormationInner() {
     const dy = (e.clientY - dragStart.current.y) / 4
     setPosition({ x: Math.min(100, Math.max(0, dragStart.current.px - dx)), y: Math.min(100, Math.max(0, dragStart.current.py - dy)) })
   }
-
-  const updatePack = (i: number, key: keyof Pack, val: any) => setPacks(p => p.map((pk, idx) => idx === i ? { ...pk, [key]: val } : pk))
-  const addPack    = () => setPacks(p => [...p, { label: 'Nouveau pack', hours: 1, price: 0, desc: '' }])
-  const removePack = (i: number) => setPacks(p => p.filter((_, idx) => idx !== i))
 
   const goBack = () => { if (isDirty) { setPendingHref('/coach/dashboard'); setShowLeaveModal(true) } else router.push('/coach/dashboard') }
 
@@ -318,7 +342,7 @@ function NewFormationInner() {
             {TABS.map(t => {
               const active = tab === t.id
               return (
-                <button key={t.id} onClick={() => setTab(t.id as any)} style={{ padding: '8px 28px', borderRadius: 12, border: 'none', background: active ? t.color + '28' : 'transparent', color: active ? '#fff' : SILVER, fontSize: 13, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', boxShadow: active ? `0 2px 14px ${t.color}50` : 'none' }}>
+                <button key={t.id} onClick={() => { setTab(t.id as any); setHighlights([]) }} style={{ padding: '8px 28px', borderRadius: 12, border: 'none', background: active ? t.color + '28' : 'transparent', color: active ? '#fff' : SILVER, fontSize: 13, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', boxShadow: active ? `0 2px 14px ${t.color}50` : 'none' }}>
                   {t.label}
                 </button>
               )
@@ -377,8 +401,13 @@ function NewFormationInner() {
                         {/* Header chapitre */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid rgba(232,228,220,0.06)', background: 'rgba(232,228,220,0.03)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 26, height: 26, borderRadius: 7, background: `${activeTab.color}20`, border: `1px solid ${activeTab.color}40`, color: activeTab.color, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{ci + 1}</div>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: CREAM }}>Chapitre {ci + 1}</span>
+                            <div style={{ width: 26, height: 26, borderRadius: 7, background: `${activeTab.color}20`, border: `1px solid ${activeTab.color}40`, color: activeTab.color, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{ci + 1}</div>
+                            <input
+                              value={chapter.title}
+                              onChange={e => updateChapterTitle(ci, e.target.value)}
+                              placeholder={`Chapitre ${ci + 1}`}
+                              style={{ background: 'transparent', border: 'none', outline: 'none', color: CREAM, fontSize: 14, fontWeight: 700, fontFamily: 'inherit', width: 180, padding: 0 }}
+                            />
                           </div>
                           <div style={{ display: 'flex', gap: 8 }}>
                             {ci === 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'rgba(6,182,212,0.15)', color: '#06b6d4', fontWeight: 700 }}>Accès gratuit</span>}
@@ -643,12 +672,12 @@ function NewFormationInner() {
             <div style={{ height: 1, background: 'rgba(232,228,220,0.08)' }} />
             <div style={{ display: 'flex', gap: 12 }}>
               <button type="button" onClick={goBack} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Annuler</button>
-              <button type="submit" disabled={loading || !title.trim()} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.15)', background: 'transparent', color: CREAM, fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: !title.trim() ? 0.4 : 1 }}>
-                {loading ? 'Création…' : 'Brouillon'}
+              <button type="submit" disabled={loading || !canSubmit} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.15)', background: 'transparent', color: CREAM, fontSize: 14, fontWeight: 600, cursor: (loading || !canSubmit) ? 'not-allowed' : 'pointer', opacity: (loading || !canSubmit) ? 0.4 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                {loading ? <><Loader2 size={14} style={{ animation: 'spin 0.7s linear infinite' }} /> Création…</> : 'Brouillon'}
               </button>
-              <button type="button" disabled={!title.trim() || loading} onClick={handlePublish}
-                style={{ flex: 2, padding: '13px', borderRadius: 10, border: 'none', background: activeTab.color, color: '#fff', fontSize: 14, fontWeight: 800, cursor: (!title.trim() || loading) ? 'not-allowed' : 'pointer', opacity: (!title.trim() || loading) ? 0.4 : 1, boxShadow: `0 4px 20px ${activeTab.color}50` }}>
-                {loading ? 'Publication…' : `Publier la ${activeTab.label.toLowerCase()} →`}
+              <button type="button" disabled={!canSubmit || loading} onClick={handlePublish}
+                style={{ flex: 2, padding: '13px', borderRadius: 10, border: 'none', background: activeTab.color, color: '#fff', fontSize: 14, fontWeight: 800, cursor: (!canSubmit || loading) ? 'not-allowed' : 'pointer', opacity: (!canSubmit || loading) ? 0.4 : 1, boxShadow: `0 4px 20px ${activeTab.color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                {loading ? <><Loader2 size={14} style={{ animation: 'spin 0.7s linear infinite' }} /> Publication…</> : `Publier la ${activeTab.label.toLowerCase()} →`}
               </button>
             </div>
           </form>
