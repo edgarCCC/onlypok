@@ -269,12 +269,6 @@ export default function Panel({ data, setData, fx, setFx }: Props) {
         <Field label="Tilt" value={`${fx.tilt}°`}>
           <Slider value={fx.tilt} onChange={v => setF('tilt', v)} min={0} max={25} step={1} />
         </Field>
-        <Field label="Noise" value={fx.noise.toFixed(2)}>
-          <Slider value={fx.noise} onChange={v => setF('noise', parseFloat(v.toFixed(2)))} min={0} max={1} step={0.05} />
-        </Field>
-        <Field label="Iridescence" value={fx.iris.toFixed(2)}>
-          <Slider value={fx.iris} onChange={v => setF('iris', parseFloat(v.toFixed(2)))} min={0} max={1} step={0.05} />
-        </Field>
       </section>
     </aside>
   )

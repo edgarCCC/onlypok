@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import s from './PlayerCard.module.css'
 import {
@@ -88,38 +88,51 @@ interface Props {
 
 export default function PlayerCard({ data, fx }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  const [pt, setPt] = useState({ x: 0.5, y: 0.5, active: false })
-  const [t, setT] = useState(0)
+  const portraitRef = useRef<HTMLDivElement>(null)
+  const ptRef = useRef({ x: 0.5, y: 0.5, active: false })
+  const tiltRef = useRef(fx.tilt)
+  tiltRef.current = fx.tilt
 
   useEffect(() => {
     let raf: number
-    const tick = () => { setT(performance.now() / 1000); raf = requestAnimationFrame(tick) }
+    const tick = () => {
+      const t = performance.now() / 1000
+      const pt = ptRef.current
+      const el = ref.current
+      const portrait = portraitRef.current
+      if (el) {
+        const ax = pt.active ? pt.x : 0.5 + Math.sin(t * 0.6) * 0.35
+        const ay = pt.active ? pt.y : 0.5 + Math.cos(t * 0.45) * 0.35
+        const irisAngle = (ax * 360 + ay * 180 + t * 20) % 360
+        const rotX = pt.active ? -(pt.y - 0.5) * 2 * tiltRef.current : 0
+        const rotY = pt.active ?  (pt.x - 0.5) * 2 * tiltRef.current : 0
+        const portraitRY = (ax - 0.5) * 44 - 16
+        const portraitRX = -(ay - 0.5) * 28 + 5
+        const portraitTY = pt.active ? 0 : Math.sin(t * 0.62) * 5
+        el.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`
+        el.style.setProperty('--iris-angle', `${irisAngle}deg`)
+        el.style.setProperty('--gx', `${ax * 100}%`)
+        el.style.setProperty('--gy', `${ay * 100}%`)
+        el.style.setProperty('--glare-op', String(pt.active ? 0.55 : 0.28))
+        if (portrait) {
+          portrait.style.setProperty('--pry', `${portraitRY}deg`)
+          portrait.style.setProperty('--prx', `${portraitRX}deg`)
+          portrait.style.setProperty('--pty', `${portraitTY}px`)
+        }
+      }
+      raf = requestAnimationFrame(tick)
+    }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
   }, [])
 
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = ref.current!.getBoundingClientRect()
-    setPt({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height, active: true })
+    ptRef.current = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height, active: true }
   }
-  const onLeave = () => setPt(p => ({ ...p, active: false }))
+  const onLeave = () => { ptRef.current = { ...ptRef.current, active: false } }
 
   const tier = TIER[data.avatar]
-
-  const rotX = pt.active ? -(pt.y - 0.5) * 2 * fx.tilt : 0
-  const rotY = pt.active ?  (pt.x - 0.5) * 2 * fx.tilt : 0
-
-  // Idle drift when cursor is off card
-  const ax = pt.active ? pt.x : 0.5 + Math.sin(t * 0.6) * 0.35
-  const ay = pt.active ? pt.y : 0.5 + Math.cos(t * 0.45) * 0.35
-
-  const irisAngle = (ax * 360 + ay * 180 + t * 20) % 360
-  const glareOpacity = pt.active ? 0.55 : 0.28
-
-  // Portrait 3D — amplifies card tilt + adds idle float
-  const portraitRY = (ax - 0.5) * 44 - 16
-  const portraitRX = -(ay - 0.5) * 28 + 5
-  const portraitTY = pt.active ? 0 : Math.sin(t * 0.62) * 5
 
   const roleStats = data.role === 'coach'
     ? [
@@ -141,14 +154,13 @@ export default function PlayerCard({ data, fx }: Props) {
         onMouseMove={onMove}
         onMouseLeave={onLeave}
         style={{
-          transform: `rotateX(${rotX}deg) rotateY(${rotY}deg)`,
           '--accent': tier.accent,
           '--noise': fx.noise,
           '--iris': fx.iris,
-          '--iris-angle': `${irisAngle}deg`,
-          '--gx': `${ax * 100}%`,
-          '--gy': `${ay * 100}%`,
-          '--glare-op': glareOpacity,
+          '--iris-angle': '0deg',
+          '--gx': '50%',
+          '--gy': '50%',
+          '--glare-op': '0.28',
         } as CSSProperties}
       >
         <div className={s.cardBg} />
@@ -186,11 +198,12 @@ export default function PlayerCard({ data, fx }: Props) {
               style={{ background: `radial-gradient(circle at 50% 60%, ${tier.accent}55, transparent 70%)` }}
             />
             <div
+              ref={portraitRef}
               className={s.portraitSvg}
               style={{
-                '--pry': `${portraitRY}deg`,
-                '--prx': `${portraitRX}deg`,
-                '--pty': `${portraitTY}px`,
+                '--pry': '-16deg',
+                '--prx': '5deg',
+                '--pty': '0px',
               } as CSSProperties}
             >
               {AVATAR[data.avatar]()}

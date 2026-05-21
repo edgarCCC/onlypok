@@ -397,7 +397,6 @@ export default function CinematicTable() {
                   boxShadow: isActive
                     ? `0 0 0 3px ${f.accent}1a, 0 0 32px ${f.accent}3a, inset 0 0 12px ${f.accent}10`
                     : '0 4px 16px rgba(0,0,0,0.55)',
-                  backdropFilter: 'blur(12px)',
                   zIndex: Math.round(depth * 10),
                 }}
               >

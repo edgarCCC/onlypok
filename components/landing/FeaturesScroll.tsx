@@ -175,8 +175,8 @@ function CoachingMockup() {
 }
 
 function GTOTrainerMockup() {
-  const [hovered, setHovered] = useState<string | null>(null)
   const cellSize = 28
+  const labelRef = useRef<HTMLDivElement>(null)
 
   function getCellLabel(row: number, col: number): string {
     const r = RANKS_GRID[row]
@@ -187,6 +187,10 @@ function GTOTrainerMockup() {
   }
 
   return (
+    <>
+    <style>{`
+      .gto-cell:hover { background: rgba(6,182,212,0.6) !important; border-color: #06b6d4 !important; }
+    `}</style>
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
       <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
         {['LJ','HJ','CO','BTN','SB'].map((pos, i) => (
@@ -215,7 +219,6 @@ function GTOTrainerMockup() {
             {RANKS_GRID.map((colR, col) => {
               const { action, freq } = getAction(row, col)
               const label = getCellLabel(row, col)
-              const isHov = hovered === label
               const bg = action === 'RAISE'
                 ? freq >= 90 ? `rgba(124,58,237,${0.7 + freq / 1000})`
                   : freq >= 60 ? `rgba(168,85,247,${0.5 + freq / 1000})`
@@ -224,12 +227,17 @@ function GTOTrainerMockup() {
               return (
                 <div
                   key={colR}
-                  onMouseEnter={() => setHovered(label)}
-                  onMouseLeave={() => setHovered(null)}
+                  className="gto-cell"
+                  onMouseEnter={() => {
+                    if (labelRef.current) labelRef.current.textContent = `${label} — ${getAction(row, col).action}`
+                  }}
+                  onMouseLeave={() => {
+                    if (labelRef.current) labelRef.current.textContent = ''
+                  }}
                   style={{
                     width: cellSize, height: cellSize, borderRadius: 3,
-                    background: isHov ? 'rgba(6,182,212,0.6)' : bg,
-                    border: isHov ? '1px solid #06b6d4' : '1px solid rgba(0,0,0,0.2)',
+                    background: bg,
+                    border: '1px solid rgba(0,0,0,0.2)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 7, color: action === 'RAISE' ? 'rgba(240,244,255,0.9)' : 'rgba(240,244,255,0.15)',
                     fontFamily: 'var(--font-dm-mono,monospace)', fontWeight: 600,
@@ -257,12 +265,9 @@ function GTOTrainerMockup() {
         ))}
       </div>
 
-      {hovered && (
-        <div style={{ fontSize: 11, color: '#a855f7', fontFamily: 'var(--font-dm-mono,monospace)', letterSpacing: '0.1em', height: 18 }}>
-          {hovered} — {getAction(RANKS_GRID.indexOf(hovered[0]), RANKS_GRID.indexOf(hovered[1] === 's' || hovered[1] === 'o' ? hovered[0] : hovered[1])).action}
-        </div>
-      )}
+      <div ref={labelRef} style={{ fontSize: 11, color: '#a855f7', fontFamily: 'var(--font-dm-mono,monospace)', letterSpacing: '0.1em', height: 18 }} />
     </div>
+    </>
   )
 }
 
