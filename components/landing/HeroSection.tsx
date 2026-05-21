@@ -193,15 +193,11 @@ export default function HeroSection({ playerCount, recentUsers }: HeroProps) {
                 <h1
                   className="hero-line"
                   style={{
-                    fontFamily: 'var(--font-space, sans-serif)',
+                    fontFamily: 'var(--font-syne, sans-serif)',
                     fontSize: 'clamp(48px, 6.5vw, 96px)',
                     fontWeight: 600, lineHeight: 1.1,
                     margin: 0, letterSpacing: '-0.02em',
-                    color: i === 1 ? 'transparent' : '#f0f4ff',
-                    background: i === 1 ? 'linear-gradient(135deg, #a855f7, #06b6d4)' : undefined,
-                    WebkitBackgroundClip: i === 1 ? 'text' : undefined,
-                    backgroundClip: i === 1 ? 'text' : undefined,
-                    WebkitTextFillColor: i === 1 ? 'transparent' : undefined,
+                    color: i === 1 ? '#a855f7' : '#f0f4ff',
                     display: 'block',
                   }}
                 >

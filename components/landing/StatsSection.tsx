@@ -90,10 +90,7 @@ export default function StatsSection({ studentCount, coachCount, formationCount,
                 fontSize: 'clamp(44px, 5.5vw, 76px)',
                 fontWeight: 800, lineHeight: 1,
                 letterSpacing: '-0.04em',
-                background: `linear-gradient(135deg, ${s.accent}, #f0f4ff)`,
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                color: s.accent,
                 marginBottom: 12,
               }}
             >

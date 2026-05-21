@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
-import { Check, Loader2, Calendar, Plus, X, TrendingUp, Zap } from 'lucide-react'
+import { Check, Loader2, Calendar, Plus, X, TrendingUp } from 'lucide-react'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -319,17 +319,11 @@ export default function CoachCalendarPage() {
                 <span style={{ fontSize: 13, color: SILVER, fontWeight: 600 }}>Taux de remplissage</span>
                 <span style={{ fontSize: 20, fontWeight: 800, color: fillRate >= 70 ? GREEN : fillRate >= 40 ? AMBER : '#ef4444' }}>{fillRate}%</span>
               </div>
-              <div style={{ position: 'relative', height: 6, borderRadius: 3, background: 'rgba(232,228,220,0.1)', marginBottom: 8 }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', borderRadius: 3, width: `${fillRate}%`, background: `linear-gradient(90deg, ${VIOLET}, ${CYAN})`, transition: 'width 0.1s' }} />
-              </div>
               <input
                 type="range" min={0} max={100} step={5} value={fillRate}
                 onChange={e => setFillRate(Number(e.target.value))}
                 style={{ width: '100%', accentColor: VIOLET, cursor: 'pointer' }}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: DIM, marginTop: 4 }}>
-                <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
-              </div>
             </div>
 
             {/* Projections grid */}
@@ -346,27 +340,6 @@ export default function CoachCalendarPage() {
               ))}
             </div>
 
-            {/* Breakdown by weekday vs weekend */}
-            {weekendPct > 0 && simStats.weekendHours > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 10, background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)' }}>
-                  <span style={{ fontSize: 12, color: SILVER }}>Semaine · {simStats.weekdayHours}h</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{fmt(simStats.weekdayHours * hourlyRate * fillRate / 100)}€</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 10, background: `${AMBER}08`, border: `1px solid ${AMBER}25` }}>
-                  <span style={{ fontSize: 12, color: AMBER }}>Week-end +{weekendPct}% · {simStats.weekendHours}h</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: AMBER }}>{fmt(simStats.weekendHours * weekendRate * fillRate / 100)}€</span>
-                </div>
-              </div>
-            )}
-
-            {/* Max potential */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(232,228,220,0.02)', border: '1px solid rgba(232,228,220,0.06)' }}>
-              <Zap size={13} color={DIM} />
-              <span style={{ fontSize: 12, color: DIM }}>
-                Potentiel maximum (100%) : <strong style={{ color: SILVER }}>{fmt(simStats.weeklyGross)}€/sem</strong> · <strong style={{ color: SILVER }}>{fmt(simStats.weeklyGross * 4.3)}€/mois</strong>
-              </span>
-            </div>
           </div>
         )}
 

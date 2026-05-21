@@ -245,7 +245,7 @@ const parseCard = (card: string) => {
   const [r, s] = card.split(' ');
   const m: Record<string,{sym:string;col:string}> = {
     h:{sym:'♥',col:'#ef4444'}, d:{sym:'♦',col:'#ef4444'},
-    s:{sym:'♠',col:'#1e293b'}, c:{sym:'♣',col:'#1e293b'},
+    s:{sym:'♠',col:'#111111'}, c:{sym:'♣',col:'#111111'},
   };
   return { rank: r, ...(m[s]||m['s']) };
 };
@@ -583,7 +583,7 @@ export default function RangesPage() {
     const r = Math.random();
     const chosen = r < 0.45 ? pick([...active]) : r < 0.90 ? pick([...border]) : pick(ALL_169);
 
-    setScenario({ heroCards: makeCards(chosen || 'AA'), gridHand: chosen || 'AA', heroPosition: pos as Position, stackSize: +stackStr, potSize: pos === 'SB' ? 1.0 : 1.5, actionText: pos === 'SB' ? 'Folds to you in SB' : 'Folds to you' });
+    setScenario({ heroCards: makeCards(chosen || 'AA'), gridHand: chosen || 'AA', heroPosition: pos as Position, stackSize: +stackStr, potSize: pos === 'SB' ? 1.0 : 1.5, actionText: pos === 'SB' ? 'Fold jusqu\'à vous (SB)' : 'Fold jusqu\'à vous' });
     setFeedback(null); setCorrect(null); setRevealed(false);
   }, [positions, stacks]);
 
@@ -649,7 +649,7 @@ export default function RangesPage() {
     active.forEach(h => getNeighbors(h).forEach(n => { if (!active.has(n)) border.add(n); }));
     const r = Math.random();
     const chosen = r < 0.45 ? pick([...active]) : r < 0.90 ? pick([...border]) : pick(ALL_169);
-    setQuizScenario({ heroCards: makeCards(chosen || 'AA'), gridHand: chosen || 'AA', heroPosition: pos as Position, stackSize: +stackStr, potSize: pos === 'SB' ? 1.0 : 1.5, actionText: pos === 'SB' ? 'Folds to you in SB' : 'Folds to you' });
+    setQuizScenario({ heroCards: makeCards(chosen || 'AA'), gridHand: chosen || 'AA', heroPosition: pos as Position, stackSize: +stackStr, potSize: pos === 'SB' ? 1.0 : 1.5, actionText: pos === 'SB' ? 'Fold jusqu\'à vous (SB)' : 'Fold jusqu\'à vous' });
     setQuizPhase('guessing');
     setQuizUserAction(null);
     setQuizGrade(null);
@@ -936,7 +936,7 @@ export default function RangesPage() {
             <div style={{ position: 'relative', width: '100%', background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 24, padding: '48px 0', textAlign: 'center', marginBottom: 24, overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 60%)', pointerEvents: 'none' }} />
               <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: DIM, marginBottom: 12 }}>Score Final</p>
-              <p style={{ fontSize: 88, fontWeight: 900, letterSpacing: '-3px', lineHeight: 1, margin: '0 0 12px', background: pct >= 85 ? GRAD : pct >= 60 ? 'linear-gradient(135deg, #f59e0b, #ef4444)' : 'linear-gradient(135deg, #ef4444, #b91c1c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <p style={{ fontSize: 88, fontWeight: 900, letterSpacing: '-3px', lineHeight: 1, margin: '0 0 12px', color: pct >= 85 ? '#4ade80' : pct >= 60 ? '#f59e0b' : '#ef4444' }}>
                 {pct}%
               </p>
               <p style={{ fontSize: 15, color: SILVER, fontWeight: 500 }}>{score} corrects · {count} mains</p>
@@ -1015,7 +1015,7 @@ export default function RangesPage() {
                         <span style={{ fontSize: 12, fontWeight: 600, color: SILVER }}>+{quizGrade.pts} pts</span>
                         <span style={{ fontSize: 12, color: DIM }}>·</span>
                         <span style={{ fontSize: 12, fontWeight: 600, color: CREAM }}>Correct : {quizResults[quizResults.length - 1]?.correctAction}</span>
-                        <span style={{ fontSize: 12, color: DIM }}>· Ta réponse : <span style={{ color: quizGrade.pts === 3 ? quizGrade.color : 'rgba(239,68,68,0.8)' }}>{quizUserAction}</span></span>
+                        <span style={{ fontSize: 12, color: DIM }}>· Ta réponse : <span style={{ color: quizGrade.color }}>{quizUserAction}</span></span>
                       </div>
                     )}
                   </div>
@@ -1059,12 +1059,12 @@ export default function RangesPage() {
 
         {/* ══ QUIZ SUMMARY ════════════════════════════════════════ */}
         {mode === 'quiz-summary' && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 720, margin: '0 auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 720, margin: '0 auto' }}>
             {/* Score card */}
-            <div style={{ position: 'relative', width: '100%', background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 24, padding: '48px 32px', textAlign: 'center', marginBottom: 24, overflow: 'hidden' }}>
+            <div style={{ position: 'relative', width: '100%', background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 24, padding: '48px 32px', marginBottom: 24, overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.1) 0%, transparent 60%)', pointerEvents: 'none' }} />
               <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: DIM, marginBottom: 12 }}>Quiz terminé</p>
-              <p style={{ fontSize: 88, fontWeight: 900, letterSpacing: '-3px', lineHeight: 1, margin: '0 0 8px', background: 'linear-gradient(135deg, #06b6d4, #4ade80)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <p style={{ fontSize: 88, fontWeight: 900, letterSpacing: '-3px', lineHeight: 1, margin: '0 0 8px', color: quizPts / (quizCount * 3) >= 0.8 ? '#4ade80' : quizPts / (quizCount * 3) >= 0.5 ? '#fbbf24' : '#f87171' }}>
                 {quizPts}
               </p>
               <p style={{ fontSize: 14, color: DIM, fontWeight: 600, margin: '0 0 4px' }}>points sur {quizCount * 3} possibles</p>
@@ -1099,7 +1099,7 @@ export default function RangesPage() {
                     <span style={{ fontSize: 16, fontWeight: 900, color: CREAM }}>{r.hand}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, fontWeight: 700 }}>
-                    <span style={{ color: r.pts === 3 ? r.color : 'rgba(239,68,68,0.7)' }}>{r.userAction}</span>
+                    <span style={{ color: r.color }}>{r.userAction}</span>
                     {r.userAction !== r.correctAction && <><span style={{ color: DIM }}>→</span><span style={{ color: '#a78bfa' }}>{r.correctAction}</span></>}
                     <span style={{ color: r.color, minWidth: 40, textAlign: 'right' }}>+{r.pts} pts</span>
                   </div>

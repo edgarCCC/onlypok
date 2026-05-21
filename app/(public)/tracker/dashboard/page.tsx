@@ -379,7 +379,7 @@ export default function TrackerDashboard() {
             </Link>
             <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-0.8px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>
               Dashboard{' '}
-              <span style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <span style={{ color: VIOLET }}>
                 Tournois
               </span>
             </h1>

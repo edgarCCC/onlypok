@@ -75,7 +75,7 @@ export default function TrainerPage() {
         </div>
         <h1 style={{ fontSize: 'clamp(36px,6vw,72px)', fontWeight: 900, letterSpacing: '-2px', lineHeight: 1.05, margin: '0 0 20px', fontFamily: 'var(--font-syne,sans-serif)' }}>
           Entraîne-toi.{' '}
-          <span style={{ background: `linear-gradient(135deg, ${CYAN}, ${VIOLET})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <span style={{ color: CYAN }}>
             Monte de stakes.
           </span>
         </h1>

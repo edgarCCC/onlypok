@@ -83,7 +83,7 @@ export default function TrackerPage() {
         </div>
         <h1 style={{ fontSize: 'clamp(36px,6vw,72px)', fontWeight: 900, letterSpacing: '-2px', lineHeight: 1.05, margin: '0 0 20px', fontFamily: 'var(--font-syne,sans-serif)' }}>
           Ton jeu,{' '}
-          <span style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <span style={{ color: VIOLET }}>
             sous contrôle.
           </span>
         </h1>

@@ -1,16 +1,7 @@
-'use client'
-import { useUser } from '@/hooks/useUser'
-import CoachHeader from '@/components/layout/CoachHeader'
-import Navbar from '@/components/landing/Navbar'
-
 export default function TrainerLayout({ children }: { children: React.ReactNode }) {
-  const { profile } = useUser()
-  const isCoach = profile?.role === 'coach'
-
   return (
-    <>
-      {isCoach ? <CoachHeader /> : <Navbar />}
-      {children}
-    </>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#07090e' }}>
+      <main style={{ flex: 1 }}>{children}</main>
+    </div>
   )
 }

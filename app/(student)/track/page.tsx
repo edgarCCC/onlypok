@@ -822,7 +822,7 @@ function StoryTab({ stats, hands, bbSeries }: { stats: Stats; hands: ParsedHand[
 
           {/* Logo */}
           <div style={{ position: 'absolute', top: 80, left: 80 }}>
-            <span style={{ fontSize: 48, fontWeight: 900, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>OnlyPok</span>
+            <span style={{ fontSize: 48, fontWeight: 900, color: '#7c3aed' }}>OnlyPok</span>
           </div>
           <div style={{ position: 'absolute', top: 140, left: 80, fontSize: 28, color: 'rgba(232,228,220,0.4)', fontWeight: 500 }}>Track.me</div>
 

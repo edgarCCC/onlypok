@@ -177,9 +177,6 @@ export default function FormationsPageClient({
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
             <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-syne, sans-serif)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
-            {isLoggedIn && userRole !== 'coach' && (
-              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#7c3aed', padding: '2px 7px', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 4 }}>Élève</span>
-            )}
           </Link>
 
           {/* Centre */}
@@ -440,6 +437,7 @@ function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayV
   const scrollRef = useRef<HTMLDivElement>(null)
   const scroll    = (dir: 'left'|'right') => scrollRef.current?.scrollBy({ left: dir === 'right' ? 800 : -800, behavior: 'smooth' })
   const CREAM = '#f0f4ff', SILVER = 'rgba(240,244,255,0.45)'
+  const [showAll, setShowAll] = useState(false)
 
   return (
     <div>
@@ -451,34 +449,36 @@ function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayV
           <p style={{ fontSize: 13, color: SILVER }}>{subtitle}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: SILVER, cursor: 'pointer', transition: 'color 0.15s', whiteSpace: 'nowrap' }}
+          <span
+            onClick={() => setShowAll(v => !v)}
+            style={{ fontSize: 13, fontWeight: 600, color: SILVER, cursor: 'pointer', transition: 'color 0.15s', whiteSpace: 'nowrap' }}
             onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = CREAM }}
             onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = SILVER }}>
-            Voir tout →
+            {showAll ? '← Réduire' : 'Voir tout →'}
           </span>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {(['left','right'] as const).map(dir => (
-              <button key={dir} onClick={() => scroll(dir)} style={{ width: 36, height: 36, borderRadius: '50%', border: `1px solid rgba(232,228,220,0.1)`, background: 'rgba(232,228,220,0.03)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.25)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.1)' }}>
-                {dir === 'left' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-              </button>
-            ))}
-          </div>
+          {!showAll && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              {(['left','right'] as const).map(dir => (
+                <button key={dir} onClick={() => scroll(dir)} style={{ width: 36, height: 36, borderRadius: '50%', border: `1px solid rgba(232,228,220,0.1)`, background: 'rgba(232,228,220,0.03)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.25)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.1)' }}>
+                  {dir === 'left' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-      <div style={{ position: 'relative' }}>
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 50, background: 'linear-gradient(to right, #07090e, transparent)', zIndex: 2, pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 50, background: 'linear-gradient(to left, #07090e, transparent)', zIndex: 2, pointerEvents: 'none' }} />
-        <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 8 }}>
+      {showAll ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
           {formations.map((f, i) => (
-            <div key={f.id} style={{ width: isTop10 && i === 0 ? 340 : 290, flexShrink: 0, position: 'relative' }}>
+            <div key={f.id} style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
               {isTop10 && (
                 <div style={{ position: 'absolute', left: -10, bottom: 10, fontSize: 110, fontWeight: 900, color: 'rgba(232,228,220,0.05)', zIndex: 0, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{i + 1}</div>
               )}
               <div
-                style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'perspective(500px) rotateY(2deg) translateY(-4px) scale(1.02)' }}
+                style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)', flex: 1 }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px) scale(1.02)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = '' }}>
                 <FormationCard
                   f={f}
@@ -491,7 +491,32 @@ function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayV
             </div>
           ))}
         </div>
-      </div>
+      ) : (
+        <div style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 50, background: 'linear-gradient(to left, #07090e, transparent)', zIndex: 2, pointerEvents: 'none' }} />
+          <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 8 }}>
+            {formations.map((f, i) => (
+              <div key={f.id} style={{ width: isTop10 && i === 0 ? 340 : 290, flexShrink: 0, position: 'relative' }}>
+                {isTop10 && (
+                  <div style={{ position: 'absolute', left: -10, bottom: 10, fontSize: 110, fontWeight: 900, color: 'rgba(232,228,220,0.05)', zIndex: 0, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{i + 1}</div>
+                )}
+                <div
+                  style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px) scale(1.02)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = '' }}>
+                  <FormationCard
+                    f={f}
+                    accentColor={accentColor}
+                    onPlay={f.price === 0 && f.content_type === 'video' && f.video_url
+                      ? () => onPlayVideo?.({ url: f.video_url, title: f.title })
+                      : undefined}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
