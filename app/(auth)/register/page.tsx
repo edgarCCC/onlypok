@@ -18,6 +18,15 @@ const PERKS = [
   { icon: BarChart2,label: 'Tracker de sessions',   sub: 'Analyse tes stats et ta progression' },
 ]
 
+const Q_LEVELS   = ['Débutant', 'Intermédiaire', 'Avancé']
+const Q_VARIANTS = ['MTT', 'Cash', 'Expresso', 'Spin & Go', 'Autre']
+const Q_GOALS    = [
+  { key: 'stakes',     label: 'Monter de stakes',        sub: 'Progresser au niveau suivant' },
+  { key: 'technique',  label: 'Améliorer ma technique',  sub: 'GTO, solver, décisions' },
+  { key: 'pro',        label: 'Jouer en pro',            sub: 'En vivre ou générer des revenus' },
+  { key: 'fun',        label: 'Prendre du plaisir',      sub: 'Jouer mieux et apprécier le jeu' },
+]
+
 export default function RegisterPage() {
   const router   = useRouter()
   const [username, setUsername] = useState('')
@@ -27,6 +36,15 @@ export default function RegisterPage() {
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+
+  /* questionnaire */
+  const [step,      setStep]      = useState<'form' | 'questionnaire'>('form')
+  const [userId,    setUserId]    = useState<string | null>(null)
+  const [hasSession, setHasSession] = useState(false)
+  const [qLevel,    setQLevel]    = useState('')
+  const [qVariant,  setQVariant]  = useState('')
+  const [qGoal,     setQGoal]     = useState('')
+  const [qSaving,   setQSaving]   = useState(false)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,13 +58,27 @@ export default function RegisterPage() {
     if (signUpError) { setError(signUpError.message); setLoading(false); return }
     if (data.user) {
       await supabase.from('profiles').upsert({ id: data.user.id, email, username, role: 'student', xp: 0 })
+      setUserId(data.user.id)
     }
-    if (data.session) {
+    setHasSession(!!data.session)
+    setLoading(false)
+    setStep('questionnaire')
+  }
+
+  const handleQuestionnaire = async () => {
+    setQSaving(true)
+    if (userId) {
+      const supabase = createClient()
+      await supabase.from('profiles').update({
+        privacy_prefs: { onboarding: { level: qLevel, variant: qVariant, goal: qGoal } },
+      }).eq('id', userId)
+    }
+    if (hasSession) {
       router.push('/formations')
     } else {
       setEmailSent(true)
-      setLoading(false)
     }
+    setQSaving(false)
   }
 
   const inp: React.CSSProperties = {
@@ -95,6 +127,85 @@ export default function RegisterPage() {
         }}>
           Retour à la connexion <ArrowRight size={14} />
         </Link>
+      </div>
+    </div>
+  )
+
+  /* ── Questionnaire step ── */
+  if (step === 'questionnaire') return (
+    <div style={{ minHeight: '100vh', background: '#04040a', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: '-10%', left: '20%', width: 600, height: 500, background: 'radial-gradient(ellipse, rgba(124,58,237,0.12) 0%, transparent 65%)', filter: 'blur(60px)' }} />
+        {['♠','♣','♦','♥'].map((s, i) => (
+          <span key={i} style={{ position: 'absolute', fontSize: 80, color: '#fff', userSelect: 'none', opacity: 0.025, top: `${[15,55,35,70][i]}%`, left: `${[8,75,45,20][i]}%`, transform: `rotate(${[-12,8,-6,15][i]}deg)` }}>{s}</span>
+        ))}
+      </div>
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 540 }}>
+        {/* Header */}
+        <div style={{ marginBottom: 36, textAlign: 'center' }}>
+          <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }} />
+            <span style={{ fontFamily: 'var(--font-syne,sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
+          </Link>
+          <h1 style={{ fontFamily: 'var(--font-syne,sans-serif)', fontSize: 26, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: '0 0 8px' }}>
+            Parle-nous de toi
+          </h1>
+          <p style={{ fontSize: 14, color: SILVER, margin: 0 }}>2 minutes pour personnaliser ton expérience.</p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Q1 — Niveau */}
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,255,0.35)', margin: '0 0 12px' }}>Ton niveau actuel</p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {Q_LEVELS.map(l => (
+                <button key={l} onClick={() => setQLevel(l)} style={{ flex: 1, padding: '14px 10px', borderRadius: 12, border: `1.5px solid ${qLevel === l ? VIOLET + '80' : 'rgba(255,255,255,0.08)'}`, background: qLevel === l ? VIOLET + '18' : 'rgba(255,255,255,0.03)', color: qLevel === l ? CREAM : SILVER, fontSize: 13, fontWeight: qLevel === l ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Q2 — Variante */}
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,255,0.35)', margin: '0 0 12px' }}>Ta variante principale</p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {Q_VARIANTS.map(v => (
+                <button key={v} onClick={() => setQVariant(v)} style={{ padding: '11px 20px', borderRadius: 10, border: `1.5px solid ${qVariant === v ? CYAN + '80' : 'rgba(255,255,255,0.08)'}`, background: qVariant === v ? CYAN + '18' : 'rgba(255,255,255,0.03)', color: qVariant === v ? CREAM : SILVER, fontSize: 13, fontWeight: qVariant === v ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}>
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Q3 — Objectif */}
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,255,0.35)', margin: '0 0 12px' }}>Ton objectif principal</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {Q_GOALS.map(g => (
+                <button key={g.key} onClick={() => setQGoal(g.key)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 12, border: `1.5px solid ${qGoal === g.key ? VIOLET + '80' : 'rgba(255,255,255,0.08)'}`, background: qGoal === g.key ? VIOLET + '14' : 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left', fontFamily: 'inherit' }}>
+                  <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${qGoal === g.key ? VIOLET : 'rgba(255,255,255,0.2)'}`, background: qGoal === g.key ? VIOLET : 'transparent', flexShrink: 0, transition: 'all 0.2s' }} />
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: CREAM, marginBottom: 2 }}>{g.label}</div>
+                    <div style={{ fontSize: 11, color: SILVER }}>{g.sub}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submit */}
+          <div style={{ paddingTop: 8 }}>
+            <button onClick={handleQuestionnaire} disabled={qSaving}
+              style={{ width: '100%', padding: '15px', borderRadius: 13, border: 'none', background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: qSaving ? 'not-allowed' : 'pointer', opacity: qSaving ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 0 28px rgba(6,182,212,0.45)', transition: 'all 0.2s', fontFamily: 'inherit' }}>
+              {qSaving ? 'Enregistrement…' : <>Accéder à mon espace <ArrowRight size={15} /></>}
+            </button>
+            <button onClick={() => { if (hasSession) router.push('/formations'); else setEmailSent(true) }}
+              style={{ width: '100%', marginTop: 10, padding: '11px', background: 'none', border: 'none', color: DIM, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Passer cette étape
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -163,7 +274,7 @@ export default function RegisterPage() {
 
       {/* ═══ RIGHT PANEL ═══ */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 40px', overflowY: 'auto' }}>
-        <div style={{ width: '100%', maxWidth: 400 }}>
+        <div style={{ width: '100%', maxWidth: 540 }}>
 
           {/* Heading */}
           <div style={{ marginBottom: 36 }}>
