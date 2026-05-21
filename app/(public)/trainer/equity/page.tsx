@@ -17,7 +17,7 @@ type Card = { rank: number; suit: number }
 const RANK_CHARS = ['2','3','4','5','6','7','8','9','T','J','Q','K','A']
 const SUIT_CHARS = ['s','h','d','c']
 const SUIT_SYMS  = ['♠','♥','♦','♣']
-const SUIT_COLS  = ['#94a3b8','#f87171','#60a5fa','#94a3b8']
+const SUIT_COLS  = ['#94a3b8','#f87171','#f87171','#94a3b8']
 const HAND_COLS  = ['#a78bfa','#06b6d4','#4ade80']
 
 const fmtK = (n: number) => n >= 1000 ? `${n / 1000}k` : `${n}`

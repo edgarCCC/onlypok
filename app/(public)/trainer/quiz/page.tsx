@@ -47,7 +47,7 @@ const QUESTIONS: Question[] = [
     difficulty: 'Facile',
   },
   {
-    position: 'LJ+1', stack: '40BB', hand: 'JJ', action: 'LJ jam all-in.',
+    position: 'HJ', stack: '40BB', hand: 'JJ', action: 'LJ jam all-in.',
     correct: 'Call', options: ['Fold', 'Call'],
     explanation: 'JJ vs une range LJ 40BB est un call rentable. La range d\'LJ contient suffisamment de mains dominées (TT-77, AQs, AJs, KQs) pour que JJ soit favori.',
     difficulty: 'Moyen',
