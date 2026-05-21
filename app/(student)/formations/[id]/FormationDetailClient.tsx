@@ -989,7 +989,7 @@ function CoachIridescentCard({ coach, avgRating, reviewCount, isSuperCoach }: {
 }
 
 /* ─── Video Comments ────────────────────────────────────────────────────────── */
-function VideoComments({ formationId, coachId }: { formationId: string; coachId: string }) {
+function VideoComments({ formationId, coachId, videoUrl }: { formationId: string; coachId: string; videoUrl?: string }) {
   const supabase = useMemo(() => createClient(), [])
   const { user } = useUser()
   const [comments, setComments]   = useState<any[]>([])
@@ -997,25 +997,32 @@ function VideoComments({ formationId, coachId }: { formationId: string; coachId:
   const [sending, setSending]     = useState(false)
 
   const load = async () => {
-    const { data } = await supabase
+    let query = supabase
       .from('video_comments')
-      .select('*, student:profiles!student_id(username)')
-      .eq('formation_id', formationId)
+      .select('id, content, created_at, student_id')
       .order('created_at', { ascending: false })
-    setComments(data ?? [])
+    query = videoUrl ? query.eq('video_url', videoUrl) : query.eq('formation_id', formationId)
+    const { data, error } = await query
+    if (error || !data?.length) { setComments([]); return }
+    const studentIds = [...new Set(data.map((c: any) => c.student_id).filter(Boolean))]
+    const { data: profiles } = await supabase.from('profiles').select('id, username').in('id', studentIds)
+    const profileMap: Record<string, string> = {}
+    for (const p of profiles ?? []) profileMap[p.id] = p.username
+    setComments(data.map((c: any) => ({ ...c, student: { username: profileMap[c.student_id] ?? null } })))
   }
 
-  useEffect(() => { load() }, [formationId])
+  useEffect(() => { load() }, [formationId, videoUrl])
 
   const submit = async () => {
     if (!text.trim() || !user) return
     setSending(true)
-    await supabase.from('video_comments').insert({
-      formation_id: formationId,
-      coach_id:     coachId,
-      student_id:   user.id,
-      content:      text.trim(),
-    })
+    const payload: any = {
+      coach_id:   coachId,
+      student_id: user.id,
+      content:    text.trim(),
+    }
+    if (videoUrl) { payload.video_url = videoUrl } else { payload.formation_id = formationId }
+    await supabase.from('video_comments').insert(payload)
     setText('')
     await load()
     setSending(false)
@@ -1107,7 +1114,7 @@ export default function FormationDetailClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
-  const { user, signOut } = useUser()
+  const { user, profile, signOut } = useUser()
 
   const paymentJustCompleted = searchParams.get('payment') === 'success'
 
@@ -1120,7 +1127,10 @@ export default function FormationDetailClient({
     initialChapters.length > 0 ? [initialChapters[0].id] : []
   )
   const [loading, setLoading]           = useState(false)
-  const [selectedPack, setSelectedPack] = useState(0)
+  const [selectedPack, setSelectedPack] = useState(() => {
+    const p = parseInt(searchParams.get('pack') ?? '0', 10)
+    return isNaN(p) ? 0 : p
+  })
 
   /* review modal */
   const [showModal, setShowModal]         = useState(false)
@@ -1317,7 +1327,7 @@ export default function FormationDetailClient({
     setHeaderTab(t)
     setHeaderFilters({})
     setIsSearchOverlayOpen(false)
-    router.push('/formations')
+    router.push(t === 'formations' ? '/formations' : `/formations?tab=${t}`)
   }
 
   const avgRating = reviews.length > 0
@@ -1345,8 +1355,14 @@ export default function FormationDetailClient({
     return { ...cat, avg }
   })
 
-  /* CTA */
-  const needsSlot = contentType === 'coaching' && !hasPurchased && formation.price !== 0
+  /* CTA — for coaching, prices live in packs, not formation.price (which is always 0) */
+  const coachingPackPrice = currentPack ? Number(currentPack.price) : 0
+  const isCoachingPaid = contentType === 'coaching' && packs.some((p: any) => Number(p.price) > 0)
+  const effectivePrice = contentType === 'coaching'
+    ? coachingPackPrice
+    : Number(formation.price)
+
+  const needsSlot = contentType === 'coaching' && !hasPurchased && isCoachingPaid
   const slotLabel = calSelSlot
     ? `${calSelSlot.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · ${calSelSlot.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
     : null
@@ -1355,12 +1371,12 @@ export default function FormationDetailClient({
     ? contentType === 'coaching' ? 'Voir mes sessions →'
     : contentType === 'video'   ? 'Regarder la vidéo →'
     : 'Continuer la formation →'
-    : formation.price === 0 ? 'Accéder gratuitement'
+    : effectivePrice === 0 ? 'Accéder gratuitement'
     : contentType === 'coaching'
       ? calSelSlot
-        ? `Réserver · ${slotLabel} — ${applyWeekend(currentPack?.price ?? formation.price)}€`
+        ? `Réserver · ${slotLabel} — ${applyWeekend(effectivePrice)}€`
         : 'Sélectionne un créneau ↓'
-      : `Acheter — ${formation.price}€`
+      : `Acheter — ${effectivePrice}€`
 
   const ctaDisabled = paying || (needsSlot && !calSelSlot)
 
@@ -1388,7 +1404,7 @@ export default function FormationDetailClient({
   }
 
   const handleCTA = async () => {
-    if (hasPurchased || formation.price === 0) {
+    if (hasPurchased || effectivePrice === 0) {
       if (contentType === 'coaching') {
         router.push('/schedule')
       } else {
@@ -1428,7 +1444,7 @@ export default function FormationDetailClient({
   /* video on sales page */
   const showVideoOnPage = contentType === 'video' && formation.video_url
   const videoType = formation.video_url?.includes('vimeo') ? 'vimeo' : 'youtube'
-  const canWatchFull = hasPurchased || formation.price === 0
+  const canWatchFull = hasPurchased || effectivePrice === 0
 
   return (
     <div style={{ minHeight: '100vh', background: '#05070a', color: CREAM,
@@ -1467,9 +1483,9 @@ export default function FormationDetailClient({
             <span style={{ fontFamily: 'var(--font-syne, sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
           </Link>
           {user && (
-            <span style={{ fontSize: 9, fontWeight: 700, color: '#7c3aed', padding: '2px 7px',
-              border: '1px solid rgba(124,58,237,0.35)', borderRadius: 4, letterSpacing: '0.05em', flexShrink: 0 }}>
-              Élève
+            <span style={{ fontSize: 9, fontWeight: 700, color: profile?.role === 'coach' ? '#06b6d4' : '#7c3aed', padding: '2px 7px',
+              border: `1px solid ${profile?.role === 'coach' ? 'rgba(6,182,212,0.35)' : 'rgba(124,58,237,0.35)'}`, borderRadius: 4, letterSpacing: '0.05em', flexShrink: 0 }}>
+              {profile?.role === 'coach' ? 'Coach' : 'Élève'}
             </span>
           )}
 
@@ -2155,7 +2171,7 @@ export default function FormationDetailClient({
                     <p style={{ fontSize: 13, color: SILVER, margin: 0 }}>Achetez pour accéder au contenu complet</p>
                     <div style={{ display: 'flex', gap: 10 }}>
                       <button onClick={() => setPreviewEnded(false)} style={{ padding: '9px 18px', borderRadius: 9, border: '1px solid rgba(232,228,220,0.15)', background: 'rgba(232,228,220,0.07)', color: CREAM, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>↩ Revoir</button>
-                      <button onClick={handleCTA} disabled={paying} style={{ padding: '9px 20px', borderRadius: 9, border: 'none', background: typeColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: paying ? 'wait' : 'pointer' }}>{paying ? 'Redirection…' : `Acheter — ${formation.price}€`}</button>
+                      <button onClick={handleCTA} disabled={paying} style={{ padding: '9px 20px', borderRadius: 9, border: 'none', background: typeColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: paying ? 'wait' : 'pointer' }}>{paying ? 'Redirection…' : ctaLabel}</button>
                     </div>
                   </div>
                 </div>
@@ -2552,15 +2568,15 @@ export default function FormationDetailClient({
                     ))}
                   </div>
                   <div style={{ marginBottom: 20 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 3 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: SILVER, marginBottom: 4 }}>À partir de</span>
+                    <div style={{ marginBottom: 3 }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: SILVER, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{currentPack?.label}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                      <span style={{ fontSize: 38, fontWeight: 900, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1 }}>{currentPack?.price}</span>
+                      <span style={{ fontSize: 38, fontWeight: 900, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1 }}>{currentPack ? applyWeekend(currentPack.price) : ''}</span>
                       <span style={{ fontSize: 18, fontWeight: 600, color: SILVER }}>€</span>
                       <span style={{ fontSize: 13, color: 'rgba(232,228,220,0.35)', marginLeft: 2 }}>/ {currentPack?.hours}h</span>
                     </div>
-                    {currentPack?.hours > 0 && <p style={{ fontSize: 12, color: 'rgba(232,228,220,0.3)', margin: '6px 0 0' }}>soit {Math.round(currentPack.price / currentPack.hours)}€/h</p>}
+                    {currentPack?.hours > 0 && <p style={{ fontSize: 12, color: 'rgba(232,228,220,0.3)', margin: '6px 0 0' }}>soit {Math.round(applyWeekend(currentPack.price) / currentPack.hours)}€/h</p>}
                   </div>
                 </>
               )}
@@ -2612,7 +2628,7 @@ export default function FormationDetailClient({
               </button>
 
               {/* Acheter à nouveau — visible si coaching déjà acheté */}
-              {hasPurchased && contentType === 'coaching' && formation.price !== 0 && (
+              {hasPurchased && contentType === 'coaching' && isCoachingPaid && (
                 <button onClick={handleBuyLater} disabled={paying} style={{
                   width: '100%', padding: '13px', borderRadius: 12,
                   border: `1.5px solid ${typeColor}`,
@@ -2624,12 +2640,12 @@ export default function FormationDetailClient({
                 }}
                   onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = `${typeColor}30`; b.style.boxShadow = `0 0 24px ${typeColor}40`; b.style.transform = 'translateY(-1px)' }}
                   onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = `${typeColor}18`; b.style.boxShadow = 'none'; b.style.transform = 'translateY(0)' }}>
-                  Acheter à nouveau →
+                  Racheter — {applyWeekend(effectivePrice)}€ →
                 </button>
               )}
 
               {/* Acheter sans créneau — visible si coaching non acheté et pas de slot sélectionné */}
-              {contentType === 'coaching' && formation.price !== 0 && !calSelSlot && !hasPurchased && (
+              {contentType === 'coaching' && isCoachingPaid && !calSelSlot && !hasPurchased && (
                 <button onClick={handleBuyLater} disabled={paying} style={{
                   width: '100%', padding: '13px', borderRadius: 12,
                   border: `1.5px solid ${typeColor}`,
@@ -2652,7 +2668,7 @@ export default function FormationDetailClient({
                     b.style.boxShadow = `0 0 0 0 ${typeColor}00`
                     b.style.transform = 'translateY(0)'
                   }}>
-                  Acheter et planifier plus tard →
+                  Acheter{effectivePrice > 0 ? ` — ${applyWeekend(effectivePrice)}€` : ''} · planifier plus tard →
                 </button>
               )}
 
@@ -2755,8 +2771,12 @@ export default function FormationDetailClient({
             </>
           )}
 
-          {contentType === 'video' && canWatchFull && (
-            <VideoComments formationId={formation.id} coachId={formation.coach?.id} />
+          {(contentType === 'video' || contentType === 'formation') && (
+            <VideoComments
+              formationId={formation.id}
+              coachId={formation.coach?.id}
+              videoUrl={contentType === 'video' ? formation.video_url : undefined}
+            />
           )}
         </div>
       </div>
