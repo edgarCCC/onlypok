@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
-import { Send, Search, MessageSquare, Inbox, Check, CheckCheck, Plus } from 'lucide-react'
+import { Send, Search, MessageSquare, Inbox, Check, CheckCheck, Plus, Paperclip, FileText, X } from 'lucide-react'
 import FourAcesLoader from '@/components/FourAcesLoader'
 
 const BG       = '#07090e'
@@ -64,6 +64,32 @@ function initials(name: string | null | undefined) {
   return name?.trim()[0]?.toUpperCase() ?? '?'
 }
 
+const ATT_PREFIX = '__att__'
+type AttachmentData = { url: string; name: string; mime: string; size: number }
+function parseAttachment(content: string): AttachmentData | null {
+  if (!content.startsWith(ATT_PREFIX)) return null
+  try { return JSON.parse(content.slice(ATT_PREFIX.length)) } catch { return null }
+}
+function encodeAttachment(a: AttachmentData): string {
+  return ATT_PREFIX + JSON.stringify(a)
+}
+
+function AttachmentBubble({ att, mine }: { att: AttachmentData; mine: boolean }) {
+  const isImage = att.mime.startsWith('image/')
+  return isImage ? (
+    <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textDecoration: 'none' }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={att.url} alt={att.name} style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 12, display: 'block', objectFit: 'cover' }} />
+      <span style={{ fontSize: 10, color: mine ? 'rgba(255,255,255,0.6)' : SILVER, marginTop: 4, display: 'block' }}>{att.name}</span>
+    </a>
+  ) : (
+    <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: mine ? '#fff' : CREAM }}>
+      <FileText size={18} />
+      <span style={{ fontSize: 13, fontWeight: 600 }}>{att.name}</span>
+    </a>
+  )
+}
+
 function Avatar({ name, src, size = 40, ring }: { name?: string | null; src?: string | null; size?: number; ring?: boolean }) {
   return (
     <div style={{
@@ -113,8 +139,10 @@ export default function StudentMessagesPage() {
   const [sending,       setSending]       = useState(false)
   const [search,        setSearch]        = useState('')
 
-  const scrollRef = useRef<HTMLDivElement | null>(null)
-  const inputRef  = useRef<HTMLTextAreaElement | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const scrollRef    = useRef<HTMLDivElement | null>(null)
+  const inputRef     = useRef<HTMLTextAreaElement | null>(null)
+  const attachFileRef = useRef<HTMLInputElement | null>(null)
 
   /* ── Charge coaches achetés + messages existants ── */
   const loadData = useCallback(async () => {
@@ -244,7 +272,7 @@ export default function StudentMessagesPage() {
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }))
+    requestAnimationFrame(() => { el.scrollTop = el.scrollHeight })
   }, [thread, activeCoachId])
 
   /* ── Envoi ── */
@@ -283,6 +311,37 @@ export default function StudentMessagesPage() {
     })
   }, [draft, user, activeCoachId, sending, supabase])
 
+  const handleAttach = useCallback(async (file: File) => {
+    if (!user || !activeCoachId || uploading) return
+    setUploading(true)
+    const form = new FormData()
+    form.append('file', file)
+    try {
+      const res = await fetch('/api/upload-message-attachment', { method: 'POST', body: form })
+      const json = await res.json()
+      if (!json.url) return
+      const content = encodeAttachment({ url: json.url, name: json.name, mime: json.mime, size: json.size })
+      const tempId = `tmp-${Date.now()}`
+      const optimistic: Message = { id: tempId, coach_id: activeCoachId, student_id: user.id, sender_id: user.id, content, read: false, created_at: new Date().toISOString(), pending: true }
+      setThread(prev => [...prev, optimistic])
+      const { data, error } = await supabase.from('messages').insert({ coach_id: activeCoachId, student_id: user.id, sender_id: user.id, content }).select().single()
+      if (error || !data) { setThread(prev => prev.map(m => m.id === tempId ? { ...m, pending: false, failed: true } : m)); return }
+      setThread(prev => prev.map(m => m.id === tempId ? (data as Message) : m))
+      setConversations(prev => {
+        const sent = data as Message
+        const existing = prev.find(c => c.coach.id === activeCoachId)
+        if (existing) {
+          const updated: Conversation = { ...existing, lastMessage: sent }
+          return [updated, ...prev.filter(c => c.coach.id !== activeCoachId)]
+        }
+        return prev
+      })
+    } finally {
+      setUploading(false)
+      if (attachFileRef.current) attachFileRef.current.value = ''
+    }
+  }, [user, activeCoachId, uploading, supabase])
+
   const filteredConvs = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return conversations
@@ -317,6 +376,7 @@ export default function StudentMessagesPage() {
         .op-pop { animation:op-pop 180ms cubic-bezier(0.2,0.7,0.2,1); }
         @keyframes op-pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
         .op-pulse { animation:op-pulse 1.4s ease-in-out infinite; }
+        @keyframes op-spin { to{transform:rotate(360deg)} }
         .op-thread::-webkit-scrollbar{width:8px} .op-thread::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);border-radius:4px}
         .op-list::-webkit-scrollbar{width:6px} .op-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.05);border-radius:4px}
         .op-conv-row{transition:background 0.12s ease} .op-conv-row:hover{background:rgba(255,255,255,0.025)}
@@ -458,19 +518,24 @@ export default function StudentMessagesPage() {
                       return (
                         <div key={m.id} className="op-pop" style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start', marginTop: sameAsPrev ? 2 : 8 }}>
                           <div style={{ maxWidth: '70%', display: 'flex', flexDirection: 'column', alignItems: mine ? 'flex-end' : 'flex-start', gap: 2 }}>
-                            <div style={{
-                              padding: '9px 14px', borderRadius: 18,
-                              borderBottomRightRadius: mine && isLastRun ? 5 : 18,
-                              borderBottomLeftRadius:  !mine && isLastRun ? 5 : 18,
-                              background: mine ? `linear-gradient(135deg,${CYAN},${VIOLET})` : 'rgba(255,255,255,0.06)',
-                              color: mine ? '#fff' : CREAM,
-                              fontSize: 14, lineHeight: 1.45, wordBreak: 'break-word', whiteSpace: 'pre-wrap',
-                              opacity: m.pending ? 0.65 : 1,
-                              boxShadow: mine ? `0 1px 0 rgba(0,0,0,0.2),0 8px 24px -12px ${CYAN}50` : 'none',
-                              border: mine ? 'none' : `1px solid ${BORDER_S}`,
-                            }}>
-                              {m.content}
-                            </div>
+                            {(() => {
+                              const att = parseAttachment(m.content)
+                              return (
+                                <div style={{
+                                  padding: att ? '8px' : '9px 14px', borderRadius: 18,
+                                  borderBottomRightRadius: mine && isLastRun ? 5 : 18,
+                                  borderBottomLeftRadius:  !mine && isLastRun ? 5 : 18,
+                                  background: mine ? `linear-gradient(135deg,${CYAN},${VIOLET})` : 'rgba(255,255,255,0.06)',
+                                  color: mine ? '#fff' : CREAM,
+                                  fontSize: 14, lineHeight: 1.45, wordBreak: 'break-word', whiteSpace: 'pre-wrap',
+                                  opacity: m.pending ? 0.65 : 1,
+                                  boxShadow: mine ? `0 1px 0 rgba(0,0,0,0.2),0 8px 24px -12px ${CYAN}50` : 'none',
+                                  border: mine ? 'none' : `1px solid ${BORDER_S}`,
+                                }}>
+                                  {att ? <AttachmentBubble att={att} mine={mine} /> : m.content}
+                                </div>
+                              )
+                            })()}
                             {isLastRun && (
                               <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: m.failed ? '#ef4444' : SILVER, padding: '0 6px' }}>
                                 <span>{new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -497,6 +562,14 @@ export default function StudentMessagesPage() {
                 onFocus={e => (e.currentTarget.style.borderColor = `${CYAN}55`)}
                 onBlur={e => (e.currentTarget.style.borderColor = BORDER_S)}
               >
+                <button type="button" onClick={() => attachFileRef.current?.click()} disabled={uploading}
+                  title="Joindre un fichier"
+                  style={{ width: 34, height: 34, flexShrink: 0, borderRadius: 10, border: 'none', background: 'transparent', color: uploading ? VIOLET : SILVER, cursor: uploading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'color 0.15s' }}
+                  onMouseEnter={e => { if (!uploading) (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
+                  onMouseLeave={e => { if (!uploading) (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
+                  {uploading ? <span style={{ width: 15, height: 15, border: `2px solid ${VIOLET}`, borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'op-spin 0.8s linear infinite' }} /> : <Paperclip size={15} strokeWidth={2} />}
+                </button>
+                <input ref={attachFileRef} type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleAttach(f) }} />
                 <textarea
                   ref={inputRef}
                   value={draft}

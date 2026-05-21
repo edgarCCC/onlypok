@@ -13,7 +13,7 @@ import { useEffect, useMemo, useRef, useState, useCallback, Suspense } from 'rea
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
-import { Send, Search, MessageSquare, Inbox, Check, CheckCheck, NotebookPen, ChevronDown, ChevronUp } from 'lucide-react'
+import { Send, Search, MessageSquare, Inbox, Check, CheckCheck, NotebookPen, ChevronDown, ChevronUp, Paperclip, FileText } from 'lucide-react'
 
 /* ── Theme tokens ───────────────────────────────────────── */
 const BG       = '#04040a'
@@ -119,6 +119,34 @@ function initials(name: string | null | undefined) {
   return name.trim()[0]?.toUpperCase() ?? '?'
 }
 
+const ATT_PREFIX = '__att__'
+type AttachmentData = { url: string; name: string; mime: string; size: number }
+function parseAttachment(content: string): AttachmentData | null {
+  if (!content.startsWith(ATT_PREFIX)) return null
+  try { return JSON.parse(content.slice(ATT_PREFIX.length)) } catch { return null }
+}
+function encodeAttachment(a: AttachmentData): string {
+  return ATT_PREFIX + JSON.stringify(a)
+}
+
+const CREAM_C  = '#f0f4ff'
+const SILVER_C = 'rgba(240,244,255,0.45)'
+function AttachmentBubble({ att, mine }: { att: AttachmentData; mine: boolean }) {
+  const isImage = att.mime.startsWith('image/')
+  return isImage ? (
+    <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textDecoration: 'none' }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={att.url} alt={att.name} style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 12, display: 'block', objectFit: 'cover' }} />
+      <span style={{ fontSize: 10, color: mine ? 'rgba(255,255,255,0.6)' : SILVER_C, marginTop: 4, display: 'block' }}>{att.name}</span>
+    </a>
+  ) : (
+    <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: mine ? '#fff' : CREAM_C }}>
+      <FileText size={18} />
+      <span style={{ fontSize: 13, fontWeight: 600 }}>{att.name}</span>
+    </a>
+  )
+}
+
 /* ── Avatar ─────────────────────────────────────────────── */
 function Avatar({
   name, src, size = 40, ring,
@@ -188,9 +216,11 @@ function CoachMessagesInner() {
   const [noteSaved, setNoteSaved]           = useState<'idle' | 'saving' | 'saved'>('idle')
   const [noteOpen, setNoteOpen]             = useState(false)
 
-  const scrollRef    = useRef<HTMLDivElement | null>(null)
-  const inputRef     = useRef<HTMLTextAreaElement | null>(null)
-  const noteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [uploading, setUploading]   = useState(false)
+  const scrollRef     = useRef<HTMLDivElement | null>(null)
+  const inputRef      = useRef<HTMLTextAreaElement | null>(null)
+  const attachFileRef = useRef<HTMLInputElement | null>(null)
+  const noteTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /* ── Charge la liste des conversations ──────────────── */
   const loadConversations = useCallback(async () => {
@@ -384,10 +414,7 @@ function CoachMessagesInner() {
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    /* requestAnimationFrame pour attendre le layout */
-    requestAnimationFrame(() => {
-      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
-    })
+    requestAnimationFrame(() => { el.scrollTop = el.scrollHeight })
   }, [thread, activeStudentId])
 
   /* ── Envoi message (optimistic) ─────────────────────── */
@@ -446,6 +473,28 @@ function CoachMessagesInner() {
       return prev
     })
   }, [draft, user, activeStudentId, sending, supabase])
+
+  const handleAttach = useCallback(async (file: File) => {
+    if (!user || !activeStudentId || uploading) return
+    setUploading(true)
+    const form = new FormData()
+    form.append('file', file)
+    try {
+      const res = await fetch('/api/upload-message-attachment', { method: 'POST', body: form })
+      const json = await res.json()
+      if (!json.url) return
+      const content = encodeAttachment({ url: json.url, name: json.name, mime: json.mime, size: json.size })
+      const tempId = `tmp-${Date.now()}`
+      const optimistic: Message = { id: tempId, coach_id: user.id, student_id: activeStudentId, sender_id: user.id, content, read: false, created_at: new Date().toISOString(), pending: true }
+      setThread(prev => [...prev, optimistic])
+      const { data, error } = await supabase.from('messages').insert({ coach_id: user.id, student_id: activeStudentId, sender_id: user.id, content }).select().single()
+      if (error || !data) { setThread(prev => prev.map(m => m.id === tempId ? { ...m, pending: false, failed: true } : m)); return }
+      setThread(prev => prev.map(m => m.id === tempId ? (data as Message) : m))
+    } finally {
+      setUploading(false)
+      if (attachFileRef.current) attachFileRef.current.value = ''
+    }
+  }, [user, activeStudentId, uploading, supabase])
 
   /* ── Liste complète : élèves avec messages + sans messages ─ */
   const fullList = useMemo(() => {
@@ -536,6 +585,7 @@ function CoachMessagesInner() {
 
         .op-conv-row { transition: background 0.12s ease, border-color 0.12s ease; }
         .op-conv-row:hover { background: rgba(255,255,255,0.025); }
+        @keyframes op-spin { to { transform: rotate(360deg); } }
       `}</style>
 
       {/* ═══════════ COLONNE GAUCHE ═══════════ */}
@@ -883,27 +933,32 @@ function CoachMessagesInner() {
                             alignItems: mine ? 'flex-end' : 'flex-start',
                             gap: 2,
                           }}>
-                            <div style={{
-                              padding: '9px 14px',
-                              borderRadius: 18,
-                              borderBottomRightRadius: mine && isLastInRun ? 5 : 18,
-                              borderBottomLeftRadius:  !mine && isLastInRun ? 5 : 18,
-                              background: mine
-                                ? `linear-gradient(135deg, ${VIOLET}, #6d28d9)`
-                                : 'rgba(255,255,255,0.06)',
-                              color: mine ? '#fff' : CREAM,
-                              fontSize: 14,
-                              lineHeight: 1.45,
-                              wordBreak: 'break-word',
-                              whiteSpace: 'pre-wrap',
-                              opacity: m.pending ? 0.65 : 1,
-                              boxShadow: mine
-                                ? '0 1px 0 rgba(0,0,0,0.2), 0 8px 24px -12px rgba(124,58,237,0.5)'
-                                : 'none',
-                              border: mine ? 'none' : `1px solid ${BORDER_S}`,
-                            }}>
-                              {m.content}
-                            </div>
+                            {(() => {
+                              const att = parseAttachment(m.content)
+                              return (
+                                <div style={{
+                                  padding: att ? '8px' : '9px 14px',
+                                  borderRadius: 18,
+                                  borderBottomRightRadius: mine && isLastInRun ? 5 : 18,
+                                  borderBottomLeftRadius:  !mine && isLastInRun ? 5 : 18,
+                                  background: mine
+                                    ? `linear-gradient(135deg, ${VIOLET}, #6d28d9)`
+                                    : 'rgba(255,255,255,0.06)',
+                                  color: mine ? '#fff' : CREAM,
+                                  fontSize: 14,
+                                  lineHeight: 1.45,
+                                  wordBreak: 'break-word',
+                                  whiteSpace: 'pre-wrap',
+                                  opacity: m.pending ? 0.65 : 1,
+                                  boxShadow: mine
+                                    ? '0 1px 0 rgba(0,0,0,0.2), 0 8px 24px -12px rgba(124,58,237,0.5)'
+                                    : 'none',
+                                  border: mine ? 'none' : `1px solid ${BORDER_S}`,
+                                }}>
+                                  {att ? <AttachmentBubble att={att} mine={mine} /> : m.content}
+                                </div>
+                              )
+                            })()}
                             {/* Meta sous la dernière bulle d'une série */}
                             {isLastInRun && (
                               <div style={{
@@ -957,6 +1012,14 @@ function CoachMessagesInner() {
                 onFocus={e => (e.currentTarget.style.borderColor = `${VIOLET}55`)}
                 onBlur={e => (e.currentTarget.style.borderColor = BORDER_S)}
               >
+                <button type="button" onClick={() => attachFileRef.current?.click()} disabled={uploading}
+                  title="Joindre un fichier"
+                  style={{ width: 34, height: 34, flexShrink: 0, borderRadius: 10, border: 'none', background: 'transparent', color: uploading ? VIOLET : SILVER, cursor: uploading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'color 0.15s' }}
+                  onMouseEnter={e => { if (!uploading) (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
+                  onMouseLeave={e => { if (!uploading) (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
+                  {uploading ? <span style={{ width: 15, height: 15, border: `2px solid ${VIOLET}`, borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'op-spin 0.8s linear infinite' }} /> : <Paperclip size={15} strokeWidth={2} />}
+                </button>
+                <input ref={attachFileRef} type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleAttach(f) }} />
                 <textarea
                   ref={inputRef}
                   value={draft}
