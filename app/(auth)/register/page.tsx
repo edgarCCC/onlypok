@@ -249,7 +249,7 @@ export default function RegisterPage() {
           </p>
           {PERKS.map(({ icon: Icon, label, sub }) => (
             <div key={label} style={{
-              display: 'flex', alignItems: 'center', gap: 14,
+              display: 'flex', alignItems: 'flex-start', gap: 14,
               padding: '14px 16px', borderRadius: 14,
               background: 'rgba(6,182,212,0.05)',
               border: '1px solid rgba(6,182,212,0.1)',
@@ -257,11 +257,11 @@ export default function RegisterPage() {
               <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon size={16} color={CYAN} />
               </div>
-              <div>
+              <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 2 }}>{label}</div>
                 <div style={{ fontSize: 11, color: 'rgba(240,244,255,0.35)' }}>{sub}</div>
               </div>
-              <CheckCircle size={14} color={`${CYAN}`} style={{ marginLeft: 'auto', flexShrink: 0, opacity: 0.5 }} />
+              <CheckCircle size={14} color="#4ade80" style={{ marginLeft: 'auto', flexShrink: 0, marginTop: 2 }} />
             </div>
           ))}
         </div>
