@@ -51,17 +51,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    /* price in cents — coaching: +8% platform fee */
-    const COACHING_FEE = isCoachingType ? 1.08 : 1
     let unitAmount: number
     let productName: string
     if (isCoachingType && Array.isArray(formation.coaching_packs) && pack_index != null) {
       const pack = formation.coaching_packs[pack_index]
       if (!pack) return NextResponse.json({ error: 'Pack not found' }, { status: 404 })
-      unitAmount = Math.round(pack.price * COACHING_FEE * weekendMultiplier * 100)
+      unitAmount = Math.round(pack.price * weekendMultiplier * 100)
       productName = `${formation.title} — ${pack.label ?? `Pack ${pack_index + 1}`}${weekendMultiplier > 1 ? ' (tarif week-end)' : ''}`
     } else {
-      unitAmount = Math.round(formation.price * COACHING_FEE * weekendMultiplier * 100)
+      unitAmount = Math.round(formation.price * weekendMultiplier * 100)
       productName = formation.title
     }
 

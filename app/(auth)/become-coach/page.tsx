@@ -22,6 +22,18 @@ const inp: React.CSSProperties = {
   boxSizing: 'border-box', fontFamily: 'inherit',
 }
 
+const CALLING_CODES = [
+  { code: '+33', flag: '🇫🇷', label: 'France' },
+  { code: '+32', flag: '🇧🇪', label: 'Belgique' },
+  { code: '+41', flag: '🇨🇭', label: 'Suisse' },
+  { code: '+352', flag: '🇱🇺', label: 'Luxembourg' },
+  { code: '+44', flag: '🇬🇧', label: 'Royaume-Uni' },
+  { code: '+1',  flag: '🇺🇸', label: 'États-Unis / Canada' },
+  { code: '+49', flag: '🇩🇪', label: 'Allemagne' },
+  { code: '+34', flag: '🇪🇸', label: 'Espagne' },
+  { code: '+39', flag: '🇮🇹', label: 'Italie' },
+]
+
 export default function BecomeCoachPage() {
   const router = useRouter()
   const [firstName,       setFirstName]       = useState('')
@@ -30,6 +42,8 @@ export default function BecomeCoachPage() {
   const [username,        setUsername]          = useState('')
   const [email,           setEmail]            = useState('')
   const [password,        setPassword]         = useState('')
+  const [phoneCode,       setPhoneCode]        = useState('+33')
+  const [phone,           setPhone]            = useState('')
   const [marketingOptOut, setMarketingOptOut]  = useState(false)
   const [error,           setError]            = useState('')
   const [loading,         setLoading]          = useState(false)
@@ -51,6 +65,7 @@ export default function BecomeCoachPage() {
           role: 'coach', xp: 0, onboarding_completed: false,
           first_name: firstName.trim(),
           last_name: lastName.trim(),
+          phone: phone.trim() ? `${phoneCode}${phone.trim()}` : null,
           full_name: `${firstName.trim()} ${lastName.trim()}`,
           birth_date: birthDate || null,
           marketing_opt_out: marketingOptOut,
@@ -65,7 +80,7 @@ export default function BecomeCoachPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: '#04040a' }}>
-    <div style={{ width: '100%', maxWidth: 460 }}>
+    <div style={{ width: '100%', maxWidth: 540 }}>
       {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
@@ -115,6 +130,26 @@ export default function BecomeCoachPage() {
           <div>
             <label style={lbl}>Mot de passe</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" style={inp} />
+          </div>
+
+          <div>
+            <label style={lbl}>Téléphone</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <select value={phoneCode} onChange={e => setPhoneCode(e.target.value)}
+                style={{ ...inp, width: 'auto', paddingRight: 10, cursor: 'pointer', colorScheme: 'dark' }}>
+                {CALLING_CODES.map(c => (
+                  <option key={c.code} value={c.code} style={{ background: '#0c1017' }}>
+                    {c.flag} {c.code} {c.label}
+                  </option>
+                ))}
+              </select>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                placeholder="6 12 34 56 78" style={{ ...inp, flex: 1 }} />
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 10, padding: '12px 16px', fontSize: 12, color: 'rgba(240,244,255,0.45)', lineHeight: 1.6 }}>
+            OnlyPok prélève une commission de <strong style={{ color: 'rgba(240,244,255,0.7)' }}>10 %</strong> sur chaque vente. Vous conservez 90 % de vos revenus.
           </div>
 
           <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>

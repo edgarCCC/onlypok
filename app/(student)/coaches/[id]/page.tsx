@@ -208,7 +208,7 @@ export default function CoachProfilePage() {
         <Link href="/formations" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', flexShrink: 0 }} />
           <span style={{ fontFamily: 'var(--font-syne,sans-serif)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#7c3aed', padding: '2px 7px', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 4 }}>Élève</span>
+          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: profile?.role === 'coach' ? '#06b6d4' : '#7c3aed', padding: '2px 7px', border: `1px solid ${profile?.role === 'coach' ? 'rgba(6,182,212,0.35)' : 'rgba(124,58,237,0.35)'}`, borderRadius: 4 }}>{profile?.role === 'coach' ? 'Coach' : 'Élève'}</span>
         </Link>
         <button onClick={() => router.back()} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: SILVER, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500, padding: 0 }}>
           <ArrowLeft size={13} /> Retour

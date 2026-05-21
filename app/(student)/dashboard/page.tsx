@@ -401,10 +401,10 @@ export default function StudentDashboard() {
         {/* ══════════════════════════════════════════════ */}
         {/* ── MES VIDÉOS ───────────────────────────────── */}
         {/* ══════════════════════════════════════════════ */}
-        <Section title="Mes Vidéos" href="/formations?tab=video" count={videoFormations.length} empty={videoFormations.length === 0}
+        <Section title="Mes Vidéos" href="/formations?tab=videos" count={videoFormations.length} empty={videoFormations.length === 0}
           emptyIcon={<Video size={22} color={DIM} />}
           emptyText="Aucune vidéo achetée"
-          emptyAction={{ label: 'Découvrir les vidéos', href: '/formations?tab=video' }}>
+          emptyAction={{ label: 'Découvrir les vidéos', href: '/formations?tab=videos' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
             {videoFormations.slice(0, 6).map(f => (
               <FormationCard key={f.id} formation={f} />

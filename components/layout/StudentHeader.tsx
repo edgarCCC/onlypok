@@ -22,6 +22,12 @@ const TABS = [
 export default function StudentHeader() {
   const pathname    = usePathname()
   const { profile, signOut } = useUser()
+
+  const roleBadge = profile?.role === 'coach'
+    ? { label: 'Coach', color: CYAN, border: 'rgba(6,182,212,0.35)' }
+    : profile?.role === 'admin'
+      ? { label: 'Admin', color: '#f59e0b', border: 'rgba(245,158,11,0.35)' }
+      : { label: 'Élève', color: VIOLET, border: 'rgba(124,58,237,0.35)' }
   const [profileOpen, setProfileOpen] = useState(false)
   const [hoveredTab, setHoveredTab]   = useState<string | null>(null)
   const [avatarUrl, setAvatarUrl]     = useState<string | null>(null)
@@ -47,6 +53,7 @@ export default function StudentHeader() {
 
   const isActive = (href: string) => {
     const path = href.split('?')[0]
+    if (path === '/train') return pathname === '/train' || pathname.startsWith('/train/') || pathname === '/trainer' || pathname.startsWith('/trainer/')
     return pathname === path || pathname.startsWith(path + '/')
   }
 
@@ -88,7 +95,7 @@ export default function StudentHeader() {
       <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, zIndex: 2 }}>
         <div style={{ width: 7, height: 7, borderRadius: 2, background: `linear-gradient(135deg,${VIOLET},${CYAN})`, flexShrink: 0 }} />
         <span style={{ fontFamily: 'var(--font-syne,sans-serif)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: VIOLET, padding: '2px 7px', border: `1px solid rgba(124,58,237,0.35)`, borderRadius: 4 }}>Élève</span>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: roleBadge.color, padding: '2px 7px', border: `1px solid ${roleBadge.border}`, borderRadius: 4 }}>{roleBadge.label}</span>
       </Link>
 
       {/* Nav — absolutely centered */}
