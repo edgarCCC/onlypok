@@ -25,7 +25,9 @@ export function isBetclicFile(text: string): boolean {
 
 // Phase 1: parse raw hands from one file
 export function parseBetclicHands(content: string): BetclicHand[] {
-  const blocks = content.split(/^------------$/m).map(b => b.trim()).filter(Boolean)
+  // Normalise CRLF so regex anchors work on Windows-exported files
+  const normalized = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  const blocks = normalized.split(/^------------$/m).map(b => b.trim()).filter(Boolean)
   const hands: BetclicHand[] = []
   for (const block of blocks) {
     const hand = parseBetclicHand(block)
