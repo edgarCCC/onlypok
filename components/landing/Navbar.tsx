@@ -76,16 +76,26 @@ export default function Navbar() {
         transition: 'backdrop-filter 0.4s',
       }}
     >
-      <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-        <div ref={chipRef} style={{
-          width: 7, height: 7, borderRadius: 2,
-          background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0,
-        }} />
-        <span style={{
-          fontFamily: 'var(--font-syne, sans-serif)',
-          fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: '#f0f4ff',
-        }}>ONLYPOK</span>
-      </Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <div ref={chipRef} style={{
+            width: 7, height: 7, borderRadius: 2,
+            background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0,
+          }} />
+          <span style={{
+            fontFamily: 'var(--font-syne, sans-serif)',
+            fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: '#f0f4ff',
+          }}>ONLYPOK</span>
+        </Link>
+        {role === 'coach' && (
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
+            color: '#a78bfa', border: '1px solid rgba(124,58,237,0.45)',
+            borderRadius: 6, padding: '3px 8px',
+            fontFamily: 'var(--font-syne, sans-serif)',
+          }}>COACH</span>
+        )}
+      </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
         {[{ label: 'Formations', href: '/formations' }, { label: 'Coachs', href: '/coaches' }, { label: 'Tarifs', href: '#tarifs' }].map(({ label, href }) => (
