@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Upload, Plus, Trash2, ZoomIn, ZoomOut, Video, Check, CalendarCheck, Zap, Minus, Loader2 } from 'lucide-react'
 import PublishOverlay from '@/components/PublishOverlay'
 import { HIGHLIGHTS_COACHING, HIGHLIGHTS_FORMATION, HIGHLIGHTS_VIDEO } from '@/lib/highlights'
+import SelectInput from '@/components/ui/SelectInput'
+import NumberStepper from '@/components/ui/NumberStepper'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -379,16 +381,14 @@ function NewFormationInner() {
 
                 <Section title="Tarification & options">
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-                    <Field label="Prix (€)"><input type="number" min={0} value={price} onChange={e => setPrice(Number(e.target.value))} style={inputStyle} /></Field>
+                    <Field label="Prix (€)"><NumberStepper value={price} onChange={setPrice} min={0} max={9999} step={5} suffix="€" /></Field>
                     <Field label="Variante">
-                      <select value={variant} onChange={e => { setVariant(e.target.value); setLevel('Débutant') }} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        {VARIANTS.map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
-                      </select>
+                      <SelectInput value={variant} onChange={v => { setVariant(v); setLevel('Débutant') }}
+                        options={VARIANTS.map(v => ({ value: v, label: v }))} />
                     </Field>
                     <Field label="Niveau">
-                      <select value={level} onChange={e => setLevel(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        {(LEVELS_BY_VARIANT[variant] ?? LEVELS_BY_VARIANT.Autre).map(l => <option key={l.value} value={l.value} style={{ background: '#07090e' }}>{l.label}</option>)}
-                      </select>
+                      <SelectInput value={level} onChange={setLevel}
+                        options={(LEVELS_BY_VARIANT[variant] ?? LEVELS_BY_VARIANT.Autre).map(l => ({ value: l.value, label: l.label }))} />
                     </Field>
                   </div>
                 </Section>
@@ -480,16 +480,14 @@ function NewFormationInner() {
                 </Section>
                 <Section title="Options">
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-                    <Field label="Prix (€)"><input type="number" min={0} value={price} onChange={e => setPrice(Number(e.target.value))} style={inputStyle} /></Field>
+                    <Field label="Prix (€)"><NumberStepper value={price} onChange={setPrice} min={0} max={9999} step={5} suffix="€" /></Field>
                     <Field label="Variante">
-                      <select value={variant} onChange={e => { setVariant(e.target.value); setLevel('Débutant') }} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        {VARIANTS.map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
-                      </select>
+                      <SelectInput value={variant} onChange={v => { setVariant(v); setLevel('Débutant') }}
+                        options={VARIANTS.map(v => ({ value: v, label: v }))} />
                     </Field>
                     <Field label="Niveau">
-                      <select value={level} onChange={e => setLevel(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        {(LEVELS_BY_VARIANT[variant] ?? LEVELS_BY_VARIANT.Autre).map(l => <option key={l.value} value={l.value} style={{ background: '#07090e' }}>{l.label}</option>)}
-                      </select>
+                      <SelectInput value={level} onChange={setLevel}
+                        options={(LEVELS_BY_VARIANT[variant] ?? LEVELS_BY_VARIANT.Autre).map(l => ({ value: l.value, label: l.label }))} />
                     </Field>
                   </div>
                 </Section>
@@ -505,14 +503,12 @@ function NewFormationInner() {
                     <Field label="Description"><textarea value={desc} onChange={e => { setDesc(e.target.value); markDirty() }} placeholder="Méthode, approche, ce que l'élève va apprendre…" rows={5} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} /></Field>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                       <Field label="Variante principale">
-                        <select value={variant} onChange={e => { setVariant(e.target.value); setLevel('Débutant') }} style={{ ...inputStyle, cursor: 'pointer' }}>
-                          {VARIANTS.map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
-                        </select>
+                        <SelectInput value={variant} onChange={v => { setVariant(v); setLevel('Débutant') }}
+                          options={VARIANTS.map(v => ({ value: v, label: v }))} />
                       </Field>
                       <Field label="Niveau ciblé">
-                        <select value={level} onChange={e => setLevel(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                          {(LEVELS_BY_VARIANT[variant] ?? LEVELS_BY_VARIANT.Autre).map(l => <option key={l.value} value={l.value} style={{ background: '#07090e' }}>{l.label}</option>)}
-                        </select>
+                        <SelectInput value={level} onChange={setLevel}
+                          options={(LEVELS_BY_VARIANT[variant] ?? LEVELS_BY_VARIANT.Autre).map(l => ({ value: l.value, label: l.label }))} />
                       </Field>
                     </div>
                   </div>

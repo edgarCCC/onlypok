@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import { Check, Loader2, Calendar, Plus, X, TrendingUp } from 'lucide-react'
+import SelectInput from '@/components/ui/SelectInput'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -256,15 +257,15 @@ export default function CoachCalendarPage() {
                       {cfg.ranges.map((range, ri) => (
                         <div key={ri} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                           <span style={{ fontSize: 12, color: SILVER, flexShrink: 0 }}>de</span>
-                          <select value={range.from} onChange={e => setRange(day, ri, 'from', e.target.value)}
-                            style={{ background: 'rgba(232,228,220,0.07)', border: '1px solid rgba(232,228,220,0.12)', borderRadius: 8, color: CREAM, fontSize: 13, fontWeight: 600, padding: '6px 10px', cursor: 'pointer', outline: 'none' }}>
-                            {TIME_OPTIONS.filter(t => parseInt(t) < parseInt(range.to)).map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
+                          <SelectInput value={range.from} onChange={v => setRange(day, ri, 'from', v)}
+                            options={TIME_OPTIONS.filter(t => parseInt(t) < parseInt(range.to)).map(t => ({ value: t, label: t }))}
+                            style={{ width: 'auto' }}
+                            selectStyle={{ background: 'rgba(232,228,220,0.07)', border: '1px solid rgba(232,228,220,0.12)', borderRadius: 8, fontSize: 13, fontWeight: 600, padding: '6px 32px 6px 10px' }} />
                           <span style={{ fontSize: 12, color: SILVER, flexShrink: 0 }}>à</span>
-                          <select value={range.to} onChange={e => setRange(day, ri, 'to', e.target.value)}
-                            style={{ background: 'rgba(232,228,220,0.07)', border: '1px solid rgba(232,228,220,0.12)', borderRadius: 8, color: CREAM, fontSize: 13, fontWeight: 600, padding: '6px 10px', cursor: 'pointer', outline: 'none' }}>
-                            {TIME_OPTIONS.filter(t => parseInt(t) > parseInt(range.from)).map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
+                          <SelectInput value={range.to} onChange={v => setRange(day, ri, 'to', v)}
+                            options={TIME_OPTIONS.filter(t => parseInt(t) > parseInt(range.from)).map(t => ({ value: t, label: t }))}
+                            style={{ width: 'auto' }}
+                            selectStyle={{ background: 'rgba(232,228,220,0.07)', border: '1px solid rgba(232,228,220,0.12)', borderRadius: 8, fontSize: 13, fontWeight: 600, padding: '6px 32px 6px 10px' }} />
                           <span style={{ fontSize: 12, color: isWeekend && weekendPct > 0 ? AMBER : SILVER, minWidth: 80, fontWeight: isWeekend && weekendPct > 0 ? 700 : 400 }}>
                             {rangeHours(range)}h
                             {isWeekend && weekendPct > 0 && ` · ${fmt(rangeHours(range) * weekendRate)}€`}

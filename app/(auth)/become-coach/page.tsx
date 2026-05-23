@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowRight, BookOpen, TrendingUp, Users, BarChart2, Eye, EyeOff, ChevronLeft, CheckCircle } from 'lucide-react'
+import SelectInput from '@/components/ui/SelectInput'
 
 const CREAM  = '#f0f4ff'
 const VIOLET = '#7c3aed'
@@ -239,15 +240,9 @@ export default function BecomeCoachPage() {
             <div>
               <label style={lbl}>Téléphone</label>
               <div style={{ display: 'flex', gap: 10 }}>
-                <select value={phoneCode} onChange={e => setPhoneCode(e.target.value)}
-                  style={{ ...inp, width: 'auto', paddingRight: 12, cursor: 'pointer', colorScheme: 'dark', flexShrink: 0 }}
-                  onFocus={focusIn} onBlur={focusOut}>
-                  {CALLING_CODES.map(c => (
-                    <option key={c.code} value={c.code} style={{ background: '#0c1017' }}>
-                      {c.flag} {c.code} {c.label}
-                    </option>
-                  ))}
-                </select>
+                <SelectInput value={phoneCode} onChange={setPhoneCode}
+                  options={CALLING_CODES.map(c => ({ value: c.code, label: `${c.flag} ${c.code} ${c.label}` }))}
+                  style={{ width: 'auto', flexShrink: 0 }} />
                 <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
                   placeholder="6 12 34 56 78" style={{ ...inp, flex: 1 }}
                   onFocus={focusIn} onBlur={focusOut} />

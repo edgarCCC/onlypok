@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Clock, DollarSign } from 'lucide-react'
+import SelectInput from '@/components/ui/SelectInput'
+import NumberStepper from '@/components/ui/NumberStepper'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -112,9 +114,8 @@ export default function SessionsPage() {
                 <input type="date" value={form.date} onChange={e => setForm(f => ({...f, date: e.target.value}))} style={inp} />
               </div>
               <div><label style={{ fontSize: 11, color: SILVER, display: 'block', marginBottom: 5 }}>Stakes</label>
-                <select value={form.stakes} onChange={e => setForm(f => ({...f, stakes: e.target.value}))} style={{...inp, cursor:'pointer'}}>
-                  {['2NL','5NL','10NL','25NL','50NL','100NL','200NL','500NL','1KNL','Tournoi'].map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
+                <SelectInput value={form.stakes} onChange={v => setForm(f => ({...f, stakes: v}))}
+                  options={['2NL','5NL','10NL','25NL','50NL','100NL','200NL','500NL','1KNL','Tournoi'].map(s => ({ value: s, label: s }))} />
               </div>
               <div><label style={{ fontSize: 11, color: SILVER, display: 'block', marginBottom: 5 }}>Buy-in (€)</label>
                 <input type="number" value={form.buy_in} onChange={e => setForm(f => ({...f, buy_in: e.target.value}))} placeholder="100" style={inp} />
@@ -123,12 +124,11 @@ export default function SessionsPage() {
                 <input type="number" value={form.cash_out} onChange={e => setForm(f => ({...f, cash_out: e.target.value}))} placeholder="150" style={inp} />
               </div>
               <div><label style={{ fontSize: 11, color: SILVER, display: 'block', marginBottom: 5 }}>Variante</label>
-                <select value={form.variant} onChange={e => setForm(f => ({...f, variant: e.target.value}))} style={{...inp, cursor:'pointer'}}>
-                  {['NLH','PLO','PLO5','MTT','SNG','Spin','Mixed'].map(v => <option key={v}>{v}</option>)}
-                </select>
+                <SelectInput value={form.variant} onChange={v => setForm(f => ({...f, variant: v}))}
+                  options={['NLH','PLO','PLO5','MTT','SNG','Spin','Mixed'].map(v => ({ value: v, label: v }))} />
               </div>
               <div><label style={{ fontSize: 11, color: SILVER, display: 'block', marginBottom: 5 }}>Durée (minutes)</label>
-                <input type="number" value={form.duration} onChange={e => setForm(f => ({...f, duration: e.target.value}))} placeholder="120" style={inp} />
+                <NumberStepper value={Number(form.duration) || 0} onChange={v => setForm(f => ({...f, duration: String(v)}))} min={0} max={1440} step={15} suffix="min" />
               </div>
             </div>
             <div style={{ marginBottom: 14 }}>

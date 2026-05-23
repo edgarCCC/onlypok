@@ -14,6 +14,7 @@ import {
   Monitor, Layers, Landmark, CreditCard, Smartphone, X, RotateCcw, Edit2,
   Fish, Swords, GraduationCap, Flame, Clock, AlertCircle, ShieldCheck,
 } from 'lucide-react'
+import SelectInput from '@/components/ui/SelectInput'
 
 /* ── Palette ── */
 const CREAM  = '#f0f4ff'
@@ -715,10 +716,9 @@ export default function CoachProfilePage() {
                               {vs === 'rejected' && proof.rejection_reason && (
                                 <p style={{ fontSize: 10, color: '#ef4444', margin: 0, lineHeight: 1.4 }}>↳ {proof.rejection_reason}</p>
                               )}
-                              <select value={proof.category} onChange={e => updateProof(proof.id, { category: e.target.value })}
-                                style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 6, padding: '4px 8px', color: CREAM, fontSize: 10, cursor: 'pointer', outline: 'none', fontFamily: 'inherit' }}>
-                                {PROOF_CATS.map(c => <option key={c.value} value={c.value} style={{ background: '#1a1d24' }}>{c.label}</option>)}
-                              </select>
+                              <SelectInput value={proof.category} onChange={v => updateProof(proof.id, { category: v })}
+                                options={PROOF_CATS.map(c => ({ value: c.value, label: c.label }))}
+                                selectStyle={{ fontSize: 10, padding: '4px 24px 4px 8px', background: CARD, border: `1px solid ${BORDER}`, borderRadius: 6 }} />
                               <input type="text" value={proof.caption ?? ''} onChange={e => updateProof(proof.id, { caption: e.target.value })}
                                 placeholder="Légende (optionnel)"
                                 style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 6, padding: '4px 8px', color: CREAM, fontSize: 10, outline: 'none', fontFamily: 'inherit' }} />
@@ -765,9 +765,8 @@ export default function CoachProfilePage() {
                   </div>
                   <div>
                     <label style={labelStyle}>Pays</label>
-                    <select value={country} onChange={e => setCountry(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                      {['France','Belgique','Suisse','Canada','Luxembourg','Autre'].map(c => <option key={c} value={c} style={{ background: '#1a1d24' }}>{c}</option>)}
-                    </select>
+                    <SelectInput value={country} onChange={setCountry}
+                      options={['France','Belgique','Suisse','Canada','Luxembourg','Autre'].map(c => ({ value: c, label: c }))} />
                   </div>
                   <div style={{ gridColumn: '1/-1' }}>
                     <label style={labelStyle}>Adresse</label>

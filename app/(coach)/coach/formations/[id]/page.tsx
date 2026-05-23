@@ -10,6 +10,8 @@ import {
 import Link from 'next/link'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import { HIGHLIGHTS_COACHING, HIGHLIGHTS_FORMATION, HIGHLIGHTS_VIDEO } from '@/lib/highlights'
+import SelectInput from '@/components/ui/SelectInput'
+import NumberStepper from '@/components/ui/NumberStepper'
 
 type Pack = { label: string; hours: number; price: number; desc: string }
 
@@ -396,23 +398,20 @@ export default function EditFormationPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                   <div>
                     <p style={label()}>Prix (€)</p>
-                    <input type="number" min={0} value={formation.price ?? 0} onChange={e => updateField('price', Number(e.target.value))} style={field()} />
+                    <NumberStepper value={formation.price ?? 0} onChange={v => updateField('price', v)} min={0} max={9999} step={5} suffix="€" />
                   </div>
                   <div>
                     <p style={label()}>Variante</p>
-                    <select value={formation.variant ?? 'MTT'} onChange={e => {
-                      const next = { ...formation, variant: e.target.value, level: 'Débutant' }
+                    <SelectInput value={formation.variant ?? 'MTT'} onChange={v => {
+                      const next = { ...formation, variant: v, level: 'Débutant' }
                       setFormation(next)
                       autoSave(next, packs, highlights)
-                    }} style={field({ cursor: 'pointer' })}>
-                      {VARIANTS.map(v => <option key={v} value={v} style={{ background: '#07090e' }}>{v}</option>)}
-                    </select>
+                    }} options={VARIANTS.map(v => ({ value: v, label: v }))} />
                   </div>
                   <div>
                     <p style={label()}>Niveau</p>
-                    <select value={formation.level ?? 'Débutant'} onChange={e => updateField('level', e.target.value)} style={field({ cursor: 'pointer' })}>
-                      {(LEVELS_BY_VARIANT[formation.variant ?? 'MTT'] ?? LEVELS_BY_VARIANT.Autre).map(l => <option key={l.value} value={l.value} style={{ background: '#07090e' }}>{l.label}</option>)}
-                    </select>
+                    <SelectInput value={formation.level ?? 'Débutant'} onChange={v => updateField('level', v)}
+                      options={(LEVELS_BY_VARIANT[formation.variant ?? 'MTT'] ?? LEVELS_BY_VARIANT.Autre).map(l => ({ value: l.value, label: l.label }))} />
                   </div>
                 </div>
               </div>
@@ -483,11 +482,9 @@ export default function EditFormationPage() {
                                     onChange={e => setEditingLesson(p => ({ ...p, video_url: e.target.value }))}
                                     placeholder="URL YouTube ou Vimeo"
                                     style={field({ flex: 1, fontSize: 12 })} />
-                                  <select value={editingLesson.video_type} onChange={e => setEditingLesson(p => ({ ...p, video_type: e.target.value }))} style={field({ width: 100, cursor: 'pointer', fontSize: 12 })}>
-                                    <option value="youtube" style={{ background: '#07090e' }}>YouTube</option>
-                                    <option value="vimeo" style={{ background: '#07090e' }}>Vimeo</option>
-                                    <option value="upload" style={{ background: '#07090e' }}>Upload</option>
-                                  </select>
+                                  <SelectInput value={editingLesson.video_type} onChange={v => setEditingLesson(p => ({ ...p, video_type: v }))}
+                                    options={[{ value: 'youtube', label: 'YouTube' }, { value: 'vimeo', label: 'Vimeo' }, { value: 'upload', label: 'Upload' }]}
+                                    style={{ width: 110 }} selectStyle={{ fontSize: 12, padding: '8px 32px 8px 10px' }} />
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: SILVER }}>
@@ -530,11 +527,9 @@ export default function EditFormationPage() {
                             <input value={newLesson.title} onChange={e => setNewLesson(p => ({ ...p, title: e.target.value }))} placeholder="Titre de la leçon" style={field()} autoFocus />
                             <div style={{ display: 'flex', gap: 8 }}>
                               <input value={newLesson.video_url} onChange={e => setNewLesson(p => ({ ...p, video_url: e.target.value }))} placeholder="URL YouTube ou Vimeo" style={field({ flex: 1 })} />
-                              <select value={newLesson.video_type} onChange={e => setNewLesson(p => ({ ...p, video_type: e.target.value }))} style={field({ width: 110, cursor: 'pointer' })}>
-                                <option value="youtube" style={{ background: '#07090e' }}>YouTube</option>
-                                <option value="vimeo" style={{ background: '#07090e' }}>Vimeo</option>
-                                <option value="upload" style={{ background: '#07090e' }}>Upload</option>
-                              </select>
+                              <SelectInput value={newLesson.video_type} onChange={v => setNewLesson(p => ({ ...p, video_type: v }))}
+                                options={[{ value: 'youtube', label: 'YouTube' }, { value: 'vimeo', label: 'Vimeo' }, { value: 'upload', label: 'Upload' }]}
+                                style={{ width: 110 }} selectStyle={{ fontSize: 12, padding: '8px 32px 8px 10px' }} />
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: SILVER }}>
@@ -645,8 +640,8 @@ export default function EditFormationPage() {
                           )}
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12 }}>
-                          <div><p style={label()}>Heures</p><input type="number" min={1} value={pack.hours} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, hours: Number(e.target.value) } : p))} style={field()} /></div>
-                          <div><p style={label()}>Prix (€)</p><input type="number" min={0} value={pack.price} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, price: Number(e.target.value) } : p))} style={field()} /></div>
+                          <div><p style={label()}>Heures</p><NumberStepper value={pack.hours} onChange={v => savePacks(packs.map((p, idx) => idx === i ? { ...p, hours: v } : p))} min={1} max={100} step={1} suffix="h" /></div>
+                          <div><p style={label()}>Prix (€)</p><NumberStepper value={pack.price} onChange={v => savePacks(packs.map((p, idx) => idx === i ? { ...p, price: v } : p))} min={0} max={9999} step={5} suffix="€" /></div>
                           <div><p style={label()}>Description</p><input value={pack.desc} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, desc: e.target.value } : p))} placeholder="Ce que comprend ce pack" style={field()} /></div>
                         </div>
                         {pack.hours > 0 && pack.price > 0 && <p style={{ fontSize: 11, color: SILVER, marginTop: 8 }}>{Math.round(pack.price / pack.hours)}€/h</p>}

@@ -14,6 +14,7 @@ interface SelectInputProps {
   placeholder?: string
   disabled?: boolean
   style?: React.CSSProperties
+  selectStyle?: React.CSSProperties
   id?: string
 }
 
@@ -24,6 +25,7 @@ export default function SelectInput({
   placeholder,
   disabled = false,
   style,
+  selectStyle,
   id,
 }: SelectInputProps) {
   const [focused, setFocused] = useState(false)
@@ -53,6 +55,7 @@ export default function SelectInput({
           WebkitAppearance: 'none',
           MozAppearance: 'none',
           appearance: 'none',
+          ...selectStyle,
         }}
       >
         {placeholder && (

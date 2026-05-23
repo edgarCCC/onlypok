@@ -7,6 +7,7 @@ import {
   Video, UserCheck, RefreshCw, MessageSquare, BookOpen,
   PlayCircle, Target, FileText, Settings, TrendingUp,
 } from 'lucide-react'
+import SelectInput from '@/components/ui/SelectInput'
 
 /* ─── Palette ─── */
 const CREAM  = '#f0f4ff'
@@ -688,9 +689,8 @@ export default function OnboardingPage() {
               </div>
               <div>
                 <label style={labelStyle}>Pays *</label>
-                <select value={form.country} onChange={e => set('country', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                  {['France', 'Belgique', 'Suisse', 'Canada', 'Luxembourg', 'Autre'].map(c => <option key={c} value={c} style={{ background: '#1a1d24' }}>{c}</option>)}
-                </select>
+                <SelectInput value={form.country} onChange={v => set('country', v)}
+                  options={['France', 'Belgique', 'Suisse', 'Canada', 'Luxembourg', 'Autre'].map(c => ({ value: c, label: c }))} />
               </div>
               <div style={{ gridColumn: '1/-1' }}>
                 <label style={labelStyle}>Adresse *</label>
