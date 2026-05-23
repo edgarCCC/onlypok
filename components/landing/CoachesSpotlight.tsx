@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import PlayerCard, { type CardData, type FxData, type AvatarKey, type FormatKey } from './PlayerCard'
 import SelectInput from '@/components/ui/SelectInput'
+import NumberStepper from '@/components/ui/NumberStepper'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -170,41 +171,41 @@ export default function CoachesSpotlight() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
             {(card.role === 'coach'
               ? [
-                  { key: 'abi',           label: 'ABI ($)',    type: 'number', step: 1,   min: 1,   max: undefined },
-                  { key: 'volume',        label: 'VOLUME',     type: 'text',   step: undefined },
-                  { key: 'roi',           label: 'ROI (%)',    type: 'number', step: 1                             },
-                  { key: 'coachRating',   label: 'NOTE /5',    type: 'number', step: 0.1, min: 0,   max: 5        },
-                  { key: 'coachReach',    label: 'PORTÉE',     type: 'text',   step: undefined },
-                  { key: 'coachStudents', label: 'ÉTUDIANTS',  type: 'number', step: 1,   min: 0                  },
+                  { key: 'abi',           label: 'ABI ($)',    type: 'number', step: 1,   min: 1,   max: 9999 },
+                  { key: 'volume',        label: 'VOLUME',     type: 'text' },
+                  { key: 'roi',           label: 'ROI (%)',    type: 'number', step: 1,   min: 0,   max: 9999 },
+                  { key: 'coachRating',   label: 'NOTE /5',    type: 'number', step: 0.1, min: 0,   max: 5    },
+                  { key: 'coachReach',    label: 'PORTÉE',     type: 'text' },
+                  { key: 'coachStudents', label: 'ÉTUDIANTS',  type: 'number', step: 1,   min: 0,   max: 9999 },
                 ]
               : [
-                  { key: 'abi',    label: 'ABI ($)',  type: 'number', step: 1 },
-                  { key: 'volume', label: 'VOLUME',   type: 'text'           },
-                  { key: 'roi',    label: 'ROI (%)',  type: 'number', step: 1 },
-                  { key: 'gto',    label: 'SCORE GTO',type: 'number', step: 1, min: 0, max: 100 },
-                  { key: 'streak', label: 'SÉRIE',    type: 'number', step: 1, min: 0           },
-                  { key: 'trophies',label:'TROPHÉES', type: 'number', step: 1, min: 0, max: 50  },
+                  { key: 'abi',     label: 'ABI ($)',   type: 'number', step: 1,   min: 0,   max: 9999 },
+                  { key: 'volume',  label: 'VOLUME',    type: 'text' },
+                  { key: 'roi',     label: 'ROI (%)',   type: 'number', step: 1,   min: -100, max: 9999 },
+                  { key: 'gto',     label: 'SCORE GTO', type: 'number', step: 1,   min: 0,   max: 100  },
+                  { key: 'streak',  label: 'SÉRIE',     type: 'number', step: 1,   min: 0,   max: 9999 },
+                  { key: 'trophies',label: 'TROPHÉES',  type: 'number', step: 1,   min: 0,   max: 50   },
                 ]
             ).map(({ key, label, type, step, min, max }) => (
               <div key={key}>
                 <label style={labelStyle}>{label}</label>
-                <input
-                  style={inputStyle}
-                  type={type}
-                  step={step}
-                  min={min}
-                  max={max}
-                  value={(card as unknown as Record<string, string | number>)[key]}
-                  onChange={e => {
-                    let val: string | number = e.target.value
-                    if (type === 'number') {
-                      val = Number(e.target.value)
-                      if (max !== undefined && val > max) val = max
-                      if (min !== undefined && val < min) val = min
-                    }
-                    setCard(c => ({ ...c, [key]: val }))
-                  }}
-                />
+                {type === 'number' ? (
+                  <NumberStepper
+                    value={Number((card as unknown as Record<string, string | number>)[key]) || 0}
+                    onChange={v => setCard(c => ({ ...c, [key]: v }))}
+                    min={min ?? 0}
+                    max={max ?? 9999}
+                    step={step ?? 1}
+                    style={{ height: 38, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  />
+                ) : (
+                  <input
+                    style={{ ...inputStyle }}
+                    type="text"
+                    value={(card as unknown as Record<string, string | number>)[key]}
+                    onChange={e => setCard(c => ({ ...c, [key]: e.target.value }))}
+                  />
+                )}
               </div>
             ))}
           </div>
