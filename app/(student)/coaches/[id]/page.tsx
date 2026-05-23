@@ -31,7 +31,7 @@ const ADVANTAGE_LABELS: Record<string, { label: string; Icon: React.ElementType 
   ressources: { label: 'Ressources exclusives',   Icon: FileText },
   live:       { label: 'Sessions en direct',      Icon: PlayCircle },
   exercices:  { label: 'Exercices pratiques',     Icon: Target },
-  hh:         { label: 'Revue HH post-session',   Icon: BookOpen },
+  hh:         { label: 'Review HH post-session',   Icon: BookOpen },
   solver:     { label: 'Travail solver / GTO',    Icon: Settings },
   mental:     { label: 'Mental game & bankroll',  Icon: TrendingUp },
 }

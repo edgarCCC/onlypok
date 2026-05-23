@@ -53,7 +53,7 @@ const ADVANTAGES: AdvItem[] = [
   { id: 'ressources',label: 'Accès ressources exclusives',        Icon: BookOpen },
   { id: 'live',      label: 'Sessions en direct',                 Icon: PlayCircle },
   { id: 'exercices', label: 'Exercices pratiques entre sessions', Icon: Target },
-  { id: 'hh',        label: 'Revue HH post-session',             Icon: FileText },
+  { id: 'hh',        label: 'Review HH post-session',             Icon: FileText },
   { id: 'solver',    label: 'Travail sur solver / GTO',           Icon: Settings },
   { id: 'mental',    label: 'Mental game & gestion bankroll',     Icon: TrendingUp },
 ]

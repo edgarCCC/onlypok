@@ -52,7 +52,7 @@ const ADVANTAGES = [
   { id: 'ressources', label: 'Ressources exclusives',  Icon: BookOpen },
   { id: 'live',       label: 'Sessions en direct',     Icon: PlayCircle },
   { id: 'exercices',  label: 'Exercices pratiques',    Icon: Target },
-  { id: 'hh',         label: 'Revue HH post-session',  Icon: FileText },
+  { id: 'hh',         label: 'Review HH post-session',  Icon: FileText },
   { id: 'solver',     label: 'Travail solver / GTO',   Icon: Settings },
   { id: 'mental',     label: 'Mental game & bankroll', Icon: TrendingUp },
 ]
