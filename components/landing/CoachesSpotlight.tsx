@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import PlayerCard, { type CardData, type FxData, type AvatarKey, type FormatKey } from './PlayerCard'
+import SelectInput from '@/components/ui/SelectInput'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -155,13 +156,13 @@ export default function CoachesSpotlight() {
             </div>
             <div>
               <label style={labelStyle}>PAYS</label>
-              <select
-                style={{ ...inputStyle, cursor: 'pointer', width: 80 }}
+              <SelectInput
                 value={card.country}
-                onChange={e => setCard(c => ({ ...c, country: e.target.value }))}
-              >
-                {COUNTRIES.map(co => <option key={co} value={co}>{co}</option>)}
-              </select>
+                onChange={v => setCard(c => ({ ...c, country: v }))}
+                options={COUNTRIES.map(co => ({ value: co, label: co }))}
+                style={{ width: 80 }}
+                selectStyle={{ fontSize: 13, padding: '8px 28px 8px 10px', fontFamily: 'var(--font-dm-mono,monospace)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8 }}
+              />
             </div>
           </div>
 
