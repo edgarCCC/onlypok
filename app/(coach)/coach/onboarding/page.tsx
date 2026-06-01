@@ -9,6 +9,18 @@ import {
 } from 'lucide-react'
 import SelectInput from '@/components/ui/SelectInput'
 
+const CALLING_CODES = [
+  { code: '+33',  flag: '🇫🇷', label: 'France' },
+  { code: '+32',  flag: '🇧🇪', label: 'Belgique' },
+  { code: '+41',  flag: '🇨🇭', label: 'Suisse' },
+  { code: '+352', flag: '🇱🇺', label: 'Luxembourg' },
+  { code: '+44',  flag: '🇬🇧', label: 'Royaume-Uni' },
+  { code: '+1',   flag: '🇺🇸', label: 'États-Unis / Canada' },
+  { code: '+49',  flag: '🇩🇪', label: 'Allemagne' },
+  { code: '+34',  flag: '🇪🇸', label: 'Espagne' },
+  { code: '+39',  flag: '🇮🇹', label: 'Italie' },
+]
+
 /* ─── Palette ─── */
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -106,13 +118,14 @@ export default function OnboardingPage() {
   const uploadCategory = useRef<string>('stats')
   const initialized    = useRef(false)
 
-  const [step,     setStep]     = useState(0)
-  const [form,     setForm]     = useState<FormData>(EMPTY)
-  const [proofs,   setProofs]   = useState<any[]>([])
-  const [uploading,setUploading]= useState(false)
-  const [saving,   setSaving]   = useState(false)
-  const [catError, setCatError] = useState('')
-  const [loading,  setLoading]  = useState(true)
+  const [step,      setStep]      = useState(0)
+  const [form,      setForm]      = useState<FormData>(EMPTY)
+  const [proofs,    setProofs]    = useState<any[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [saving,    setSaving]    = useState(false)
+  const [catError,  setCatError]  = useState('')
+  const [loading,   setLoading]   = useState(true)
+  const [phoneCode, setPhoneCode] = useState('+33')
 
   /* ── Init : charge le profil existant + step sauvegardé ── */
   useEffect(() => {
@@ -211,7 +224,7 @@ export default function OnboardingPage() {
       hourly_rate:       Number(form.hourlyRate) || null,
       weekend_rate_pct:  form.weekendPct,
       coaching_packages: form.packages,
-      phone:             form.phone || null,
+      phone:             form.phone.trim() ? `${phoneCode}${form.phone.trim()}` : null,
       address_line:      form.addressLine || null,
       city:              form.city || null,
       zip_code:          form.zipCode || null,
@@ -238,7 +251,7 @@ export default function OnboardingPage() {
       hourly_rate:       Number(form.hourlyRate) || null,
       weekend_rate_pct:  form.weekendPct,
       coaching_packages: form.packages,
-      phone:             form.phone || null,
+      phone:             form.phone.trim() ? `${phoneCode}${form.phone.trim()}` : null,
       address_line:      form.addressLine || null,
       city:              form.city || null,
       zip_code:          form.zipCode || null,
@@ -600,7 +613,7 @@ export default function OnboardingPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                 <StepperBtn onClick={() => set('weekendPct', Math.max(0, form.weekendPct - 5))}><Minus size={16} /></StepperBtn>
                 <div style={{ minWidth: 72, textAlign: 'center', fontSize: 40, fontWeight: 800, color: CREAM, letterSpacing: '-1px' }}>
-                  {form.weekendPct}<span style={{ fontSize: 22, fontWeight: 400, color: SILVER }}>%</span>
+                  {form.weekendPct}<span style={{ fontSize: 22, fontWeight: 400, color: SILVER }}> %</span>
                 </div>
                 <StepperBtn onClick={() => set('weekendPct', Math.min(50, form.weekendPct + 5))}><Plus size={16} /></StepperBtn>
               </div>
@@ -685,7 +698,18 @@ export default function OnboardingPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
                 <label style={labelStyle}>Téléphone *</label>
-                <input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+33 6 00 00 00 00" type="tel" style={inputStyle} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <SelectInput
+                    value={phoneCode}
+                    onChange={setPhoneCode}
+                    options={CALLING_CODES.map(c => ({ value: c.code, label: `${c.flag} ${c.code}` }))}
+                    style={{ width: 'auto', flexShrink: 0 }}
+                    selectStyle={{ padding: '11px 32px 11px 10px', fontSize: 13 }}
+                  />
+                  <input value={form.phone} onChange={e => set('phone', e.target.value)}
+                    placeholder="6 12 34 56 78" type="tel"
+                    style={{ ...inputStyle, flex: 1 }} />
+                </div>
               </div>
               <div>
                 <label style={labelStyle}>Pays *</label>
