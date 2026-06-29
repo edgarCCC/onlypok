@@ -49,13 +49,16 @@ export default function FormationsPageClient({
   initialFormations,
   initialReviews,
   initialUserRole,
+  initialEligibleCoachIds = [],
 }: {
   initialFormations: any[]
   initialReviews: any[]
   initialUserRole: 'coach' | 'student' | null
+  initialEligibleCoachIds?: string[]
 }) {
   const formations = initialFormations
   const allReviews = initialReviews
+  const eligibleCoachIds = useMemo(() => new Set(initialEligibleCoachIds), [initialEligibleCoachIds])
   const { signOut } = useUser()
   const supabase = useMemo(() => createClient(), [])
   const searchParams = useSearchParams()
@@ -378,8 +381,8 @@ export default function FormationsPageClient({
                 subtitle="Les plus populaires du moment"
                 formations={filtered.slice(0, 10)}
                 accentColor={accentColor}
-                isTop10={filtered.length >= 3}
                 onPlayVideo={setPlayingVideo}
+                eligibleCoachIds={eligibleCoachIds}
               />
             )}
             {filtered.filter(f => f.price === 0).length > 0 && (
@@ -389,6 +392,7 @@ export default function FormationsPageClient({
                 formations={filtered.filter(f => f.price === 0)}
                 accentColor={accentColor}
                 onPlayVideo={setPlayingVideo}
+                eligibleCoachIds={eligibleCoachIds}
               />
             )}
             {filtered.filter(f => f.price > 0).length > 0 && (
@@ -398,6 +402,7 @@ export default function FormationsPageClient({
                 formations={filtered.filter(f => f.price > 0)}
                 accentColor={accentColor}
                 onPlayVideo={setPlayingVideo}
+                eligibleCoachIds={eligibleCoachIds}
               />
             )}
             {filtered.length > 0 && (
@@ -407,6 +412,7 @@ export default function FormationsPageClient({
                 formations={[...filtered].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())}
                 accentColor={accentColor}
                 onPlayVideo={setPlayingVideo}
+                eligibleCoachIds={eligibleCoachIds}
               />
             )}
           </div>
@@ -430,9 +436,10 @@ export default function FormationsPageClient({
   )
 }
 
-function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayVideo }: {
+function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayVideo, eligibleCoachIds }: {
   title: string, subtitle: string, formations: any[], accentColor: string, isTop10?: boolean
   onPlayVideo?: (v: { url: string; title: string }) => void
+  eligibleCoachIds?: Set<string>
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const scroll    = (dir: 'left'|'right') => scrollRef.current?.scrollBy({ left: dir === 'right' ? 800 : -800, behavior: 'smooth' })
@@ -470,19 +477,20 @@ function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayV
         </div>
       </div>
       {showAll ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gridAutoRows: '270px', gap: 20 }}>
           {formations.map((f, i) => (
-            <div key={f.id} style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <div key={f.id} style={{ position: 'relative', overflow: 'hidden', height: '100%' }}>
               {isTop10 && (
                 <div style={{ position: 'absolute', left: -10, bottom: 10, fontSize: 110, fontWeight: 900, color: 'rgba(232,228,220,0.05)', zIndex: 0, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{i + 1}</div>
               )}
               <div
-                style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)', flex: 1 }}
+                style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)', height: '100%' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px) scale(1.02)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = '' }}>
                 <FormationCard
                   f={f}
                   accentColor={accentColor}
+                  unverified={eligibleCoachIds ? !eligibleCoachIds.has(f.coach?.id ?? f.coach_id) : false}
                   onPlay={f.price === 0 && f.content_type === 'video' && f.video_url
                     ? () => onPlayVideo?.({ url: f.video_url, title: f.title })
                     : undefined}
@@ -496,17 +504,15 @@ function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayV
           <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 50, background: 'linear-gradient(to left, #07090e, transparent)', zIndex: 2, pointerEvents: 'none' }} />
           <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 8 }}>
             {formations.map((f, i) => (
-              <div key={f.id} style={{ width: isTop10 && i === 0 ? 340 : 290, flexShrink: 0, position: 'relative' }}>
-                {isTop10 && (
-                  <div style={{ position: 'absolute', left: -10, bottom: 10, fontSize: 110, fontWeight: 900, color: 'rgba(232,228,220,0.05)', zIndex: 0, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{i + 1}</div>
-                )}
-                <div
-                  style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)' }}
+              <div key={f.id} style={{ width: isTop10 && i === 0 ? 340 : 290, height: 270, flexShrink: 0, position: 'relative' }}>
+                  <div
+                  style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)', height: '100%' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px) scale(1.02)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = '' }}>
                   <FormationCard
                     f={f}
                     accentColor={accentColor}
+                    unverified={eligibleCoachIds ? !eligibleCoachIds.has(f.coach?.id ?? f.coach_id) : false}
                     onPlay={f.price === 0 && f.content_type === 'video' && f.video_url
                       ? () => onPlayVideo?.({ url: f.video_url, title: f.title })
                       : undefined}

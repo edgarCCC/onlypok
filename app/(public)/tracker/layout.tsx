@@ -1,6 +1,6 @@
 'use client'
 import { useUser } from '@/hooks/useUser'
-import CoachHeader from '@/components/layout/CoachHeader'
+import { CoachHeader } from '@/app/(coach)/CoachLayoutClient'
 import Navbar from '@/components/landing/Navbar'
 
 export default function TrackerLayout({ children }: { children: React.ReactNode }) {
@@ -9,7 +9,7 @@ export default function TrackerLayout({ children }: { children: React.ReactNode 
 
   return (
     <>
-      {isCoach ? <CoachHeader /> : <Navbar />}
+      {isCoach ? <CoachHeader profile={profile} /> : <Navbar />}
       {children}
     </>
   )

@@ -76,7 +76,7 @@ const NAV_GROUPS = [
 ]
 
 /* ── CoachHeader ─────────────────────────────────────────────────────────── */
-function CoachHeader({ profile }: { profile: any }) {
+export function CoachHeader({ profile }: { profile: any }) {
   const pathname = usePathname()
   const { signOut } = useUser()
   const [openId, setOpenId] = useState<string | null>(null)

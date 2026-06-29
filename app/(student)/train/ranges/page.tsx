@@ -50,6 +50,7 @@ type SavedRange = {
 };
 
 const CUSTOM_ACTIONS = [
+  { id: 'Fold',    label: 'Fold',    color: '#1e293b', fg: '#64748b' },
   { id: 'Raise',   label: 'Raise',   color: '#7c3aed', fg: '#ede9fe' },
   { id: 'All-in',  label: 'All-in',  color: '#dc2626', fg: '#fecaca' },
   { id: 'Limp',    label: 'Limp',    color: '#0891b2', fg: '#bae6fd' },
@@ -784,10 +785,12 @@ export default function RangesPage() {
               {quizStreak >= 3 && <span style={{ fontSize: 11, color: '#fbbf24' }}>🔥 {quizStreak}</span>}
             </div>
           )}
-          <button onClick={() => setShowSettings(v => !v)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: `1px solid ${showSettings ? 'rgba(255,255,255,0.18)' : BORDER}`, background: showSettings ? 'rgba(255,255,255,0.06)' : 'transparent', color: showSettings ? CREAM : SILVER, transition: 'all 0.15s' }}>
-            <Settings size={12} /> Paramètres
-          </button>
+          {mode !== 'playground' && (
+            <button onClick={() => setShowSettings(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: `1px solid ${showSettings ? 'rgba(255,255,255,0.18)' : BORDER}`, background: showSettings ? 'rgba(255,255,255,0.06)' : 'transparent', color: showSettings ? CREAM : SILVER, transition: 'all 0.15s' }}>
+              <Settings size={12} /> Paramètres
+            </button>
+          )}
         </div>
       </div>
 
@@ -900,11 +903,9 @@ export default function RangesPage() {
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         {btns.map(a => <button key={a} onClick={() => act(a)} disabled={!!feedback} style={actionBtn(a, !!feedback)}>{a}</button>)}
                       </div>
-                      {feedback && (
-                        <div style={{ marginTop: 12, width: '100%', padding: '12px 18px', borderRadius: 12, fontWeight: 700, fontSize: 14, background: CARD_BG, borderLeft: `3px solid ${drillQuizMode ? (quizGrade?.color ?? '#4ade80') : (correct ? VIOLET : '#ef4444')}`, color: drillQuizMode ? (quizGrade?.color ?? '#4ade80') : (correct ? '#a78bfa' : '#fca5a5'), backdropFilter: 'blur(8px)' }}>
-                          {feedback}
-                        </div>
-                      )}
+                      <div style={{ marginTop: 12, width: '100%', padding: '12px 18px', borderRadius: 12, fontWeight: 700, fontSize: 14, background: CARD_BG, borderLeft: `3px solid ${drillQuizMode ? (quizGrade?.color ?? '#4ade80') : (correct ? '#4ade80' : '#ef4444')}`, color: drillQuizMode ? (quizGrade?.color ?? '#4ade80') : (correct ? '#4ade80' : '#fca5a5'), backdropFilter: 'blur(8px)', visibility: feedback ? 'visible' : 'hidden' }}>
+                        {feedback ?? ' '}
+                      </div>
                     </div>
                   </div>
                 </div>

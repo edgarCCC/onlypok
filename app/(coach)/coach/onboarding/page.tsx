@@ -123,6 +123,7 @@ export default function OnboardingPage() {
   const [proofs,    setProofs]    = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [saving,    setSaving]    = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [catError,  setCatError]  = useState('')
   const [loading,   setLoading]   = useState(true)
   const [phoneCode, setPhoneCode] = useState('+33')
@@ -210,58 +211,52 @@ export default function OnboardingPage() {
 
   const go = (dir: 1 | -1) => setStep(s => Math.max(0, Math.min(TOTAL - 1, s + dir)))
 
-  const saveFormToProfile = async () => {
-    if (!user) return
-    await supabase.from('profiles').update({
-      bio:               form.bio || null,
-      vision:            form.vision || null,
-      years_experience:  form.yearsExp,
-      is_pro:            form.isPro,
-      rooms:             form.rooms,
-      variants:          form.variants,
-      advantages:        form.advantages,
-      coaching_mode:     form.coachingMode,
-      hourly_rate:       Number(form.hourlyRate) || null,
-      weekend_rate_pct:  form.weekendPct,
-      coaching_packages: form.packages,
-      phone:             form.phone.trim() ? `${phoneCode}${form.phone.trim()}` : null,
-      address_line:      form.addressLine || null,
-      city:              form.city || null,
-      zip_code:          form.zipCode || null,
-      country:           form.country,
-      is_company:        form.isCompany,
-      company_name:      form.companyName || null,
-      siret:             form.siret || null,
-      vat_number:        form.vatNumber || null,
-    }).eq('id', user.id)
+  const buildProfilePayload = () => ({
+    bio:               form.bio || null,
+    vision:            form.vision || null,
+    years_experience:  form.yearsExp,
+    is_pro:            form.isPro,
+    rooms:             form.rooms,
+    variants:          form.variants,
+    advantages:        form.advantages,
+    coaching_mode:     form.coachingMode,
+    hourly_rate:       Number(form.hourlyRate) || null,
+    weekend_rate_pct:  form.weekendPct,
+    coaching_packages: form.packages,
+    phone:             form.phone.trim() ? `${phoneCode}${form.phone.trim()}` : null,
+    address_line:      form.addressLine || null,
+    city:              form.city || null,
+    zip_code:          form.zipCode || null,
+    country:           form.country,
+    is_company:        form.isCompany,
+    company_name:      form.companyName || null,
+    siret:             form.siret || null,
+    vat_number:        form.vatNumber || null,
+  })
+
+  const saveFormToProfile = async (): Promise<boolean> => {
+    if (!user) return false
+    const { error } = await supabase.from('profiles').update(buildProfilePayload()).eq('id', user.id)
+    if (error) {
+      setSaveError(`Erreur lors de la sauvegarde : ${error.message}`)
+      return false
+    }
+    return true
   }
 
   const finish = async () => {
     if (!user) return
     setSaving(true)
-    await supabase.from('profiles').update({
-      bio:               form.bio || null,
-      vision:            form.vision || null,
-      years_experience:  form.yearsExp,
-      is_pro:            form.isPro,
-      rooms:             form.rooms,
-      variants:          form.variants,
-      advantages:        form.advantages,
-      coaching_mode:     form.coachingMode,
-      hourly_rate:       Number(form.hourlyRate) || null,
-      weekend_rate_pct:  form.weekendPct,
-      coaching_packages: form.packages,
-      phone:             form.phone.trim() ? `${phoneCode}${form.phone.trim()}` : null,
-      address_line:      form.addressLine || null,
-      city:              form.city || null,
-      zip_code:          form.zipCode || null,
-      country:           form.country,
-      is_company:        form.isCompany,
-      company_name:      form.companyName || null,
-      siret:             form.siret || null,
-      vat_number:        form.vatNumber || null,
+    setSaveError('')
+    const { error } = await supabase.from('profiles').update({
+      ...buildProfilePayload(),
       onboarding_completed: true,
     }).eq('id', user.id)
+    if (error) {
+      setSaveError(`Erreur lors de la finalisation : ${error.message}`)
+      setSaving(false)
+      return
+    }
     localStorage.removeItem(`pokme_onboarding_step_${user.id}`)
     // Upsert coaching listing in marketplace
     const username = (profile as any)?.username ?? 'Coach'
@@ -289,8 +284,8 @@ export default function OnboardingPage() {
 
   const saveAndQuit = async () => {
     if (!user) return
-    await saveFormToProfile()
-    window.location.href = '/coach/dashboard'
+    const ok = await saveFormToProfile()
+    if (ok) window.location.href = '/coach/dashboard'
   }
 
   /* Proof upload */
@@ -831,10 +826,13 @@ export default function OnboardingPage() {
           <span style={{ fontSize: 11, color: DIM }}>{step + 1} / {TOTAL}</span>
 
           {isLast ? (
-            <button onClick={finish} disabled={!canNext || saving}
-              style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: canNext ? VIOLET : 'rgba(124,58,237,0.3)', color: canNext ? '#fff' : 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: 700, cursor: canNext && !saving ? 'pointer' : 'default', transition: 'all 0.2s', boxShadow: canNext ? '0 0 24px rgba(124,58,237,0.35)' : 'none' }}>
-              {saving ? 'Finalisation…' : 'Terminer'}
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+              {saveError && <p style={{ fontSize: 11, color: '#f87171', margin: 0, maxWidth: 260, textAlign: 'right' }}>{saveError}</p>}
+              <button onClick={finish} disabled={!canNext || saving}
+                style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: canNext ? VIOLET : 'rgba(124,58,237,0.3)', color: canNext ? '#fff' : 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: 700, cursor: canNext && !saving ? 'pointer' : 'default', transition: 'all 0.2s', boxShadow: canNext ? '0 0 24px rgba(124,58,237,0.35)' : 'none' }}>
+                {saving ? 'Finalisation…' : 'Terminer'}
+              </button>
+            </div>
           ) : (
             <button onClick={() => go(1)} disabled={!canNext}
               style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: canNext ? VIOLET : 'rgba(124,58,237,0.3)', color: canNext ? '#fff' : 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: 700, cursor: canNext ? 'pointer' : 'default', transition: 'all 0.2s', boxShadow: canNext ? '0 0 24px rgba(124,58,237,0.35)' : 'none' }}>

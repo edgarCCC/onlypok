@@ -95,7 +95,7 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
             <circle key={`${row}-${col}`} cx={col * 14 + 7} cy={row * 14 + 7} r="3" fill={color} />
           )))}
         </svg>
-        {isPro && (
+        {isPro && !coach.unverified && (
           <div style={{
             position: 'absolute', top: 10, left: 14,
             display: 'flex', alignItems: 'center', gap: 4,
@@ -105,6 +105,17 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
           }}>
             <Flame size={9} color="#f59e0b" fill="#f59e0b" />
             <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.1em' }}>PRO</span>
+          </div>
+        )}
+        {coach.unverified && (
+          <div style={{
+            position: 'absolute', top: 10, left: 14,
+            display: 'flex', alignItems: 'center', gap: 4,
+            padding: '3px 8px', borderRadius: 99,
+            background: 'rgba(100,116,139,0.2)',
+            border: '1px solid rgba(100,116,139,0.38)',
+          }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.08em' }}>Non vérifié</span>
           </div>
         )}
       </div>
@@ -299,7 +310,7 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
                   <h2 style={{ fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: 0 }}>
                     {coach.username ?? 'Coach'}
                   </h2>
-                  {isPro && (
+                  {isPro && !coach.unverified && (
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 4,
                       padding: '3px 9px', borderRadius: 99,
@@ -307,6 +318,15 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
                     }}>
                       <Flame size={9} color="#f59e0b" fill="#f59e0b" />
                       <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.1em' }}>PRO</span>
+                    </div>
+                  )}
+                  {coach.unverified && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      padding: '3px 8px', borderRadius: 99,
+                      background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.38)',
+                    }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.08em' }}>Non vérifié</span>
                     </div>
                   )}
                 </div>

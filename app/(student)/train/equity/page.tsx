@@ -17,7 +17,7 @@ type Card = { rank: number; suit: number }
 const RANK_CHARS = ['2','3','4','5','6','7','8','9','T','J','Q','K','A']
 const SUIT_CHARS = ['s','h','d','c']
 const SUIT_SYMS  = ['♠','♥','♦','♣']
-const SUIT_COLS  = ['#94a3b8','#f87171','#f87171','#94a3b8']
+const SUIT_COLS  = ['#cbd5e1','#f87171','#60a5fa','#4ade80']
 const HAND_COLS  = ['#a78bfa','#06b6d4','#4ade80']
 
 const fmtK = (n: number) => n >= 1000 ? `${n / 1000}k` : `${n}`
@@ -404,33 +404,33 @@ export default function EquityPage() {
                 ? active.type === 'hand' ? `Choisir carte ${active.ci + 1} de la Main ${active.hi + 1}` : `Choisir ${['Flop 1','Flop 2','Flop 3','Turn','River'][active.bi]}`
                 : 'Clique sur un emplacement pour sélectionner une carte'}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(13, minmax(0,1fr))', gap: 4 }}>
-              {[3,1,2,0].map(suit =>
-                RANK_CHARS.slice().reverse().map((_, ri) => {
+            <div style={{ display: 'grid', gridTemplateColumns: '28px repeat(13, minmax(0,1fr))', gap: 3 }}>
+              {[3,1,2,0].map(suit => [
+                <div key={`s${suit}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: SUIT_COLS[suit], fontWeight: 700 }}>
+                  {SUIT_SYMS[suit]}
+                </div>,
+                ...RANK_CHARS.slice().reverse().map((_, ri) => {
                   const rank = 14 - ri
                   const card: Card = { rank, suit }
                   const id = cid(card)
                   const used = usedCards.has(id)
                   return (
                     <button key={id} onClick={() => !used && pickCard(card)} style={{
-                      aspectRatio: '1', borderRadius: 5, border: 'none', fontSize: 'clamp(8px,1.1vw,12px)', fontWeight: 800,
+                      aspectRatio: '1/1.4', borderRadius: 5, border: 'none',
                       background: used ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.07)',
-                      color: used ? 'rgba(255,255,255,0.1)' : SUIT_COLS[suit],
-                      cursor: used || !active ? 'default' : 'pointer', transition: 'all 0.1s', lineHeight: 1, padding: 0, opacity: !active && !used ? 0.7 : 1,
+                      color: used ? 'rgba(255,255,255,0.08)' : SUIT_COLS[suit],
+                      cursor: used || !active ? 'default' : 'pointer', transition: 'all 0.1s',
+                      padding: 0, opacity: !active && !used ? 0.7 : 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
-                      onMouseEnter={e => { if (!used && active) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.25)' }}
+                      onMouseEnter={e => { if (!used && active) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.3)' }}
                       onMouseLeave={e => { if (!used) (e.currentTarget as HTMLButtonElement).style.background = used ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.07)' }}
-                    >{rc(rank)}</button>
+                    >
+                      <span style={{ fontSize: 'clamp(10px,1.3vw,14px)', fontWeight: 800, lineHeight: 1 }}>{rc(rank)}</span>
+                    </button>
                   )
                 })
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: 16, marginTop: 10 }}>
-              {[3,1,2,0].map(s => (
-                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: SUIT_COLS[s] }}>
-                  {SUIT_SYMS[s]} {['Piques','Cœurs','Carreaux','Trèfles'][s]}
-                </div>
-              ))}
+              ])}
             </div>
           </div>
 

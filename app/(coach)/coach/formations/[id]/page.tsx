@@ -157,13 +157,17 @@ export default function EditFormationPage() {
   const togglePublish = async () => {
     const next = !formation.published
     if (next) {
-      const { count } = await supabase
+      const { data: proofs } = await supabase
         .from('coach_proofs')
-        .select('id', { count: 'exact', head: true })
+        .select('category')
         .eq('coach_id', user?.id ?? '')
-        .eq('category', 'stats')
-      if (!count || count === 0) {
-        setPublishError('Ajoute au moins 1 screenshot de stats officielles dans ton profil avant de publier.')
+        .in('category', ['stats', 'longterme'])
+      const cats = new Set((proofs ?? []).map((p: any) => p.category))
+      const missing: string[] = []
+      if (!cats.has('stats'))     missing.push('stats officielles (SharkScope / PokerStats)')
+      if (!cats.has('longterme')) missing.push('résultats long terme (6 mois minimum)')
+      if (missing.length > 0) {
+        setPublishError(`Preuves manquantes dans ton profil : ${missing.join(' · ')}`)
         return
       }
       setPublishError(null)
@@ -292,88 +296,99 @@ export default function EditFormationPage() {
 
   if (loading || !formation) return <FourAcesLoader />
 
-  const crop = formation.thumbnail_crop ?? { zoom: 1, x: 50, y: 50 }
   const activeType = CONTENT_TYPES.find(t => t.id === contentType)!
 
   return (
     <div style={{ minHeight: '100vh', background: '#04040a', color: CREAM }}>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 50% 30% at 50% 0%, ${activeType.color}12 0%, transparent 70%)`, transition: 'background 0.4s' }} />
+      {/* Ambient glow */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 70% 45% at 50% -5%, ${activeType.color}0e 0%, transparent 65%)`, transition: 'background 0.5s' }} />
+      {/* Top accent line */}
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, height: 2, background: `linear-gradient(90deg, transparent 0%, ${activeType.color}80 40%, ${activeType.color}80 60%, transparent 100%)`, transition: 'background 0.4s' }} />
 
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1100, margin: '0 auto', padding: '36px 40px' }}>
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1140, margin: '0 auto', padding: '36px 40px 80px' }}>
 
-        {/* ── Topbar ─────────────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Link href="/coach/dashboard"
-              style={{ width: 36, height: 36, borderRadius: 9, border: '1px solid rgba(232,228,220,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: SILVER, transition: 'all 0.15s' }}
-              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(232,228,220,0.25)'}
-              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(232,228,220,0.1)'}>
-              <ArrowLeft size={16} />
-            </Link>
-            <div>
-              <h1 style={{ fontSize: 20, fontWeight: 800, color: CREAM, letterSpacing: '-0.4px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>{formation.title || 'Sans titre'}</h1>
-              <div style={{ display: 'flex', gap: 8, marginTop: 5, alignItems: 'center' }}>
-                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: `${activeType.color}18`, color: activeType.color, fontWeight: 700 }}>{activeType.label}</span>
-                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: formation.published ? 'rgba(6,182,212,0.15)' : 'rgba(240,244,255,0.06)', color: formation.published ? '#06b6d4' : SILVER }}>
-                  {formation.published ? 'Publié' : 'Brouillon'}
-                </span>
-                {saving && <span style={{ fontSize: 11, color: SILVER }}>Sauvegarde…</span>}
-                {saved && !saving && <span style={{ fontSize: 11, color: '#06b6d4' }}>✓ Sauvegardé</span>}
-              </div>
+        {/* ── Topbar ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 36 }}>
+          <Link href="/coach/dashboard"
+            style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid rgba(232,228,220,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: SILVER, transition: 'all 0.15s', flexShrink: 0 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,228,220,0.22)'; (e.currentTarget as HTMLElement).style.color = CREAM }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,228,220,0.08)'; (e.currentTarget as HTMLElement).style.color = SILVER }}>
+            <ArrowLeft size={16} />
+          </Link>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontSize: 19, fontWeight: 800, color: CREAM, letterSpacing: '-0.35px', margin: '0 0 6px', fontFamily: 'var(--font-syne,sans-serif)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {formation.title || 'Sans titre'}
+            </h1>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11, padding: '2px 9px', borderRadius: 99, background: `${activeType.color}18`, color: activeType.color, fontWeight: 700 }}>{activeType.label}</span>
+              <span style={{ fontSize: 11, padding: '2px 9px', borderRadius: 99, background: formation.published ? 'rgba(34,197,94,0.1)' : 'rgba(240,244,255,0.05)', color: formation.published ? '#22c55e' : SILVER, border: `1px solid ${formation.published ? 'rgba(34,197,94,0.22)' : 'rgba(240,244,255,0.08)'}` }}>
+                {formation.published ? '● En ligne' : '○ Brouillon'}
+              </span>
+              {saving && <span style={{ fontSize: 11, color: SILVER, opacity: 0.6 }}>Sauvegarde…</span>}
+              {saved && !saving && <span style={{ fontSize: 11, color: '#22c55e' }}>✓ Sauvegardé</span>}
             </div>
           </div>
-
-          <button onClick={togglePublish}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 10, border: `1px solid ${formation.published ? 'rgba(239,68,68,0.35)' : 'rgba(6,182,212,0.35)'}`, background: formation.published ? 'rgba(239,68,68,0.08)' : 'rgba(6,182,212,0.08)', color: formation.published ? '#ef4444' : '#06b6d4', fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>
-            {formation.published ? <><EyeOff size={14} /> Dépublier</> : <><Eye size={14} /> Publier</>}
-          </button>
         </div>
 
-        {/* ── 2-column layout ────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, alignItems: 'start' }}>
+        {/* ── 2-column layout ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 288px', gap: 22, alignItems: 'start' }}>
 
-          {/* ── LEFT — main form ──────────────────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* ── LEFT — main form ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-            {/* Type selector */}
+            {/* Type selector — pill tabs */}
             <div style={card()}>
               <p style={label()}>Type de contenu</p>
-              <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+              <div style={{ display: 'flex', gap: 3, marginTop: 10, background: 'rgba(255,255,255,0.025)', borderRadius: 12, padding: 4 }}>
                 {CONTENT_TYPES.map(t => {
                   const active = contentType === t.id
                   return (
                     <button key={t.id} onClick={() => changeType(t.id)}
-                      style={{ flex: 1, padding: '14px 10px', borderRadius: 12, border: `1px solid ${active ? t.color + '55' : 'rgba(232,228,220,0.06)'}`, background: active ? t.color + '18' : 'rgba(232,228,220,0.02)', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: active ? t.color : DIM, margin: '0 auto 8px', transition: 'background 0.2s' }} />
-                      <div style={{ fontSize: 13, fontWeight: 700, color: active ? CREAM : SILVER }}>{t.label}</div>
-                      <div style={{ fontSize: 10, color: SILVER, opacity: 0.6, marginTop: 2 }}>{t.desc}</div>
+                      style={{ flex: 1, padding: '10px 12px', borderRadius: 9, border: `1px solid ${active ? t.color + '35' : 'transparent'}`, background: active ? `${t.color}14` : 'transparent', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: active ? t.color : SILVER, transition: 'color 0.2s', marginBottom: 2 }}>{t.label}</div>
+                      <div style={{ fontSize: 10, color: active ? SILVER : 'rgba(240,244,255,0.18)', transition: 'color 0.2s', lineHeight: 1.3 }}>{t.desc}</div>
                     </button>
                   )
                 })}
               </div>
             </div>
 
-            {/* Infos générales */}
+            {/* Informations générales */}
             <div style={card()}>
-              <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 20 }}>Informations</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+                <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Informations</h2>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-                {/* Miniature */}
-                <div>
-                  <p style={label()}>Miniature</p>
-                  <MiniatureEditor
-                    preview={formation.thumbnail_url ?? ''}
-                    zoom={zoom}
-                    position={position}
-                    dragging={dragging}
-                    enhancing={enhancing}
-                    onFile={f => uploadMiniature(f)}
-                    onZoom={handleZoomChange}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                  />
-                </div>
+                {contentType === 'coaching' ? (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '13px 15px', borderRadius: 11, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.18)' }}>
+                    <span style={{ fontSize: 18, flexShrink: 0 }}>📸</span>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: '#f59e0b', margin: '0 0 4px' }}>Photo de profil utilisée</p>
+                      <p style={{ fontSize: 11, color: SILVER, margin: 0, lineHeight: 1.6 }}>
+                        Sur la marketplace, la carte coaching affiche votre photo de profil — pas une miniature. Pour la changer, rendez-vous dans{' '}
+                        <a href="/coach/profile" style={{ color: '#f59e0b', textDecoration: 'underline' }}>votre profil</a>.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p style={label()}>Miniature</p>
+                    <MiniatureEditor
+                      preview={formation.thumbnail_url ?? ''}
+                      zoom={zoom}
+                      position={position}
+                      dragging={dragging}
+                      enhancing={enhancing}
+                      onFile={f => uploadMiniature(f)}
+                      onZoom={handleZoomChange}
+                      onMouseDown={handleMouseDown}
+                      onMouseMove={handleMouseMove}
+                      onMouseUp={handleMouseUp}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <p style={label()}>Titre</p>
@@ -395,7 +410,7 @@ export default function EditFormationPage() {
                   </div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                   <div>
                     <p style={label()}>Prix (€)</p>
                     <NumberStepper value={formation.price ?? 0} onChange={v => updateField('price', v)} min={0} max={9999} step={5} suffix="€" />
@@ -417,19 +432,22 @@ export default function EditFormationPage() {
               </div>
             </div>
 
-            {/* ── Chapitres (formation uniquement) ─────────────── */}
+            {/* ── Chapitres (formation uniquement) ── */}
             {contentType === 'formation' && (
               <div style={card()}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                  <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Chapitres & leçons</h2>
-                  <span style={{ fontSize: 11, color: SILVER }}>{chapters.length} chapitre{chapters.length !== 1 ? 's' : ''}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
+                    <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Chapitres & leçons</h2>
+                  </div>
+                  <span style={{ fontSize: 11, color: SILVER, opacity: 0.7 }}>{chapters.length} chapitre{chapters.length !== 1 ? 's' : ''}</span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {chapters.map((ch, ci) => (
                     <div key={ch.id} style={{ border: '1px solid rgba(232,228,220,0.07)', borderRadius: 12, overflow: 'hidden' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', background: 'rgba(232,228,220,0.025)', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
-                        <GripVertical size={13} color={SILVER} style={{ opacity: 0.35 }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'rgba(232,228,220,0.02)' }}>
+                        <GripVertical size={13} color={SILVER} style={{ opacity: 0.3, flexShrink: 0 }} />
                         {editingChapterId === ch.id ? (
                           <input
                             autoFocus
@@ -437,38 +455,37 @@ export default function EditFormationPage() {
                             onChange={e => setEditingChapterTitle(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') renameChapter(ch.id); if (e.key === 'Escape') setEditingChapterId(null) }}
                             onBlur={() => renameChapter(ch.id)}
-                            style={{ flex: 1, background: 'rgba(232,228,220,0.06)', border: '1px solid rgba(124,58,237,0.45)', borderRadius: 6, padding: '4px 8px', color: CREAM, fontSize: 13, fontWeight: 700, outline: 'none' }}
+                            style={{ flex: 1, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.4)', borderRadius: 6, padding: '4px 10px', color: CREAM, fontSize: 13, fontWeight: 700, outline: 'none' }}
                           />
                         ) : (
                           <span
                             style={{ flex: 1, fontSize: 13, fontWeight: 700, color: CREAM, cursor: 'pointer' }}
-                            title="Cliquer pour renommer"
+                            title="Double-cliquer pour renommer"
                             onDoubleClick={() => { setEditingChapterId(ch.id); setEditingChapterTitle(ch.title) }}>
-                            {ci + 1}. {ch.title}
+                            <span style={{ color: SILVER, marginRight: 6, fontWeight: 400 }}>{ci + 1}.</span>{ch.title}
                           </span>
                         )}
                         <button
                           onClick={() => { setEditingChapterId(ch.id); setEditingChapterTitle(ch.title) }}
                           style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(232,228,220,0.08)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
                           onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
-                          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}
-                          title="Renommer">
+                          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
                           <Pencil size={11} />
                         </button>
-                        <span style={{ fontSize: 11, color: SILVER }}>{ch.formation_lessons?.length ?? 0} leçons</span>
+                        <span style={{ fontSize: 11, color: SILVER, opacity: 0.55 }}>{ch.formation_lessons?.length ?? 0} leçon{(ch.formation_lessons?.length ?? 0) !== 1 ? 's' : ''}</span>
                         <button onClick={() => deleteChapter(ch.id)}
-                          style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
+                          style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.15)', background: 'transparent', color: 'rgba(239,68,68,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
                           onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'}
-                          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = 'rgba(239,68,68,0.45)'}>
+                          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = 'rgba(239,68,68,0.4)'}>
                           <Trash2 size={11} />
                         </button>
                       </div>
 
                       <div>
                         {(ch.formation_lessons ?? []).map((lesson: any) => (
-                          <div key={lesson.id} style={{ borderBottom: '1px solid rgba(232,228,220,0.04)' }}>
+                          <div key={lesson.id} style={{ borderTop: '1px solid rgba(232,228,220,0.04)' }}>
                             {editingLessonId === lesson.id ? (
-                              <div style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              <div style={{ padding: '13px 16px', display: 'flex', flexDirection: 'column', gap: 9 }}>
                                 <input
                                   autoFocus
                                   value={editingLesson.title}
@@ -492,19 +509,20 @@ export default function EditFormationPage() {
                                     Leçon gratuite
                                   </label>
                                   <div style={{ flex: 1 }} />
-                                  <button onClick={() => setEditingLessonId(null)} style={{ padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, fontSize: 11, cursor: 'pointer' }}>Annuler</button>
-                                  <button onClick={() => updateLesson(ch.id, lesson.id)} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: CREAM, color: '#07090e', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                  <button onClick={() => setEditingLessonId(null)} style={{ padding: '6px 13px', borderRadius: 7, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, fontSize: 11, cursor: 'pointer' }}>Annuler</button>
+                                  <button onClick={() => updateLesson(ch.id, lesson.id)} style={{ padding: '6px 15px', borderRadius: 7, border: 'none', background: CREAM, color: '#07090e', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
                                     <Check size={11} /> Sauvegarder
                                   </button>
                                 </div>
                               </div>
                             ) : (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 18px' }}
-                                onMouseEnter={e => (e.currentTarget.querySelector('.lesson-edit-btn') as HTMLElement | null)?.style.setProperty('opacity', '1')}
-                                onMouseLeave={e => (e.currentTarget.querySelector('.lesson-edit-btn') as HTMLElement | null)?.style.setProperty('opacity', '0')}>
-                                <Video size={12} color={SILVER} style={{ opacity: 0.4, flexShrink: 0 }} />
+                              <div
+                                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px' }}
+                                onMouseEnter={e => { const b = e.currentTarget.querySelector('.lesson-edit-btn') as HTMLElement | null; if (b) b.style.opacity = '1' }}
+                                onMouseLeave={e => { const b = e.currentTarget.querySelector('.lesson-edit-btn') as HTMLElement | null; if (b) b.style.opacity = '0' }}>
+                                <Video size={12} color={SILVER} style={{ opacity: 0.35, flexShrink: 0 }} />
                                 <span style={{ flex: 1, fontSize: 12, color: CREAM }}>{lesson.title}</span>
-                                {lesson.video_url && <span style={{ fontSize: 10, color: SILVER, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lesson.video_url}</span>}
+                                {lesson.video_url && <span style={{ fontSize: 10, color: SILVER, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.55 }}>{lesson.video_url}</span>}
                                 <button className="lesson-edit-btn" onClick={() => startEditLesson(lesson)}
                                   style={{ width: 24, height: 24, borderRadius: 5, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: 0, transition: 'opacity 0.15s' }}>
                                   <Pencil size={10} />
@@ -514,7 +532,9 @@ export default function EditFormationPage() {
                                   {lesson.is_free ? 'GRATUIT' : 'PREMIUM'}
                                 </button>
                                 <button onClick={() => deleteLesson(ch.id, lesson.id)}
-                                  style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'transparent', color: 'rgba(239,68,68,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                  style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'transparent', color: 'rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
+                                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'}
+                                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = 'rgba(239,68,68,0.3)'}>
                                   <Trash2 size={10} />
                                 </button>
                               </div>
@@ -523,7 +543,7 @@ export default function EditFormationPage() {
                         ))}
 
                         {addingLesson === ch.id ? (
-                          <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <div style={{ padding: '13px 16px', display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid rgba(232,228,220,0.05)' }}>
                             <input value={newLesson.title} onChange={e => setNewLesson(p => ({ ...p, title: e.target.value }))} placeholder="Titre de la leçon" style={field()} autoFocus />
                             <div style={{ display: 'flex', gap: 8 }}>
                               <input value={newLesson.video_url} onChange={e => setNewLesson(p => ({ ...p, video_url: e.target.value }))} placeholder="URL YouTube ou Vimeo" style={field({ flex: 1 })} />
@@ -537,13 +557,13 @@ export default function EditFormationPage() {
                                 Leçon gratuite
                               </label>
                               <div style={{ flex: 1 }} />
-                              <button onClick={() => setAddingLesson(null)} style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
-                              <button onClick={() => addLesson(ch.id)} style={{ padding: '7px 16px', borderRadius: 8, border: 'none', background: CREAM, color: '#07090e', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Ajouter</button>
+                              <button onClick={() => setAddingLesson(null)} style={{ padding: '7px 13px', borderRadius: 8, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
+                              <button onClick={() => addLesson(ch.id)} style={{ padding: '7px 18px', borderRadius: 8, border: 'none', background: CREAM, color: '#07090e', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Ajouter</button>
                             </div>
                           </div>
                         ) : (
                           <button onClick={() => { setAddingLesson(ch.id); setNewLesson({ title: '', video_url: '', video_type: 'youtube', is_free: false }) }}
-                            style={{ width: '100%', padding: '11px 18px', border: 'none', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.15s' }}
+                            style={{ width: '100%', padding: '10px 16px', border: 'none', borderTop: '1px solid rgba(232,228,220,0.04)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.15s' }}
                             onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
                             onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
                             <Plus size={13} /> Ajouter une leçon
@@ -553,11 +573,10 @@ export default function EditFormationPage() {
                     </div>
                   ))}
 
-                  {/* Nouveau chapitre */}
-                  <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
                     <input value={newChapterTitle} onChange={e => setNewChapterTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addChapter()} placeholder="Nom du nouveau chapitre…" style={field({ flex: 1 })} />
                     <button onClick={addChapter} disabled={!newChapterTitle.trim()}
-                      style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: CREAM, color: '#07090e', fontSize: 13, fontWeight: 800, cursor: newChapterTitle.trim() ? 'pointer' : 'not-allowed', opacity: newChapterTitle.trim() ? 1 : 0.4, display: 'flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}>
+                      style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: newChapterTitle.trim() ? CREAM : 'rgba(240,244,255,0.07)', color: newChapterTitle.trim() ? '#07090e' : SILVER, fontSize: 13, fontWeight: 800, cursor: newChapterTitle.trim() ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
                       <Plus size={14} /> Chapitre
                     </button>
                   </div>
@@ -565,13 +584,16 @@ export default function EditFormationPage() {
               </div>
             )}
 
-            {/* ── Packs & Cal.com (coaching uniquement) ─────────── */}
+            {/* ── Coaching sections ── */}
             {contentType === 'coaching' && (
               <>
-                {/* Photos complémentaires */}
+                {/* Photos */}
                 <div style={card()}>
-                  <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 6 }}>Photos complémentaires</h2>
-                  <p style={{ fontSize: 12, color: SILVER, marginBottom: 16 }}>Jusqu'à 4 photos visibles sur ta page de vente (sessions, résultats, méthode…)</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+                    <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
+                    <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Photos complémentaires</h2>
+                  </div>
+                  <p style={{ fontSize: 12, color: SILVER, marginBottom: 14 }}>Jusqu'à 4 photos visibles sur ta page de vente</p>
                   <input ref={galleryInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }}
                     onChange={e => {
                       const files = Array.from(e.target.files ?? []).slice(0, 4 - galleryUrls.length - galleryNew.length)
@@ -580,9 +602,8 @@ export default function EditFormationPage() {
                       setGalleryNew(next)
                       e.target.value = ''
                     }} />
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: galleryNew.length > 0 ? 12 : 0 }}>
-                    {/* Photos existantes en DB */}
-                    {galleryUrls.map((url, i) => (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: galleryNew.length > 0 ? 14 : 0 }}>
+                    {galleryUrls.map(url => (
                       <div key={url} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117' }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -592,7 +613,6 @@ export default function EditFormationPage() {
                         </button>
                       </div>
                     ))}
-                    {/* Nouvelles photos en attente */}
                     {galleryNew.map((g, i) => (
                       <div key={i} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117', opacity: 0.7 }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -603,12 +623,11 @@ export default function EditFormationPage() {
                         </button>
                       </div>
                     ))}
-                    {/* Bouton ajouter */}
                     {(galleryUrls.length + galleryNew.length) < 4 && (
                       <button type="button" onClick={() => galleryInputRef.current?.click()}
-                        style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed rgba(240,244,255,0.1)', background: 'rgba(240,244,255,0.02)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: SILVER, transition: 'border-color 0.2s' }}
-                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.3)'}
-                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.1)'}>
+                        style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed rgba(240,244,255,0.08)', background: 'rgba(240,244,255,0.02)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: SILVER, transition: 'border-color 0.2s, color 0.2s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.25)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.08)'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
                         <Upload size={18} />
                         <span style={{ fontSize: 11 }}>Ajouter</span>
                       </button>
@@ -622,19 +641,22 @@ export default function EditFormationPage() {
                   )}
                 </div>
 
-                {/* Packs */}
+                {/* Packs & tarifs */}
                 <div style={card()}>
-                  <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 18 }}>Packs & tarifs</h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+                    <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
+                    <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Packs & tarifs</h2>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {packs.map((pack, i) => (
-                      <div key={i} style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 12, padding: '18px 20px' }}>
+                      <div key={i} style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.12)', borderRadius: 14, padding: '18px 20px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</div>
+                            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.28)', color: '#f59e0b', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</div>
                             <input value={pack.label} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, label: e.target.value } : p))} style={field({ width: 200, padding: '6px 12px', fontSize: 13, fontWeight: 700 })} />
                           </div>
                           {packs.length > 1 && (
-                            <button onClick={() => savePacks(packs.filter((_, idx) => idx !== i))} style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <button onClick={() => savePacks(packs.filter((_, idx) => idx !== i))} style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                               <Trash2 size={12} />
                             </button>
                           )}
@@ -644,11 +666,11 @@ export default function EditFormationPage() {
                           <div><p style={label()}>Prix (€)</p><NumberStepper value={pack.price} onChange={v => savePacks(packs.map((p, idx) => idx === i ? { ...p, price: v } : p))} min={0} max={9999} step={5} suffix="€" /></div>
                           <div><p style={label()}>Description</p><input value={pack.desc} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, desc: e.target.value } : p))} placeholder="Ce que comprend ce pack" style={field()} /></div>
                         </div>
-                        {pack.hours > 0 && pack.price > 0 && <p style={{ fontSize: 11, color: SILVER, marginTop: 8 }}>{Math.round(pack.price / pack.hours)}€/h</p>}
+                        {pack.hours > 0 && pack.price > 0 && <p style={{ fontSize: 11, color: '#f59e0b', opacity: 0.65, marginTop: 10, marginBottom: 0 }}>{Math.round(pack.price / pack.hours)}€/h</p>}
                       </div>
                     ))}
                     <button onClick={() => savePacks([...packs, { label: 'Nouveau pack', hours: 1, price: 0, desc: '' }])}
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1px dashed rgba(240,244,255,0.08)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, border: '1px dashed rgba(240,244,255,0.07)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer', transition: 'color 0.15s' }}
                       onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
                       onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
                       <Plus size={14} /> Ajouter un pack
@@ -656,8 +678,8 @@ export default function EditFormationPage() {
                   </div>
                 </div>
 
-                {/* Calendrier natif */}
-                <div style={{ ...card(), background: 'rgba(124,58,237,0.04)', borderColor: 'rgba(124,58,237,0.2)' }}>
+                {/* Calendrier */}
+                <div style={{ ...card(), background: 'rgba(124,58,237,0.04)', borderColor: 'rgba(124,58,237,0.18)' }}>
                   <p style={{ fontSize: 13, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 }}>Calendrier intégré OnlyPok</p>
                   <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.65, margin: 0 }}>
                     Les élèves choisissent leur créneau directement sur ta page coaching.
@@ -668,10 +690,13 @@ export default function EditFormationPage() {
               </>
             )}
 
-            {/* ── Atouts mis en avant ───────────────────────────── */}
+            {/* Atouts */}
             <div style={card()}>
-              <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 6 }}>Atouts mis en avant</h2>
-              <p style={{ fontSize: 12, color: SILVER, marginBottom: 18 }}>Choisissez 1 à 5 atouts affichés sur la page de vente.</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+                <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Atouts mis en avant</h2>
+              </div>
+              <p style={{ fontSize: 12, color: SILVER, marginBottom: 20 }}>Choisissez 1 à 5 atouts affichés sur la page de vente.</p>
               <HighlightsPicker
                 selected={highlights}
                 onChange={saveHighlights}
@@ -681,25 +706,25 @@ export default function EditFormationPage() {
             </div>
           </div>
 
-          {/* ── RIGHT — sidebar ───────────────────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 24 }}>
+          {/* ── RIGHT — Sidebar ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 24 }}>
 
-            {/* Publish */}
+            {/* Publish CTA */}
             <div style={card({ padding: 20 })}>
               <p style={label()}>Publication</p>
               <button onClick={togglePublish}
-                style={{ width: '100%', marginTop: 10, padding: '12px', borderRadius: 10, border: `1px solid ${formation.published ? 'rgba(239,68,68,0.35)' : `${activeType.color}40`}`, background: formation.published ? 'rgba(239,68,68,0.08)' : `${activeType.color}15`, color: formation.published ? '#ef4444' : activeType.color, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s' }}>
+                style={{ width: '100%', marginTop: 12, padding: '13px', borderRadius: 11, border: formation.published ? '1px solid rgba(239,68,68,0.3)' : 'none', background: formation.published ? 'rgba(239,68,68,0.1)' : `linear-gradient(135deg, ${activeType.color} 0%, ${activeType.color}cc 100%)`, color: formation.published ? '#f87171' : '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s', boxShadow: formation.published ? 'none' : `0 4px 24px ${activeType.color}28` }}
+                onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.opacity = '0.82'}
+                onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.opacity = '1'}>
                 {formation.published ? <><EyeOff size={14} /> Dépublier</> : <><Eye size={14} /> Publier</>}
               </button>
-              <p style={{ fontSize: 11, color: SILVER, marginTop: 10, textAlign: 'center' }}>
+              <p style={{ fontSize: 11, color: SILVER, marginTop: 10, textAlign: 'center', opacity: 0.65 }}>
                 {formation.published ? 'Visible sur la marketplace' : 'Non visible — brouillon'}
               </p>
               {publishError && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 10, padding: '10px 12px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
-                  <span style={{ fontSize: 11, color: '#fca5a5', lineHeight: 1.5 }}>
-                    ⚠ {publishError}
-                  </span>
-                  <Link href="/coach/profile" style={{ fontSize: 11, color: '#ef4444', fontWeight: 700, textDecoration: 'none', flexShrink: 0, alignSelf: 'flex-start' }}>→ Profil</Link>
+                <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 9, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)' }}>
+                  <p style={{ fontSize: 11, color: '#fca5a5', lineHeight: 1.55, margin: '0 0 7px' }}>⚠ {publishError}</p>
+                  <Link href="/coach/profile" style={{ fontSize: 11, color: '#ef4444', fontWeight: 700, textDecoration: 'none' }}>→ Compléter mon profil</Link>
                 </div>
               )}
             </div>
@@ -707,56 +732,45 @@ export default function EditFormationPage() {
             {/* Stats */}
             <div style={card({ padding: 20 })}>
               <p style={label()}>Statistiques</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Users size={13} color={SILVER} />
-                    <span style={{ fontSize: 12, color: SILVER }}>Élèves inscrits</span>
-                  </div>
-                  <span style={{ fontSize: 18, fontWeight: 800, color: CREAM }}>{students}</span>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
+                <div style={{ padding: '14px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                  <Users size={14} color={SILVER} style={{ margin: '0 auto 7px', display: 'block' }} />
+                  <div style={{ fontSize: 22, fontWeight: 800, color: CREAM, lineHeight: 1 }}>{students}</div>
+                  <div style={{ fontSize: 10, color: SILVER, marginTop: 4, opacity: 0.65 }}>Élèves</div>
                 </div>
-                <div style={{ height: 1, background: 'rgba(232,228,220,0.06)' }} />
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <DollarSign size={13} color={SILVER} />
-                    <span style={{ fontSize: 12, color: SILVER }}>Revenus générés</span>
-                  </div>
-                  <span style={{ fontSize: 18, fontWeight: 800, color: CREAM }}>{revenue}€</span>
+                <div style={{ padding: '14px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                  <DollarSign size={14} color={SILVER} style={{ margin: '0 auto 7px', display: 'block' }} />
+                  <div style={{ fontSize: 22, fontWeight: 800, color: CREAM, lineHeight: 1 }}>{revenue}€</div>
+                  <div style={{ fontSize: 10, color: SILVER, marginTop: 4, opacity: 0.65 }}>Revenus</div>
                 </div>
               </div>
             </div>
 
-            {/* Aperçu miniature */}
+            {/* Card preview */}
             {formation.thumbnail_url && (
               <div style={card({ padding: 16 })}>
                 <p style={label()}>Aperçu carte</p>
-                <div style={{ marginTop: 10, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(232,228,220,0.06)' }}>
-                  <div style={{
-                    height: 120,
-                    backgroundImage: `url(${formation.thumbnail_url})`,
-                    backgroundSize: `${zoom * 100}%`,
-                    backgroundPosition: `${position.x}% ${position.y}%`,
-                    backgroundRepeat: 'no-repeat',
-                    position: 'relative',
-                  }}>
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(to right, ${activeType.color}, ${activeType.color}80)` }} />
-                    <div style={{ position: 'absolute', top: 8, right: 8, fontSize: 10, fontWeight: 800, background: 'rgba(7,9,14,0.72)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: 99, color: '#fff' }}>
+                <div style={{ marginTop: 12, borderRadius: 11, overflow: 'hidden', border: '1px solid rgba(232,228,220,0.07)' }}>
+                  <div style={{ height: 130, backgroundImage: `url(${formation.thumbnail_url})`, backgroundSize: `${zoom * 100}%`, backgroundPosition: `${position.x}% ${position.y}%`, backgroundRepeat: 'no-repeat', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(to right, ${activeType.color}, ${activeType.color}88)` }} />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 44, background: 'linear-gradient(to top, rgba(4,4,10,0.82), transparent)' }} />
+                    <div style={{ position: 'absolute', top: 10, right: 10, fontSize: 10, fontWeight: 800, background: 'rgba(7,9,14,0.72)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', padding: '2px 8px', borderRadius: 99, color: '#fff' }}>
                       {formation.price === 0 ? 'Gratuit' : `${formation.price}€`}
                     </div>
                   </div>
                   <div style={{ padding: '10px 12px', background: 'rgba(232,228,220,0.02)' }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: CREAM, marginBottom: 4 }}>{formation.title || 'Sans titre'}</div>
-                    <div style={{ fontSize: 10, color: SILVER }}>{formation.level ?? 'Tous niveaux'} · {formation.variant ?? ''}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: CREAM, marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{formation.title || 'Sans titre'}</div>
+                    <div style={{ fontSize: 10, color: SILVER, opacity: 0.65 }}>{formation.level ?? 'Tous niveaux'} · {formation.variant ?? ''}</div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Sauvegarde */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderRadius: 12, background: 'rgba(232,228,220,0.02)', border: '1px solid rgba(232,228,220,0.06)' }}>
-              <Save size={13} color={saved ? '#06b6d4' : SILVER} />
-              <span style={{ fontSize: 11, color: saved ? '#06b6d4' : SILVER }}>
-                {saving ? 'Sauvegarde en cours…' : saved ? 'Sauvegardé ✓' : 'Sauvegarde automatique'}
+            {/* Autosave dot */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '11px 14px', borderRadius: 10, background: 'rgba(232,228,220,0.02)', border: '1px solid rgba(232,228,220,0.06)' }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: saving ? '#f59e0b' : saved ? '#22c55e' : 'rgba(240,244,255,0.18)', transition: 'background 0.3s', flexShrink: 0, animation: saving ? 'pulse 1s ease-in-out infinite' : 'none' }} />
+              <span style={{ fontSize: 11, color: saving ? '#f59e0b' : saved ? '#22c55e' : SILVER, transition: 'color 0.3s' }}>
+                {saving ? 'Sauvegarde en cours…' : saved ? 'Sauvegardé' : 'Sauvegarde automatique'}
               </span>
             </div>
           </div>
@@ -766,7 +780,7 @@ export default function EditFormationPage() {
       <style>{`
         @keyframes pulse {
           0%, 100% { opacity: 1; transform: scale(1); }
-          50%       { opacity: 0.4; transform: scale(0.7); }
+          50%       { opacity: 0.45; transform: scale(0.65); }
         }
       `}</style>
     </div>

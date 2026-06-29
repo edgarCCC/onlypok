@@ -35,11 +35,12 @@ function hashColor(s: string) {
 }
 
 export default function FormationCard({
-  f, accentColor, onPlay,
+  f, accentColor, onPlay, unverified = false,
 }: {
   f: Formation
   accentColor?: string
   onPlay?: () => void
+  unverified?: boolean
 }) {
   const [hovered, setHovered] = useState(false)
   const isFree     = f.price === 0
@@ -158,6 +159,8 @@ export default function FormationCard({
         color: '#e8eaf0',
         marginBottom: 5, lineHeight: 1.45,
         letterSpacing: '-0.25px',
+        display: '-webkit-box', WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical', overflow: 'hidden',
       }}>{f.title}</h3>
 
       {f.short_desc && (
@@ -212,7 +215,7 @@ export default function FormationCard({
   }
 
   if (f.content_type === 'coaching') {
-    return <CoachingCard f={f} />
+    return <CoachingCard f={f} unverified={unverified} />
   }
 
   return (
@@ -222,7 +225,7 @@ export default function FormationCard({
   )
 }
 
-function CoachingCard({ f }: { f: Formation }) {
+function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: boolean }) {
   const [hovered, setHovered] = useState(false)
   const username  = f.coach?.username ?? 'Coach'
   const color     = VARIANT_COLORS[f.variant ?? ''] ?? hashColor(username)
@@ -255,7 +258,7 @@ function CoachingCard({ f }: { f: Formation }) {
           position: 'relative', flexShrink: 0,
         }}>
           <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 55% 140% at 8% 50%, ${color}1c, transparent)` }} />
-          {isPro && (
+          {isPro && !unverified && (
             <div style={{
               position: 'absolute', top: 10, left: 14,
               display: 'flex', alignItems: 'center', gap: 4,
@@ -263,6 +266,16 @@ function CoachingCard({ f }: { f: Formation }) {
               background: 'rgba(245,158,11,0.18)', border: '1px solid rgba(245,158,11,0.4)',
             }}>
               <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.1em' }}>PRO</span>
+            </div>
+          )}
+          {unverified && (
+            <div style={{
+              position: 'absolute', top: 10, left: 14,
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '3px 8px', borderRadius: 99,
+              background: 'rgba(100,116,139,0.25)', border: '1px solid rgba(100,116,139,0.4)',
+            }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.08em' }}>Non vérifié</span>
             </div>
           )}
           {f.variant && (
