@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { DM_Mono, Syne, Space_Grotesk } from 'next/font/google'
+import { DM_Mono, Unbounded, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import Providers from './providers'
 
@@ -9,9 +9,9 @@ const dmMono = DM_Mono({
   variable: '--font-dm-mono',
 })
 
-const syne = Syne({
+const unbounded = Unbounded({
   subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
+  weight: ['400', '600', '700', '800', '900'],
   variable: '--font-syne',
 })
 
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${dmMono.variable} ${syne.variable} ${spaceGrotesk.variable}`}>
+    <html lang="fr" className={`${dmMono.variable} ${unbounded.variable} ${spaceGrotesk.variable}`}>
       <body><Providers>{children}</Providers></body>
     </html>
   )
