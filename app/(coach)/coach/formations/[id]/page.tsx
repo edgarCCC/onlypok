@@ -67,7 +67,9 @@ export default function EditFormationPage() {
   const [editingLessonId, setEditingLessonId]         = useState<string | null>(null)
   const [editingLesson, setEditingLesson]             = useState({ title: '', video_url: '', video_type: 'youtube', is_free: false })
 
-  const [publishError, setPublishError] = useState<string | null>(null)
+  const [publishError, setPublishError]   = useState<string | null>(null)
+  const [uploadError, setUploadError]     = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const [zoom, setZoom]           = useState(1)
   const [position, setPosition]   = useState({ x: 50, y: 50 })
@@ -182,7 +184,7 @@ export default function EditFormationPage() {
     const ext  = file.name.split('.').pop()
     const path = `${user.id}/${Date.now()}.${ext}`
     const { error } = await supabase.storage.from('formations-thumbnails').upload(path, file, { upsert: true })
-    if (error) { alert('Erreur upload : ' + error.message); return }
+    if (error) { setUploadError('Erreur upload : ' + error.message); return }
     const { data: urlData } = supabase.storage.from('formations-thumbnails').getPublicUrl(path)
     const url = urlData.publicUrl
     await supabase.from('formations').update({ thumbnail_url: url }).eq('id', id)
@@ -244,7 +246,8 @@ export default function EditFormationPage() {
     setNewChapterTitle('')
   }
   const deleteChapter = async (chId: string) => {
-    if (!confirm('Supprimer ce chapitre et toutes ses leçons ?')) return
+    if (confirmDeleteId !== chId) { setConfirmDeleteId(chId); return }
+    setConfirmDeleteId(null)
     await supabase.from('formation_chapters').delete().eq('id', chId)
     setChapters(p => p.filter(c => c.id !== chId))
   }
@@ -375,6 +378,12 @@ export default function EditFormationPage() {
                 ) : (
                   <div>
                     <p style={label()}>Miniature</p>
+                    {uploadError && (
+                      <div style={{ marginBottom: 10, padding: '9px 12px', borderRadius: 9, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#fca5a5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        {uploadError}
+                        <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: '#fca5a5', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 4px' }}>×</button>
+                      </div>
+                    )}
                     <MiniatureEditor
                       preview={formation.thumbnail_url ?? ''}
                       zoom={zoom}
@@ -473,12 +482,25 @@ export default function EditFormationPage() {
                           <Pencil size={11} />
                         </button>
                         <span style={{ fontSize: 11, color: SILVER, opacity: 0.55 }}>{ch.formation_lessons?.length ?? 0} leçon{(ch.formation_lessons?.length ?? 0) !== 1 ? 's' : ''}</span>
-                        <button onClick={() => deleteChapter(ch.id)}
-                          style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.15)', background: 'transparent', color: 'rgba(239,68,68,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
-                          onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'}
-                          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = 'rgba(239,68,68,0.4)'}>
-                          <Trash2 size={11} />
-                        </button>
+                        {confirmDeleteId === ch.id ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <button onClick={() => deleteChapter(ch.id)}
+                              style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer' }}>
+                              Supprimer
+                            </button>
+                            <button onClick={() => setConfirmDeleteId(null)}
+                              style={{ fontSize: 10, padding: '3px 8px', borderRadius: 6, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, cursor: 'pointer' }}>
+                              Annuler
+                            </button>
+                          </div>
+                        ) : (
+                          <button onClick={() => deleteChapter(ch.id)}
+                            style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.15)', background: 'transparent', color: 'rgba(239,68,68,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
+                            onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'}
+                            onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = 'rgba(239,68,68,0.4)'}>
+                            <Trash2 size={11} />
+                          </button>
+                        )}
                       </div>
 
                       <div>

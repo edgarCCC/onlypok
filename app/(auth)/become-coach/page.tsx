@@ -252,8 +252,8 @@ export default function BecomeCoachPage() {
             {/* Commission notice */}
             <div style={{ background: `${VIOLET}08`, border: `1px solid ${VIOLET}25`, borderRadius: 12, padding: '13px 16px', fontSize: 13, color: SILVER, lineHeight: 1.6 }}>
               OnlyPok prélève une commission de{' '}
-              <strong style={{ color: CREAM }}>10 %</strong>{' '}
-              sur chaque vente. Vous conservez 90 % de vos revenus.
+              <strong style={{ color: CREAM }}>8 %</strong>{' '}
+              sur chaque vente de coaching. Vous conservez 92 % de vos revenus.
             </div>
 
             {/* Marketing opt-out */}

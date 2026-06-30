@@ -494,6 +494,8 @@ export default function RangesPage() {
   const [shareUrl,        setShareUrl]        = useState('');
   const [shareCopied,     setShareCopied]     = useState(false);
   const [importBanner,    setImportBanner]    = useState<{ name: string; map: Record<string,string> } | null>(null);
+  const [inlineError,     setInlineError]     = useState<string | null>(null);
+  const showError = (msg: string) => { setInlineError(msg); setTimeout(() => setInlineError(null), 4000); };
 
   /* load saved ranges from localStorage + detect ?share= param */
   useEffect(() => {
@@ -551,7 +553,7 @@ export default function RangesPage() {
     try {
       const decoded = JSON.parse(atob(importInput.trim()));
       setCustomMap(decoded); setShowImport(false); setImportInput('');
-    } catch { alert('Code invalide — vérifie que tu as bien copié le code entier.'); }
+    } catch { showError('Code invalide — vérifie que tu as bien copié le code entier.'); }
   };
 
   const paintCombo = (combo: string) => {
@@ -570,7 +572,7 @@ export default function RangesPage() {
       const [p, s] = k.split('_');
       return positions.includes(p as Position) && stacks.includes(+s);
     });
-    if (!keys.length) { alert('Aucune range GTO pour cette combinaison.'); setShowSettings(true); return; }
+    if (!keys.length) { showError('Aucune range GTO pour cette combinaison.'); setShowSettings(true); return; }
 
     const rk = pick(keys);
     const [pos, stackStr] = rk.split('_');
@@ -589,7 +591,7 @@ export default function RangesPage() {
   }, [positions, stacks]);
 
   const start = () => {
-    if (!positions.length || !stacks.length) { alert('Sélectionne au moins une position et une profondeur.'); return; }
+    if (!positions.length || !stacks.length) { showError('Sélectionne au moins une position et une profondeur.'); return; }
     setScore(0); setMistakes([]); setIdx(0); setDrillQuizMode(true); setRevealed(false); setQuizPts(0); setQuizRounds(0); setQuizStreak(0); setQuizBestStreak(0); setQuizResults([]); setQuizCount(count); setQuizUserAction(null); setQuizGrade(null); setMode('training'); generate();
   };
 
@@ -657,7 +659,7 @@ export default function RangesPage() {
   }, [positions, stacks]);
 
   const startQuiz = () => {
-    if (!positions.length || !stacks.length) { alert('Sélectionne au moins une position et une profondeur.'); return; }
+    if (!positions.length || !stacks.length) { showError('Sélectionne au moins une position et une profondeur.'); return; }
     setQuizPts(0); setQuizRounds(0); setQuizStreak(0); setQuizBestStreak(0);
     setQuizResults([]); setQuizIdx(0);
     setMode('quiz');
@@ -740,6 +742,13 @@ export default function RangesPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: CREAM, fontFamily: 'DM Sans, system-ui, sans-serif' }}>
+
+      {/* ── Inline error toast ── */}
+      {inlineError && (
+        <div style={{ position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, padding: '11px 20px', borderRadius: 10, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', color: '#fca5a5', fontSize: 13, fontWeight: 500, backdropFilter: 'blur(12px)', whiteSpace: 'nowrap', boxShadow: '0 4px 24px rgba(0,0,0,0.4)' }}>
+          {inlineError}
+        </div>
+      )}
 
       {/* ── Permanent mode bar ── */}
       <div style={{ position: 'sticky', top: 68, zIndex: 45, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', height: 50, background: 'rgba(7,9,14,0.92)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${BORDER}` }}>

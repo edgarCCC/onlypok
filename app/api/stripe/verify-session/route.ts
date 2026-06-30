@@ -92,7 +92,7 @@ async function handleVerifySession(req: NextRequest) {
   }
 
   // Always ensure purchase row exists — store gross (Stripe) + net (coach) amounts
-  const COACHING_FEE_PCT = 8  // 8% platform commission on coaching
+  const { COACHING_FEE_PCT } = await import('@/lib/constants')
   const amountPaid       = Math.round((session.amount_total ?? 0) / 100)  // euros, brut Stripe
   const platformFeePct   = contentType === 'coaching' ? COACHING_FEE_PCT : 0
   const netAmount        = platformFeePct > 0

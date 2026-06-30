@@ -55,7 +55,7 @@ export default function LoginPage() {
     <div style={{ minHeight: '100vh', display: 'flex', background: '#04040a' }}>
 
       {/* ═══ LEFT PANEL ═══ */}
-      <div style={{
+      <div className="auth-split-left" style={{
         width: '42%', minWidth: 320, flexShrink: 0,
         position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
@@ -151,7 +151,7 @@ export default function LoginPage() {
       </div>
 
       {/* ═══ RIGHT PANEL ═══ */}
-      <div style={{
+      <div className="auth-split-right" style={{
         flex: 1, display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: '48px 40px',
