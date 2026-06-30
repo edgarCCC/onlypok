@@ -31,15 +31,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Booking not found or already scheduled' }, { status: 404 })
   }
 
-  // Check the slot is not already taken by another confirmed booking for this coach
+  // Check the slot is not already taken by another booking for this coach
   if (booking.coach_id) {
     const { data: conflict } = await supabase
       .from('bookings')
       .select('id')
       .eq('coach_id', booking.coach_id)
       .eq('scheduled_at', scheduled_at)
-      .eq('status', 'scheduled')
-      .single()
+      .in('status', ['scheduled', 'pending_coach_approval'])
+      .neq('id', booking_id)
+      .maybeSingle()
 
     if (conflict) {
       return NextResponse.json({ error: 'Ce créneau est déjà pris' }, { status: 409 })
