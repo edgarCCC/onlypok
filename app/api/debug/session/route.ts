@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { assertAdmin } from '@/lib/assert-admin'
 
 // GET /api/debug/session?session_id=cs_xxx
-// Shows exactly what verify-session would see for a given Stripe session
 export async function GET(req: NextRequest) {
+  if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const session_id = req.nextUrl.searchParams.get('session_id')
   if (!session_id) return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
 

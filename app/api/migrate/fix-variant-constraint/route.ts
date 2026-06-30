@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { assertAdmin } from '@/lib/assert-admin'
 
 const PROJECT_ID = 'puhflkdcvwoektzlktqh'
 
@@ -22,6 +23,8 @@ CREATE POLICY "vc_delete" ON video_comments FOR DELETE USING (auth.uid() = stude
 const FULL_SQL = VARIANT_SQL + COMMENTS_SQL
 
 export async function GET() {
+  if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   // 1. Try Supabase Management API (requires SUPABASE_MANAGEMENT_TOKEN)
   const mgmtToken = process.env.SUPABASE_MANAGEMENT_TOKEN
   if (mgmtToken) {

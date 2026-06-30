@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { assertAdmin } from '@/lib/assert-admin'
 
 // GET /api/debug/booking-check?session_id=cs_xxx
-// No auth required — inspect the full state of a checkout session
 export async function GET(req: NextRequest) {
+  const adminUser = await assertAdmin()
+  if (!adminUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const session_id = req.nextUrl.searchParams.get('session_id')
   if (!session_id) return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
   const admin  = createAdminSupabaseClient()
-  const supabase = await createServerSupabaseClient()
 
-  // 1. Auth
-  const { data: { user } } = await supabase.auth.getUser()
+  // Auth context from assertAdmin
+  const user = adminUser
 
   // 2. Stripe session
   let session: Stripe.Checkout.Session | null = null

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { createClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 export const maxDuration = 30
 
@@ -10,11 +11,27 @@ const supabaseAdmin = createClient(
 )
 
 export async function POST(req: NextRequest) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { image_url, formation_id, user_id } = await req.json()
 
   if (!image_url || !formation_id || !user_id) {
     return NextResponse.json({ error: 'Missing params' }, { status: 400 })
   }
+
+  if (user.id !== user_id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const { data: formation } = await supabase
+    .from('formations')
+    .select('id')
+    .eq('id', formation_id)
+    .eq('coach_id', user.id)
+    .single()
+  if (!formation) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   /* 1 ── Télécharge l'image originale */
   const imgRes = await fetch(image_url)

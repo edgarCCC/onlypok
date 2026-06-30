@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { assertAdmin } from '@/lib/assert-admin'
 
 export async function GET() {
+  if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const apiKey = process.env.DAILY_API_KEY
   if (!apiKey) return NextResponse.json({ error: 'DAILY_API_KEY not set' }, { status: 500 })
 

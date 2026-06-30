@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { assertAdmin } from '@/lib/assert-admin'
 
 const PROJECT_ID = 'puhflkdcvwoektzlktqh'
 
@@ -307,6 +308,8 @@ CREATE POLICY "messages_update_own" ON messages FOR UPDATE USING (auth.uid() = t
 `
 
 export async function GET() {
+  if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const mgmtToken = process.env.SUPABASE_MANAGEMENT_TOKEN
   if (!mgmtToken) {
     return NextResponse.json({

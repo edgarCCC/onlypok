@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { assertAdmin } from '@/lib/assert-admin'
 
 const PROJECT_ID = 'puhflkdcvwoektzlktqh'
 
@@ -8,6 +9,8 @@ ALTER TABLE formations ADD COLUMN IF NOT EXISTS highlights jsonb DEFAULT NULL;
 `
 
 export async function GET() {
+  if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const mgmtToken = process.env.SUPABASE_MANAGEMENT_TOKEN
   if (mgmtToken) {
     try {
