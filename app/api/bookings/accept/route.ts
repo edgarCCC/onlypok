@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     } catch (err: any) {
       // Already captured = idempotent success
       if (err?.message?.includes('already been captured') || err?.code === 'charge_already_captured') {
-        console.log('[bookings/accept] payment already captured, continuing')
+        // Paiement déjà capturé — on continue
       } else {
         console.error('[bookings/accept] stripe capture failed:', err.message)
         return NextResponse.json({ error: 'Stripe capture failed: ' + err.message }, { status: 500 })

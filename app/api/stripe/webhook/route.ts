@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
-import { sendCoachNewBookingEmail } from '@/lib/email'
+import { sendCoachNewBookingEmail, sendAdminAlertEmail } from '@/lib/email'
 
 /* Disable body parsing — Stripe needs the raw buffer to verify the signature */
 export const runtime = 'nodejs'
@@ -38,13 +38,19 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminSupabaseClient()
 
-    /* Toujours enregistrer l'achat */
+    /* Toujours enregistrer l'achat.
+       En cas d'échec (hors doublon), on renvoie 500 pour que Stripe retente le webhook. */
     const { error: purchaseError } = await supabase.from('formation_purchases').insert({
       formation_id: formationId,
       user_id:      userId,
     })
     if (purchaseError && purchaseError.code !== '23505') {
       console.error('[stripe/webhook] purchase insert error:', purchaseError.message)
+      sendAdminAlertEmail({
+        subject: 'Webhook Stripe — insert formation_purchases échoué',
+        details: { stripe_session: session.id, formation_id: formationId, user_id: userId, erreur: purchaseError.message },
+      }).catch(() => {})
+      return NextResponse.json({ error: 'purchase insert failed' }, { status: 500 })
     }
 
     /* Pour les coachings : créer N bookings selon pack.hours */
@@ -84,7 +90,18 @@ export async function POST(req: NextRequest) {
             stripe_payment_intent_id: paymentIntentId,
           })
           if (bookingError && bookingError.code !== '23505') {
+            /* Un élève a payé mais sa session n'existe pas : 500 pour que Stripe
+               retente (l'idempotence ci-dessus reprendra où on s'est arrêté). */
             console.error('[stripe/webhook] booking insert error:', bookingError.message)
+            sendAdminAlertEmail({
+              subject: 'Webhook Stripe — booking payé non créé',
+              details: {
+                stripe_session: session.id, formation_id: formationId,
+                student_id: userId, coach_id: coachId,
+                session_index: `${i + 1}/${sessionsCount}`, erreur: bookingError.message,
+              },
+            }).catch(() => {})
+            return NextResponse.json({ error: 'booking insert failed' }, { status: 500 })
           }
         }
       }

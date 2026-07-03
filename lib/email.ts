@@ -374,3 +374,29 @@ export async function sendStudentSlotConfirmedEmail({
     html,
   })
 }
+
+/* ─────────────────────────────────────────────────────────── */
+/* 6. Admin — alerte technique (échec webhook, booking perdu)  */
+/* ─────────────────────────────────────────────────────────── */
+export async function sendAdminAlertEmail({ subject, details }: { subject: string; details: Record<string, unknown> }) {
+  const to = process.env.ADMIN_ALERT_EMAIL
+  if (!to) return
+
+  const rows = Object.entries(details)
+    .map(([k, v]) => `<tr>
+      <td style="font-size:12px;color:rgba(232,228,220,0.4);padding:4px 12px 4px 0;vertical-align:top;">${k}</td>
+      <td style="font-size:13px;color:#e8e4dc;font-family:monospace;word-break:break-all;">${String(v ?? '—')}</td>
+    </tr>`)
+    .join('')
+
+  const html = shell(`
+    <p style="font-size:12px;color:#f87171;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Alerte technique</p>
+    <h1 style="font-size:20px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:16px;line-height:1.3;">${subject}</h1>
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(232,228,220,0.03);border:1px solid rgba(232,228,220,0.07);border-radius:12px;padding:16px 18px;">
+      ${rows}
+    </table>
+  `)
+
+  const resend = getResend(); if (!resend) return
+  await resend.emails.send({ from: FROM, to, subject: `🚨 [OnlyPok] ${subject}`, html })
+}
