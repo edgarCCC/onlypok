@@ -416,6 +416,9 @@ export default function EditFormationPage() {
                   <div>
                     <p style={label()}>URL vidéo (YouTube / Vimeo)</p>
                     <input value={formation.video_url ?? ''} onChange={e => updateField('video_url', e.target.value)} placeholder="https://youtube.com/watch?v=…" style={field()} />
+                    <p style={{ fontSize: 11.5, color: '#fbbf24', margin: '8px 0 0', lineHeight: 1.5 }}>
+                      ⚠️ Mets ta vidéo en « Non répertoriée » (YouTube) ou « Privée avec lien » (Vimeo) pour protéger ton contenu payant.
+                    </p>
                   </div>
                 )}
 
@@ -450,6 +453,16 @@ export default function EditFormationPage() {
                     <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Chapitres & leçons</h2>
                   </div>
                   <span style={{ fontSize: 11, color: SILVER, opacity: 0.7 }}>{chapters.length} chapitre{chapters.length !== 1 ? 's' : ''}</span>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 14px', marginBottom: 14, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 10 }}>
+                  <span style={{ fontSize: 13, lineHeight: '18px' }} aria-hidden>⚠️</span>
+                  <p style={{ fontSize: 12, color: 'rgba(240,244,255,0.55)', margin: 0, lineHeight: 1.6 }}>
+                    Tes vidéos sont hébergées sur YouTube/Vimeo : utilise impérativement le mode{' '}
+                    <strong style={{ color: '#fbbf24' }}>« Non répertoriée »</strong> (YouTube) ou{' '}
+                    <strong style={{ color: '#fbbf24' }}>« Privée avec lien »</strong> (Vimeo), sinon
+                    n&apos;importe qui possédant le lien peut voir ton contenu payant gratuitement.
+                  </p>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
