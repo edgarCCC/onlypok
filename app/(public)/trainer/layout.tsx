@@ -1,16 +1,12 @@
-'use client'
-import { useUser } from '@/hooks/useUser'
-import { CoachHeader } from '@/app/(coach)/CoachLayoutClient'
-import Navbar from '@/components/landing/Navbar'
+import type { Metadata } from 'next'
+import TrainerLayoutClient from './TrainerLayoutClient'
+
+export const metadata: Metadata = {
+  title: 'Trainer poker — ranges, équité & quiz',
+  description:
+    "Entraîne-toi gratuitement au poker : trainer de ranges préflop, calculateur d'équité Monte Carlo et quiz de stratégie corrigés.",
+}
 
 export default function TrainerLayout({ children }: { children: React.ReactNode }) {
-  const { profile } = useUser()
-  const isCoach = profile?.role === 'coach'
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#07090e' }}>
-      {isCoach ? <CoachHeader profile={profile} /> : <Navbar />}
-      <main style={{ flex: 1 }}>{children}</main>
-    </div>
-  )
+  return <TrainerLayoutClient>{children}</TrainerLayoutClient>
 }

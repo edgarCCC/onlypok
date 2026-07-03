@@ -2,6 +2,13 @@ import { Suspense } from 'react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import FormationsPageClient from './FormationsPageClient'
 
+export const metadata = {
+  title: 'Formations poker — cours vidéo par des coachs certifiés',
+  description:
+    'Explore le catalogue de formations poker : MTT, cash game, spin & go. Cours vidéo créés par des coachs aux résultats vérifiés.',
+  alternates: { canonical: '/formations' },
+}
+
 export default async function FormationsPage() {
   const supabase = await createServerSupabaseClient()
 

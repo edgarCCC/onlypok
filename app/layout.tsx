@@ -22,7 +22,11 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'OnlyPok — La plateforme des joueurs de poker',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://onlypok.com'),
+  title: {
+    default: 'OnlyPok — La plateforme des joueurs de poker',
+    template: '%s — OnlyPok',
+  },
   description: 'Formations, coaching et outils pour progresser au poker. Apprenez des meilleurs, progressez vite.',
   openGraph: {
     title: 'OnlyPok — La plateforme des joueurs de poker',

@@ -10,6 +10,13 @@ import TestimonialsSection from '@/components/landing/TestimonialsSection'
 import FinalCTA from '@/components/landing/FinalCTA'
 import Footer from '@/components/landing/Footer'
 
+export const metadata = {
+  title: 'OnlyPok — Progresse au poker avec les meilleurs',
+  description:
+    "Formations vidéo, coaching 1:1 avec des joueurs certifiés et outils d'entraînement (ranges, équité, tracker). La plateforme des joueurs de poker qui jouent pour gagner.",
+  alternates: { canonical: '/' },
+}
+
 const AVATAR_COLORS = ['#7c3aed','#e11d48','#06b6d4','#a855f7','#8b5cf6','#22d3ee']
 
 export default async function HomePage() {

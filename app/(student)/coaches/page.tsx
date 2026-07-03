@@ -1,6 +1,13 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import CoachesClient from './CoachesClient'
 
+export const metadata = {
+  title: 'Coachs poker — coaching 1:1 avec des joueurs vérifiés',
+  description:
+    'Trouve ton coach poker : sessions individuelles, review de mains et plans de progression avec des joueurs professionnels aux résultats vérifiés.',
+  alternates: { canonical: '/coaches' },
+}
+
 export default async function CoachesPage() {
   const supabase = await createServerSupabaseClient()
 

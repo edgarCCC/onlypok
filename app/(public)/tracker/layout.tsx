@@ -1,16 +1,12 @@
-'use client'
-import { useUser } from '@/hooks/useUser'
-import { CoachHeader } from '@/app/(coach)/CoachLayoutClient'
-import Navbar from '@/components/landing/Navbar'
+import type { Metadata } from 'next'
+import TrackerLayoutClient from './TrackerLayoutClient'
+
+export const metadata: Metadata = {
+  title: 'Tracker poker — sessions, bankroll & stats',
+  description:
+    'Suis tes performances au poker : journal de sessions, courbe de bankroll et stats HUD (VPIP, PFR, 3-bet).',
+}
 
 export default function TrackerLayout({ children }: { children: React.ReactNode }) {
-  const { profile } = useUser()
-  const isCoach = profile?.role === 'coach'
-
-  return (
-    <>
-      {isCoach ? <CoachHeader profile={profile} /> : <Navbar />}
-      {children}
-    </>
-  )
+  return <TrackerLayoutClient>{children}</TrackerLayoutClient>
 }
