@@ -187,7 +187,15 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label style={lbl}>Mot de passe</label>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                <label style={lbl}>Mot de passe</label>
+                <Link href="/forgot-password"
+                  style={{ fontSize: 12, color: 'rgba(240,244,255,0.3)', textDecoration: 'none', transition: 'color 0.15s' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = accent)}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,244,255,0.3)')}>
+                  Mot de passe oublié&nbsp;?
+                </Link>
+              </div>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPw ? 'text' : 'password'} value={password}
