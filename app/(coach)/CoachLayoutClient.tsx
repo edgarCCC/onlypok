@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import DVDBounce from '@/components/DVDBounce'
+import LegalFooter from '@/components/layout/LegalFooter'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   LayoutDashboard, ImageIcon, TrendingUp, Users, Star,
@@ -275,6 +276,7 @@ export default function CoachLayoutClient({ children }: { children: React.ReactN
           </div>
         )}
         <main style={{ flex: 1 }}>{children}</main>
+        <LegalFooter />
       </div>
     </div>
   )

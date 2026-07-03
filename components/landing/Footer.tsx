@@ -5,15 +5,15 @@ import Link from 'next/link'
 const COLS = [
   {
     title: 'Produit',
-    links: [{ label: 'Formations', href: '/formations' }, { label: 'Coachs', href: '/coaches' }, { label: 'Tarifs', href: '#tarifs' }, { label: 'Coaching 1:1', href: '/register' }],
+    links: [{ label: 'Formations', href: '/formations' }, { label: 'Coachs', href: '/coaches' }, { label: 'Tarifs', href: '/#tarifs' }, { label: 'Coaching 1:1', href: '/register' }],
   },
   {
-    title: 'Ressources',
-    links: [{ label: 'Blog stratégie', href: '#' }, { label: 'Forum', href: '#' }, { label: 'Glossaire poker', href: '#' }, { label: 'Calculateur EV', href: '#' }],
+    title: 'Outils',
+    links: [{ label: 'Trainer', href: '/trainer' }, { label: 'Tracker', href: '/tracker' }, { label: "Calculateur d'équité", href: '/trainer/equity' }, { label: 'Quiz stratégie', href: '/trainer/quiz' }],
   },
   {
     title: 'Légal',
-    links: [{ label: 'Mentions légales', href: '#' }, { label: 'CGU', href: '#' }, { label: 'Confidentialité', href: '#' }, { label: 'Cookies', href: '#' }],
+    links: [{ label: 'Mentions légales', href: '/legal/mentions-legales' }, { label: 'CGU', href: '/legal/cgu' }, { label: 'Confidentialité', href: '/legal/confidentialite' }, { label: 'Cookies', href: '/legal/cookies' }],
   },
 ]
 
@@ -50,7 +50,7 @@ export default function Footer() {
         maxWidth: 1200, margin: '0 auto',
         padding: 'clamp(48px,6vh,80px) clamp(20px,5vw,64px) 40px',
       }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 56 }}>
+        <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 56 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }} />
@@ -96,6 +96,14 @@ export default function Footer() {
           © 2026 OnlyPok. Tous droits réservés.
         </div>
       </div>
+      <style>{`
+        @media (max-width: 900px) {
+          .footer-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+        @media (max-width: 520px) {
+          .footer-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
+        }
+      `}</style>
     </footer>
   )
 }
