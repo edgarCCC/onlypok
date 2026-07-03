@@ -187,7 +187,7 @@ export default function CoachProfilePage() {
     })
   })
 
-  const modeLabel = coach.coaching_mode === 'instant'
+  const modeLabel = coach.coaching_mode === 'auto'
     ? { text: 'Réponse rapide', color: '#4ade80', icon: Zap }
     : coach.coaching_mode === 'manual'
     ? { text: 'Sur dossier', color: '#f59e0b', icon: FileText }

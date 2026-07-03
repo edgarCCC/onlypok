@@ -583,7 +583,7 @@ function FilterSidebar({
         <div>
           {section('Format')}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {chip('Sur dossier', selectedMode === 'dossier', () => setSelectedMode(selectedMode === 'dossier' ? null : 'dossier'))}
+            {chip('Sur dossier', selectedMode === 'manual', () => setSelectedMode(selectedMode === 'manual' ? null : 'manual'))}
             {chip('Instant', selectedMode === 'auto', () => setSelectedMode(selectedMode === 'auto' ? null : 'auto'))}
           </div>
         </div>

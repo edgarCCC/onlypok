@@ -442,7 +442,7 @@ function PokerTable({ scenario, heroColor }: { scenario: DrillScenario; heroColo
 }
 
 /* ── Main page ────────────────────────────────────────────────────── */
-export default function RangesPage() {
+export default function RangesPage({ backHref = '/trainer' }: { backHref?: string }) {
   /* drill state */
   const [mode,      setMode]      = useState<AppMode>('training');
   const [count,     setCount]     = useState(20);
@@ -754,7 +754,7 @@ export default function RangesPage() {
       <div style={{ position: 'sticky', top: 68, zIndex: 45, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', height: 50, background: 'rgba(7,9,14,0.92)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${BORDER}` }}>
         {/* Left: back + mode tabs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <Link href="/trainer" style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: SILVER, textDecoration: 'none' }}>
+          <Link href={backHref} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: SILVER, textDecoration: 'none' }}>
             <ArrowLeft size={12} /> Trainer
           </Link>
           <div style={{ width: 1, height: 16, background: BORDER }} />

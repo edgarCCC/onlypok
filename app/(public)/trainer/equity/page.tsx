@@ -198,7 +198,7 @@ const QUIZ_LABEL: Record<QuizType, string>  = { preflop: 'Préflop', flop: 'Flop
 
 const initGuesses = (n: number) => n === 2 ? [50, 50] : n === 3 ? [34, 33, 33] : [50, 50]
 
-export default function EquityPage() {
+export default function EquityPage({ backHref = '/trainer' }: { backHref?: string }) {
   /* Shared */
   const [numHands, setNumHands] = useState(2)
   const [mode,     setMode]     = useState<'calc' | 'quiz'>('calc')
@@ -310,7 +310,7 @@ export default function EquityPage() {
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '100px 24px 80px' }}>
 
-        <Link href="/trainer" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
+        <Link href={backHref} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
           <ArrowLeft size={14} /> Retour au Trainer
         </Link>
 

@@ -70,7 +70,7 @@ const NAV_GROUPS = [
     color: '#a78bfa',
     items: [
       { href: '/tracker',  label: 'Tracker',  icon: BarChart2, desc: 'Suivi de sessions poker' },
-      { href: '/train',    label: 'Trainer',  icon: Target,    desc: 'Quiz de ranges & équité' },
+      { href: '/coach/trainer', label: 'Trainer', icon: Target, desc: 'Quiz de ranges & équité' },
     ],
   },
 ]

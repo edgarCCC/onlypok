@@ -100,7 +100,7 @@ const DIFF_COLORS: Record<string, string> = {
   Facile: '#4ade80', Moyen: '#f59e0b', Difficile: '#ef4444',
 }
 
-export default function QuizPage() {
+export default function QuizPage({ backHref = '/trainer' }: { backHref?: string }) {
   const [idx,      setIdx]      = useState(() => Math.floor(Math.random() * QUESTIONS.length))
   const [selected, setSelected] = useState<Action | null>(null)
   const [score,    setScore]    = useState({ correct: 0, total: 0 })
@@ -125,7 +125,7 @@ export default function QuizPage() {
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '100px 24px 80px' }}>
 
-        <Link href="/trainer" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
+        <Link href={backHref} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
           <ArrowLeft size={14} /> Retour au Trainer
         </Link>
 
