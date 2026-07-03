@@ -49,7 +49,12 @@ export default function HowItWorks() {
           <div style={{ fontSize: 10, letterSpacing: '0.22em', color: 'rgba(240,244,255,0.25)', marginBottom: 16, fontFamily: 'var(--font-space,sans-serif)', fontWeight: 600 }}>COMMENT ÇA MARCHE</div>
           <h2 style={{ fontFamily: 'var(--font-syne,sans-serif)', fontSize: 'clamp(28px,3.5vw,48px)', fontWeight: 800, color: '#f0f4ff', letterSpacing: '-0.025em' }}>Simple. Structuré. Efficace.</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
+        <style>{`
+          @media (max-width: 880px) {
+            .steps-grid { grid-template-columns: 1fr !important; max-width: 440px; margin: 0 auto; }
+          }
+        `}</style>
+        <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
           {STEPS.map((step, i) => (
             <div key={i} className="step-card" style={{ padding: '28px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: -12, right: 12, fontFamily: 'var(--font-syne,sans-serif)', fontSize: 80, fontWeight: 800, color: step.accent, opacity: 0.06, lineHeight: 1, userSelect: 'none' }}>{step.n}</div>

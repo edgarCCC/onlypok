@@ -132,7 +132,12 @@ export default function CoachesSpotlight() {
         </p>
       </div>
 
-      <div style={{
+      <style>{`
+        @media (max-width: 920px) {
+          .spotlight-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+      <div className="spotlight-grid" style={{
         maxWidth: 1280, margin: '0 auto',
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',

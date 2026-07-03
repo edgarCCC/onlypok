@@ -78,7 +78,12 @@ export default function PricingTeaser() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+        <style>{`
+          @media (max-width: 800px) {
+            .pricing-grid { grid-template-columns: 1fr !important; max-width: 480px; margin: 0 auto; }
+          }
+        `}</style>
+        <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
           {/* Student card — featured */}
           <div
             className="pricing-card-left"

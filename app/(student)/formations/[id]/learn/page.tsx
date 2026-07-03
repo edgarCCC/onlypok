@@ -421,7 +421,15 @@ function LearnInner() {
         </div>
 
         {/* ── Body grid ── */}
-        <div style={{
+        <style>{`
+          @media (max-width: 800px) {
+            .learn-body {
+              grid-template-columns: 1fr !important;
+              grid-template-rows: minmax(0, 55%) minmax(0, 45%);
+            }
+          }
+        `}</style>
+        <div className="learn-body" style={{
           position: 'relative', zIndex: 1, display: 'grid',
           gridTemplateColumns: isVideoType ? `1fr ${rightColWidth}` : '1fr 320px',
           flex: 1, overflow: 'hidden',

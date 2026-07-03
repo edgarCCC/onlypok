@@ -6,13 +6,21 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { createClient } from '@/lib/supabase/client'
+import { Menu, X } from 'lucide-react'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
+
+const NAV_LINKS = [
+  { label: 'Formations', href: '/formations' },
+  { label: 'Coachs',     href: '/coaches' },
+  { label: 'Tarifs',     href: '/#tarifs' },
+]
 
 export default function Navbar() {
   const navRef  = useRef<HTMLElement>(null)
   const chipRef = useRef<HTMLDivElement>(null)
   const [role, setRole] = useState<'coach' | 'student' | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -97,8 +105,8 @@ export default function Navbar() {
         )}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
-        {[{ label: 'Formations', href: '/formations' }, { label: 'Coachs', href: '/coaches' }, { label: 'Tarifs', href: '#tarifs' }].map(({ label, href }) => (
+      <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
+        {NAV_LINKS.map(({ label, href }) => (
           <a
             key={label} href={href}
             onMouseEnter={onLinkEnter} onMouseLeave={onLinkLeave}
@@ -118,6 +126,7 @@ export default function Navbar() {
         {role ? (
           <Link
             href={spaceHref}
+            className="nav-cta"
             style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(240,244,255,0.85)', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)'; e.currentTarget.style.color = '#f0f4ff' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(240,244,255,0.85)' }}
@@ -127,6 +136,7 @@ export default function Navbar() {
         ) : (
           <Link
             href="/become-coach"
+            className="nav-cta"
             style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)', color: '#f0f4ff', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.22)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.8)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.12)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)' }}
@@ -134,7 +144,56 @@ export default function Navbar() {
             Devenir coach
           </Link>
         )}
+
+        <button
+          className="nav-burger"
+          onClick={() => setMenuOpen(v => !v)}
+          aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+          aria-expanded={menuOpen}
+          style={{
+            display: 'none', alignItems: 'center', justifyContent: 'center',
+            width: 40, height: 40, borderRadius: 10,
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+            color: '#f0f4ff', cursor: 'pointer',
+          }}>
+          {menuOpen ? <X size={18} /> : <Menu size={18} />}
+        </button>
       </div>
+
+      {/* Menu mobile */}
+      {menuOpen && (
+        <div style={{
+          position: 'absolute', top: 68, left: 0, right: 0,
+          background: 'rgba(4,4,10,0.97)', backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex', flexDirection: 'column', padding: '8px 20px 20px',
+        }}>
+          {NAV_LINKS.map(({ label, href }) => (
+            <a key={label} href={href} onClick={() => setMenuOpen(false)}
+              style={{ padding: '15px 4px', color: 'rgba(240,244,255,0.75)', textDecoration: 'none', fontSize: 15, fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              {label}
+            </a>
+          ))}
+          <Link href={role ? spaceHref : '/login'} onClick={() => setMenuOpen(false)}
+            style={{
+              marginTop: 16, padding: '13px', borderRadius: 10, textAlign: 'center',
+              border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)',
+              color: '#f0f4ff', textDecoration: 'none', fontSize: 14, fontWeight: 700,
+            }}>
+            {role ? 'Mon espace' : 'Se connecter'}
+          </Link>
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 800px) {
+          .nav-links { display: none !important; }
+          .nav-burger { display: flex !important; }
+        }
+        @media (max-width: 420px) {
+          .nav-cta { display: none !important; }
+        }
+      `}</style>
     </nav>
   )
 }

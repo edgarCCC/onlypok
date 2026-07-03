@@ -533,6 +533,15 @@ export default function FeaturesScroll() {
 
   return (
     <div ref={outerRef} style={{ background: '#07070f' }}>
+      <style>{`
+        @media (max-width: 880px) {
+          .panel-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
+          .feature-mockup { max-width: 100%; overflow: hidden; }
+        }
+        @media (max-width: 420px) {
+          .feature-mockup > * { transform: scale(0.85); transform-origin: top center; }
+        }
+      `}</style>
       <div style={{
         position: 'sticky', top: 0, height: '100vh',
         overflow: 'hidden', display: 'flex', alignItems: 'center',
@@ -553,7 +562,7 @@ export default function FeaturesScroll() {
                 flexShrink: 0,
               }}
             >
-              <div style={{
+              <div className="panel-grid" style={{
                 maxWidth: 1280, width: '100%', margin: '0 auto',
                 display: 'grid', gridTemplateColumns: '1fr 1fr',
                 gap: 80, alignItems: 'center',
@@ -576,7 +585,7 @@ export default function FeaturesScroll() {
                     fontFamily: 'var(--font-space,sans-serif)',
                   }}>{p.desc}</p>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div className="feature-mockup" style={{ display: 'flex', justifyContent: 'center' }}>
                   {p.mockup === 'library' && <LibraryMockup accent={p.accent} />}
                   {p.mockup === 'coaching' && <CoachingMockup />}
                   {p.mockup === 'gto' && <GTOTrainerMockup />}

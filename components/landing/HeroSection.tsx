@@ -170,7 +170,12 @@ export default function HeroSection({ playerCount, recentUsers }: HeroProps) {
         bottom: '5%', right: '20%', pointerEvents: 'none',
       }} />
 
-      <div style={{
+      <style>{`
+        @media (max-width: 960px) {
+          .hero-grid { grid-template-columns: 1fr !important; gap: 48px !important; padding-top: 100px !important; }
+        }
+      `}</style>
+      <div className="hero-grid" style={{
         maxWidth: 1280, margin: '0 auto', padding: '120px clamp(20px,5vw,64px) 80px',
         display: 'grid', gridTemplateColumns: '55fr 45fr', gap: 80,
         alignItems: 'center', width: '100%', position: 'relative', zIndex: 1,

@@ -67,7 +67,16 @@ export default function StatsSection({ studentCount, coachCount, formationCount,
         borderBottom: '1px solid rgba(255,255,255,0.05)',
       }}
     >
-      <div style={{
+      <style>{`
+        @media (max-width: 760px) {
+          .stats-grid { grid-template-columns: 1fr 1fr !important; row-gap: 40px !important; }
+          .stats-grid .stat-item { border-right: none !important; }
+        }
+        @media (max-width: 440px) {
+          .stats-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+      <div className="stats-grid" style={{
         maxWidth: 1100, margin: '0 auto',
         display: 'grid',
         gridTemplateColumns: `repeat(${STATS.length}, 1fr)`,
