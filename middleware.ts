@@ -27,13 +27,15 @@ export async function middleware(request: NextRequest) {
   // Ne pas exécuter la logique de redirection sur les routes API
   if (pathname.startsWith('/api/')) return supabaseResponse
 
-  const coachRoutes   = ['/coach/']
+  const coachRoutes   = ['/coach']
   const adminRoutes   = ['/admin']
   const studentRoutes = ['/dashboard', '/schedule', '/track', '/train', '/messages', '/coaching']
 
+  // Match par segment exact : '/train' protège /train et /train/*, mais pas /trainer
+  const matches = (route: string) => pathname === route || pathname.startsWith(`${route}/`)
+
   if (!user) {
-    const isProtected = [...coachRoutes, ...adminRoutes, ...studentRoutes]
-      .some(r => pathname.startsWith(r))
+    const isProtected = [...coachRoutes, ...adminRoutes, ...studentRoutes].some(matches)
     if (isProtected) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -48,11 +50,11 @@ export async function middleware(request: NextRequest) {
 
   const role = profile?.role
 
-  if (coachRoutes.some(r => pathname.startsWith(r)) && role !== 'coach' && role !== 'admin') {
+  if (coachRoutes.some(matches) && role !== 'coach' && role !== 'admin') {
     return NextResponse.redirect(new URL('/formations', request.url))
   }
 
-  if (adminRoutes.some(r => pathname.startsWith(r)) && role !== 'admin') {
+  if (adminRoutes.some(matches) && role !== 'admin') {
     return NextResponse.redirect(new URL('/', request.url))
   }
 

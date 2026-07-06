@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Politique de cookies — OnlyPok',
+  title: 'Politique de cookies',
   description: 'Utilisation des cookies sur la plateforme OnlyPok.',
   robots: { index: false },
 }

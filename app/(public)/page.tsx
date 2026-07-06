@@ -11,7 +11,7 @@ import FinalCTA from '@/components/landing/FinalCTA'
 import Footer from '@/components/landing/Footer'
 
 export const metadata = {
-  title: 'OnlyPok — Progresse au poker avec les meilleurs',
+  title: { absolute: 'OnlyPok — Progresse au poker avec les meilleurs' },
   description:
     "Formations vidéo, coaching 1:1 avec des joueurs certifiés et outils d'entraînement (ranges, équité, tracker). La plateforme des joueurs de poker qui jouent pour gagner.",
   alternates: { canonical: '/' },

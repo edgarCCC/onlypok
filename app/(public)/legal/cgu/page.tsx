@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Conditions générales — OnlyPok',
+  title: 'Conditions générales',
   description: "Conditions générales d'utilisation et de vente de la plateforme OnlyPok.",
   robots: { index: false },
 }

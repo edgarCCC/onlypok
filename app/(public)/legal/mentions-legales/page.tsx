@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Mentions légales — OnlyPok',
+  title: 'Mentions légales',
   description: 'Mentions légales de la plateforme OnlyPok.',
   robots: { index: false },
 }

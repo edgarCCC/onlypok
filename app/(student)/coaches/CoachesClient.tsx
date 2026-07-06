@@ -544,7 +544,7 @@ function FilterSidebar({
   )
 
   return (
-    <aside style={{
+    <aside className="coaches-sidebar" style={{
       width: SIDEBAR, flexShrink: 0,
       position: 'sticky', top: 24,
       alignSelf: 'flex-start',
@@ -694,7 +694,13 @@ export default function CoachesClient({ initialCoaches }: { initialCoaches: any[
         </div>
 
         {/* ── Layout : sidebar + grid ── */}
-        <div style={{ display: 'flex', gap: 28, alignItems: 'flex-start' }}>
+        <style>{`
+          @media (max-width: 760px) {
+            .coaches-layout { flex-direction: column !important; }
+            .coaches-sidebar { width: 100% !important; position: static !important; align-self: stretch !important; }
+          }
+        `}</style>
+        <div className="coaches-layout" style={{ display: 'flex', gap: 28, alignItems: 'flex-start' }}>
 
           {/* Sidebar */}
           <FilterSidebar

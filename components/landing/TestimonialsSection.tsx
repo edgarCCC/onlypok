@@ -208,6 +208,7 @@ export default function TestimonialsSection() {
       style={{
         background: '#04040a',
         padding: 'clamp(80px,10vh,120px) clamp(20px,5vw,80px)',
+        overflow: 'hidden',
       }}
     >
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -225,7 +226,13 @@ export default function TestimonialsSection() {
           </h2>
         </div>
 
-        <div style={{
+        <style>{`
+          @media (max-width: 880px) {
+            .testi-grid { grid-template-columns: 1fr !important; max-width: 420px; margin: 0 auto; }
+            .testi-grid .testi-card { margin-top: 0 !important; }
+          }
+        `}</style>
+        <div className="testi-grid" style={{
           display: 'grid', gridTemplateColumns: 'repeat(3,1fr)',
           gap: 24, alignItems: 'start',
         }}>
