@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendAdminAlertEmail } from '@/lib/email'
+import { recordPurchaseFromSession } from '@/lib/purchases'
 
 // POST /api/stripe/verify-session
 // Fallback: called on success redirect if webhook hasn't fired yet.
@@ -85,21 +86,9 @@ async function handleVerifySession(req: NextRequest) {
     return NextResponse.json({ error: 'Missing metadata' }, { status: 400 })
   }
 
-  // Always ensure purchase row exists — store gross (Stripe) + net (coach) amounts
-  const { COACHING_FEE_PCT } = await import('@/lib/constants')
-  const amountPaid       = Math.round((session.amount_total ?? 0) / 100)  // euros, brut Stripe
-  const platformFeePct   = contentType === 'coaching' ? COACHING_FEE_PCT : 0
-  const netAmount        = platformFeePct > 0
-    ? Math.round(amountPaid / (1 + platformFeePct / 100))  // ce que touche le coach
-    : amountPaid
-  const { error: purchaseError } = await adminSupabase.from('formation_purchases').insert({
-    formation_id:      formationId,
-    user_id:           userId,
-    amount_paid:       amountPaid,
-    net_amount:        netAmount,
-    platform_fee_pct:  platformFeePct,
-  })
-  if (purchaseError && purchaseError.code !== '23505') {
+  // Always ensure purchase row exists (upsert partagé, montants inclus)
+  const { error: purchaseError } = await recordPurchaseFromSession(adminSupabase, session)
+  if (purchaseError) {
     /* Non-fatal : le webhook Stripe insère aussi le purchase de son côté,
        mais on alerte pour ne pas perdre la trace d'un paiement. */
     console.error('[verify-session] purchase insert error:', purchaseError.message, purchaseError.code)

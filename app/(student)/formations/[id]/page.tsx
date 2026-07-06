@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
+import { recordPurchaseFromSession } from '@/lib/purchases'
 import FormationDetailClient from './FormationDetailClient'
 import { notFound } from 'next/navigation'
 
@@ -37,15 +38,14 @@ export default async function FormationDetailPage({
         stripeSession.metadata?.user_id === user.id &&
         stripeSession.metadata?.formation_id === id
       ) {
-        // Admin client bypasses RLS — insert is server-verified via Stripe signature
+        // Admin client bypasses RLS — upsert server-verified via session Stripe
         const admin = createAdminSupabaseClient()
-        await admin.from('formation_purchases').insert({
-          formation_id: id,
-          user_id: user.id,
-        })
+        const { error: purchaseError } = await recordPurchaseFromSession(admin, stripeSession)
+        if (purchaseError) console.error('[formations/:id] purchase upsert failed:', purchaseError.message)
       }
-    } catch {
-      // Non-blocking — webhook will cover production; log silently
+    } catch (e) {
+      // Non-blocking — le webhook couvre ce cas en prod
+      console.error('[formations/:id] verify redirect failed:', e instanceof Error ? e.message : e)
     }
   }
 

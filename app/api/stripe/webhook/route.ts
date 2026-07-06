@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendCoachNewBookingEmail, sendAdminAlertEmail } from '@/lib/email'
+import { recordPurchaseFromSession } from '@/lib/purchases'
 
 /* Disable body parsing — Stripe needs the raw buffer to verify the signature */
 export const runtime = 'nodejs'
@@ -38,13 +39,10 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminSupabaseClient()
 
-    /* Toujours enregistrer l'achat.
-       En cas d'échec (hors doublon), on renvoie 500 pour que Stripe retente le webhook. */
-    const { error: purchaseError } = await supabase.from('formation_purchases').insert({
-      formation_id: formationId,
-      user_id:      userId,
-    })
-    if (purchaseError && purchaseError.code !== '23505') {
+    /* Toujours enregistrer l'achat (upsert partagé, montants inclus).
+       En cas d'échec, on renvoie 500 pour que Stripe retente le webhook. */
+    const { error: purchaseError } = await recordPurchaseFromSession(supabase, session)
+    if (purchaseError) {
       console.error('[stripe/webhook] purchase insert error:', purchaseError.message)
       sendAdminAlertEmail({
         subject: 'Webhook Stripe — insert formation_purchases échoué',
