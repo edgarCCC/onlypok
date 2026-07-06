@@ -180,7 +180,13 @@ export default function ReviewsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
-      <div style={{ maxWidth: 1160, margin: '0 auto', padding: '48px 48px 80px' }}>
+      <style>{`
+        @media (max-width: 760px) {
+          .crev-container { padding: 24px 16px 60px !important; }
+          .crev-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+      <div className="crev-container" style={{ maxWidth: 1160, margin: '0 auto', padding: '48px 48px 80px' }}>
 
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
@@ -214,7 +220,7 @@ export default function ReviewsPage() {
         {/* 2-col grid */}
         {all.length > 0 && (
           <>
-            <div style={{
+            <div className="crev-grid" style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
               gap: '0 64px',

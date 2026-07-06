@@ -266,10 +266,19 @@ export default function StudentDashboard() {
           background: 'radial-gradient(ellipse, rgba(124,58,237,0.04) 0%, transparent 60%)', filter: 'blur(80px)' }} />
       </div>
 
+      <style>{`
+        @media (max-width: 700px) {
+          .sdash-kpis { grid-template-columns: 1fr 1fr !important; }
+          .sdash-hero { flex-wrap: wrap !important; }
+        }
+        @media (max-width: 600px) {
+          .sdash-nav { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1080, margin: '0 auto', padding: '52px clamp(16px,3vw,48px) 96px' }}>
 
         {/* ── HERO ─────────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 52, gap: 24 }}>
+        <div className="sdash-hero" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 52, gap: 24 }}>
           <div>
             <p style={{ fontSize: 12, fontWeight: 500, color: DIM, letterSpacing: '0.04em', margin: '0 0 14px', textTransform: 'capitalize' }}>
               {today()}
@@ -303,7 +312,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* ── KPI STRIP ────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 40 }}>
+        <div className="sdash-kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 40 }}>
           {[
             { label: 'Coachs',     value: coaches.length,     accent: VIOLET, Icon: Users        },
             { label: 'Formations', value: formations.length,  accent: CYAN,   Icon: BookOpen     },
@@ -429,7 +438,7 @@ export default function StudentDashboard() {
         )}
 
         {/* ── NAV RAPIDE ──────────────────────────────── */}
-        <div style={{ marginTop: 48, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        <div className="sdash-nav" style={{ marginTop: 48, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {[
             { href: '/train',    label: 'Trainer',  Icon: Brain,        color: AMBER  },
             { href: '/track',    label: 'Tracker',  Icon: BarChart2,    color: EMER   },

@@ -220,6 +220,7 @@ export default function CoachSessionsPage() {
 
                 <button
                   onClick={() => setExpanded(isOpen ? null : b.id)}
+                  className="csess-head-row"
                   style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                 >
                   <Avatar src={b.student?.avatar_url} name={studentName} size={40} />
@@ -332,7 +333,14 @@ export default function CoachSessionsPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, color: CREAM, padding: '40px' }}>
+    <div className="csess-page" style={{ minHeight: '100vh', background: BG, color: CREAM, padding: '40px' }}>
+      <style>{`
+        @media (max-width: 700px) {
+          .csess-page { padding: 24px 16px !important; }
+          .csess-kpis { grid-template-columns: 1fr 1fr !important; }
+          .csess-head-row { flex-wrap: wrap !important; }
+        }
+      `}</style>
       <div style={{ maxWidth: 860, margin: '0 auto' }}>
 
         <div style={{ marginBottom: 32 }}>
@@ -342,7 +350,7 @@ export default function CoachSessionsPage() {
         </div>
 
         {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 36 }}>
+        <div className="csess-kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 36 }}>
           {[
             { label: 'Total',          value: bookings.length,  icon: CalendarDays, color: VIOLET },
             { label: 'Planifiées',     value: scheduled.length, icon: CheckCircle2, color: EMER   },

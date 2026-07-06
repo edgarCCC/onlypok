@@ -638,7 +638,7 @@ export default function OnboardingPage() {
                     <Trash2 size={14} />
                   </button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div className="cob-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <div>
                     <label style={labelStyle}>Sessions</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
@@ -690,7 +690,7 @@ export default function OnboardingPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
             {/* Coordonnées */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div className="cob-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
                 <label style={labelStyle}>Téléphone *</label>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -782,9 +782,23 @@ export default function OnboardingPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#04040a', color: CREAM, display: 'flex', flexDirection: 'column' }}>
+      <style>{`
+        @media (max-width: 700px) {
+          .cob-header { padding: 0 16px !important; }
+          .cob-main { padding: 32px 16px 0 !important; }
+          .cob-footer-row { padding: 14px 16px !important; }
+          .cob-grid3 { grid-template-columns: 1fr !important; }
+          .cob-splash { flex-direction: column !important; gap: 32px !important; }
+          .cob-splash h1 { font-size: 32px !important; letter-spacing: -1px !important; }
+        }
+        @media (max-width: 560px) {
+          .cob-grid2 { grid-template-columns: 1fr !important; }
+          .cob-2col { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
 
       {/* ── Header ── */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 64, background: 'rgba(4,4,10,0.95)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px' }}>
+      <header className="cob-header" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 64, background: 'rgba(4,4,10,0.95)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }} />
           <span style={{ fontFamily: 'var(--font-syne, sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
@@ -800,7 +814,7 @@ export default function OnboardingPage() {
 
       {/* ── Contenu ── */}
       <main style={{ flex: 1, paddingTop: 64, paddingBottom: 100, display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
-        <div style={{ width: '100%', maxWidth: 700, padding: '48px 40px 0' }}>
+        <div className="cob-main" style={{ width: '100%', maxWidth: 700, padding: '48px 40px 0' }}>
           {renderStep()}
         </div>
       </main>
@@ -815,7 +829,7 @@ export default function OnboardingPage() {
           ))}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 40px' }}>
+        <div className="cob-footer-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 40px' }}>
           <button onClick={() => go(-1)} disabled={step === 0}
             style={{ fontSize: 14, fontWeight: 600, color: step === 0 ? DIM : SILVER, background: 'transparent', border: 'none', cursor: step === 0 ? 'default' : 'pointer', transition: 'color 0.2s', padding: '8px 0' }}
             onMouseEnter={e => { if (step > 0) (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
@@ -853,7 +867,7 @@ export default function OnboardingPage() {
 
 function Splash({ phase, title, body, visual }: { phase: string; title: string; body: string; visual: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 60, minHeight: '60vh' }}>
+    <div className="cob-splash" style={{ display: 'flex', alignItems: 'center', gap: 60, minHeight: '60vh' }}>
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(240,244,255,0.35)', letterSpacing: '0.1em', marginBottom: 16 }}>{phase}</p>
         <h1 style={{ fontSize: 48, fontWeight: 800, color: '#f0f4ff', letterSpacing: '-2px', lineHeight: 1.1, margin: '0 0 24px', fontFamily: 'var(--font-syne, sans-serif)' }}>{title}</h1>
@@ -906,11 +920,11 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 function Grid3({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>{children}</div>
+  return <div className="cob-grid3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>{children}</div>
 }
 
 function Grid2({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>{children}</div>
+  return <div className="cob-grid2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>{children}</div>
 }
 
 function SelectCard({ selected, onClick, children, style }: { selected: boolean; onClick: () => void; children: React.ReactNode; style?: React.CSSProperties }) {

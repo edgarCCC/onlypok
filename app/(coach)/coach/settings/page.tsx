@@ -18,7 +18,7 @@ export default function CoachSettingsPage() {
   )
 
   const row = (icon: React.ReactNode, label: string, sub: string, action: React.ReactNode) => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${BORDER}` }}>
+    <div className="cset-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${BORDER}`, gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <span style={{ color: SILVER }}>{icon}</span>
         <div>
@@ -31,7 +31,13 @@ export default function CoachSettingsPage() {
   )
 
   return (
-    <div style={{ padding: '40px 48px', maxWidth: 680, color: CREAM }}>
+    <div className="cset-container" style={{ padding: '40px 48px', maxWidth: 680, color: CREAM }}>
+      <style>{`
+        @media (max-width: 700px) {
+          .cset-container { padding: 24px 16px !important; }
+          .cset-row { flex-wrap: wrap !important; }
+        }
+      `}</style>
       <h1 style={{ fontSize: 24, fontWeight: 800, color: CREAM, marginBottom: 8, letterSpacing: '-0.5px' }}>Paramètres</h1>
       <p style={{ fontSize: 14, color: SILVER, marginBottom: 32 }}>Gérez votre compte et vos préférences.</p>
 

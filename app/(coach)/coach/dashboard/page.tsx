@@ -215,20 +215,36 @@ export default function CoachDashboard() {
       {/* Ambient glow — tied to active tab */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 60% 35% at 50% 0%, ${activeTab.glow} 0%, transparent 70%)`, transition: 'background 0.5s ease' }} />
 
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: '40px' }}>
+      <style>{`
+        @media (max-width: 860px) {
+          .cdash-container { padding: 24px 16px !important; }
+          .cdash-title { font-size: 34px !important; }
+          .cdash-kpis { grid-template-columns: 1fr 1fr !important; }
+          .cdash-charts { grid-template-columns: 1fr !important; }
+          .cdash-stat-tabs { grid-template-columns: 1fr 1fr !important; }
+          .cdash-tabs-row { flex-wrap: wrap !important; }
+          .cdash-type-tabs { max-width: 100%; overflow-x: auto; }
+          .cdash-sort-row { flex-wrap: wrap !important; }
+          .cdash-content-row { flex-wrap: wrap !important; }
+        }
+        @media (max-width: 400px) {
+          .cdash-kpis { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+      <div className="cdash-container" style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: '40px' }}>
 
         {/* ══ SECTION 1 — Vue d'ensemble ══════════════════════ */}
 
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <p style={{ fontSize: 11, color: SILVER, marginBottom: 10, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Tableau de bord</p>
-          <h1 style={{ fontSize: 52, fontWeight: 700, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>
+          <h1 className="cdash-title" style={{ fontSize: 52, fontWeight: 700, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>
             <span style={{ fontWeight: 300, color: SILVER }}>{salutation} </span>{greeting}
           </h1>
         </div>
 
         {/* KPI row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+        <div className="cdash-kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
           <Link href="/coach/revenue"          style={{ textDecoration: 'none' }}><KpiCard label="Revenus totaux"   value={`${totalRevenue}€`}                          sub="depuis le début"                 color={VIOLET}    icon={TrendingUp} /></Link>
           <Link href="/coach/students"         style={{ textDecoration: 'none' }}><KpiCard label="Élèves ce mois"   value={studentsMonth}                               sub={`${totalStudents} au total`}     color={CYAN}      icon={Users} /></Link>
           <Link href="#content"                style={{ textDecoration: 'none' }}><KpiCard label="Contenus publiés" value={publishedCount}                              sub={`${formations.length} au total`} color="#a855f7"   icon={BookOpen} /></Link>
@@ -236,7 +252,7 @@ export default function CoachDashboard() {
         </div>
 
         {/* Revenue chart + recent enrollments */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="cdash-charts" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
 
           <div
             onClick={() => router.push('/coach/revenue')}
@@ -338,8 +354,8 @@ export default function CoachDashboard() {
         <SectionDivider label="Mes contenus" />
 
         {/* Type tabs + Nouveau contenu */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 24 }}>
-          <div style={{ display: 'inline-flex', background: 'rgba(232,228,220,0.04)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 16, padding: 4, gap: 2 }}>
+        <div className="cdash-tabs-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 24 }}>
+          <div className="cdash-type-tabs" style={{ display: 'inline-flex', background: 'rgba(232,228,220,0.04)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 16, padding: 4, gap: 2 }}>
             {TABS.map(t => {
               const active = tab === t.id
               const s = statsFor(t.id)
@@ -362,7 +378,7 @@ export default function CoachDashboard() {
         </div>
 
         {/* Stat sub-tabs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 24 }}>
+        <div className="cdash-stat-tabs" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 24 }}>
           {[
             { key: 'all',      label: 'Tous',     value: stats.total,                   sub: 'contenus' },
             { key: 'published',label: 'Publiés',  value: stats.published,               sub: `sur ${stats.total}` },
@@ -382,7 +398,7 @@ export default function CoachDashboard() {
         </div>
 
         {/* Sort controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <div className="cdash-sort-row" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
           <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(240,244,255,0.2)', letterSpacing: '0.1em', textTransform: 'uppercase', flexShrink: 0 }}>Trier par</span>
           {([
             { key: 'recent',   label: 'Plus récent' },
@@ -419,7 +435,7 @@ export default function CoachDashboard() {
               const typeLabel = type === 'formation' ? 'Formation' : type === 'video' ? 'Vidéo' : 'Coaching'
 
               return (
-                <div key={f.id}
+                <div key={f.id} className="cdash-content-row"
                   style={{ display: 'flex', alignItems: 'center', gap: 18, background: `${typeColor}05`, border: `1px solid ${typeColor}18`, borderRadius: 14, padding: '16px 22px', transition: 'all 0.15s', position: 'relative', overflow: 'hidden' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = `${typeColor}08`; (e.currentTarget as HTMLDivElement).style.borderColor = `${typeColor}28` }}
                   onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = `${typeColor}05`; (e.currentTarget as HTMLDivElement).style.borderColor = `${typeColor}18` }}>

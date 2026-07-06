@@ -193,6 +193,13 @@ export default function CoachCalendarPage() {
     <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 50% 25% at 50% 0%, rgba(124,58,237,0.08) 0%, transparent 70%)' }} />
 
+      <style>{`
+        @media (max-width: 560px) {
+          .cal-kpis { grid-template-columns: 1fr !important; }
+          .cal-day-row { flex-wrap: wrap !important; }
+          .cal-sim-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 760, margin: '0 auto', padding: '40px 24px 80px' }}>
 
         {/* Header */}
@@ -203,7 +210,7 @@ export default function CoachCalendarPage() {
         </div>
 
         {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
+        <div className="cal-kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
           {[
             { label: 'Heures disponibles', value: availableSlots, color: VIOLET },
             { label: 'Sessions réservées',  value: bookedSlots,    color: CYAN   },
@@ -234,7 +241,7 @@ export default function CoachCalendarPage() {
                   : 'rgba(232,228,220,0.07)'}`,
                 borderRadius: 14, padding: '16px 20px', transition: 'all 0.2s',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div className="cal-day-row" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
 
                   {/* Toggle */}
                   <button onClick={() => toggleDay(day)} style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: cfg.enabled ? (isWeekend && weekendPct > 0 ? AMBER : VIOLET) : 'rgba(232,228,220,0.12)', transition: 'background 0.2s', position: 'relative', padding: 0 }}>
@@ -328,7 +335,7 @@ export default function CoachCalendarPage() {
             </div>
 
             {/* Projections grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 16 }}>
+            <div className="cal-sim-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 16 }}>
               {[
                 { label: 'Revenus / semaine', value: `${fmt(simStats.filledWeekly)}€`, sub: `${simStats.filledHours}h sur ${simStats.totalHours}h remplies`, color: VIOLET },
                 { label: 'Revenus / mois', value: `${fmt(simStats.filledWeekly * 4.3)}€`, sub: `≈ ${Math.round(simStats.filledHours * 4.3)}h de coaching`, color: CYAN },

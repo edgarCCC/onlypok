@@ -743,7 +743,12 @@ function SlotPicker() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: slots.length === 0 ? '1fr' : 'minmax(0,1fr) minmax(0,1fr)', gap: 20, alignItems: 'start' }}>
+        <style>{`
+          @media (max-width: 760px) {
+            .sched-booking-grid { grid-template-columns: 1fr !important; }
+          }
+        `}</style>
+        <div className="sched-booking-grid" style={{ display: 'grid', gridTemplateColumns: slots.length === 0 ? '1fr' : 'minmax(0,1fr) minmax(0,1fr)', gap: 20, alignItems: 'start' }}>
           {/* Calendar */}
           <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 18, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>

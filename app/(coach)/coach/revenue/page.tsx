@@ -140,7 +140,22 @@ export default function RevenuePage() {
   return (
     <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 60% 35% at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%)` }} />
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: '40px' }}>
+      <style>{`
+        @media (max-width: 860px) {
+          .rev-container { padding: 24px 16px !important; }
+          .rev-title { font-size: 32px !important; }
+          .rev-kpis { grid-template-columns: 1fr 1fr !important; }
+          .rev-table-scroll { overflow-x: auto; }
+          .rev-table-row { min-width: 680px; }
+          .rev-filters { flex-wrap: wrap !important; }
+        }
+        @media (max-width: 700px) {
+          .rev-recap { grid-template-columns: 1fr !important; }
+          .rev-types { grid-template-columns: 1fr !important; }
+          .rev-admin { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+      <div className="rev-container" style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: '40px' }}>
 
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
@@ -148,13 +163,13 @@ export default function RevenuePage() {
             <ArrowLeft size={13} /> Tableau de bord
           </Link>
           <p style={{ fontSize: 11, color: SILVER, marginBottom: 8, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Revenus</p>
-          <h1 style={{ fontSize: 44, fontWeight: 700, color: CREAM, letterSpacing: '-1px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>
+          <h1 className="rev-title" style={{ fontSize: 44, fontWeight: 700, color: CREAM, letterSpacing: '-1px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>
             Mes revenus
           </h1>
         </div>
 
         {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 16 }}>
+        <div className="rev-kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 16 }}>
           {[
             { label: 'Net coach',      value: `${totalRevenue}€`,                              sub: 'après commission',       color: VIOLET },
             { label: 'Ce mois-ci',     value: `${revenueMonth}€`,                              sub: now.toLocaleDateString('fr-FR', { month: 'long' }), color: CYAN },
@@ -172,7 +187,7 @@ export default function RevenuePage() {
 
         {/* Récap brut / commission / net */}
         {totalGross > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, marginBottom: 24, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="rev-recap" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, marginBottom: 24, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
             {[
               { label: 'Encaissé (brut Stripe)', value: `${totalGross}€`, color: SILVER, sub: 'payé par les élèves' },
               { label: 'Commission OnlyPok',      value: `-${totalFees}€`, color: '#ef4444', sub: 'frais de plateforme' },
@@ -202,7 +217,7 @@ export default function RevenuePage() {
         </div>
 
         {/* Par type */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
+        <div className="rev-types" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
           {byType.map(({ type, rev, sales }) => {
             const icons: Record<string, React.ElementType> = { formation: BookOpen, video: Video, coaching: Users }
             const c = TYPE_COLOR[type]; const Icon = icons[type]
@@ -231,7 +246,7 @@ export default function RevenuePage() {
                 <span style={{ fontSize: 11, color: SILVER, fontWeight: 400, marginLeft: 8 }}>{filtered.length} / {normalized.length}</span>
               )}
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className="rev-filters" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {/* Filtre type */}
               {(['all', 'formation', 'video', 'coaching'] as const).map(t => (
                 <button
@@ -274,9 +289,9 @@ export default function RevenuePage() {
               {normalized.length === 0 ? 'Aucune vente pour le moment.' : 'Aucun résultat.'}
             </div>
           ) : (
-            <>
+            <div className="rev-table-scroll">
               {/* Header tableau */}
-              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr 80px 100px 90px 80px', gap: 10, padding: '6px 12px', marginBottom: 4 }}>
+              <div className="rev-table-row" style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr 80px 100px 90px 80px', gap: 10, padding: '6px 12px', marginBottom: 4 }}>
                 {['Date', 'Élève', 'Formation', 'Type', 'Brut', 'Net coach', ''].map(h => (
                   <span key={h} style={{ fontSize: 9, fontWeight: 700, color: MUTED, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</span>
                 ))}
@@ -293,6 +308,7 @@ export default function RevenuePage() {
                   return (
                     <div
                       key={p.id ?? i}
+                      className="rev-table-row"
                       style={{
                         display: 'grid', gridTemplateColumns: '120px 1fr 1fr 80px 100px 90px 80px',
                         gap: 10, padding: '11px 12px', borderRadius: 10,
@@ -373,7 +389,7 @@ export default function RevenuePage() {
                   )
                 })}
               </div>
-            </>
+            </div>
           )}
         </div>
 
@@ -400,7 +416,7 @@ export default function RevenuePage() {
           <p style={{ fontSize: 11, color: SILVER }}>Au-delà de 77 700€, vous passez au régime réel. Consultez un comptable.</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="rev-admin" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <div style={card()}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
               <AlertCircle size={16} color={CYAN} />

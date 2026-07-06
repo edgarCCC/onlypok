@@ -151,6 +151,15 @@ export default function FormationsPageClient({
 
   return (
     <div style={{ minHeight: '100vh', background: '#07090e', color: '#fff', overflowX: 'hidden' }}>
+      <style>{`
+        @media (max-width: 700px) {
+          .sform-header-row { flex-wrap: wrap !important; height: auto !important; padding: 10px 16px !important; row-gap: 10px !important; }
+          .sform-header-center { min-width: 100% !important; order: 3; }
+          .sform-search-inner { padding: 0 16px !important; }
+          .sform-main { padding-left: 16px !important; padding-right: 16px !important; padding-top: 290px !important; }
+          .sform-row-head { flex-wrap: wrap !important; gap: 10px !important; }
+        }
+      `}</style>
 
       {/* Lumière centrale forte */}
       <div style={{
@@ -174,7 +183,7 @@ export default function FormationsPageClient({
         borderBottom: isScrolled ? `1px solid rgba(232,228,220,0.07)` : 'none',
         transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', height: 80, padding: '0 40px', gap: 24 }}>
+        <div className="sform-header-row" style={{ display: 'flex', alignItems: 'center', height: 80, padding: '0 40px', gap: 24 }}>
 
           {/* Logo */}
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
@@ -183,7 +192,7 @@ export default function FormationsPageClient({
           </Link>
 
           {/* Centre */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
+          <div className="sform-header-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
             {/* Tabs */}
             <div style={{ position: 'absolute', display: 'inline-flex', background: 'rgba(232,228,220,0.04)', border: `1px solid rgba(232,228,220,0.08)`, borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
               {(['formations','videos','coaching'] as const).map(t => {
@@ -272,7 +281,7 @@ export default function FormationsPageClient({
 
         {/* Barre de recherche */}
         <div ref={searchRef} style={{ height: showBigSearch ? 110 : 0, opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transition: 'all 0.4s cubic-bezier(0.2,0.8,0.2,1)', display: 'flex', justifyContent: 'center', paddingBottom: 20, transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(-24px) scale(0.97)' }}>
-          <div style={{ width: '100%', maxWidth: 860, position: 'relative', padding: '0 40px' }}>
+          <div className="sform-search-inner" style={{ width: '100%', maxWidth: 860, position: 'relative', padding: '0 40px' }}>
             <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(20,23,30,0.9)', backdropFilter: 'blur(25px)', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 50, padding: 8, boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
               {fields.map((field, idx) => {
                 const isActive = activeField === field.key
@@ -365,7 +374,7 @@ export default function FormationsPageClient({
       {/* ══════════════════════
           CONTENU
       ══════════════════════ */}
-      <main style={{ paddingTop: 220, paddingLeft: 40, paddingRight: 40, paddingBottom: 100, position: 'relative', zIndex: 1 }}>
+      <main className="sform-main" style={{ paddingTop: 220, paddingLeft: 40, paddingRight: 40, paddingBottom: 100, position: 'relative', zIndex: 1 }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '100px 0' }}>
             <div style={{ fontSize: 48, opacity: 0.1, marginBottom: 16 }}>♠</div>
@@ -448,7 +457,7 @@ function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayV
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22 }}>
+      <div className="sform-row-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22 }}>
         <div>
           <h2 style={{ fontSize: 24, fontWeight: 800, color: CREAM, letterSpacing: '-0.7px', marginBottom: 4 }}>
             {title}

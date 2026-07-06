@@ -327,7 +327,20 @@ function NewFormationInner() {
       <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 50% 30% at 50% 0%, ${activeTab.color}20 0%, transparent 70%)`, transition: 'background 0.5s' }} />
 
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto', padding: '40px' }}>
+        <style>{`
+          @media (max-width: 700px) {
+            .cnew-container { padding: 24px 16px !important; }
+            .cnew-3col { grid-template-columns: 1fr !important; }
+            .cnew-lesson-row { flex-wrap: wrap !important; }
+            .cnew-highlights { grid-template-columns: 1fr !important; }
+          }
+          @media (max-width: 560px) {
+            .cnew-2col { grid-template-columns: 1fr !important; }
+            .cnew-gallery { grid-template-columns: 1fr 1fr !important; }
+            .cnew-mode-row { flex-direction: column !important; }
+          }
+        `}</style>
+        <div className="cnew-container" style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto', padding: '40px' }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 36 }}>
             <button type="button" onClick={goBack} style={{ width: 36, height: 36, borderRadius: 9, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -380,7 +393,7 @@ function NewFormationInner() {
                 </Section>
 
                 <Section title="Tarification & options">
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                  <div className="cnew-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                     <Field label="Prix (€)"><NumberStepper value={price} onChange={setPrice} min={0} max={9999} step={5} suffix="€" /></Field>
                     <Field label="Variante">
                       <SelectInput value={variant} onChange={v => { setVariant(v); setLevel('Débutant') }}
@@ -422,7 +435,7 @@ function NewFormationInner() {
                         {/* Leçons */}
                         <div style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                           {chapter.lessons.map((lesson, li) => (
-                            <div key={li} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div key={li} className="cnew-lesson-row" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <Video size={13} color={SILVER} style={{ flexShrink: 0, opacity: 0.5 }} />
                               <input
                                 value={lesson.title}
@@ -479,7 +492,7 @@ function NewFormationInner() {
                   </div>
                 </Section>
                 <Section title="Options">
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                  <div className="cnew-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                     <Field label="Prix (€)"><NumberStepper value={price} onChange={setPrice} min={0} max={9999} step={5} suffix="€" /></Field>
                     <Field label="Variante">
                       <SelectInput value={variant} onChange={v => { setVariant(v); setLevel('Débutant') }}
@@ -501,7 +514,7 @@ function NewFormationInner() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <Field label="Titre de l'offre *"><input value={title} onChange={e => { setTitle(e.target.value); markDirty() }} required placeholder="Ex : Coaching MTT — Du fish au final table" style={inputStyle} /></Field>
                     <Field label="Description"><textarea value={desc} onChange={e => { setDesc(e.target.value); markDirty() }} placeholder="Méthode, approche, ce que l'élève va apprendre…" rows={5} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} /></Field>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                    <div className="cnew-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                       <Field label="Variante principale">
                         <SelectInput value={variant} onChange={v => { setVariant(v); setLevel('Débutant') }}
                           options={VARIANTS.map(v => ({ value: v, label: v }))} />
@@ -522,7 +535,7 @@ function NewFormationInner() {
                       setGalleryFiles(prev => [...prev, ...items].slice(0, 4))
                       e.target.value = ''
                     }} />
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                  <div className="cnew-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
                     {galleryFiles.map((g, i) => (
                       <div key={i} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117' }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -550,7 +563,7 @@ function NewFormationInner() {
 
                     {/* Mode de réservation */}
                     <Field label="Mode de réservation">
-                      <div style={{ display: 'flex', gap: 10 }}>
+                      <div className="cnew-mode-row" style={{ display: 'flex', gap: 10 }}>
                         {([
                           { v: 'manual' as const, Icon: CalendarCheck, label: 'Validation manuelle', badge: 'Recommandé' as string | undefined },
                           { v: 'auto'   as const, Icon: Zap,           label: 'Acceptation directe', badge: undefined },
@@ -568,7 +581,7 @@ function NewFormationInner() {
                     </Field>
 
                     {/* Tarif + supplément week-end */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div className="cnew-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                       <Field label="Tarif horaire (€/h)">
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <span style={{ fontSize: 20, color: SILVER, fontWeight: 300 }}>€</span>
@@ -606,7 +619,7 @@ function NewFormationInner() {
                                 <Trash2 size={13} />
                               </button>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                            <div className="cnew-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                               <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(240,244,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase' as const, display: 'block', marginBottom: 8 }}>Sessions</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
@@ -788,7 +801,7 @@ function HighlightsPicker({
           {selected.length}/5
         </span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+      <div className="cnew-highlights" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
         {options.map(h => {
           const active   = selected.includes(h.id)
           const disabled = !active && selected.length >= 5

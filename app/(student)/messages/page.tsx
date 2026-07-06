@@ -368,8 +368,12 @@ export default function StudentMessagesPage() {
   )
 
   return (
-    <div style={{ height: 'calc(100vh - 64px)', display: 'flex', background: BG, color: CREAM, overflow: 'hidden' }}>
+    <div className="smsg-layout" style={{ height: 'calc(100vh - 64px)', display: 'flex', background: BG, color: CREAM, overflow: 'hidden' }}>
       <style>{`
+        @media (max-width: 760px) {
+          .smsg-layout { flex-direction: column !important; }
+          .smsg-sidebar { width: 100% !important; flex: 0 0 36% !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08); min-height: 0; overflow: hidden; }
+        }
         @keyframes op-shimmer { 0%{background-position:-240px 0} 100%{background-position:240px 0} }
         .op-shimmer { background-image:linear-gradient(90deg,rgba(232,228,220,0.03) 0%,rgba(232,228,220,0.08) 50%,rgba(232,228,220,0.03) 100%); background-size:480px 100%; animation:op-shimmer 1.4s linear infinite; }
         @keyframes op-pop { from{transform:translateY(4px) scale(0.98);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
@@ -383,7 +387,7 @@ export default function StudentMessagesPage() {
       `}</style>
 
       {/* ═══ SIDEBAR ═══ */}
-      <aside style={{ width: 300, flexShrink: 0, background: PANEL, borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column' }}>
+      <aside className="smsg-sidebar" style={{ width: 300, flexShrink: 0, background: PANEL, borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '20px 18px 14px', borderBottom: `1px solid ${BORDER}` }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
             <h1 style={{ fontSize: 20, fontWeight: 700, color: CREAM, letterSpacing: '-0.5px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>Messages</h1>

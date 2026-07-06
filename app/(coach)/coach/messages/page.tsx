@@ -542,7 +542,7 @@ function CoachMessagesInner() {
    *  RENDER
    * ════════════════════════════════════════════════════ */
   return (
-    <div style={{
+    <div className="cmsg-layout" style={{
       height: 'calc(100vh - 64px)',
       display: 'flex',
       background: BG,
@@ -552,6 +552,10 @@ function CoachMessagesInner() {
     }}>
       {/* Shimmer keyframes */}
       <style>{`
+        @media (max-width: 760px) {
+          .cmsg-layout { flex-direction: column !important; }
+          .cmsg-sidebar { width: 100% !important; flex: 0 0 36% !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08); min-height: 0; overflow: hidden; }
+        }
         @keyframes op-shimmer {
           0%   { background-position: -240px 0; }
           100% { background-position:  240px 0; }
@@ -589,7 +593,7 @@ function CoachMessagesInner() {
       `}</style>
 
       {/* ═══════════ COLONNE GAUCHE ═══════════ */}
-      <aside style={{
+      <aside className="cmsg-sidebar" style={{
         width: 320,
         flexShrink: 0,
         background: PANEL,

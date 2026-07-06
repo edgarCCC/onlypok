@@ -352,7 +352,19 @@ export default function CoachProfilePage() {
         <div style={{ position: 'absolute', top: '-5%', left: '30%', width: 500, height: 300, background: 'radial-gradient(ellipse, rgba(124,58,237,0.08) 0%, transparent 70%)', filter: 'blur(40px)' }} />
       </div>
 
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto', padding: '40px 32px 100px' }}>
+      <style>{`
+        @media (max-width: 700px) {
+          .cprof-container { padding: 24px 16px 80px !important; }
+          .cprof-variants { grid-template-columns: 1fr 1fr !important; }
+          .cprof-cat-header { flex-wrap: wrap !important; }
+        }
+        @media (max-width: 560px) {
+          .cprof-kpis { grid-template-columns: 1fr !important; }
+          .cprof-targets { grid-template-columns: 1fr !important; }
+          .cprof-advantages { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+      <div className="cprof-container" style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto', padding: '40px 32px 100px' }}>
 
         {/* ── Header ── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 36, flexWrap: 'wrap', gap: 12 }}>
@@ -386,7 +398,7 @@ export default function CoachProfilePage() {
         </div>
 
         {/* ── KPIs ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 28 }}>
+        <div className="cprof-kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 28 }}>
           {[
             { label: 'Note',       value: avgRating ? avgRating.toFixed(1) : '—', sub: `${reviewCount} avis`,                        icon: Star },
             { label: 'Formations', value: formCount,                               sub: 'publiées',                                    icon: BookOpen },
@@ -549,7 +561,7 @@ export default function CoachProfilePage() {
                 onBlur={e =>  (e.currentTarget.style.borderColor = BORDER)} />
             </Field>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div className="cprof-targets" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <Field label="Expérience">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <Stepper onClick={() => setYearsExp(y => Math.max(0, y - 1))}><Minus size={14} /></Stepper>
@@ -576,7 +588,7 @@ export default function CoachProfilePage() {
         <Section title="Spécialités" subtitle="Sélectionne jusqu'à 3 variantes, et tes salles">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <Field label={`Variantes (${variants.length}/3)`}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              <div className="cprof-variants" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                 {VARIANTS.map(v => {
                   const sel = variants.includes(v.id)
                   const disabled = !sel && variants.length >= 3
@@ -605,7 +617,7 @@ export default function CoachProfilePage() {
             </Field>
 
             <Field label="Profil des joueurs ciblés">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+              <div className="cprof-targets" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 {TARGET_PLAYERS.map(({ id, label, sub, Icon, color }) => {
                   const sel = targetPlayers.includes(id)
                   return (
@@ -628,7 +640,7 @@ export default function CoachProfilePage() {
 
         {/* ══ SECTION 4 — AVANTAGES ══ */}
         <Section title="Ce que tu proposes" subtitle="Sélectionne tout ce qui correspond à ton coaching">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+          <div className="cprof-advantages" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
             {ADVANTAGES.map(({ id, label, Icon }) => {
               const sel = advantages.includes(id)
               return (
@@ -669,7 +681,7 @@ export default function CoachProfilePage() {
               return (
                 <div key={cat.value}>
                   {/* Category header */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '10px 14px', background: cat.required ? `${cat.color}12` : `${cat.color}08`, border: `1px solid ${cat.required ? cat.color + '35' : cat.color + '20'}`, borderRadius: 12 }}>
+                  <div className="cprof-cat-header" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '10px 14px', background: cat.required ? `${cat.color}12` : `${cat.color}08`, border: `1px solid ${cat.required ? cat.color + '35' : cat.color + '20'}`, borderRadius: 12 }}>
                     <div style={{ width: 30, height: 30, borderRadius: 8, background: `${cat.color}18`, border: `1px solid ${cat.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <cat.Icon size={14} color={cat.color} />
                     </div>
@@ -773,7 +785,7 @@ export default function CoachProfilePage() {
               {/* Coordonnées */}
               <div>
                 <label style={{ ...labelStyle, fontSize: 10, color: 'rgba(232,228,220,0.25)', letterSpacing: '0.12em', marginBottom: 12 }}>COORDONNÉES</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div className="cprof-targets" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <div>
                     <label style={labelStyle}>Téléphone</label>
                     <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+33 6 00 00 00 00" type="tel" style={inputStyle} />

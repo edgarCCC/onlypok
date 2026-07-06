@@ -486,6 +486,13 @@ export default function TrackPage() {
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
         background: 'radial-gradient(ellipse 50% 25% at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)' }} />
 
+      <style>{`
+        @media (max-width: 700px) {
+          .strk-stats { grid-template-columns: 1fr 1fr !important; }
+          .strk-table-wrap { overflow-x: auto; }
+          .strk-table-wrap table { min-width: 520px; }
+        }
+      `}</style>
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: '40px 24px 100px' }}>
 
         {/* ── Header ── */}
@@ -593,7 +600,7 @@ export default function TrackPage() {
             {tab === 'overview' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {/* Stats grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                <div className="strk-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                   <StatCard label="VPIP"    value={`${stats.vpip}%`}    color={stats.vpip > 30 ? C.amber : stats.vpip < 15 ? C.cyan : C.green}   icon={Target}    sub="Mains jouées volontairement" />
                   <StatCard label="PFR"     value={`${stats.pfr}%`}     color={stats.pfr > 25 ? C.amber : C.cyan}                                  icon={Zap}       sub="Raise preflop" />
                   <StatCard label="3-Bet"   value={`${stats.threeBet}%`}color={stats.threeBet > 10 ? C.amber : C.violet}                           icon={RefreshCw} sub="Quand opportunité" />
@@ -626,7 +633,7 @@ export default function TrackPage() {
             {/* ══ TAB: Financial ══ */}
             {tab === 'financial' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                <div className="strk-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                   <StatCard label="Gains nets" value={`${stats.totalEuro >= 0 ? '+' : ''}${stats.totalEuro.toFixed(2)} €`}
                     color={stats.totalEuro >= 0 ? C.green : C.red} icon={TrendingUp} />
                   <StatCard label="bb/100" value={`${stats.bb100 >= 0 ? '+' : ''}${stats.bb100}`}
@@ -642,7 +649,7 @@ export default function TrackPage() {
 
             {/* ══ TAB: Position ══ */}
             {tab === 'position' && (
-              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
+              <div className="strk-table-wrap" style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: 'rgba(232,228,220,0.03)' }}>

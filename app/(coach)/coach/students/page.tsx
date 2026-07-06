@@ -111,16 +111,26 @@ export default function StudentsPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#050709', color: CREAM }}>
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 35% at 50% 0%, rgba(6,182,212,0.08) 0%, transparent 70%)' }} />
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: '40px' }}>
+      <style>{`
+        @media (max-width: 860px) {
+          .cstu-container { padding: 24px 16px !important; }
+          .cstu-title { font-size: 32px !important; }
+          .cstu-row { flex-wrap: wrap !important; }
+        }
+        @media (max-width: 700px) {
+          .cstu-kpis { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+      <div className="cstu-container" style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: '40px' }}>
 
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
           <p style={{ fontSize: 11, color: SILVER, marginBottom: 10, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Communauté</p>
-          <h1 style={{ fontSize: 44, fontWeight: 700, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>Mes élèves</h1>
+          <h1 className="cstu-title" style={{ fontSize: 44, fontWeight: 700, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>Mes élèves</h1>
         </div>
 
         {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 32 }}>
+        <div className="cstu-kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 32 }}>
           {[
             { label: 'Élèves uniques',   value: uniqueStudents,  sub: 'au total',           color: CYAN },
             { label: 'Ce mois-ci',       value: newThisMonth,    sub: 'nouveaux achats',     color: VIOLET },
@@ -159,7 +169,7 @@ export default function StudentsPage() {
                   onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(240,244,255,0.07)'}>
 
                   {/* Row principale */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 22px' }}>
+                  <div className="cstu-row" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 22px' }}>
 
                     {/* Avatar */}
                     <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>

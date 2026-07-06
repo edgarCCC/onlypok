@@ -308,7 +308,21 @@ export default function EditFormationPage() {
       {/* Top accent line */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, height: 2, background: `linear-gradient(90deg, transparent 0%, ${activeType.color}80 40%, ${activeType.color}80 60%, transparent 100%)`, transition: 'background 0.4s' }} />
 
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1140, margin: '0 auto', padding: '36px 40px 80px' }}>
+      <style>{`
+        @media (max-width: 900px) {
+          .cedit-container { padding: 24px 16px 60px !important; }
+          .cedit-layout { grid-template-columns: 1fr !important; }
+          .cedit-sidebar { position: static !important; }
+        }
+        @media (max-width: 700px) {
+          .cedit-3col { grid-template-columns: 1fr !important; }
+          .cedit-highlights { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 560px) {
+          .cedit-gallery { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+      <div className="cedit-container" style={{ position: 'relative', zIndex: 1, maxWidth: 1140, margin: '0 auto', padding: '36px 40px 80px' }}>
 
         {/* ── Topbar ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 36 }}>
@@ -334,7 +348,7 @@ export default function EditFormationPage() {
         </div>
 
         {/* ── 2-column layout ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 288px', gap: 22, alignItems: 'start' }}>
+        <div className="cedit-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 288px', gap: 22, alignItems: 'start' }}>
 
           {/* ── LEFT — main form ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -422,7 +436,7 @@ export default function EditFormationPage() {
                   </div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                <div className="cedit-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                   <div>
                     <p style={label()}>Prix (€)</p>
                     <NumberStepper value={formation.price ?? 0} onChange={v => updateField('price', v)} min={0} max={9999} step={5} suffix="€" />
@@ -637,7 +651,7 @@ export default function EditFormationPage() {
                       setGalleryNew(next)
                       e.target.value = ''
                     }} />
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: galleryNew.length > 0 ? 14 : 0 }}>
+                  <div className="cedit-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: galleryNew.length > 0 ? 14 : 0 }}>
                     {galleryUrls.map(url => (
                       <div key={url} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117' }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -696,7 +710,7 @@ export default function EditFormationPage() {
                             </button>
                           )}
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12 }}>
+                        <div className="cedit-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12 }}>
                           <div><p style={label()}>Heures</p><NumberStepper value={pack.hours} onChange={v => savePacks(packs.map((p, idx) => idx === i ? { ...p, hours: v } : p))} min={1} max={100} step={1} suffix="h" /></div>
                           <div><p style={label()}>Prix (€)</p><NumberStepper value={pack.price} onChange={v => savePacks(packs.map((p, idx) => idx === i ? { ...p, price: v } : p))} min={0} max={9999} step={5} suffix="€" /></div>
                           <div><p style={label()}>Description</p><input value={pack.desc} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, desc: e.target.value } : p))} placeholder="Ce que comprend ce pack" style={field()} /></div>
@@ -742,7 +756,7 @@ export default function EditFormationPage() {
           </div>
 
           {/* ── RIGHT — Sidebar ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 24 }}>
+          <div className="cedit-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 24 }}>
 
             {/* Publish CTA */}
             <div style={card({ padding: 20 })}>
@@ -906,7 +920,7 @@ function HighlightsPicker({
           {selected.length}/5
         </span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+      <div className="cedit-highlights" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
         {options.map(h => {
           const active   = selected.includes(h.id)
           const disabled = !active && selected.length >= 5

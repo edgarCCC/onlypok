@@ -117,11 +117,16 @@ export default function AdminValidationsPage() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <style>{`
+              @media (max-width: 560px) {
+                .cadm-proof-row { grid-template-columns: 1fr !important; }
+              }
+            `}</style>
             {proofs.map(proof => (
               <div key={proof.id} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: 'hidden' }}>
 
                 {/* Row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr auto', gap: 16, padding: 16, alignItems: 'start' }}>
+                <div className="cadm-proof-row" style={{ display: 'grid', gridTemplateColumns: '120px 1fr auto', gap: 16, padding: 16, alignItems: 'start' }}>
 
                   {/* Thumbnail */}
                   <div style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '16/9', background: '#0c0f17', cursor: 'pointer' }}

@@ -92,7 +92,7 @@ export default function StudentHeader() {
       : <span style={{ fontSize: 11, fontWeight: 700 }}>{(profile?.username ?? 'E')[0].toUpperCase()}</span>
 
   return (
-    <header style={{
+    <header className="shdr" style={{
       position: 'sticky', top: 0, zIndex: 100,
       height: 64, flexShrink: 0,
       background: 'rgba(4,4,10,0.96)',
@@ -102,6 +102,12 @@ export default function StudentHeader() {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '0 clamp(16px,3vw,40px)',
     }}>
+      <style>{`
+        @media (max-width: 860px) {
+          .shdr { flex-wrap: wrap !important; height: auto !important; padding-top: 10px !important; padding-bottom: 10px !important; row-gap: 8px !important; }
+          .shdr-nav { position: static !important; order: 3; min-width: 100%; overflow-x: auto; justify-content: flex-start !important; pointer-events: auto !important; }
+        }
+      `}</style>
 
       {/* Logo — left */}
       <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, zIndex: 2 }}>
@@ -111,7 +117,7 @@ export default function StudentHeader() {
       </Link>
 
       {/* Nav — absolutely centered */}
-      <nav style={{
+      <nav className="shdr-nav" style={{
         position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         pointerEvents: 'none', zIndex: 1,

@@ -598,14 +598,20 @@ export default function CoachRequestsPage() {
         transition: 'background 0.45s ease',
       }} />
 
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 800, margin: '0 auto', padding: '40px 28px 80px' }}>
+      <style>{`
+        @media (max-width: 700px) {
+          .creq-container { padding: 24px 16px 60px !important; }
+          .creq-title { font-size: 30px !important; }
+        }
+      `}</style>
+      <div className="creq-container" style={{ position: 'relative', zIndex: 1, maxWidth: 800, margin: '0 auto', padding: '40px 28px 80px' }}>
         {/* Header */}
         <div style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 11, color: SILVER, marginBottom: 8, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
             Espace coach
           </p>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-            <h1 style={{
+            <h1 className="creq-title" style={{
               fontSize: 44, fontWeight: 700, color: CREAM, letterSpacing: '-1px',
               lineHeight: 1.05, fontFamily: 'var(--font-syne,sans-serif)', margin: 0,
             }}>

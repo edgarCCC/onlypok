@@ -105,7 +105,12 @@ export default function TrainerPage() {
       {/* Features grid */}
       <section id="tools" style={{ padding: '0 clamp(20px,5vw,80px) 100px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px,1fr))', gap: 16 }}>
+          <style>{`
+            @media (max-width: 420px) {
+              .strn-grid { grid-template-columns: 1fr !important; }
+            }
+          `}</style>
+          <div className="strn-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px,1fr))', gap: 16 }}>
             {FEATURES.map(({ icon: Icon, title, desc, color, available, href }) => {
               const card = (
                 <div style={{ position: 'relative', background: 'rgba(232,228,220,0.03)', border: `1px solid ${available ? color + '28' : 'rgba(232,228,220,0.07)'}`, borderRadius: 18, padding: '28px 26px', overflow: 'hidden', opacity: available ? 1 : 0.5, cursor: available ? 'pointer' : 'default', transition: 'border-color 0.2s, transform 0.15s', minHeight: 200, height: '100%', boxSizing: 'border-box' }}
