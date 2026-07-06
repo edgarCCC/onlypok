@@ -63,11 +63,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = useCallback(async (u: User) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', u.id)
       .single()
+    if (error) console.error('[ProfileContext] fetchProfile failed:', error.message)
     setProfile(data ?? null)
   }, [supabase])
 
@@ -86,11 +87,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (!mounted) return
       const u = session?.user ?? null
       setUser(u)
-      setLoading(false)   // unblock immediately — auth state is from localStorage, no network needed
       if (u) {
-        fetchProfile(u)   // fire-and-forget — profile fills in ~200ms later
+        // loading ne passe à false qu'une fois le profil chargé : les pages qui
+        // lisent profile.role / profile.username ne flickerent plus (~200ms)
+        fetchProfile(u).finally(() => { if (mounted) setLoading(false) })
       } else {
         setProfile(null)
+        setLoading(false)
       }
     })
 

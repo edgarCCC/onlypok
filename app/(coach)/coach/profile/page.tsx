@@ -152,6 +152,8 @@ export default function CoachProfilePage() {
   const hasLoaded      = useRef(false)
   const debounceTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
   const saveProfileRef = useRef<() => Promise<void>>(async () => {})
+  const savingRef      = useRef(false)  // save en cours — évite 2 updates concurrents
+  const pendingRef     = useRef(false)  // modifs arrivées pendant un save → re-save à la fin
   const [cropFile,        setCropFile]        = useState<File | null>(null)
   const [loading,         setLoading]         = useState(true)
 
@@ -203,6 +205,8 @@ export default function CoachProfilePage() {
 
   const saveProfile = async () => {
     if (!user) return
+    if (savingRef.current) { pendingRef.current = true; return }
+    savingRef.current = true
     setUsernameErr('')
     setSaveStatus('saving')
     const { error } = await supabase.from('profiles').update({
@@ -229,9 +233,20 @@ export default function CoachProfilePage() {
       payment_notes:     paymentNotes || null,
       preferred_payment: preferredPayment || null,
     }).eq('id', user.id)
+    savingRef.current = false
+    if (pendingRef.current) {
+      // Des champs ont changé pendant le save : on repart avec les valeurs fraîches
+      pendingRef.current = false
+      return saveProfileRef.current()
+    }
     if (error?.message?.includes('unique') || error?.message?.includes('duplicate')) {
       setUsernameErr('Ce pseudo est déjà pris')
       setSaveStatus('idle')
+      return
+    }
+    if (error) {
+      console.error('[coach/profile] autosave failed:', error.message)
+      setSaveStatus('dirty') // le badge reste "modifications non enregistrées"
       return
     }
     await refreshProfile()

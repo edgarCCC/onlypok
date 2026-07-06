@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
+import { sendAdminAlertEmail } from '@/lib/email'
 
 // POST /api/stripe/verify-session
 // Fallback: called on success redirect if webhook hasn't fired yet.
@@ -99,7 +100,13 @@ async function handleVerifySession(req: NextRequest) {
     platform_fee_pct:  platformFeePct,
   })
   if (purchaseError && purchaseError.code !== '23505') {
+    /* Non-fatal : le webhook Stripe insère aussi le purchase de son côté,
+       mais on alerte pour ne pas perdre la trace d'un paiement. */
     console.error('[verify-session] purchase insert error:', purchaseError.message, purchaseError.code)
+    sendAdminAlertEmail({
+      subject: 'verify-session — insert formation_purchases échoué',
+      details: { stripe_session: session_id, formation_id: formationId, user_id: userId, erreur: purchaseError.message },
+    }).catch(() => {})
   }
 
   // For coaching: ensure booking(s) exist
@@ -152,35 +159,21 @@ async function handleVerifySession(req: NextRequest) {
         stripe_payment_intent_id: paymentIntentId,
       }
 
-      let { error: bookingError } = await adminSupabase.from('bookings').insert(full)
-
-      // Gracefully degrade if schema hasn't been migrated yet (column doesn't exist)
-      if (bookingError?.code === '42703') {
-        console.error('[verify-session] 42703 column missing, retrying reduced payload:', bookingError.message)
-        const msg      = bookingError.message ?? ''
-        const reduced  = { ...full }
-        if (msg.includes('stripe_payment_intent_id')) delete reduced.stripe_payment_intent_id
-        if (msg.includes('pack_index'))               delete reduced.pack_index
-        if (msg.includes('stripe_session_id'))        delete reduced.stripe_session_id
-        ;({ error: bookingError } = await adminSupabase.from('bookings').insert(reduced))
-        // Last resort: absolute minimum columns
-        if (bookingError?.code === '42703') {
-          console.error('[verify-session] 42703 again, trying minimal payload:', bookingError.message)
-          ;({ error: bookingError } = await adminSupabase.from('bookings').insert({
-            formation_id: formationId,
-            student_id:   userId,
-            coach_id:     coachId,
-            status:       'paid_pending_schedule',
-            scheduled_at: isFirst ? scheduledAt : null,
-          }))
-        }
-      }
+      const { error: bookingError } = await adminSupabase.from('bookings').insert(full)
 
       if (bookingError) {
         if (bookingError.code === '23505') {
           continue
         }
         console.error('[verify-session] booking insert FAILED', { i, error: bookingError.message, code: bookingError.code })
+        sendAdminAlertEmail({
+          subject: 'verify-session — booking payé non créé',
+          details: {
+            stripe_session: session_id, formation_id: formationId,
+            student_id: userId, coach_id: coachId,
+            session_index: `${i + 1}/${sessionsCount}`, erreur: bookingError.message, code: bookingError.code,
+          },
+        }).catch(() => {})
         return NextResponse.json({ error: bookingError.message }, { status: 500 })
       }
 
