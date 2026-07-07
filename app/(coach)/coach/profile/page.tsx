@@ -160,11 +160,15 @@ export default function CoachProfilePage() {
   useEffect(() => {
     if (!user) return
     ;(async () => {
-      const [{ data: p }, { data: pr }, { data: r }, { data: f }] = await Promise.all([
+      const [{ data: p }, { data: pr }, { data: r }, { data: f }, pay] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
         supabase.from('coach_proofs').select('*').eq('coach_id', user.id).order('order_index'),
         supabase.from('reviews').select('rating').eq('coach_id', user.id),
         supabase.from('formations').select('id').eq('coach_id', user.id).eq('published', true),
+        // Coordonnées de paiement : chiffrées en base, déchiffrées côté serveur (audit item 41)
+        fetch('/api/coach/payment-info')
+          .then(res => (res.ok ? (res.json() as Promise<Record<string, string | null>>) : null))
+          .catch(() => null),
       ])
       if (p) {
         setUsername(p.username ?? '')
@@ -187,12 +191,14 @@ export default function CoachProfilePage() {
         setCompanyName(p.company_name ?? '')
         setSiret(p.siret ?? '')
         setVatNumber(p.vat_number ?? '')
-        setIban(p.iban ?? '')
-        setPaypalEmail(p.paypal_email ?? '')
-        setStripeEmail(p.stripe_account ?? '')
-        setRevolut(p.revolut_tag ?? '')
-        setPaymentNotes(p.payment_notes ?? '')
-        setPreferredPayment(p.preferred_payment ?? null)
+      }
+      if (pay) {
+        setIban(pay.iban ?? '')
+        setPaypalEmail(pay.paypal_email ?? '')
+        setStripeEmail(pay.stripe_account ?? '')
+        setRevolut(pay.revolut_tag ?? '')
+        setPaymentNotes(pay.payment_notes ?? '')
+        setPreferredPayment(pay.preferred_payment ?? null)
       }
       setProofs(pr ?? [])
       setReviewCount(r?.length ?? 0)
@@ -209,30 +215,42 @@ export default function CoachProfilePage() {
     savingRef.current = true
     setUsernameErr('')
     setSaveStatus('saving')
-    const { error } = await supabase.from('profiles').update({
-      username:          username || null,
-      bio:               bio || null,
-      vision:            vision || null,
-      years_experience:  yearsExp,
-      is_pro:            isPro,
-      rooms, variants, advantages,
-      target_players:    targetPlayers,
-      phone:             phone || null,
-      address_line:      addressLine || null,
-      city:              city || null,
-      zip_code:          zipCode || null,
-      country,
-      is_company:        isCompany,
-      company_name:      companyName || null,
-      siret:             siret || null,
-      vat_number:        vatNumber || null,
-      iban:              iban || null,
-      paypal_email:      paypalEmail || null,
-      stripe_account:    stripeEmail || null,
-      revolut_tag:       revolut || null,
-      payment_notes:     paymentNotes || null,
-      preferred_payment: preferredPayment || null,
-    }).eq('id', user.id)
+    /* Les coordonnées de paiement ne partent plus dans le .update() direct :
+       elles passent par l'API serveur qui les chiffre (AES-256-GCM) — audit item 41 */
+    const [{ error }, paymentError] = await Promise.all([
+      supabase.from('profiles').update({
+        username:          username || null,
+        bio:               bio || null,
+        vision:            vision || null,
+        years_experience:  yearsExp,
+        is_pro:            isPro,
+        rooms, variants, advantages,
+        target_players:    targetPlayers,
+        phone:             phone || null,
+        address_line:      addressLine || null,
+        city:              city || null,
+        zip_code:          zipCode || null,
+        country,
+        is_company:        isCompany,
+        company_name:      companyName || null,
+        siret:             siret || null,
+        vat_number:        vatNumber || null,
+      }).eq('id', user.id),
+      fetch('/api/coach/payment-info', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          iban:              iban || null,
+          paypal_email:      paypalEmail || null,
+          stripe_account:    stripeEmail || null,
+          revolut_tag:       revolut || null,
+          payment_notes:     paymentNotes || null,
+          preferred_payment: preferredPayment || null,
+        }),
+      })
+        .then(res => (res.ok ? null : `payment-info HTTP ${res.status}`))
+        .catch((err: unknown) => (err instanceof Error ? err.message : 'payment-info network error')),
+    ])
     savingRef.current = false
     if (pendingRef.current) {
       // Des champs ont changé pendant le save : on repart avec les valeurs fraîches
@@ -244,8 +262,8 @@ export default function CoachProfilePage() {
       setSaveStatus('idle')
       return
     }
-    if (error) {
-      console.error('[coach/profile] autosave failed:', error.message)
+    if (error || paymentError) {
+      console.error('[coach/profile] autosave failed:', error?.message ?? paymentError)
       setSaveStatus('dirty') // le badge reste "modifications non enregistrées"
       return
     }
