@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { ShieldCheck, Database, ChevronRight, CheckCircle2, XCircle, Loader2, Copy, Check } from 'lucide-react'
+import { ShieldCheck, Database, ChevronRight, CheckCircle2, XCircle, Loader2, Copy, Check, Lock } from 'lucide-react'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -99,6 +99,69 @@ function MigrationCard({ migration }: { migration: typeof MIGRATIONS[0] }) {
   )
 }
 
+function EncryptPaymentInfoCard() {
+  const [status, setStatus] = useState<'idle' | 'running' | 'ok' | 'error'>('idle')
+  const [result, setResult] = useState<{ scanned?: number; profilesUpdated?: number; fieldsEncrypted?: number; failures?: unknown[] } | null>(null)
+  const [errMsg, setErrMsg]  = useState('')
+
+  const run = async () => {
+    setStatus('running')
+    setErrMsg('')
+    try {
+      const res  = await fetch('/api/admin/encrypt-payment-info', { method: 'POST' })
+      const json = await res.json()
+      if (res.ok) {
+        setResult(json)
+        setStatus((json.failures?.length ?? 0) > 0 ? 'error' : 'ok')
+        if ((json.failures?.length ?? 0) > 0) setErrMsg(`${json.failures.length} échec(s) — voir les logs serveur`)
+      } else {
+        setStatus('error')
+        setErrMsg(json.error ?? `HTTP ${res.status}`)
+      }
+    } catch {
+      setStatus('error')
+      setErrMsg('Erreur réseau')
+    }
+  }
+
+  return (
+    <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, padding: '20px 24px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: CREAM, marginBottom: 4 }}>Chiffrer les coordonnées de paiement</div>
+          <div style={{ fontSize: 13, color: SILVER, lineHeight: 1.5 }}>
+            Chiffre (AES-256-GCM) les IBAN, PayPal, Stripe, Revolut et notes encore stockés en clair.
+            Nécessite PAYMENT_INFO_ENC_KEY dans l&apos;environnement. Ré-exécutable sans risque.
+          </div>
+        </div>
+        {(status === 'idle' || status === 'error') && (
+          <button onClick={run} style={{ flexShrink: 0, padding: '8px 18px', background: VIOLET, border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+            {status === 'error' ? 'Réessayer' : 'Lancer'}
+          </button>
+        )}
+        {status === 'running' && (
+          <Loader2 size={18} color={SILVER} style={{ flexShrink: 0, animation: 'spin 1s linear infinite' }} />
+        )}
+        {status === 'ok' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#4ade80', fontSize: 13, fontWeight: 700 }}>
+            <CheckCircle2 size={16} /> Terminé
+          </div>
+        )}
+      </div>
+      {result && (
+        <div style={{ marginTop: 12, fontSize: 12, color: SILVER }}>
+          {result.scanned} profils scannés · {result.profilesUpdated} mis à jour · {result.fieldsEncrypted} champs chiffrés
+        </div>
+      )}
+      {status === 'error' && errMsg && (
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, color: '#f87171', fontSize: 12 }}>
+          <XCircle size={14} /> {errMsg}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#04040a', color: CREAM, padding: 'clamp(32px,5vw,64px) clamp(20px,5vw,64px)' }}>
@@ -123,6 +186,15 @@ export default function AdminPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {MIGRATIONS.map(m => <MigrationCard key={m.id} migration={m} />)}
             </div>
+          </section>
+
+          {/* Sécurité */}
+          <section>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <Lock size={15} color={SILVER} />
+              <h2 style={{ fontSize: 13, fontWeight: 700, color: SILVER, margin: 0, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Sécurité</h2>
+            </div>
+            <EncryptPaymentInfoCard />
           </section>
 
           {/* Validations */}
