@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
-import { decryptPaymentField, encryptPaymentField } from '@/lib/crypto'
+import { decryptPaymentField, encryptPaymentField, isPaymentEncryptionConfigured } from '@/lib/crypto'
 
 /**
  * Coordonnées de paiement du coach (audit item 41).
@@ -55,6 +55,13 @@ export async function GET() {
 export async function PUT(req: NextRequest) {
   const user = await getAuthenticatedUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  /* Fail-closed en production : sans clé, on refuse d'écrire plutôt que de
+     stocker silencieusement en clair. En dev, on dégrade (log dans lib/crypto). */
+  if (!isPaymentEncryptionConfigured() && process.env.NODE_ENV === 'production') {
+    console.error('[payment-info] PUT refusé : PAYMENT_INFO_ENC_KEY absente/invalide en production')
+    return NextResponse.json({ error: 'Chiffrement non configuré — contactez le support' }, { status: 503 })
+  }
 
   let body: unknown
   try {

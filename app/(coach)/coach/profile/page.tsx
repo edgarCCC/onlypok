@@ -252,13 +252,15 @@ export default function CoachProfilePage() {
         .catch((err: unknown) => (err instanceof Error ? err.message : 'payment-info network error')),
     ])
     savingRef.current = false
+    // Le pseudo dupliqué s'affiche tout de suite, même si un re-save part derrière
+    const isDuplicateUsername = error?.message?.includes('unique') || error?.message?.includes('duplicate')
+    if (isDuplicateUsername) setUsernameErr('Ce pseudo est déjà pris')
     if (pendingRef.current) {
       // Des champs ont changé pendant le save : on repart avec les valeurs fraîches
       pendingRef.current = false
       return saveProfileRef.current()
     }
-    if (error?.message?.includes('unique') || error?.message?.includes('duplicate')) {
-      setUsernameErr('Ce pseudo est déjà pris')
+    if (isDuplicateUsername) {
       setSaveStatus('idle')
       return
     }

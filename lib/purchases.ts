@@ -20,12 +20,26 @@ export async function recordPurchaseFromSession(
     return { error: { message: 'Missing formation_id/user_id in session metadata' } }
   }
 
-  const amountPaid     = Math.round((session.amount_total ?? 0) / 100) // euros, brut Stripe
+  /* Garde : si Stripe ne fournit pas de montant (session edge-case), on ne doit
+     jamais écraser un montant correct déjà enregistré — insert-si-absent seulement. */
+  if (session.amount_total == null) {
+    const { error } = await admin.from('formation_purchases').upsert({
+      formation_id: formationId,
+      user_id:      userId,
+    }, { onConflict: 'formation_id,user_id', ignoreDuplicates: true })
+    return { error: error ? { message: error.message, code: error.code } : null }
+  }
+
+  const amountPaid     = Math.round(session.amount_total / 100) // euros, brut Stripe
   const platformFeePct = contentType === 'coaching' ? COACHING_FEE_PCT : 0
   const netAmount      = platformFeePct > 0
     ? Math.round(amountPaid / (1 + platformFeePct / 100)) // ce que touche le coach
     : amountPaid
 
+  /* Limite connue : la table est UNIQUE(formation_id, user_id) — un rachat de
+     coaching par le même élève écrase le montant du 1er achat (dernier gagnant).
+     Corriger proprement = passer en ledger (1 ligne par session Stripe), ce qui
+     impacte les checks hasPurchased en .single() → décision produit à part. */
   const { error } = await admin.from('formation_purchases').upsert({
     formation_id:     formationId,
     user_id:          userId,

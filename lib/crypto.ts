@@ -52,6 +52,11 @@ function getEncryptionKey(): Buffer | null {
   return null
 }
 
+/** true si une clé de chiffrement valide est disponible dans l'environnement */
+export function isPaymentEncryptionConfigured(): boolean {
+  return getEncryptionKey() !== null
+}
+
 /** true si la valeur est déjà au format chiffré enc:v1: */
 export function isEncryptedPaymentValue(value: string | null | undefined): boolean {
   return typeof value === 'string' && value.startsWith(ENC_PREFIX)
