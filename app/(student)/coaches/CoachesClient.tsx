@@ -1,5 +1,6 @@
 'use client'
 import { useState, useMemo } from 'react'
+import Image from 'next/image'
 import {
   Search, Star, BookOpen, Clock, Flame, X, ChevronRight,
   Award, Users, TrendingUp, Package,
@@ -132,9 +133,10 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
               width: '100%', height: '100%', borderRadius: '50%', background: BG,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               overflow: 'hidden', fontSize: 18, fontWeight: 800, color: '#fff',
+              position: 'relative',
             }}>
               {coach.avatar_url
-                ? <img src={coach.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <Image src={coach.avatar_url} alt="" fill sizes="64px" style={{ objectFit: 'cover' }} />
                 : initials}
             </div>
           </div>
@@ -299,9 +301,10 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
                   width: '100%', height: '100%', borderRadius: '50%', background: BG,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   overflow: 'hidden', fontSize: 22, fontWeight: 800, color: '#fff',
+                  position: 'relative',
                 }}>
                   {coach.avatar_url
-                    ? <img src={coach.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ? <Image src={coach.avatar_url} alt="" fill sizes="72px" style={{ objectFit: 'cover' }} />
                     : initials}
                 </div>
               </div>

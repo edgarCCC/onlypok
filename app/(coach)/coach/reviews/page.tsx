@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useMemo } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
@@ -74,11 +75,10 @@ function ReviewCard({ r }: { r: any }) {
           background: avatarUrl ? 'transparent' : `linear-gradient(135deg,${VIOLET},#06b6d4)`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 16, fontWeight: 700, color: '#fff', overflow: 'hidden',
-          border: '1.5px solid rgba(240,244,255,0.1)',
+          border: '1.5px solid rgba(240,244,255,0.1)', position: 'relative',
         }}>
           {avatarUrl
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <Image src={avatarUrl} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />
             : initial
           }
         </div>

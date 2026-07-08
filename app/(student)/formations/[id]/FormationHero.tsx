@@ -1,6 +1,7 @@
 'use client'
 import { Star, BookOpen } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Proof } from '@/components/ProofGalleryModal'
 import { CREAM, SILVER, TYPE_LABELS } from './shared'
 
@@ -69,10 +70,9 @@ export default function FormationHero({ formation, contentType, typeColor, varia
               boxShadow: `0 8px 40px ${typeColor}40, 0 0 0 4px #07090e`,
               position: 'relative', zIndex: 1,
             }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#0d1117', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#0d1117', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 {coach?.avatar_url
-                  // eslint-disable-next-line @next/next/no-img-element
-                  ? <img src={coach.avatar_url} alt={coach.username ?? 'Coach'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="96px" style={{ objectFit: 'cover' }} />
                   : <span style={{ fontSize: 32, fontWeight: 900, color: '#fff' }}>{(coach?.username ?? 'C').slice(0, 2).toUpperCase()}</span>
                 }
               </div>
@@ -119,8 +119,7 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                   const url = galleryUrls[i]
                   return url ? (
                     <div key={i} style={{ position: 'relative', overflow: 'hidden', background: '#0f1218' }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
+                      <Image src={url} alt="" fill sizes="(max-width: 768px) 25vw, 200px" style={{ objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
                         onMouseEnter={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.04)'}
                         onMouseLeave={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)'} />
                       {i === 3 && galleryUrls.length > 4 && (
@@ -140,9 +139,8 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                   <div key={proof.id}
                     onClick={onOpenProofModal}
                     style={{ position: 'relative', overflow: 'hidden', cursor: 'pointer', background: '#0f1218' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={proof.url} alt={proof.caption ?? ''}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
+                    <Image src={proof.url} alt={proof.caption ?? ''} fill sizes="(max-width: 768px) 25vw, 200px"
+                      style={{ objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
                       onMouseEnter={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.04)'}
                       onMouseLeave={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)'} />
                     <div style={{ position: 'absolute', bottom: 7, left: 7 }}>
@@ -251,10 +249,10 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 10, fontWeight: 800, color: '#fff',
                 boxShadow: `0 0 0 2px ${typeColor}30`,
+                position: 'relative',
               }}>
                 {coach.avatar_url
-                  // eslint-disable-next-line @next/next/no-img-element
-                  ? <img src={coach.avatar_url} alt={coach.username ?? 'Coach'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="24px" style={{ objectFit: 'cover' }} />
                   : (coach.username ?? 'C')[0].toUpperCase()}
               </div>
               <span style={{ fontWeight: 500 }}>{coach.username}</span>
@@ -281,10 +279,9 @@ export default function FormationHero({ formation, contentType, typeColor, varia
             <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
               background: reviews[0].student?.avatar_url ? 'transparent' : `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700, color: '#fff' }}>
+              fontSize: 11, fontWeight: 700, color: '#fff', position: 'relative' }}>
               {reviews[0].student?.avatar_url
-                // eslint-disable-next-line @next/next/no-img-element
-                ? <img src={reviews[0].student.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <Image src={reviews[0].student.avatar_url} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
                 : (reviews[0].student?.username ?? 'E')[0].toUpperCase()}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>

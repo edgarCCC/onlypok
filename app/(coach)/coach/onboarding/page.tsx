@@ -1,5 +1,6 @@
 'use client'
 import { useState, useMemo, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import {
@@ -475,7 +476,7 @@ export default function OnboardingPage() {
                       {catProofs.map(p => (
                         <div key={p.id} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 10, overflow: 'hidden' }}>
                           <div style={{ position: 'relative', aspectRatio: '16/9', background: '#0c0f17' }}>
-                            <img src={p.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <Image src={p.url} alt="" fill sizes="150px" style={{ objectFit: 'cover' }} />
                             <button onClick={() => deleteProof(p.id, p.url)}
                               style={{ position: 'absolute', top: 5, right: 5, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.85)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <Trash2 size={10} color="#ef4444" />

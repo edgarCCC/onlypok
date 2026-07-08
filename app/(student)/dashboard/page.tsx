@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ArrowRight, ArrowUpRight, CheckCircle, AlertCircle,
   Play, Zap, Users, Loader2, Sparkles, Camera,
@@ -295,10 +296,10 @@ export default function StudentDashboard() {
 
           {/* Avatar clickable */}
           <div style={{ flexShrink: 0, position: 'relative' }}>
-            <div style={{ width: 72, height: 72, borderRadius: '50%', background: `linear-gradient(135deg,${CYAN},${VIOLET})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800, color: '#fff', overflow: 'hidden', border: `2px solid ${BORDER_H}` }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: `linear-gradient(135deg,${CYAN},${VIOLET})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800, color: '#fff', overflow: 'hidden', border: `2px solid ${BORDER_H}`, position: 'relative' }}>
               {uploading
                 ? <Loader2 size={26} color="#fff" style={{ animation: 'spin 1s linear infinite' }} />
-                : avatar ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : avatar ? <Image src={avatar} alt="" fill sizes="72px" style={{ objectFit: 'cover' }} />
                 : (username ?? '?')[0].toUpperCase()}
             </div>
             <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} title="Changer la photo"
@@ -515,9 +516,9 @@ function CoachCard({ coach }: { coach: CoachItem }) {
 
       {/* Coach identity */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg,${CYAN},${VIOLET})`, flexShrink: 0, overflow: 'hidden', border: `2px solid rgba(6,182,212,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#fff' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg,${CYAN},${VIOLET})`, flexShrink: 0, overflow: 'hidden', border: `2px solid rgba(6,182,212,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#fff', position: 'relative' }}>
           {coach.avatar_url
-            ? <img src={coach.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <Image src={coach.avatar_url} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />
             : (coach.username ?? '?')[0].toUpperCase()}
         </div>
         <div style={{ minWidth: 0, flex: 1 }}>
@@ -591,7 +592,7 @@ function FormationCard({ formation: f }: { formation: FormationItem }) {
 
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           {f.thumbnail_url ? (
-            <img src={f.thumbnail_url} alt="" style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+            <Image src={f.thumbnail_url} alt="" width={44} height={44} sizes="44px" style={{ borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
           ) : (
             <div style={{ width: 44, height: 44, borderRadius: 10, background: `${accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {isVideo ? <Play size={16} color={accent} /> : <BookOpen size={16} color={accent} />}

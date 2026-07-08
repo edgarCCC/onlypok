@@ -11,6 +11,7 @@
 
 import { useEffect, useMemo, useRef, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { Send, Search, MessageSquare, Inbox, Check, CheckCheck, NotebookPen, ChevronDown, ChevronUp, Paperclip, FileText } from 'lucide-react'
@@ -157,11 +158,11 @@ function Avatar({
       background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       color: '#fff', fontWeight: 700, fontSize: Math.round(size * 0.42),
-      flexShrink: 0, overflow: 'hidden',
+      flexShrink: 0, overflow: 'hidden', position: 'relative',
       boxShadow: ring ? `0 0 0 2px ${VIOLET}40, 0 0 0 4px ${BG}` : undefined,
     }}>
       {src
-        ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ? <Image src={src} alt="" fill sizes={`${size}px`} style={{ objectFit: 'cover' }} />
         : initials(name)}
     </div>
   )

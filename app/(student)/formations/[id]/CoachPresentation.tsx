@@ -1,6 +1,7 @@
 'use client'
 import { Star } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Proof } from '@/components/ProofGalleryModal'
 import { CREAM, SILVER, VARIANT_COLORS } from './shared'
 
@@ -27,10 +28,9 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
           {/* ── Colonne gauche : avatar + stats ── */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
             {/* Avatar */}
-            <div style={{ width: 110, height: 110, borderRadius: '50%', background: `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 800, color: '#fff', overflow: 'hidden', boxShadow: `0 0 0 3px #07090e, 0 0 0 5px ${typeColor}40` }}>
+            <div style={{ width: 110, height: 110, borderRadius: '50%', background: `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 800, color: '#fff', overflow: 'hidden', boxShadow: `0 0 0 3px #07090e, 0 0 0 5px ${typeColor}40`, position: 'relative' }}>
               {coach.avatar_url
-                // eslint-disable-next-line @next/next/no-img-element
-                ? <img src={coach.avatar_url} alt={coach.username ?? 'Coach'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="110px" style={{ objectFit: 'cover' }} />
                 : (coach.username ?? 'C')[0].toUpperCase()}
             </div>
             {/* Nom + badge */}
@@ -127,9 +127,11 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
                     const whiteFilter: Record<string, boolean> = { 'PartyPoker': true, '888poker': true }
                     const src = logoSrc[room]
                     return src ? (
-                      <div key={room} title={room} style={{ width: 80, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={src} alt={room} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: whiteFilter[room] ? 'brightness(0) invert(1)' : 'brightness(0.9) saturate(0.85)', opacity: 0.85 }} />
+                      <div key={room} title={room} style={{ width: 80, height: 28, position: 'relative', flexShrink: 0 }}>
+                        <Image
+                          src={src} alt={room} fill unoptimized sizes="80px"
+                          style={{ objectFit: 'contain', filter: whiteFilter[room] ? 'brightness(0) invert(1)' : 'brightness(0.9) saturate(0.85)', opacity: 0.85 }}
+                        />
                       </div>
                     ) : (
                       <span key={room} style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'rgba(240,244,255,0.05)', color: CREAM, border: '1px solid rgba(240,244,255,0.1)' }}>{room}</span>

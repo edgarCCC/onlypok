@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 
 type Formation = {
@@ -301,9 +302,10 @@ function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: bo
                 width: '100%', height: '100%', borderRadius: '50%', background: '#07090e',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 overflow: 'hidden', fontSize: 16, fontWeight: 800, color: '#fff',
+                position: 'relative',
               }}>
                 {f.coach?.avatar_url
-                  ? <img src={f.coach.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ? <Image src={f.coach.avatar_url} alt="" fill sizes="56px" style={{ objectFit: 'cover' }} />
                   : initials}
               </div>
             </div>

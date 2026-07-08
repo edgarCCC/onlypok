@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { Send, Search, MessageSquare, Inbox, Check, CheckCheck, Plus, Paperclip, FileText, X } from 'lucide-react'
@@ -97,10 +98,10 @@ function Avatar({ name, src, size = 40, ring }: { name?: string | null; src?: st
       background: `linear-gradient(135deg,${VIOLET},${CYAN})`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       color: '#fff', fontWeight: 700, fontSize: Math.round(size * 0.42),
-      flexShrink: 0, overflow: 'hidden',
+      flexShrink: 0, overflow: 'hidden', position: 'relative',
       boxShadow: ring ? `0 0 0 2px ${CYAN}40, 0 0 0 4px ${BG}` : undefined,
     }}>
-      {src ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(name)}
+      {src ? <Image src={src} alt="" fill sizes={`${size}px`} style={{ objectFit: 'cover' }} /> : initials(name)}
     </div>
   )
 }

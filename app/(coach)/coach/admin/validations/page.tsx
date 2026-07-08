@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useMemo } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Check, X, Clock, ChevronDown, ChevronUp, ExternalLink, ShieldCheck, AlertCircle } from 'lucide-react'
 
@@ -129,16 +130,16 @@ export default function AdminValidationsPage() {
                 <div className="cadm-proof-row" style={{ display: 'grid', gridTemplateColumns: '120px 1fr auto', gap: 16, padding: 16, alignItems: 'start' }}>
 
                   {/* Thumbnail */}
-                  <div style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '16/9', background: '#0c0f17', cursor: 'pointer' }}
+                  <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', aspectRatio: '16/9', background: '#0c0f17', cursor: 'pointer' }}
                     onClick={() => window.open(proof.url, '_blank')}>
-                    <img src={proof.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Image src={proof.url} alt="" fill sizes="120px" style={{ objectFit: 'cover' }} />
                   </div>
 
                   {/* Info */}
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                       {proof.coach?.avatar_url
-                        ? <img src={proof.coach.avatar_url} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                        ? <Image src={proof.coach.avatar_url} alt="" width={24} height={24} style={{ borderRadius: '50%', objectFit: 'cover' }} />
                         : <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#7c3aed22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#7c3aed' }}>
                             {(proof.coach?.username ?? '?').slice(0, 2).toUpperCase()}
                           </div>}

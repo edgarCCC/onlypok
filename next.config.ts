@@ -11,6 +11,20 @@ const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   turbopack: {},
   serverExternalPackages: ['sharp'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/vi/**',
+      },
+    ],
+  },
   async headers() {
     return [{ source: '/(.*)', headers: SECURITY_HEADERS }];
   },

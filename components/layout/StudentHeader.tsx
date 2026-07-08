@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { LogOut, ChevronDown, LayoutDashboard, ShoppingBag, Brain, BarChart2, Calendar, MessageSquare, Camera, Loader2, Sparkles } from 'lucide-react'
@@ -88,7 +89,7 @@ export default function StudentHeader() {
   const avatarContent = uploading
     ? <Loader2 size={14} color="#fff" style={{ animation: 'spin 1s linear infinite' }} />
     : avatarUrl
-      ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      ? <Image src={avatarUrl} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
       : <span style={{ fontSize: 11, fontWeight: 700 }}>{(profile?.username ?? 'E')[0].toUpperCase()}</span>
 
   return (
@@ -189,7 +190,7 @@ export default function StudentHeader() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', overflow: 'hidden',
               border: `1.5px solid rgba(6,182,212,0.4)`,
-              flexShrink: 0,
+              flexShrink: 0, position: 'relative',
             }}>
               {avatarContent}
             </div>
@@ -225,11 +226,12 @@ export default function StudentHeader() {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 16, fontWeight: 800, color: '#fff',
                       overflow: 'hidden', border: `2px solid rgba(6,182,212,0.3)`,
+                      position: 'relative',
                     }}>
                       {uploading
                         ? <Loader2 size={18} color="#fff" style={{ animation: 'spin 1s linear infinite' }} />
                         : avatarUrl
-                          ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ? <Image src={avatarUrl} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />
                           : (profile?.username ?? 'E')[0].toUpperCase()
                       }
                     </div>

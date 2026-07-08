@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
@@ -278,11 +279,10 @@ function BookingCard({
           background: booking.student?.avatar_url ? 'transparent' : `linear-gradient(135deg,${VIOLET},${CYAN})`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0,
-          overflow: 'hidden', border: `1px solid ${accent}30`,
+          overflow: 'hidden', border: `1px solid ${accent}30`, position: 'relative',
         }}>
           {booking.student?.avatar_url
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={booking.student.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <Image src={booking.student.avatar_url} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />
             : initial
           }
         </div>

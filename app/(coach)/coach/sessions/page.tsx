@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
@@ -46,8 +47,8 @@ function fmtDateTime(iso: string) {
 
 function Avatar({ src, name, size = 36 }: { src?: string | null; name: string; size?: number }) {
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: `${VIOLET}30`, border: `1.5px solid ${VIOLET}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, fontSize: size * 0.38, fontWeight: 700, color: VIOLET }}>
-      {src ? <img src={src} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : name[0]?.toUpperCase()}
+    <div style={{ width: size, height: size, borderRadius: '50%', background: `${VIOLET}30`, border: `1.5px solid ${VIOLET}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, fontSize: size * 0.38, fontWeight: 700, color: VIOLET, position: 'relative' }}>
+      {src ? <Image src={src} alt={name} fill sizes={`${size}px`} style={{ objectFit: 'cover' }} /> : name[0]?.toUpperCase()}
     </div>
   )
 }

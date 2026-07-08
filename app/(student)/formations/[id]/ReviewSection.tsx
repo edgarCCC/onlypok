@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Image from 'next/image'
 import { Star, BookOpen, MessageSquare, TrendingUp, Clock, Award, X, CheckCircle } from 'lucide-react'
 import { CREAM, SILVER, REVIEW_CATEGORIES, timeAgo, memberSince, ratingLabel } from './shared'
 import VideoComments from './VideoComments'
@@ -41,10 +42,10 @@ export function ReviewCard({ r, typeColor }: { r: any; typeColor: string }) {
           background: `linear-gradient(135deg, ${typeColor}, ${typeColor}80)`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 18, fontWeight: 800, color: '#fff', overflow: 'hidden',
+          position: 'relative',
         }}>
           {r.student?.avatar_url
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={r.student.avatar_url} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <Image src={r.student.avatar_url} alt={username} fill sizes="48px" style={{ objectFit: 'cover' }} />
             : initial}
         </div>
         <div>

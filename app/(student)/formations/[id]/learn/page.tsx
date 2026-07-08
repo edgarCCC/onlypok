@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useMemo, useRef, useCallback, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import {
@@ -41,7 +42,7 @@ function VideoPlayer({ url, thumbnailUrl, typeColor, onFullscreen }: {
     <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden',
       background: '#0a0c12', marginBottom: 20, border: `1px solid ${BORDER}` }}>
       {thumbnailUrl && (
-        <img src={thumbnailUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35 }} />
+        <Image src={thumbnailUrl} alt="" fill sizes="100vw" style={{ objectFit: 'cover', opacity: 0.35 }} />
       )}
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -468,8 +469,8 @@ function LearnInner() {
                 <div style={{ height: 2, background: `linear-gradient(90deg, ${typeColor}, ${typeColor}50, transparent)` }} />
                 {(currentLesson.thumbnail_url || formation.thumbnail_url) && (
                   <div style={{ position: 'relative', height: 160, overflow: 'hidden', background: '#0a0c12' }}>
-                    <img src={currentLesson.thumbnail_url ?? formation.thumbnail_url} alt=""
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} />
+                    <Image src={currentLesson.thumbnail_url ?? formation.thumbnail_url} alt="" fill sizes="100vw"
+                      style={{ objectFit: 'cover', opacity: 0.5 }} />
                     <div style={{ position: 'absolute', inset: 0,
                       background: `linear-gradient(to right, ${typeColor}20 0%, transparent 40%, rgba(5,7,9,0.7) 100%)` }} />
                     {currentLesson.video_url && (
@@ -532,8 +533,8 @@ function LearnInner() {
               <div style={{ aspectRatio: '16/9', borderRadius: 14, overflow: 'hidden',
                 position: 'relative', marginBottom: 20, background: '#0a0c12' }}>
                 {formation.thumbnail_url && (
-                  <img src={formation.thumbnail_url} alt=""
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3 }} />
+                  <Image src={formation.thumbnail_url} alt="" fill sizes="100vw"
+                    style={{ objectFit: 'cover', opacity: 0.3 }} />
                 )}
                 <div style={{ position: 'absolute', inset: 0,
                   background: `linear-gradient(135deg, ${typeColor}15 0%, transparent 55%, rgba(5,7,9,0.5) 100%)` }} />
@@ -807,8 +808,8 @@ function LearnInner() {
                                 background: '#0d0f15', border: `1px solid ${active ? `${typeColor}40` : BORDER}`,
                                 position: 'relative', transition: 'border-color 0.15s' }}>
                                 {thumb && (
-                                  <img src={thumb} alt=""
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover',
+                                  <Image src={thumb} alt="" fill sizes="52px"
+                                    style={{ objectFit: 'cover',
                                       opacity: done ? 0.4 : active ? 0.7 : 0.55 }} />
                                 )}
                                 <div style={{ position: 'absolute', inset: 0, display: 'flex',
@@ -861,8 +862,8 @@ function LearnInner() {
                   <div style={{ padding: '12px 18px', borderTop: `1px solid ${BORDER}`, flexShrink: 0,
                     display: 'flex', alignItems: 'center', gap: 9 }}>
                     {formation.coach.avatar_url ? (
-                      <img src={formation.coach.avatar_url} alt=""
-                        style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover',
+                      <Image src={formation.coach.avatar_url} alt="" width={28} height={28}
+                        style={{ borderRadius: '50%', objectFit: 'cover',
                           border: `1px solid ${typeColor}35` }} />
                     ) : (
                       <div style={{ width: 28, height: 28, borderRadius: '50%',

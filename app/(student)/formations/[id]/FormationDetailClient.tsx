@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { Star, Check } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import ProofGalleryModal from '@/components/ProofGalleryModal'
 import type { Proof } from '@/components/ProofGalleryModal'
@@ -558,10 +559,9 @@ export default function FormationDetailClient({
                 </p>
               </div>
               <Link href={`/coaches/${coach.id}`} style={{ textDecoration: 'none' }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
                   {coach.avatar_url
-                    // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={coach.avatar_url} alt={coach.username ?? 'Coach'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="56px" style={{ objectFit: 'cover' }} />
                     : (coach.username ?? 'C')[0].toUpperCase()}
                 </div>
               </Link>

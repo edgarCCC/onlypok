@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import {
   Calendar, Clock, CheckCircle, AlertCircle, ChevronLeft, ChevronRight,
@@ -443,7 +444,7 @@ function Dashboard() {
                               onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(240,244,255,0.07)')}
                             >
                               {b.coach?.avatar_url
-                                ? <img src={b.coach.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                                ? <Image src={b.coach.avatar_url} alt="" width={36} height={36} sizes="36px" style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                                 : (
                                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${PURPLE}25`, border: `1px solid ${PURPLE}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, fontWeight: 700, color: PURPLE }}>
                                     {initials}

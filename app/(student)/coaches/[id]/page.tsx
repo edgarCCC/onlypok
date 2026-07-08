@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import {
   Star, Clock, BookOpen, ArrowLeft, Calendar,
@@ -59,10 +60,9 @@ function Stars({ rating, size = 12 }: { rating: number; size?: number }) {
 function ContentLink({ f, cardColor, icon }: { f: Formation; cardColor: string; icon: React.ReactNode }) {
   return (
     <Link href={`/formations/${f.id}`} className="coach-formation-link" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px', borderRadius: 12, border: '1px solid rgba(240,244,255,0.07)', background: 'rgba(240,244,255,0.02)', textDecoration: 'none', transition: 'background 0.15s, border-color 0.15s' }}>
-      <div style={{ width: 80, height: 52, borderRadius: 8, flexShrink: 0, overflow: 'hidden', background: `linear-gradient(135deg, ${cardColor}40, ${cardColor}15)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 80, height: 52, borderRadius: 8, flexShrink: 0, overflow: 'hidden', background: `linear-gradient(135deg, ${cardColor}40, ${cardColor}15)`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         {f.thumbnail_url
-          // eslint-disable-next-line @next/next/no-img-element
-          ? <img src={f.thumbnail_url} alt={f.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ? <Image src={f.thumbnail_url} alt={f.title} fill sizes="80px" style={{ objectFit: 'cover' }} />
           : icon}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -213,10 +213,9 @@ export default function CoachProfilePage() {
         <button onClick={() => router.back()} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: SILVER, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500, padding: 0 }}>
           <ArrowLeft size={13} /> Retour
         </button>
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#06b6d4,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', overflow: 'hidden', border: '1.5px solid rgba(6,182,212,0.4)', flexShrink: 0 }}>
+        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#06b6d4,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', overflow: 'hidden', border: '1.5px solid rgba(6,182,212,0.4)', flexShrink: 0, position: 'relative' }}>
           {profile?.avatar_url
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <Image src={profile.avatar_url} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
             : (profile?.username ?? 'E')[0].toUpperCase()}
         </div>
       </header>
@@ -240,8 +239,7 @@ export default function CoachProfilePage() {
           {/* Avatar */}
           <div style={{ position: 'absolute', top: 176, left: 32, zIndex: 10, width: 88, height: 88, borderRadius: '50%', border: `4px solid #07090e`, overflow: 'hidden', background: coach.avatar_url ? 'transparent' : `linear-gradient(135deg, ${cardColor}, ${cardColor}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, color: '#fff', boxShadow: `0 0 0 1px ${cardColor}50` }}>
             {coach.avatar_url
-              // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={coach.avatar_url} alt={coach.username ?? 'Coach'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="88px" style={{ objectFit: 'cover' }} />
               : initials}
           </div>
 
@@ -414,10 +412,9 @@ export default function CoachProfilePage() {
                   {reviews.map((r, i) => (
                     <div key={i} style={{ paddingBottom: i < reviews.length - 1 ? 16 : 0, borderBottom: i < reviews.length - 1 ? '1px solid rgba(240,244,255,0.06)' : 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: r.student?.avatar_url ? 'transparent' : `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: r.student?.avatar_url ? 'transparent' : `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0, position: 'relative' }}>
                           {r.student?.avatar_url
-                            // eslint-disable-next-line @next/next/no-img-element
-                            ? <img src={r.student.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ? <Image src={r.student.avatar_url} alt="" fill sizes="36px" style={{ objectFit: 'cover' }} />
                             : (r.student?.username ?? 'E')[0].toUpperCase()}
                         </div>
                         <div>
@@ -529,9 +526,11 @@ export default function CoachProfilePage() {
                         const whiteFilter: Record<string, boolean> = { 'PartyPoker': true, '888poker': true }
                         const src = logoSrc[room]
                         return src ? (
-                          <div key={room} title={room} style={{ width: 64, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={src} alt={room} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: whiteFilter[room] ? 'brightness(0) invert(1)' : 'brightness(0.9) saturate(0.8)', opacity: 0.8 }} />
+                          <div key={room} title={room} style={{ width: 64, height: 24, position: 'relative', flexShrink: 0 }}>
+                            <Image
+                              src={src} alt={room} fill unoptimized sizes="64px"
+                              style={{ objectFit: 'contain', filter: whiteFilter[room] ? 'brightness(0) invert(1)' : 'brightness(0.9) saturate(0.8)', opacity: 0.8 }}
+                            />
                           </div>
                         ) : (
                           <span key={room} style={{ fontSize: 12, fontWeight: 600, color: CREAM }}>{room}</span>

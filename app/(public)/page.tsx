@@ -2,12 +2,7 @@ import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/sup
 import Navbar from '@/components/landing/Navbar'
 import HeroSection from '@/components/landing/HeroSection'
 import SocialProofBar from '@/components/landing/SocialProofBar'
-import ManifestoSection from '@/components/landing/ManifestoSection'
-import FeaturesScroll from '@/components/landing/FeaturesScroll'
-import StatsSection from '@/components/landing/StatsSection'
-import CoachesSpotlight from '@/components/landing/CoachesSpotlight'
-import TestimonialsSection from '@/components/landing/TestimonialsSection'
-import FinalCTA from '@/components/landing/FinalCTA'
+import LazyBelowFold from '@/components/landing/LazyBelowFold'
 import Footer from '@/components/landing/Footer'
 
 export const metadata = {
@@ -51,17 +46,12 @@ export default async function HomePage() {
       <Navbar />
       <HeroSection playerCount={playerCount ?? 0} recentUsers={recentUsers} />
       <SocialProofBar />
-      <ManifestoSection />
-      <FeaturesScroll />
-      <StatsSection
+      <LazyBelowFold
         studentCount={playerCount ?? 0}
         coachCount={coachCount ?? 0}
         formationCount={formationCount ?? 0}
         avgRating={avgRating}
       />
-      <CoachesSpotlight />
-      <TestimonialsSection />
-      <FinalCTA />
       <Footer />
     </main>
   )

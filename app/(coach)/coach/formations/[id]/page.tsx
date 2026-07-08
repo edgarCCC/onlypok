@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { useParams } from 'next/navigation'
@@ -654,8 +655,7 @@ export default function EditFormationPage() {
                   <div className="cedit-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: galleryNew.length > 0 ? 14 : 0 }}>
                     {galleryUrls.map(url => (
                       <div key={url} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <Image src={url} alt="" fill sizes="150px" style={{ objectFit: 'cover' }} />
                         <button type="button" onClick={() => removeGalleryUrl(url)}
                           style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, lineHeight: 1 }}>
                           ×

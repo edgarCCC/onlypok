@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { Lock, Share2, MessageSquare } from 'lucide-react'
 import { CREAM, SILVER, getYtId, getVimeoId } from './shared'
 
@@ -265,7 +266,7 @@ export function SalesVideoSection({ videoUrl, videoType, canWatchFull, thumbnail
       ) : (
         <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', aspectRatio: '16/9' }}>
           {thumbnailUrl
-            ? <img src={thumbnailUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(8px) brightness(0.35)', transform: 'scale(1.05)' }} />
+            ? <Image src={thumbnailUrl} alt="" fill sizes="100vw" style={{ objectFit: 'cover', filter: 'blur(8px) brightness(0.35)', transform: 'scale(1.05)' }} />
             : <div style={{ position: 'absolute', inset: 0, background: '#0d1017' }} />}
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24, textAlign: 'center' }}>
             <Lock size={20} color={SILVER} />

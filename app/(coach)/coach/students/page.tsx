@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import {
@@ -172,9 +173,9 @@ export default function StudentsPage() {
                   <div className="cstu-row" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 22px' }}>
 
                     {/* Avatar */}
-                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
                       {avatar_url
-                        ? <img src={avatar_url} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ? <Image src={avatar_url} alt={username} fill sizes="44px" style={{ objectFit: 'cover' }} />
                         : username[0].toUpperCase()
                       }
                     </div>

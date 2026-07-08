@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Image from 'next/image'
 import { BookOpen, PlayCircle, ChevronDown, ChevronUp, Lock } from 'lucide-react'
 import { CREAM, SILVER, getYtId } from './shared'
 
@@ -73,7 +74,7 @@ export default function ProgramSection({ chapters, typeColor, hasPurchased, allL
                         {/* Miniature */}
                         <div style={{ width: 64, height: 44, borderRadius: 6, overflow: 'hidden', flexShrink: 0, position: 'relative', background: `${typeColor}15` }}>
                           {thumbUrl ? (
-                            <img src={thumbUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <Image src={thumbUrl} alt="" fill sizes="64px" style={{ objectFit: 'cover' }} />
                           ) : (
                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <PlayCircle size={16} color={typeColor} style={{ opacity: 0.4 }} />

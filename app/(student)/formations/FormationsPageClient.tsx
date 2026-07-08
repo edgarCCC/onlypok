@@ -6,6 +6,7 @@ import { useUser } from '@/hooks/useUser'
 import { Search, ChevronRight, ChevronLeft, HelpCircle, Menu, X, Check, PlayCircle, Users, BookOpen, Star, MessageSquare, Clock, TrendingUp, Award, Send, FileText, Sparkles, Maximize2 } from 'lucide-react'
 import FormationCard from '@/components/formations/FormationCard'
 import Link from 'next/link'
+import Image from 'next/image'
 import dynamic from 'next/dynamic'
 
 const MindMap = dynamic(() => import('@/components/MindMap'), { ssr: false })
@@ -227,10 +228,9 @@ export default function FormationsPageClient({
                 style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', padding: '6px 12px 6px 6px', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 40, transition: 'all 0.2s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.25)` }}
                 onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.1)` }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                   {authAvatar
-                    // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={authAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ? <Image src={authAvatar} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
                     : <span style={{ fontSize: 11, fontWeight: 800, color: '#fff' }}>{(authUsername ?? 'U')[0].toUpperCase()}</span>
                   }
                 </div>

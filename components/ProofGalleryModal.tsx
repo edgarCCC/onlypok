@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { X } from 'lucide-react'
 
 const CREAM  = '#E8E4DC'
@@ -131,15 +132,15 @@ export default function ProofGalleryModal({
                       if (img) { img.style.borderColor = 'rgba(232,228,220,0.1)'; img.style.boxShadow = 'none' }
                     }}>
                     <div className="cat-thumb" style={{
-                      width: '100%', aspectRatio: '4/3',
+                      width: '100%', aspectRatio: '4/3', position: 'relative',
                       borderRadius: 10, overflow: 'hidden',
                       background: firstProof ? '#0f1218' : 'rgba(232,228,220,0.04)',
                       border: '1px solid rgba(232,228,220,0.1)',
                       transition: 'border-color 0.2s, box-shadow 0.2s',
                     }}>
                       {firstProof
-                        ? <img src={firstProof.url} alt={cat.label}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        ? <Image src={firstProof.url} alt={cat.label} fill sizes="160px"
+                            style={{ objectFit: 'cover', display: 'block' }} />
                         : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                             <span style={{ fontSize: 24, opacity: 0.08 }}>♠</span>
                           </div>

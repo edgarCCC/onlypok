@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown,
   Check, Save, Loader2, CheckCircle, Clock,
@@ -240,9 +241,9 @@ export default function PrepPage() {
 
               {/* Coach info row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg,${CYAN},${VIOLET})`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', border: `1.5px solid rgba(6,182,212,0.3)`, flexShrink: 0 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg,${CYAN},${VIOLET})`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', border: `1.5px solid rgba(6,182,212,0.3)`, flexShrink: 0, position: 'relative' }}>
                   {coachAvatar
-                    ? <img src={coachAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ? <Image src={coachAvatar} alt="" fill sizes="32px" style={{ objectFit: 'cover' }} />
                     : coachName[0]?.toUpperCase()}
                 </div>
                 <div>
