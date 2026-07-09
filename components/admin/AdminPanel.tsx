@@ -22,6 +22,12 @@ const MIGRATIONS = [
     desc: "Ajoute la colonne highlights (jsonb) sur la table formations si elle n'existe pas encore. Nécessaire pour que les Atouts des formations fonctionnent.",
     endpoint: '/api/migrate/add-highlights-column',
   },
+  {
+    id: 'tracker-v2',
+    label: 'Tracker v2 — bankroll unifiée',
+    desc: "Crée les tables tracker_settings (bankroll initiale) et tracker_transactions (dépôts/retraits) avec RLS. Nécessaire pour la nouvelle page Bankroll du tracker.",
+    endpoint: '/api/migrate/tracker-v2',
+  },
 ]
 
 function MigrationCard({ migration }: { migration: typeof MIGRATIONS[0] }) {
