@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { ShieldCheck, Database, ChevronRight, CheckCircle2, XCircle, Loader2, Copy, Check, Lock } from 'lucide-react'
+import { ShieldCheck, Database, ChevronRight, CheckCircle2, XCircle, Loader2, Copy, Check, Lock, Users } from 'lucide-react'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -199,19 +199,28 @@ export default function AdminPanel({ validationsHref }: { validationsHref: strin
             <EncryptPaymentInfoCard />
           </section>
 
-          {/* Validations */}
+          {/* Coachs & validations */}
           <section>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <ShieldCheck size={15} color={SILVER} />
-              <h2 style={{ fontSize: 13, fontWeight: 700, color: SILVER, margin: 0, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Validations</h2>
+              <Users size={15} color={SILVER} />
+              <h2 style={{ fontSize: 13, fontWeight: 700, color: SILVER, margin: 0, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Coachs</h2>
             </div>
-            <Link href={validationsHref} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, padding: '18px 24px', textDecoration: 'none' }}>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: CREAM, marginBottom: 4 }}>Preuves coaches</div>
-                <div style={{ fontSize: 13, color: SILVER }}>Valider ou rejeter les preuves de résultats soumises par les coaches.</div>
-              </div>
-              <ChevronRight size={18} color={SILVER} />
-            </Link>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <Link href="/admin/coachs" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, padding: '18px 24px', textDecoration: 'none' }}>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: CREAM, marginBottom: 4 }}>Profils coachs</div>
+                  <div style={{ fontSize: 13, color: SILVER }}>Identité, entreprise (SIRET, TVA), coordonnées de paiement, formations et preuves de chaque coach.</div>
+                </div>
+                <ChevronRight size={18} color={SILVER} />
+              </Link>
+              <Link href={validationsHref} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, padding: '18px 24px', textDecoration: 'none' }}>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: CREAM, marginBottom: 4 }}>Preuves coaches</div>
+                  <div style={{ fontSize: 13, color: SILVER }}>Valider ou rejeter les preuves de résultats soumises par les coaches.</div>
+                </div>
+                <ChevronRight size={18} color={SILVER} />
+              </Link>
+            </div>
           </section>
 
         </div>

@@ -40,6 +40,7 @@ export default function AdminValidationsPage() {
   const [rejectionDraft, setRejectionDraft] = useState<Record<string, string>>({})
   const [expanded, setExpanded] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
+  const [actErr, setActErr] = useState('')
 
   useEffect(() => {
     ;(async () => {
@@ -60,12 +61,20 @@ export default function AdminValidationsPage() {
 
   const act = async (proofId: string, status: 'approved' | 'rejected') => {
     setProcessing(proofId)
+    setActErr('')
     const reason = rejectionDraft[proofId] ?? ''
-    await fetch('/api/admin/proofs', {
+    const res = await fetch('/api/admin/proofs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ proofId, status, reason: reason || undefined }),
-    })
+    }).catch(() => null)
+    if (!res || !res.ok) {
+      const json = res ? await res.json().catch(() => ({})) : {}
+      setActErr(json.error ?? 'La validation a échoué — la preuve n\'a pas été mise à jour')
+      setProcessing(null)
+      return
+    }
+    // Retirée de l'onglet courant : elle apparaît maintenant dans Validées/Refusées
     setProofs(prev => prev.filter(p => p.id !== proofId))
     setProcessing(null)
   }
@@ -112,6 +121,12 @@ export default function AdminValidationsPage() {
           ))}
         </div>
 
+        {actErr && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, color: '#ef4444', fontSize: 13 }}>
+            <AlertCircle size={14} /> {actErr}
+          </div>
+        )}
+
         {proofs.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0', color: SILVER, fontSize: 13 }}>
             {filter === 'pending' ? '✓ Aucune preuve en attente.' : 'Aucune entrée.'}
@@ -127,12 +142,13 @@ export default function AdminValidationsPage() {
               <div key={proof.id} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: 'hidden' }}>
 
                 {/* Row */}
-                <div className="cadm-proof-row" style={{ display: 'grid', gridTemplateColumns: '120px 1fr auto', gap: 16, padding: 16, alignItems: 'start' }}>
+                <div className="cadm-proof-row" style={{ display: 'grid', gridTemplateColumns: '220px 1fr auto', gap: 16, padding: 16, alignItems: 'start' }}>
 
-                  {/* Thumbnail */}
-                  <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', aspectRatio: '16/9', background: '#0c0f17', cursor: 'pointer' }}
-                    onClick={() => window.open(proof.url, '_blank')}>
-                    <Image src={proof.url} alt="" fill sizes="120px" style={{ objectFit: 'cover' }} />
+                  {/* Thumbnail — clic = ouvrir la photo en taille réelle */}
+                  <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', aspectRatio: '16/9', background: '#0c0f17', cursor: 'zoom-in' }}
+                    onClick={() => window.open(proof.url, '_blank')}
+                    title="Ouvrir la photo en taille réelle">
+                    <Image src={proof.url} alt="" fill sizes="220px" style={{ objectFit: 'cover' }} />
                   </div>
 
                   {/* Info */}
