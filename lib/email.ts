@@ -376,7 +376,66 @@ export async function sendStudentSlotConfirmedEmail({
 }
 
 /* ─────────────────────────────────────────────────────────── */
-/* 6. Admin — alerte technique (échec webhook, booking perdu)  */
+/* 6. Coach — preuve validée ou refusée par l'admin            */
+/* ─────────────────────────────────────────────────────────── */
+export async function sendCoachProofReviewedEmail({
+  coachId, status, categoryLabel, reason,
+}: {
+  coachId: string
+  status: 'approved' | 'rejected'
+  categoryLabel: string
+  reason?: string | null
+}) {
+  const email = await getUserEmail(coachId)
+  if (!email) return
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://onlypok.com'
+  const isApproved = status === 'approved'
+
+  const html = shell(`
+    <p style="font-size:12px;color:rgba(232,228,220,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Vérification de preuve</p>
+
+    <h1 style="font-size:22px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;">
+      ${isApproved ? 'Votre preuve est validée ✓' : 'Votre preuve a été refusée'}
+    </h1>
+
+    <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:24px;line-height:1.55;">
+      ${isApproved
+        ? 'Notre équipe a vérifié votre preuve : elle est maintenant visible sur votre profil public et renforce votre crédibilité auprès des élèves.'
+        : 'Notre équipe a examiné votre preuve mais n\'a pas pu la valider. Vous pouvez en soumettre une nouvelle depuis votre profil.'}
+    </p>
+
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(232,228,220,0.03);border:1px solid rgba(232,228,220,0.07);border-radius:12px;padding:16px 18px;margin-bottom:8px;">
+      <tr>
+        <td style="font-size:12px;color:rgba(232,228,220,0.4);padding-bottom:6px;">Catégorie</td>
+        <td align="right">${isApproved
+          ? pill('Validée', '#4ade80', 'rgba(74,222,128,0.12)')
+          : pill('Refusée', '#ef4444', 'rgba(239,68,68,0.12)')}</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="font-size:15px;font-weight:700;color:#e8e4dc;">${categoryLabel}</td>
+      </tr>
+      ${!isApproved && reason ? `<tr>
+        <td colspan="2" style="font-size:13px;color:#ef4444;padding-top:12px;line-height:1.5;">Motif : ${reason}</td>
+      </tr>` : ''}
+    </table>
+
+    ${cta(isApproved ? 'Voir mon profil →' : 'Soumettre une nouvelle preuve →', `${appUrl}/coach/profile`, isApproved ? '#4ade80' : '#7c3aed')}
+  `)
+
+  const resend = getResend(); if (!resend) return
+  await resend.emails.send({
+    from: FROM,
+    to:   email,
+    subject: isApproved
+      ? `✅ Votre preuve "${categoryLabel}" est validée`
+      : `❌ Votre preuve "${categoryLabel}" a été refusée`,
+    html,
+  })
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* 7. Admin — alerte technique (échec webhook, booking perdu)  */
 /* ─────────────────────────────────────────────────────────── */
 export async function sendAdminAlertEmail({ subject, details }: { subject: string; details: Record<string, unknown> }) {
   const to = process.env.ADMIN_ALERT_EMAIL
