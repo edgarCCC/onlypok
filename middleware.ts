@@ -34,8 +34,15 @@ export async function middleware(request: NextRequest) {
   // Match par segment exact : '/train' protège /train et /train/*, mais pas /trainer
   const matches = (route: string) => pathname === route || pathname.startsWith(`${route}/`)
 
+  // Porte d'entrée de l'interface admin : accessible déconnecté
+  const isAdminLogin = pathname === '/admin/login'
+
   if (!user) {
-    const isProtected = [...coachRoutes, ...adminRoutes, ...studentRoutes].some(matches)
+    if (isAdminLogin) return supabaseResponse
+    if (adminRoutes.some(matches)) {
+      return NextResponse.redirect(new URL('/admin/login', request.url))
+    }
+    const isProtected = [...coachRoutes, ...studentRoutes].some(matches)
     if (isProtected) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -52,6 +59,14 @@ export async function middleware(request: NextRequest) {
 
   if (coachRoutes.some(matches) && role !== 'coach' && role !== 'admin') {
     return NextResponse.redirect(new URL('/formations', request.url))
+  }
+
+  // Connecté sur la page de login admin : un admin file au dashboard,
+  // un autre rôle voit la page (elle refuse et déconnecte côté client)
+  if (isAdminLogin) {
+    return role === 'admin'
+      ? NextResponse.redirect(new URL('/admin', request.url))
+      : supabaseResponse
   }
 
   if (adminRoutes.some(matches) && role !== 'admin') {
