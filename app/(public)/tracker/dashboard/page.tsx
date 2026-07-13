@@ -260,6 +260,8 @@ export default function TrackerDashboard() {
         <div style={{ padding: '16px 20px 0' }}>
           <SectionLabel>Par room &amp; format</SectionLabel>
         </div>
+        <div className="trk-scroll" style={{ overflowX: 'auto' }}>
+        <div style={{ minWidth: 720 }}>
         <div style={{ display: 'grid', gridTemplateColumns: GRID_BREAKDOWN, gap: 10, padding: '8px 20px', borderBottom: `1px solid ${T.border}` }}>
           <Th>Room</Th><Th>Format</Th><Th /><Th align="right">Tournois</Th><Th align="right">Profit</Th><Th align="right">ROI</Th><Th align="right">ITM</Th><Th align="right">€ / h</Th>
         </div>
@@ -295,6 +297,8 @@ export default function TrackerDashboard() {
             ))}
           </div>
         ))}
+        </div>
+        </div>
       </Card>
 
       {/* ── Historique ── */}
@@ -304,6 +308,8 @@ export default function TrackerDashboard() {
             Historique des tournois
           </SectionLabel>
         </div>
+        <div className="trk-scroll" style={{ overflowX: 'auto' }}>
+        <div style={{ minWidth: 780 }}>
         <div style={{ display: 'grid', gridTemplateColumns: GRID_HISTORY, gap: 10, padding: '8px 20px', borderBottom: `1px solid ${T.border}` }}>
           <Th>Tournoi</Th><Th>Room</Th><Th align="right">Date</Th><Th align="right">Buy-in</Th><Th align="right">Position</Th><Th align="right">KO</Th><Th align="right">Durée</Th><Th align="right">Profit</Th>
         </div>
@@ -338,6 +344,8 @@ export default function TrackerDashboard() {
               </div>
             )
           })}
+        </div>
+        </div>
         </div>
       </Card>
 

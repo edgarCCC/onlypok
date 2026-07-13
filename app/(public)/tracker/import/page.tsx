@@ -218,6 +218,8 @@ export default function ImportPage() {
                 Tournois détectés
               </SectionLabel>
             </div>
+            <div className="trk-scroll" style={{ overflowX: 'auto' }}>
+            <div style={{ minWidth: 720 }}>
             <div style={{ display: 'grid', gridTemplateColumns: GRID, gap: 10, padding: '8px 20px', borderBottom: `1px solid ${T.border}` }}>
               <Th>Tournoi</Th><Th>Room</Th><Th align="right">Date</Th><Th align="right">Position</Th><Th align="right">KO</Th><Th align="right">Durée</Th><Th align="right">Profit</Th>
             </div>
@@ -247,6 +249,8 @@ export default function ImportPage() {
                   <Td align="right" strong color={pnlColor(t.netProfit)}>{eur(t.netProfit, { sign: true })}</Td>
                 </div>
               ))}
+            </div>
+            </div>
             </div>
           </Card>
 

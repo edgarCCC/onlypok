@@ -142,6 +142,8 @@ export default function SessionsPage() {
               Journal de sessions
             </SectionLabel>
           </div>
+          <div className="trk-scroll" style={{ overflowX: 'auto' }}>
+          <div style={{ minWidth: 680 }}>
           <div style={{ display: 'grid', gridTemplateColumns: GRID, gap: 10, padding: '8px 20px', borderBottom: `1px solid ${T.border}` }}>
             <Th>Date</Th><Th>Notes</Th><Th>Stakes</Th><Th align="right">Buy-in</Th><Th align="right">Cash-out</Th><Th align="right">Profit</Th><Th />
           </div>
@@ -163,6 +165,8 @@ export default function SessionsPage() {
               </div>
             )
           })}
+          </div>
+          </div>
         </Card>
       )}
     </TrackerShell>
