@@ -3,28 +3,17 @@ import Link from 'next/link'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
-  ArrowLeft, TrendingUp, Coins, Plus, Trash2, Trophy,
-  Landmark, ArrowDownToLine, ArrowUpFromLine, AlertCircle, Check,
+  TrendingUp, Coins, Plus, Trash2, ArrowDownToLine, ArrowUpFromLine, AlertCircle, Check,
 } from 'lucide-react'
-
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const DIM    = 'rgba(240,244,255,0.22)'
-const BORDER = 'rgba(232,228,220,0.08)'
-const CARD   = 'rgba(232,228,220,0.03)'
-const VIOLET = '#7c3aed'
-const CYAN   = '#06b6d4'
-const GREEN  = '#4ade80'
-const RED    = '#ef4444'
-const AMBER  = '#f59e0b'
+import { TrackerShell, Card, KpiStrip, SectionLabel, Empty, T, NUM, eur, pnlColor } from '@/components/tracker/ui'
 
 type Tournament  = { date: string; net_profit: number }
 type CashSession = { date: string; buy_in: number; cash_out: number }
 type Transaction = { id: string; date: string; type: 'deposit' | 'withdrawal'; amount: number; notes: string | null }
 
 const inp: React.CSSProperties = {
-  width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${BORDER}`,
-  borderRadius: 8, padding: '9px 12px', color: CREAM, fontSize: 13, outline: 'none',
+  width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}`,
+  borderRadius: 8, padding: '9px 12px', color: T.cream, fontSize: 13, outline: 'none',
   boxSizing: 'border-box', fontFamily: 'inherit',
 }
 
@@ -35,7 +24,7 @@ function BankrollChart({ points, color }: { points: { label: string; value: numb
   const min = Math.min(...points.map(p => p.value))
   const max = Math.max(...points.map(p => p.value))
   const range = max - min || 1
-  const W = 800; const H = 220; const PAD = 36
+  const W = 800; const H = 240; const PAD = 36
 
   const x = (i: number) => PAD + (i / (points.length - 1)) * (W - PAD * 2)
   const y = (v: number) => H - PAD - ((v - min) / range) * (H - PAD * 2)
@@ -46,7 +35,7 @@ function BankrollChart({ points, color }: { points: { label: string; value: numb
 
   return (
     <svg
-      viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 220, display: 'block' }}
+      viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 240, display: 'block' }}
       onMouseLeave={() => setHover(null)}
       onMouseMove={e => {
         const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect()
@@ -57,50 +46,50 @@ function BankrollChart({ points, color }: { points: { label: string; value: numb
     >
       <defs>
         <linearGradient id="bkg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.18" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
       {zeroInRange && (
-        <line x1={PAD} x2={W - PAD} y1={y(0)} y2={y(0)} stroke="rgba(255,255,255,0.12)" strokeDasharray="4 4" />
+        <line x1={PAD} x2={W - PAD} y1={y(0)} y2={y(0)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4 4" />
       )}
       <path d={fill} fill="url(#bkg)" />
       <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       {hover !== null && (
         <g>
-          <line x1={x(hover)} x2={x(hover)} y1={PAD / 2} y2={H - PAD} stroke="rgba(255,255,255,0.15)" />
+          <line x1={x(hover)} x2={x(hover)} y1={PAD / 2} y2={H - PAD} stroke="rgba(255,255,255,0.14)" />
           <circle cx={x(hover)} cy={y(points[hover].value)} r="4" fill={color} />
           <text
-            x={Math.min(Math.max(x(hover), PAD + 40), W - PAD - 40)} y={PAD / 2 + 4}
-            fill={CREAM} fontSize="12" fontWeight="700" textAnchor="middle"
+            x={Math.min(Math.max(x(hover), PAD + 44), W - PAD - 44)} y={PAD / 2 + 4}
+            fill={T.cream} fontSize="12" fontWeight="700" textAnchor="middle"
           >
-            {points[hover].label} · {Math.round(points[hover].value)}€
+            {points[hover].label} · {Math.round(points[hover].value)} €
           </text>
         </g>
       )}
-      <text x={PAD} y={H - 8} fill={SILVER} fontSize="10">{points[0].label}</text>
-      <text x={W - PAD} y={H - 8} fill={SILVER} fontSize="10" textAnchor="end">{points[points.length - 1].label}</text>
+      <text x={PAD} y={H - 8} fill={T.dim} fontSize="10">{points[0].label}</text>
+      <text x={W - PAD} y={H - 8} fill={T.dim} fontSize="10" textAnchor="end">{points[points.length - 1].label}</text>
     </svg>
   )
 }
 
 export default function BankrollPage() {
   const supabase = useMemo(() => createClient(), [])
-  const [user,         setUser]         = useState<{ id: string } | null>(null)
-  const [loading,      setLoading]      = useState(true)
+  const [user,           setUser]           = useState<{ id: string } | null>(null)
+  const [loading,        setLoading]        = useState(true)
   const [needsMigration, setNeedsMigration] = useState(false)
 
   const [tournaments,  setTournaments]  = useState<Tournament[]>([])
   const [cashSessions, setCashSessions] = useState<CashSession[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
 
-  const [initialBr,    setInitialBr]    = useState(0)
-  const [brDraft,      setBrDraft]      = useState('0')
-  const [editingBr,    setEditingBr]    = useState(false)
-  const [brSaved,      setBrSaved]      = useState(false)
+  const [initialBr, setInitialBr] = useState(0)
+  const [brDraft,   setBrDraft]   = useState('0')
+  const [editingBr, setEditingBr] = useState(false)
+  const [brSaved,   setBrSaved]   = useState(false)
 
-  const [showTxForm,   setShowTxForm]   = useState(false)
-  const [savingTx,     setSavingTx]     = useState(false)
+  const [showTxForm, setShowTxForm] = useState(false)
+  const [savingTx,   setSavingTx]   = useState(false)
   const [txForm, setTxForm] = useState({ type: 'deposit' as 'deposit' | 'withdrawal', date: new Date().toISOString().slice(0, 10), amount: '', notes: '' })
 
   useEffect(() => {
@@ -119,8 +108,7 @@ export default function BankrollPage() {
       setTournaments((tRes.data as Tournament[]) ?? [])
       setCashSessions((sRes.data as CashSession[]) ?? [])
       // Table absente → migration tracker-v2 pas encore lancée.
-      // PostgREST renvoie PGRST205 (« Could not find the table … in the schema
-      // cache »), le code SQL brut serait 42P01 — on couvre les deux.
+      // PostgREST renvoie PGRST205, le code SQL brut serait 42P01 — on couvre les deux.
       const missingTable = (e: { code?: string; message?: string } | null) =>
         !!e && (e.code === '42P01' || e.code === 'PGRST205' || (e.message ?? '').includes('Could not find the table'))
       if (missingTable(txRes.error) || missingTable(setRes.error)) {
@@ -199,187 +187,157 @@ export default function BankrollPage() {
     return { points: pts, current: running, mttProfit: mtt, cashProfit: cash, netDeposits: dep }
   }, [tournaments, cashSessions, transactions, initialBr])
 
-  const chartColor = current - initialBr - netDeposits >= 0 ? GREEN : RED
-  const fmtEur = (v: number) => `${v >= 0 ? '+' : ''}${Math.round(v)}€`
+  const chartColor = current - initialBr - netDeposits >= 0 ? T.green : T.red
+
+  const ABI_LEVELS: [string, number][] = [['ABI 1 €', 100], ['ABI 2 €', 200], ['ABI 5 €', 500], ['ABI 10 €', 1000], ['ABI 20 €', 2000], ['ABI 50 €', 5000]]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
-      <style>{`
-        @media (max-width: 700px) {
-          .bkr-kpis { grid-template-columns: repeat(2, 1fr) !important; }
-          .bkr-txform { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
-      <div style={{ maxWidth: 840, margin: '0 auto', padding: '100px 24px 80px' }}>
-
-        <Link href="/tracker" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 32 }}>
-          <ArrowLeft size={14} /> Retour au Tracker
-        </Link>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
-          <div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 4px', fontFamily: 'var(--font-syne,sans-serif)' }}>Bankroll</h1>
-            <p style={{ fontSize: 13, color: SILVER, margin: 0 }}>
-              Tournois importés + sessions cash + dépôts/retraits, unifiés.
-            </p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {editingBr ? (
-              <>
-                <input type="number" value={brDraft} onChange={e => setBrDraft(e.target.value)}
-                  style={{ ...inp, width: 100 }} autoFocus />
-                <button onClick={saveInitialBr} style={{ padding: '8px 14px', borderRadius: 7, border: 'none', background: VIOLET, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>OK</button>
-              </>
-            ) : (
-              <button onClick={() => setEditingBr(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 7, border: `1px solid ${BORDER}`, background: CARD, color: SILVER, fontSize: 12, cursor: 'pointer' }}>
-                {brSaved ? <Check size={12} color={GREEN} /> : <Coins size={12} />}
-                Bankroll de départ : {Math.round(initialBr)}€
-              </button>
-            )}
-          </div>
+    <TrackerShell actions={
+      editingBr ? (
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input type="number" value={brDraft} onChange={e => setBrDraft(e.target.value)} style={{ ...inp, width: 110 }} autoFocus />
+          <button onClick={saveInitialBr} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: T.violet, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>OK</button>
         </div>
+      ) : (
+        <button onClick={() => setEditingBr(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 9, border: `1px solid ${T.border}`, background: T.surface, color: T.silver, fontSize: 12, cursor: 'pointer' }}>
+          {brSaved ? <Check size={12} color={T.green} /> : <Coins size={12} />}
+          Bankroll de départ : <span style={{ color: T.cream, fontWeight: 700, ...NUM }}>{Math.round(initialBr)} €</span>
+        </button>
+      )
+    }>
 
-        {needsMigration && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, padding: '12px 16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, color: AMBER, fontSize: 13 }}>
-            <AlertCircle size={15} />
-            <span>Les tables dépôts/retraits n&apos;existent pas encore — lance la migration « Tracker v2 » depuis le panneau admin. La courbe fonctionne déjà avec tes tournois.</span>
-          </div>
+      {needsMigration && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '11px 16px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 10, color: T.amber, fontSize: 12.5 }}>
+          <AlertCircle size={14} />
+          <span>Les tables dépôts/retraits n&apos;existent pas encore — lance la migration « Tracker v2 ». La courbe fonctionne déjà avec tes tournois.</span>
+        </div>
+      )}
+
+      <KpiStrip items={[
+        { label: 'Bankroll actuelle', value: eur(current, { dec: 0 }), color: T.cream },
+        { label: 'Profit MTT',  value: eur(mttProfit,  { sign: true, dec: 0 }), color: pnlColor(mttProfit) },
+        { label: 'Profit cash', value: eur(cashProfit, { sign: true, dec: 0 }), color: pnlColor(cashProfit) },
+        { label: 'Dépôts nets', value: eur(netDeposits, { sign: true, dec: 0 }), color: T.blue },
+      ]} />
+
+      {/* Courbe */}
+      <Card style={{ marginBottom: 14 }}>
+        {loading ? (
+          <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.silver, fontSize: 13 }}>Chargement…</div>
+        ) : !user ? (
+          <Empty icon={<TrendingUp size={40} color={T.cream} />} title="Connecte-toi pour voir ta courbe"
+            sub="Bankroll unifiée : tournois importés, sessions cash et dépôts/retraits."
+            cta={<Link href="/login" style={{ padding: '10px 22px', borderRadius: 9, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Se connecter</Link>} />
+        ) : points.length < 2 ? (
+          <Empty icon={<TrendingUp size={40} color={T.cream} />} title="Pas encore de courbe"
+            sub="Importe tes tournois ou enregistre une session pour voir ta bankroll évoluer."
+            cta={<Link href="/tracker/import" style={{ padding: '10px 22px', borderRadius: 9, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Importer mes tournois</Link>} />
+        ) : (
+          <BankrollChart points={points} color={chartColor} />
         )}
+      </Card>
 
-        {/* KPIs */}
-        <div className="bkr-kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 24 }}>
-          {[
-            { label: 'Bankroll actuelle', value: `${Math.round(current)}€`, color: CREAM, icon: Landmark },
-            { label: 'Profit MTT', value: fmtEur(mttProfit), color: mttProfit >= 0 ? GREEN : RED, icon: Trophy },
-            { label: 'Profit cash', value: fmtEur(cashProfit), color: cashProfit >= 0 ? GREEN : RED, icon: TrendingUp },
-            { label: 'Dépôts nets', value: fmtEur(netDeposits), color: CYAN, icon: ArrowDownToLine },
-          ].map(({ label, value, color, icon: Icon }) => (
-            <div key={label} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: '14px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-                <Icon size={12} color={color === CREAM ? SILVER : color} />
-                <span style={{ fontSize: 10, color: SILVER, fontWeight: 600, letterSpacing: '0.05em' }}>{label.toUpperCase()}</span>
-              </div>
-              <div style={{ fontSize: 19, fontWeight: 800, color }}>{value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Chart */}
-        <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, padding: '24px', marginBottom: 24 }}>
-          {loading ? (
-            <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: SILVER }}>Chargement…</div>
-          ) : !user ? (
-            <div style={{ height: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-              <p style={{ color: SILVER, margin: 0 }}>Connecte-toi pour voir ta courbe</p>
-              <Link href="/login" style={{ padding: '9px 20px', borderRadius: 8, background: VIOLET, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Se connecter</Link>
-            </div>
-          ) : points.length < 2 ? (
-            <div style={{ height: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <TrendingUp size={32} style={{ opacity: 0.15 }} />
-              <p style={{ color: SILVER, fontSize: 13, margin: 0 }}>Importe tes tournois ou enregistre une session pour voir ta courbe</p>
-              <Link href="/tracker/import" style={{ color: VIOLET, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>→ Importer mes tournois</Link>
-            </div>
-          ) : (
-            <BankrollChart points={points} color={chartColor} />
-          )}
-        </div>
-
-        {/* Dépôts / retraits */}
-        {user && !needsMigration && (
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Dépôts & retraits</h2>
-              <button onClick={() => setShowTxForm(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: 'none', background: VIOLET, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                <Plus size={13} /> Ajouter
+      {/* Dépôts / retraits */}
+      {user && !needsMigration && (
+        <Card pad={false} style={{ marginBottom: 14 }}>
+          <div style={{ padding: '16px 20px 0' }}>
+            <SectionLabel right={
+              <button onClick={() => setShowTxForm(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: T.violet, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                <Plus size={12} /> Ajouter
               </button>
-            </div>
+            }>
+              Dépôts &amp; retraits
+            </SectionLabel>
+          </div>
 
-            {showTxForm && (
-              <div style={{ background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 14, padding: 20, marginBottom: 14 }}>
-                <div className="bkr-txform" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
-                  <div>
-                    <label style={{ fontSize: 11, color: SILVER, display: 'block', marginBottom: 5 }}>Type</label>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      {(['deposit', 'withdrawal'] as const).map(t => (
-                        <button key={t} onClick={() => setTxForm(f => ({ ...f, type: t }))} style={{
-                          flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                          border: `1px solid ${txForm.type === t ? (t === 'deposit' ? CYAN : AMBER) : BORDER}`,
-                          background: txForm.type === t ? (t === 'deposit' ? 'rgba(6,182,212,0.12)' : 'rgba(245,158,11,0.12)') : 'transparent',
-                          color: txForm.type === t ? (t === 'deposit' ? CYAN : AMBER) : SILVER,
-                        }}>
-                          {t === 'deposit' ? 'Dépôt' : 'Retrait'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, color: SILVER, display: 'block', marginBottom: 5 }}>Date</label>
-                    <input type="date" value={txForm.date} onChange={e => setTxForm(f => ({ ...f, date: e.target.value }))} style={inp} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, color: SILVER, display: 'block', marginBottom: 5 }}>Montant (€)</label>
-                    <input type="number" min="0" value={txForm.amount} onChange={e => setTxForm(f => ({ ...f, amount: e.target.value }))} placeholder="100" style={inp} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, color: SILVER, display: 'block', marginBottom: 5 }}>Note</label>
-                    <input value={txForm.notes} onChange={e => setTxForm(f => ({ ...f, notes: e.target.value }))} placeholder="Winamax, cashout…" style={inp} />
+          {showTxForm && (
+            <div style={{ margin: '0 20px 16px', background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.18)', borderRadius: 12, padding: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 12 }}>
+                <div>
+                  <label style={{ fontSize: 11, color: T.silver, display: 'block', marginBottom: 5 }}>Type</label>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {(['deposit', 'withdrawal'] as const).map(t => (
+                      <button key={t} onClick={() => setTxForm(f => ({ ...f, type: t }))} style={{
+                        flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                        border: `1px solid ${txForm.type === t ? (t === 'deposit' ? T.blue : T.amber) : T.border}`,
+                        background: txForm.type === t ? (t === 'deposit' ? 'rgba(59,130,246,0.1)' : 'rgba(245,158,11,0.1)') : 'transparent',
+                        color: txForm.type === t ? (t === 'deposit' ? T.blue : T.amber) : T.silver,
+                      }}>
+                        {t === 'deposit' ? 'Dépôt' : 'Retrait'}
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-                  <button onClick={() => setShowTxForm(false)} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${BORDER}`, background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
-                  <button onClick={saveTx} disabled={savingTx || !txForm.amount} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: VIOLET, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: savingTx || !txForm.amount ? 0.6 : 1 }}>
-                    {savingTx ? '…' : 'Enregistrer'}
+                <div>
+                  <label style={{ fontSize: 11, color: T.silver, display: 'block', marginBottom: 5 }}>Date</label>
+                  <input type="date" value={txForm.date} onChange={e => setTxForm(f => ({ ...f, date: e.target.value }))} style={inp} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: T.silver, display: 'block', marginBottom: 5 }}>Montant (€)</label>
+                  <input type="number" min="0" value={txForm.amount} onChange={e => setTxForm(f => ({ ...f, amount: e.target.value }))} placeholder="100" style={inp} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: T.silver, display: 'block', marginBottom: 5 }}>Note</label>
+                  <input value={txForm.notes} onChange={e => setTxForm(f => ({ ...f, notes: e.target.value }))} placeholder="Winamax, cashout…" style={inp} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowTxForm(false)} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${T.border}`, background: 'transparent', color: T.silver, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
+                <button onClick={saveTx} disabled={savingTx || !txForm.amount} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: T.violet, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: savingTx || !txForm.amount ? 0.6 : 1 }}>
+                  {savingTx ? '…' : 'Enregistrer'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {transactions.length === 0 ? (
+            <p style={{ fontSize: 12, color: T.dim, margin: 0, padding: '0 20px 18px' }}>Aucun dépôt ou retrait enregistré.</p>
+          ) : (
+            <div>
+              {[...transactions].reverse().map((tx, i, arr) => (
+                <div key={tx.id} className="trk-row" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderTop: `1px solid ${T.border}`, borderBottom: i === arr.length - 1 ? 'none' : undefined }}>
+                  {tx.type === 'deposit'
+                    ? <ArrowDownToLine size={13} color={T.blue} />
+                    : <ArrowUpFromLine size={13} color={T.amber} />}
+                  <span style={{ fontSize: 12, color: T.silver, minWidth: 84, ...NUM }}>{new Date(tx.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' })}</span>
+                  <span style={{ flex: 1, fontSize: 12, color: T.silver, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.notes ?? (tx.type === 'deposit' ? 'Dépôt' : 'Retrait')}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: tx.type === 'deposit' ? T.blue : T.amber, ...NUM }}>
+                    {tx.type === 'deposit' ? '+' : '−'}{Math.round(Number(tx.amount))} €
+                  </span>
+                  <button onClick={() => delTx(tx.id)} aria-label="Supprimer" style={{ width: 26, height: 26, borderRadius: 6, border: 'none', background: 'transparent', color: T.faint, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = T.red }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = T.faint }}>
+                    <Trash2 size={12} />
                   </button>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
-            {transactions.length === 0 ? (
-              <p style={{ fontSize: 12, color: DIM, margin: 0 }}>Aucun dépôt ou retrait enregistré.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {[...transactions].reverse().map(tx => (
-                  <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: CARD, border: `1px solid ${BORDER}`, borderRadius: 10, padding: '10px 14px' }}>
-                    {tx.type === 'deposit'
-                      ? <ArrowDownToLine size={13} color={CYAN} />
-                      : <ArrowUpFromLine size={13} color={AMBER} />}
-                    <span style={{ fontSize: 12, color: SILVER, minWidth: 76 }}>{new Date(tx.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' })}</span>
-                    <span style={{ flex: 1, fontSize: 12, color: SILVER, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.notes ?? (tx.type === 'deposit' ? 'Dépôt' : 'Retrait')}</span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: tx.type === 'deposit' ? CYAN : AMBER }}>
-                      {tx.type === 'deposit' ? '+' : '−'}{Math.round(Number(tx.amount))}€
-                    </span>
-                    <button onClick={() => delTx(tx.id)} aria-label="Supprimer" style={{ width: 26, height: 26, borderRadius: 6, border: 'none', background: 'transparent', color: 'rgba(240,244,255,0.15)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = RED }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(240,244,255,0.15)' }}>
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Gestion de bankroll MTT (100 buy-ins) */}
-        {user && tournaments.length > 0 && (
-          <div style={{ background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.15)', borderRadius: 12, padding: '16px 20px' }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: SILVER, letterSpacing: '0.08em', marginBottom: 8 }}>GESTION MTT — 100 BUY-INS RECOMMANDÉS</div>
-            <p style={{ fontSize: 12, color: SILVER, margin: '0 0 10px', lineHeight: 1.5 }}>
-              Avec {Math.round(current)}€ de bankroll, ton buy-in moyen ne devrait pas dépasser <strong style={{ color: CREAM }}>{Math.max(0, Math.round(current / 100 * 100) / 100).toFixed(2)}€</strong> (variance MTT oblige).
-            </p>
-            {[['ABI 1€', 100], ['ABI 2€', 200], ['ABI 5€', 500], ['ABI 10€', 1000], ['ABI 20€', 2000], ['ABI 50€', 5000]].map(([label, min]) => {
-              const ok = current >= (min as number)
+      {/* Gestion de bankroll MTT */}
+      {user && tournaments.length > 0 && (
+        <Card>
+          <SectionLabel>Gestion MTT — 100 buy-ins recommandés</SectionLabel>
+          <p style={{ fontSize: 12.5, color: T.silver, margin: '0 0 14px', lineHeight: 1.55 }}>
+            Avec {Math.round(current)} € de bankroll, ton buy-in moyen ne devrait pas dépasser{' '}
+            <strong style={{ color: T.cream, ...NUM }}>{Math.max(0, current / 100).toFixed(2)} €</strong> (variance MTT oblige).
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 }}>
+            {ABI_LEVELS.map(([label, min]) => {
+              const ok = current >= min
               return (
-                <div key={label as string} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: ok ? GREEN : 'rgba(255,255,255,0.1)' }} />
-                  <span style={{ fontSize: 12, color: ok ? CREAM : SILVER, fontWeight: ok ? 600 : 400 }}>{label}</span>
-                  <span style={{ fontSize: 11, color: SILVER }}>— {min}€ minimum</span>
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 12px', borderRadius: 9, background: ok ? 'rgba(34,197,94,0.05)' : 'rgba(255,255,255,0.02)', border: `1px solid ${ok ? 'rgba(34,197,94,0.18)' : T.border}` }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: ok ? T.green : 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: ok ? T.cream : T.silver, fontWeight: ok ? 700 : 400, ...NUM }}>{label}</span>
+                  <span style={{ fontSize: 10.5, color: T.dim, marginLeft: 'auto', ...NUM }}>{min} €</span>
                 </div>
               )
             })}
           </div>
-        )}
-      </div>
-    </div>
+        </Card>
+      )}
+    </TrackerShell>
   )
 }

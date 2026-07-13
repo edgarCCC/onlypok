@@ -3,51 +3,26 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import {
-  ArrowLeft, Upload, TrendingUp, TrendingDown,
-  Trophy, Zap, Target, Clock, BarChart2, ChevronRight,
-} from 'lucide-react'
+import { Trophy, Zap, BarChart2, Upload } from 'lucide-react'
 import { SERIES_CFG, type SeriesKey } from './chartTokens'
+import { TrackerShell, Card, KpiStrip, Seg, SectionLabel, FormatBadge, RoomDot, Th, Td, Empty, T, NUM, eur, pnlColor } from '@/components/tracker/ui'
 
-// recharts is a heavy dependency (~90kb gzipped) — load it only on the client,
-// only once the tournament rows have started resolving.
+// recharts est lourd (~90kb gzip) — chargé client-side uniquement
 const TournamentCharts = dynamic(() => import('./TournamentCharts'), {
   ssr: false,
   loading: () => (
-    <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '28px 28px 16px', marginBottom: 16, height: 260 + 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 32, height: 32, border: '2px solid #7c3aed', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-    </div>
+    <Card style={{ marginBottom: 14, height: 316, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 28, height: 28, border: `2px solid ${T.violet}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    </Card>
   ),
 })
 
-// ── Design tokens ────────────────────────────────────────────────────────────
-const BG      = '#07090e'
-const SURFACE = 'rgba(255,255,255,0.025)'
-const BORDER  = 'rgba(255,255,255,0.07)'
-const CREAM   = '#f0f4ff'
-const SILVER  = 'rgba(240,244,255,0.5)'
-const DIM     = 'rgba(240,244,255,0.22)'
-const VIOLET  = '#7c3aed'
-const CYAN    = '#06b6d4'
-const GREEN   = '#4ade80'
-const RED     = '#ef4444'
-const AMBER   = '#f59e0b'
-const GOLD    = '#fbbf24'
-
 const PERIODS = [
-  { key: '7',   label: '7j' },
-  { key: '30',  label: '30j' },
-  { key: '90',  label: '90j' },
-  { key: 'all', label: 'Tout' },
+  { key: '7' as const,   label: '7 j' },
+  { key: '30' as const,  label: '30 j' },
+  { key: '90' as const,  label: '90 j' },
+  { key: 'all' as const, label: 'Tout' },
 ]
-
-const FORMAT_META: Record<string, { label: string; color: string }> = {
-  mystery_ko: { label: 'Mystery KO', color: '#c084fc' },
-  space_ko:   { label: 'Space KO',   color: CYAN },
-  ko:         { label: 'KO',         color: '#f87171' },
-  classic:    { label: 'Classique',  color: SILVER },
-  spin_rush:  { label: 'Spin & Rush', color: '#fb923c' },
-}
 
 type Row = {
   id: string
@@ -71,15 +46,13 @@ type Row = {
   speed: string
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
 function fmtDuration(secs: number) {
-  if (!secs) return '-'
+  if (!secs) return '—'
   const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60)
   return h > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${m}min`
 }
-function ordinal(n: number) {
-  return n === 1 ? '1er' : `${n}e`
-}
+const ordinal = (n: number) => (n === 1 ? '1er' : `${n}e`)
+
 function detectFormat(r: Row): string {
   if (r.type === 'Spin & Rush') return 'spin_rush'
   /* Betclic stocke le Tournament Type du header dans r.type (SKO, MKO…) */
@@ -92,46 +65,37 @@ function detectFormat(r: Row): string {
   if ((r.buy_in_bounty ?? 0) > 0 || u.includes('PKO') || u.includes(' KO') || u.includes('BOUNTY') || u.includes('PROGRESSIF')) return 'ko'
   return 'classic'
 }
-function placementColor(p: number, total: number) {
+function placementColor(p: number, total: number | null) {
+  if (p === 1) return T.gold
+  if (p <= 3) return T.amber
+  if (!total) return T.silver
   const pct = p / total
-  if (p === 1) return GOLD
-  if (p <= 3) return AMBER
-  if (pct <= 0.1) return GREEN
-  if (pct <= 0.2) return CYAN
-  return SILVER
+  if (pct <= 0.1) return T.green
+  if (pct <= 0.2) return T.blue
+  return T.silver
 }
-
 function rowSeriesKey(r: Row): SeriesKey {
   const isSpin = r.type === 'Spin & Rush'
   if ((r.room ?? 'winamax') === 'betclic') return isSpin ? 'betclic_spin' : 'betclic_mtt'
   return isSpin ? 'winamax_spin' : 'winamax_mtt'
 }
 
-// ── KPI Card ──────────────────────────────────────────────────────────────────
-function KpiCard({ label, value, sub, color, icon: Icon }: {
-  label: string; value: string; sub?: string; color: string; icon: React.ElementType
-}) {
-  return (
-    <div style={{
-      background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 16,
-      padding: '20px 22px', position: 'relative', overflow: 'hidden',
-    }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }} />
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: DIM }}>{label}</span>
-        <div style={{ width: 30, height: 30, borderRadius: 8, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon size={14} color={color} />
-        </div>
-      </div>
-      <p style={{ fontSize: 26, fontWeight: 900, color, margin: 0, letterSpacing: '-0.5px', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
-      {sub && <p style={{ fontSize: 11, color: DIM, margin: '4px 0 0' }}>{sub}</p>}
-    </div>
-  )
+/* Agrégat d'un groupe de lignes → stats communes */
+function agg(rows: Row[]) {
+  const profit    = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
+  const buyIn     = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
+  const roi       = buyIn > 0 ? (profit / buyIn) * 100 : 0
+  const itm       = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
+  const secs      = rows.reduce((a, r) => a + ((r.duration_secs ?? 0) > 0 ? r.duration_secs : 0), 0)
+  const perHour   = secs > 0 ? profit / (secs / 3600) : null
+  return { count: rows.length, profit, buyIn, roi, itm, perHour }
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+const GRID_BREAKDOWN = '110px 110px 1fr 90px 100px 80px 70px 90px'
+const GRID_HISTORY   = '1fr 92px 64px 84px 92px 76px 64px 92px'
+
 export default function TrackerDashboard() {
-  const [period, setPeriod]   = useState('all')
+  const [period, setPeriod]   = useState<'7' | '30' | '90' | 'all'>('all')
   const [rows,   setRows]     = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
   const [userId, setUserId]   = useState<string | null>(null)
@@ -155,100 +119,49 @@ export default function TrackerDashboard() {
 
   const filtered = useMemo(() => {
     if (period === 'all') return rows
-    const days = parseInt(period)
     const cutoff = new Date()
-    cutoff.setDate(cutoff.getDate() - days)
+    cutoff.setDate(cutoff.getDate() - parseInt(period))
     return rows.filter(r => new Date(r.date) >= cutoff)
   }, [rows, period])
 
-  // ── Stats ─────────────────────────────────────────────────────────────────
-  const totalBuyIn    = useMemo(() => filtered.reduce((a, r) => a + (r.buy_in_total ?? 0), 0), [filtered])
-  const totalProfit   = useMemo(() => filtered.reduce((a, r) => a + (r.net_profit ?? 0), 0), [filtered])
-  const roi           = totalBuyIn > 0 ? (totalProfit / totalBuyIn) * 100 : 0
-  const itm           = filtered.length > 0
-    ? filtered.filter(r => (r.prize_won ?? 0) > 0).length / filtered.length * 100
-    : 0
-  const vpipRows      = filtered.filter(r => r.vpip_pct !== null)
-  const avgVpip       = vpipRows.length > 0
-    ? vpipRows.reduce((a, r) => a + r.vpip_pct!, 0) / vpipRows.length
-    : null
+  const total = useMemo(() => agg(filtered), [filtered])
+  const vpipRows = filtered.filter(r => r.vpip_pct !== null)
+  const avgVpip  = vpipRows.length > 0 ? vpipRows.reduce((a, r) => a + r.vpip_pct!, 0) / vpipRows.length : null
   const totalDuration = filtered.reduce((a, r) => a + (r.duration_secs ?? 0), 0)
+  const totalHands    = filtered.reduce((a, r) => a + (r.hands_played ?? 0), 0)
 
-  // ── Room breakdown ────────────────────────────────────────────────────────
-  const roomStats = useMemo(() => {
-    const map = new Map<string, Row[]>()
+  /* Room × format, avec sous-totaux par room */
+  const breakdown = useMemo(() => {
+    const byRoom = new Map<string, Row[]>()
     for (const r of filtered) {
       const room = r.room || 'winamax'
-      if (!map.has(room)) map.set(room, [])
-      map.get(room)!.push(r)
+      if (!byRoom.has(room)) byRoom.set(room, [])
+      byRoom.get(room)!.push(r)
     }
-    return [...map.entries()].map(([room, rows]) => {
-      const profit      = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
-      const buyIn       = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
-      const roi         = buyIn > 0 ? (profit / buyIn) * 100 : 0
-      const itm         = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
-      const timedRows   = rows.filter(r => (r.duration_secs ?? 0) > 0)
-      const totalSecs   = timedRows.reduce((a, r) => a + r.duration_secs, 0)
-      const profitHour  = totalSecs > 0 ? (profit / (totalSecs / 3600)) : null
-      return { room, count: rows.length, profit, roi, itm, profitHour }
-    }).sort((a, b) => b.count - a.count)
+    return [...byRoom.entries()]
+      .sort((a, b) => b[1].length - a[1].length)
+      .map(([room, roomRows]) => {
+        const byFmt = new Map<string, Row[]>()
+        for (const r of roomRows) {
+          const f = detectFormat(r)
+          if (!byFmt.has(f)) byFmt.set(f, [])
+          byFmt.get(f)!.push(r)
+        }
+        return {
+          room,
+          total: agg(roomRows),
+          formats: [...byFmt.entries()]
+            .sort((a, b) => b[1].length - a[1].length)
+            .map(([fmt, rows]) => ({ fmt, ...agg(rows) })),
+        }
+      })
   }, [filtered])
 
-  // ── Format breakdown ──────────────────────────────────────────────────────
-  const formatStats = useMemo(() => {
-    const map = new Map<string, Row[]>()
-    for (const r of filtered) {
-      const fmt = detectFormat(r)
-      if (!map.has(fmt)) map.set(fmt, [])
-      map.get(fmt)!.push(r)
-    }
-    return [...map.entries()].map(([fmt, rows]) => {
-      const profit      = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
-      const buyIn       = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
-      const roi         = buyIn > 0 ? (profit / buyIn) * 100 : 0
-      const itm         = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
-      const timedRows   = rows.filter(r => (r.duration_secs ?? 0) > 0)
-      const totalSecs   = timedRows.reduce((a, r) => a + r.duration_secs, 0)
-      const profitHour  = totalSecs > 0 ? (profit / (totalSecs / 3600)) : null
-      return { fmt, count: rows.length, profit, roi, itm, profitHour, meta: FORMAT_META[fmt] ?? { label: fmt, color: SILVER } }
-    }).sort((a, b) => b.count - a.count)
-  }, [filtered])
-
-  // ── Room × format breakdown ───────────────────────────────────────────────
-  const combinedStats = useMemo(() => {
-    type CKey = string // e.g. "winamax|spin_rush"
-    const map = new Map<CKey, Row[]>()
-    for (const r of filtered) {
-      const room = r.room || 'winamax'
-      const fmt  = detectFormat(r)
-      const key  = `${room}|${fmt}`
-      if (!map.has(key)) map.set(key, [])
-      map.get(key)!.push(r)
-    }
-    return [...map.entries()].map(([key, rows]) => {
-      const [room, fmt] = key.split('|')
-      const profit      = rows.reduce((a, r) => a + (r.net_profit ?? 0), 0)
-      const buyIn       = rows.reduce((a, r) => a + (r.buy_in_total ?? 0), 0)
-      const roi         = buyIn > 0 ? (profit / buyIn) * 100 : 0
-      const itm         = rows.length > 0 ? rows.filter(r => (r.prize_won ?? 0) > 0).length / rows.length * 100 : 0
-      const timedRows   = rows.filter(r => (r.duration_secs ?? 0) > 0)
-      const totalSecs   = timedRows.reduce((a, r) => a + r.duration_secs, 0)
-      const profitHour  = totalSecs > 0 ? (profit / (totalSecs / 3600)) : null
-      const roomColor   = room === 'betclic' ? '#fb923c' : VIOLET
-      const roomLabel   = room === 'betclic' ? 'Betclic' : 'Winamax'
-      const fmtMeta     = FORMAT_META[fmt] ?? { label: fmt, color: SILVER }
-      return { key, room, fmt, roomLabel, roomColor, fmtMeta, count: rows.length, profit, roi, itm, profitHour }
-    }).sort((a, b) => b.count - a.count)
-  }, [filtered])
-
-  // ── Multi-series chart data ───────────────────────────────────────────────
+  /* Données des courbes (inchangé) */
   const multiLineData = useMemo(() => {
-    // Group rows by series, oldest-first
     const byKey: Record<string, Row[]> = Object.fromEntries(SERIES_CFG.map(s => [s.key, []]))
     for (const r of filtered) byKey[rowSeriesKey(r)].push(r)
     for (const rows of Object.values(byKey)) rows.sort((a, b) => a.date.localeCompare(b.date))
-
-    // Cumulative per date per series
     const cumulByDate: Record<string, Record<string, number>> = {}
     for (const s of SERIES_CFG) {
       cumulByDate[s.key] = {}
@@ -258,11 +171,8 @@ export default function TrackerDashboard() {
         cumulByDate[s.key][r.date] = cumul
       }
     }
-
-    // Merge onto unified date axis with forward-fill
     const allDates = [...new Set(filtered.map(r => r.date))].sort()
     const lastVal: Record<string, number | null> = Object.fromEntries(SERIES_CFG.map(s => [s.key, null]))
-
     return allDates.map(date => {
       const d = new Date(date)
       const entry: Record<string, unknown> = { date: `${d.getDate()}/${d.getMonth() + 1}` }
@@ -274,13 +184,10 @@ export default function TrackerDashboard() {
     })
   }, [filtered])
 
-  // Only series that actually have data
   const activeSeries = useMemo(
     () => SERIES_CFG.filter(s => multiLineData.some(d => d[s.key] !== null)),
     [multiLineData]
   )
-
-  // Index of last non-null point per series (for end label)
   const lastIdx = useMemo(() => {
     const result: Record<string, number> = {}
     for (const s of SERIES_CFG) {
@@ -292,7 +199,6 @@ export default function TrackerDashboard() {
     }
     return result
   }, [multiLineData])
-
   const barData = useMemo(() =>
     [...filtered].slice(0, 30).reverse().map(r => ({
       name: r.tournament_name.length > 18 ? r.tournament_name.slice(0, 16) + '…' : r.tournament_name,
@@ -301,323 +207,140 @@ export default function TrackerDashboard() {
     [filtered]
   )
 
-  const isPositive = totalProfit >= 0
+  const isPositive = total.profit >= 0
 
-  // ── Empty state ────────────────────────────────────────────────────────────
-  if (!loading && filtered.length === 0) {
+  if (!loading && rows.length === 0) {
     return (
-      <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '100px 24px 80px' }}>
-          <Link href="/tracker" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: SILVER, textDecoration: 'none', fontSize: 13, marginBottom: 40 }}>
-            <ArrowLeft size={14} /> Retour
-          </Link>
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <div style={{ width: 64, height: 64, borderRadius: 18, background: `${VIOLET}15`, border: `1px solid ${VIOLET}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-              <BarChart2 size={28} color={VIOLET} />
-            </div>
-            <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 10px' }}>Aucune donnée</h2>
-            <p style={{ fontSize: 14, color: SILVER, margin: '0 0 28px', lineHeight: 1.6 }}>
-              {!userId ? 'Connecte-toi pour voir ton dashboard.' : 'Importe tes fichiers Winamax pour commencer.'}
-            </p>
-            <Link href={userId ? '/tracker/import' : '/login'} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 28px', borderRadius: 12, background: VIOLET, color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 700 }}>
-              <Upload size={15} /> {userId ? 'Importer mes résultats' : 'Se connecter'}
-            </Link>
-          </div>
-        </div>
-      </div>
+      <TrackerShell>
+        <Card>
+          <Empty
+            icon={<BarChart2 size={40} color={T.cream} />}
+            title={userId ? 'Aucun tournoi importé' : 'Connecte-toi pour voir ton dashboard'}
+            sub={userId
+              ? 'Glisse tes fichiers Winamax ou Betclic dans l’import : résultats, ROI, ITM et stats préflop sont calculés automatiquement.'
+              : 'Ton historique de tournois, tes courbes et tes stats t’attendent.'}
+            cta={
+              <Link href={userId ? '/tracker/import' : '/login'} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 24px', borderRadius: 10, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>
+                <Upload size={14} /> {userId ? 'Importer mes résultats' : 'Se connecter'}
+              </Link>
+            }
+          />
+        </Card>
+      </TrackerShell>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
+    <TrackerShell wide actions={<Seg options={PERIODS} value={period} onChange={setPeriod} />}>
 
-      <div style={{ maxWidth: 1160, margin: '0 auto', padding: '96px 24px 80px' }}>
+      {/* ── KPIs ── */}
+      <KpiStrip items={[
+        { label: 'Profit net', value: eur(total.profit, { sign: true }), color: pnlColor(total.profit), sub: `Buy-in ${eur(total.buyIn)}` },
+        { label: 'ROI',        value: `${total.roi >= 0 ? '+' : ''}${total.roi.toFixed(1)} %`, color: pnlColor(total.roi), sub: `${total.count} tournois` },
+        { label: 'ITM',        value: `${total.itm.toFixed(1)} %`, color: total.itm >= 15 ? T.green : total.itm >= 10 ? T.amber : T.red, sub: `${filtered.filter(r => (r.prize_won ?? 0) > 0).length} places payées` },
+        { label: 'VPIP moyen', value: avgVpip !== null ? `${avgVpip.toFixed(1)} %` : '—', color: T.cream, sub: 'cible 20–30 %' },
+        { label: 'Volume',     value: totalHands.toLocaleString('fr-FR'), color: T.cream, sub: 'mains jouées' },
+        { label: 'Temps de jeu', value: fmtDuration(totalDuration), color: T.cream, sub: total.perHour !== null ? `${eur(total.perHour, { sign: true })}/h` : '—' },
+      ]} />
 
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 36, flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <Link href="/tracker" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: DIM, textDecoration: 'none', fontSize: 12, marginBottom: 10 }}>
-              <ArrowLeft size={12} /> Tracker
-            </Link>
-            <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-0.8px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>
-              Dashboard{' '}
-              <span style={{ color: VIOLET }}>
-                Tournois
-              </span>
-            </h1>
-          </div>
+      {/* ── Courbes ── */}
+      <TournamentCharts
+        loading={loading}
+        isPositive={isPositive}
+        totalProfit={total.profit}
+        filteredCount={filtered.length}
+        multiLineData={multiLineData}
+        activeSeries={activeSeries}
+        lastIdx={lastIdx}
+        barData={barData}
+      />
 
-          {/* Right controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            {/* Import button */}
-            <Link href="/tracker/import" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '9px 18px', borderRadius: 10,
-              border: `1px solid ${VIOLET}50`, background: `${VIOLET}15`,
-              color: '#c4b5fd', textDecoration: 'none', fontSize: 13, fontWeight: 700,
-              transition: 'all 0.15s',
-            }}>
-              <Upload size={13} /> Importer
-            </Link>
-
-            {/* Period tabs */}
-            <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.04)', padding: 4, borderRadius: 10, border: `1px solid ${BORDER}` }}>
-              {PERIODS.map(p => (
-                <button key={p.key} onClick={() => setPeriod(p.key)} style={{
-                  padding: '7px 16px', borderRadius: 7, border: 'none', cursor: 'pointer',
-                  fontSize: 13, fontWeight: 700, transition: 'all 0.15s',
-                  background: period === p.key ? VIOLET : 'transparent',
-                  color: period === p.key ? '#fff' : SILVER,
-                }}>
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* ── Room × format ── */}
+      <Card pad={false} style={{ marginBottom: 14 }}>
+        <div style={{ padding: '16px 20px 0' }}>
+          <SectionLabel>Par room &amp; format</SectionLabel>
         </div>
-
-        {/* ── KPI cards ──────────────────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 28 }}>
-          <KpiCard
-            label="Profit net" icon={isPositive ? TrendingUp : TrendingDown}
-            value={`${isPositive ? '+' : ''}${totalProfit.toFixed(2)}€`}
-            color={isPositive ? GREEN : RED}
-            sub={`Buy-in total : ${totalBuyIn.toFixed(2)}€`}
-          />
-          <KpiCard
-            label="ROI" icon={BarChart2}
-            value={`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`}
-            color={roi >= 0 ? GREEN : RED}
-            sub={`${filtered.length} tournoi${filtered.length > 1 ? 's' : ''}`}
-          />
-          <KpiCard
-            label="ITM" icon={Trophy}
-            value={`${itm.toFixed(1)}%`}
-            color={itm >= 15 ? GREEN : itm >= 10 ? AMBER : RED}
-            sub={`${filtered.filter(r => (r.prize_won ?? 0) > 0).length} places payées`}
-          />
-          <KpiCard
-            label="VPIP moyen" icon={Target}
-            value={avgVpip !== null ? `${avgVpip.toFixed(1)}%` : '—'}
-            color={avgVpip !== null && avgVpip >= 20 && avgVpip <= 30 ? GREEN : VIOLET}
-            sub="Cible 20–30%"
-          />
-          <KpiCard
-            label="Temps de jeu" icon={Clock}
-            value={fmtDuration(totalDuration)}
-            color={CYAN}
-            sub={`${filtered.reduce((a, r) => a + (r.hands_played ?? 0), 0).toLocaleString('fr')} mains`}
-          />
+        <div style={{ display: 'grid', gridTemplateColumns: GRID_BREAKDOWN, gap: 10, padding: '8px 20px', borderBottom: `1px solid ${T.border}` }}>
+          <Th>Room</Th><Th>Format</Th><Th /><Th align="right">Tournois</Th><Th align="right">Profit</Th><Th align="right">ROI</Th><Th align="right">ITM</Th><Th align="right">€ / h</Th>
         </div>
-
-        {/* ── Room + Format breakdown ─────────────────────────────────────── */}
-        {filtered.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-
-            {/* Par room (avec profit/heure) */}
-            <div style={{ display: 'grid', gridTemplateColumns: roomStats.length > 1 ? '1fr 1fr' : '1fr', gap: 12 }}>
-              {roomStats.map(({ room, count, profit, roi, itm, profitHour }) => {
-                const isWin = room === 'winamax'
-                const color = isWin ? VIOLET : '#fb923c'
-                const label = isWin ? 'Winamax' : 'Betclic'
-                return (
-                  <div key={room} style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '20px 24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: color }} />
-                      <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: DIM }}>{label}</span>
-                      <span style={{ fontSize: 11, color: DIM, marginLeft: 'auto' }}>{count} tournoi{count > 1 ? 's' : ''}</span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
-                      <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: '10px 12px' }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: DIM, margin: '0 0 4px' }}>Profit</p>
-                        <p style={{ fontSize: 14, fontWeight: 900, color: profit >= 0 ? GREEN : RED, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                          {profit >= 0 ? '+' : ''}{profit.toFixed(2)}€
-                        </p>
-                      </div>
-                      <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: '10px 12px' }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: DIM, margin: '0 0 4px' }}>ROI</p>
-                        <p style={{ fontSize: 14, fontWeight: 900, color: roi >= 0 ? GREEN : RED, margin: 0 }}>
-                          {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
-                        </p>
-                      </div>
-                      <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: '10px 12px' }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: DIM, margin: '0 0 4px' }}>ITM</p>
-                        <p style={{ fontSize: 14, fontWeight: 900, color: itm >= 15 ? GREEN : itm >= 10 ? AMBER : RED, margin: 0 }}>
-                          {itm.toFixed(0)}%
-                        </p>
-                      </div>
-                      <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: '10px 12px' }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: DIM, margin: '0 0 4px' }}>€/heure</p>
-                        <p style={{ fontSize: 14, fontWeight: 900, color: profitHour === null ? DIM : profitHour >= 0 ? GREEN : RED, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                          {profitHour === null ? '—' : `${profitHour >= 0 ? '+' : ''}${profitHour.toFixed(2)}€`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+        {breakdown.map(group => (
+          <div key={group.room}>
+            {/* sous-total room */}
+            <div style={{ display: 'grid', gridTemplateColumns: GRID_BREAKDOWN, gap: 10, padding: '11px 20px', background: 'rgba(255,255,255,0.018)', borderBottom: `1px solid ${T.border}` }}>
+              <Td><RoomDot room={group.room} /></Td>
+              <Td color={T.dim}>Total</Td>
+              <Td>{''}</Td>
+              <Td align="right" color={T.silver}>{group.total.count}</Td>
+              <Td align="right" strong color={pnlColor(group.total.profit)}>{eur(group.total.profit, { sign: true })}</Td>
+              <Td align="right" color={pnlColor(group.total.roi)}>{group.total.roi >= 0 ? '+' : ''}{group.total.roi.toFixed(1)} %</Td>
+              <Td align="right" color={T.silver}>{group.total.itm.toFixed(0)} %</Td>
+              <Td align="right" color={group.total.perHour === null ? T.dim : pnlColor(group.total.perHour)}>
+                {group.total.perHour === null ? '—' : eur(group.total.perHour, { sign: true })}
+              </Td>
             </div>
-
-            {/* Par room × format (tableau détaillé) */}
-            <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '20px 24px' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: DIM, margin: '0 0 14px' }}>Par room &amp; format</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {combinedStats.map(({ key, roomLabel, roomColor, fmtMeta, count, profit, roi, itm, profitHour }) => (
-                  <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, background: `${fmtMeta.color}06`, border: `1px solid ${fmtMeta.color}18` }}>
-                    {/* Room dot */}
-                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: roomColor, flexShrink: 0 }} />
-                    {/* Room label */}
-                    <span style={{ fontSize: 11, fontWeight: 700, color: roomColor, minWidth: 52 }}>{roomLabel}</span>
-                    {/* Format badge */}
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, color: fmtMeta.color, background: `${fmtMeta.color}15`, border: `1px solid ${fmtMeta.color}28`, whiteSpace: 'nowrap' }}>
-                      {fmtMeta.label}
-                    </span>
-                    {/* Count */}
-                    <span style={{ fontSize: 11, color: DIM, minWidth: 56 }}>{count} tournoi{count > 1 ? 's' : ''}</span>
-                    {/* Stats — pushed right */}
-                    <div style={{ flex: 1, display: 'flex', gap: 14, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: profit >= 0 ? GREEN : RED, fontVariantNumeric: 'tabular-nums', minWidth: 72, textAlign: 'right' }}>
-                        {profit >= 0 ? '+' : ''}{profit.toFixed(2)}€
-                      </span>
-                      <span style={{ fontSize: 11, color: roi >= 0 ? GREEN : RED, minWidth: 58, textAlign: 'right' }}>
-                        ROI {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
-                      </span>
-                      <span style={{ fontSize: 11, color: itm >= 15 ? GREEN : itm >= 10 ? AMBER : DIM, minWidth: 46, textAlign: 'right' }}>
-                        ITM {itm.toFixed(0)}%
-                      </span>
-                      <span style={{ fontSize: 11, color: profitHour === null ? DIM : profitHour >= 0 ? CYAN : RED, minWidth: 68, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                        {profitHour === null ? '—' : `${profitHour >= 0 ? '+' : ''}${profitHour.toFixed(2)}€/h`}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+            {/* détail par format */}
+            {group.formats.map(f => (
+              <div key={f.fmt} className="trk-row" style={{ display: 'grid', gridTemplateColumns: GRID_BREAKDOWN, gap: 10, padding: '9px 20px', borderBottom: `1px solid ${T.border}` }}>
+                <Td>{''}</Td>
+                <Td><FormatBadge format={f.fmt} /></Td>
+                <Td>{''}</Td>
+                <Td align="right" color={T.silver}>{f.count}</Td>
+                <Td align="right" color={pnlColor(f.profit)}>{eur(f.profit, { sign: true })}</Td>
+                <Td align="right" color={pnlColor(f.roi)}>{f.roi >= 0 ? '+' : ''}{f.roi.toFixed(1)} %</Td>
+                <Td align="right" color={T.silver}>{f.itm.toFixed(0)} %</Td>
+                <Td align="right" color={f.perHour === null ? T.dim : pnlColor(f.perHour)}>
+                  {f.perHour === null ? '—' : eur(f.perHour, { sign: true })}
+                </Td>
               </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* ── Bankroll curve + per-tournament bars (recharts, lazy-loaded) ── */}
-        <TournamentCharts
-          loading={loading}
-          isPositive={isPositive}
-          totalProfit={totalProfit}
-          filteredCount={filtered.length}
-          multiLineData={multiLineData}
-          activeSeries={activeSeries}
-          lastIdx={lastIdx}
-          barData={barData}
-        />
-
-        {/* ── All tournaments (scrollable) ────────────────────────────────── */}
-        <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden' }}>
-          {/* Section header */}
-          <div style={{ padding: '22px 28px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <h2 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 2px' }}>Historique des tournois</h2>
-              <p style={{ fontSize: 11, color: DIM, margin: 0 }}>{filtered.length} tournoi{filtered.length > 1 ? 's' : ''} sur la période</p>
-            </div>
-          </div>
-
-          {/* Sticky table header */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 80px 90px 90px 70px 80px',
-            padding: '12px 28px', marginTop: 16,
-            background: 'rgba(255,255,255,0.03)',
-            borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`,
-            position: 'sticky', top: 0, zIndex: 10,
-          }}>
-            {['Tournoi', 'Date', 'Position', 'KO', 'Durée', 'Profit'].map(h => (
-              <span key={h} style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: DIM }}>{h}</span>
             ))}
           </div>
+        ))}
+      </Card>
 
-          {/* Scrollable rows */}
-          <div style={{ maxHeight: 520, overflowY: 'auto' }}>
-            {filtered.map((r, i) => {
-              const profit = r.net_profit ?? 0
-              const fmt = detectFormat(r)
-              const fmtMeta = FORMAT_META[fmt]
-              /* Betclic MTT : placement connu mais taille du field inconnue —
-                 on affiche quand même la place, sans le « /total ». */
-              const hasPlacement = !!r.placement
-              const pColor = r.placement && r.total_players ? placementColor(r.placement, r.total_players) : SILVER
-              return (
-                <div
-                  key={r.id}
-                  style={{
-                    display: 'grid', gridTemplateColumns: '1fr 80px 90px 90px 70px 80px',
-                    padding: '13px 28px',
-                    borderBottom: i < filtered.length - 1 ? `1px solid ${BORDER}` : 'none',
-                    transition: 'background 0.12s',
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.025)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
-                >
-                  {/* Name + format */}
-                  <div style={{ minWidth: 0, paddingRight: 16 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: '0 0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {r.tournament_name}
-                    </p>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 99, color: fmtMeta.color, background: `${fmtMeta.color}15`, border: `1px solid ${fmtMeta.color}28` }}>
-                      {fmtMeta.label}{r.speed ? ` · ${r.speed}` : ''}
-                    </span>
-                  </div>
-
-                  {/* Date */}
-                  <span style={{ fontSize: 12, color: SILVER, display: 'flex', alignItems: 'center' }}>
-                    {new Date(r.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
-                  </span>
-
-                  {/* Placement */}
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {hasPlacement ? (
-                      <span style={{ fontSize: 12, fontWeight: 700, color: pColor, display: 'flex', alignItems: 'center', gap: 3 }}>
-                        {r.placement === 1 && <Trophy size={10} color={GOLD} />}
-                        {ordinal(r.placement!)}
-                        {r.total_players ? <span style={{ fontWeight: 400, color: DIM }}>/{r.total_players}</span> : null}
-                      </span>
-                    ) : <span style={{ fontSize: 12, color: DIM }}>-</span>}
-                  </div>
-
-                  {/* KO */}
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {(r.bounties_won ?? 0) > 0 ? (
-                      <span style={{ fontSize: 12, fontWeight: 700, color: AMBER, display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <Zap size={10} color={AMBER} /> {r.bounties_won!.toFixed(2)}€
-                      </span>
-                    ) : <span style={{ fontSize: 12, color: DIM }}>-</span>}
-                  </div>
-
-                  {/* Duration */}
-                  <span style={{ fontSize: 12, color: SILVER, display: 'flex', alignItems: 'center' }}>
-                    {fmtDuration(r.duration_secs ?? 0)}
-                  </span>
-
-                  {/* Profit */}
-                  <span style={{
-                    fontSize: 13, fontWeight: 800, display: 'flex', alignItems: 'center',
-                    color: profit > 0 ? GREEN : profit < 0 ? RED : SILVER,
-                    fontVariantNumeric: 'tabular-nums',
-                  }}>
-                    {profit > 0 ? '+' : profit < 0 ? '-' : ''}{Math.abs(profit).toFixed(2)}€
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+      {/* ── Historique ── */}
+      <Card pad={false}>
+        <div style={{ padding: '16px 20px 0' }}>
+          <SectionLabel right={<span style={{ fontSize: 11, color: T.dim }}>{filtered.length} tournois</span>}>
+            Historique des tournois
+          </SectionLabel>
         </div>
+        <div style={{ display: 'grid', gridTemplateColumns: GRID_HISTORY, gap: 10, padding: '8px 20px', borderBottom: `1px solid ${T.border}` }}>
+          <Th>Tournoi</Th><Th>Room</Th><Th align="right">Date</Th><Th align="right">Buy-in</Th><Th align="right">Position</Th><Th align="right">KO</Th><Th align="right">Durée</Th><Th align="right">Profit</Th>
+        </div>
+        <div className="trk-scroll" style={{ maxHeight: 560, overflowY: 'auto' }}>
+          {filtered.map(r => {
+            const profit = r.net_profit ?? 0
+            return (
+              <div key={r.id} className="trk-row" style={{ display: 'grid', gridTemplateColumns: GRID_HISTORY, gap: 10, padding: '10px 20px', borderBottom: `1px solid ${T.border}` }}>
+                <span style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: T.cream, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.tournament_name}</span>
+                  <FormatBadge format={detectFormat(r)} />
+                </span>
+                <Td><RoomDot room={r.room || 'winamax'} /></Td>
+                <Td align="right" color={T.dim}>{new Date(r.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}</Td>
+                <Td align="right">{eur(r.buy_in_total ?? 0)}</Td>
+                <Td align="right" color={r.placement ? placementColor(r.placement, r.total_players) : T.dim}
+                  style={r.placement ? { fontWeight: 600 } : undefined}>
+                  {r.placement ? (
+                    <>
+                      {r.placement === 1 && <Trophy size={10} color={T.gold} style={{ marginRight: 4 }} />}
+                      {ordinal(r.placement)}{r.total_players ? <span style={{ color: T.faint, fontWeight: 400 }}>/{r.total_players}</span> : null}
+                    </>
+                  ) : '—'}
+                </Td>
+                <Td align="right" color={(r.bounties_won ?? 0) > 0 ? T.amber : T.dim}>
+                  {(r.bounties_won ?? 0) > 0 ? (
+                    <><Zap size={9} color={T.amber} style={{ marginRight: 3 }} />{eur(r.bounties_won)}</>
+                  ) : '—'}
+                </Td>
+                <Td align="right" color={T.dim}>{fmtDuration(r.duration_secs ?? 0)}</Td>
+                <Td align="right" strong color={pnlColor(profit)}>{eur(profit, { sign: true })}</Td>
+              </div>
+            )
+          })}
+        </div>
+      </Card>
 
-      </div>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-        * { box-sizing: border-box }
-        ::-webkit-scrollbar { width: 4px }
-        ::-webkit-scrollbar-track { background: transparent }
-        ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.35); border-radius: 99px }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.6) }
-      `}</style>
-    </div>
+    </TrackerShell>
   )
 }

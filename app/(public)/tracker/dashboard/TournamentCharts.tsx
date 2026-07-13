@@ -79,7 +79,7 @@ export default function TournamentCharts({
   return (
     <>
       {/* ── Bankroll curve ──────────────────────────────────────────────── */}
-      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '28px 28px 16px', marginBottom: 16 }}>
+      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 14, padding: '20px 20px 12px', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <div>
             <h2 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 2px' }}>Courbe de bankroll</h2>
@@ -164,7 +164,7 @@ export default function TournamentCharts({
 
       {/* ── Per-tournament bars ─────────────────────────────────────────── */}
       {barData.length > 0 && (
-        <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 20, padding: '28px 28px 16px', marginBottom: 28 }}>
+        <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 14, padding: '20px 20px 12px', marginBottom: 14 }}>
           <div style={{ marginBottom: 20 }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 2px' }}>Résultats par tournoi</h2>
             <p style={{ fontSize: 12, color: DIM, margin: 0 }}>30 derniers tournois</p>
