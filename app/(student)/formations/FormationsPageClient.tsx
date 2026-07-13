@@ -54,18 +54,18 @@ function TabHero({ tab, accentColor, count }: {
   const copy = {
     formations: {
       eyebrow: 'Catalogue',
-      title: <>Apprends. Applique. <span style={{ color: accentColor }}>Encaisse.</span></>,
+      title: <>Deviens le joueur que personne ne veut <span style={{ color: accentColor }}>affronter</span></>,
       sub: `${count} formation${count > 1 ? 's' : ''} structurée${count > 1 ? 's' : ''} par des pros aux résultats vérifiés`,
     },
     videos: {
       eyebrow: 'Vidéothèque',
-      title: <>Des replays qui <span style={{ color: accentColor }}>rapportent</span></>,
+      title: <>Entre dans la tête <span style={{ color: accentColor }}>des pros</span></>,
       sub: `${count} vidéo${count > 1 ? 's' : ''} — replays, analyses de mains et concepts clés en format court`,
     },
     coaching: {
       eyebrow: 'Coaching privé',
-      title: <>Le raccourci vers le <span style={{ color: accentColor }}>niveau pro</span></>,
-      sub: `${count} coach${count > 1 ? 's' : ''} vérifié${count > 1 ? 's' : ''} — réserve ta session en trois clics`,
+      title: <>Rentre dans le cercle des <span style={{ color: accentColor }}>joueurs gagnants</span></>,
+      sub: `${count} coach${count > 1 ? 's' : ''} disponible${count > 1 ? 's' : ''} — réserve ta session en trois clics`,
     },
   }[tab]
 
