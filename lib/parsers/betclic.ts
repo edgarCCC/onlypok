@@ -5,6 +5,7 @@ export interface BetclicHand {
   gameId: string
   gameName: string
   gameMode: 'spin' | 'tournament'
+  tournamentType: string
   buyIn: number
   prizePool: number
   date: Date
@@ -75,8 +76,9 @@ export function buildBetclicTournaments(allHands: BetclicHand[]): ParsedTourname
     const threeBetCount = gameHands.filter(h => h.threeBet).length
     const threeBetOpps  = gameHands.filter(h => h.threeBetOpportunity).length
 
-    const format = detectBetclicFormat(first.gameName, first.gameMode)
-    const type   = isSpin ? 'Spin & Rush' : 'tournament'
+    const format = detectBetclicFormat(first.gameName, first.gameMode, first.tournamentType)
+    /* type stocké en base : le dashboard s'en sert pour re-détecter le format */
+    const type   = isSpin ? 'Spin & Rush' : (first.tournamentType || 'tournament')
     const speed  = isSpin ? 'hyper' : detectBetclicSpeed(first.gameName)
 
     results.push({
@@ -110,8 +112,11 @@ export function buildBetclicTournaments(allHands: BetclicHand[]): ParsedTourname
   return results.sort((a, b) => b.date.getTime() - a.date.getTime())
 }
 
-function detectBetclicFormat(name: string, mode: 'spin' | 'tournament'): TournamentFormat {
+function detectBetclicFormat(name: string, mode: 'spin' | 'tournament', tournamentType = ''): TournamentFormat {
   if (mode === 'spin') return 'spin_rush'
+  const tt = tournamentType.toUpperCase()
+  if (tt.includes('MKO') || tt.includes('MYSTERY')) return 'mystery_ko'
+  if (tt.includes('KO') || tt.includes('BOUNTY')) return 'ko'
   const u = name.toUpperCase()
   if (u.includes('MYSTERY')) return 'mystery_ko'
   if (u.includes('PKO') || u.includes('KO') || u.includes('BOUNTY') || u.includes('PROGRESSIF')) return 'ko'
@@ -137,6 +142,8 @@ function parseBetclicHand(block: string): BetclicHand | null {
   if (gameModeRaw !== 'Spin' && gameModeRaw !== 'Tournament') return null
   const gameMode: 'spin' | 'tournament' = gameModeRaw === 'Spin' ? 'spin' : 'tournament'
 
+  // "Tournament Type: SKO" (bounty progressif), "MKO" (mystery)… — absent en Spin
+  const tournamentType = headerSection.match(/Tournament Type:\s*(.+)/)?.[1].trim() ?? ''
   const gameIdMatch    = headerSection.match(/Game ID:\s*(\S+)/)
   const gameNameMatch  = headerSection.match(/Game Name:\s*(.+)/)
   const buyInMatch     = headerSection.match(/Buy In:\s*([\d.]+)/)
@@ -153,12 +160,16 @@ function parseBetclicHand(block: string): BetclicHand | null {
 
   if (!gameId) return null
 
+  /* Deux formats de seat selon le mode :
+       Spin : "Seat 1: Call_Uche (740) [BB Hero]"
+       MTT  : "Seat 5: Call_Uche (159747, €6.00 bounty) [SB Hero]"
+     et en MTT les sièges sans position n'ont AUCUN tag [—] → crochet optionnel. */
   const players: string[] = []
   let heroName = ''
-  for (const m of playersSection.matchAll(/Seat \d+:\s*([^(]+?)\s*\(\d+\)\s*\[([^\]]+)\]/g)) {
+  for (const m of playersSection.matchAll(/Seat \d+:\s*(.+?)\s*\(([^)]*)\)(?:\s*\[([^\]]+)\])?\s*$/gm)) {
     const name = m[1].trim()
     players.push(name)
-    if (m[2].includes('Hero')) heroName = name
+    if (m[3]?.includes('Hero')) heroName = name
   }
 
   // Placement, prize & bounties from SUMMARY
@@ -213,7 +224,7 @@ function parseBetclicHand(block: string): BetclicHand | null {
   }
 
   return {
-    gameId, gameName, gameMode, buyIn, prizePool, date,
+    gameId, gameName, gameMode, tournamentType, buyIn, prizePool, date,
     players, heroName, placement, prizeWon, bountiesWon,
     vpip, pfr, threeBet, threeBetOpportunity,
   }

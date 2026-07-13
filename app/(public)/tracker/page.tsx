@@ -151,7 +151,7 @@ export default function TrackerPage() {
             Identifie tes leaks avec le tracker, puis corrige-les avec un coach certifié ou une formation adaptée.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/coaches" style={{ padding: '13px 28px', borderRadius: 10, background: VIOLET, color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Link href="/formations?tab=coaching" style={{ padding: '13px 28px', borderRadius: 10, background: VIOLET, color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
               Trouver un coach <ArrowRight size={15} />
             </Link>
             <Link href="/formations" style={{ padding: '13px 28px', borderRadius: 10, border: '1px solid rgba(6,182,212,0.4)', color: CYAN, textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>

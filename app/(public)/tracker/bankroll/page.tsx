@@ -118,8 +118,12 @@ export default function BankrollPage() {
 
       setTournaments((tRes.data as Tournament[]) ?? [])
       setCashSessions((sRes.data as CashSession[]) ?? [])
-      // 42P01 = table absente → la migration tracker-v2 n'a pas été lancée
-      if (txRes.error?.code === '42P01' || setRes.error?.code === '42P01') {
+      // Table absente → migration tracker-v2 pas encore lancée.
+      // PostgREST renvoie PGRST205 (« Could not find the table … in the schema
+      // cache »), le code SQL brut serait 42P01 — on couvre les deux.
+      const missingTable = (e: { code?: string; message?: string } | null) =>
+        !!e && (e.code === '42P01' || e.code === 'PGRST205' || (e.message ?? '').includes('Could not find the table'))
+      if (missingTable(txRes.error) || missingTable(setRes.error)) {
         setNeedsMigration(true)
       } else {
         setTransactions((txRes.data as Transaction[]) ?? [])

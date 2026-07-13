@@ -82,6 +82,10 @@ function ordinal(n: number) {
 }
 function detectFormat(r: Row): string {
   if (r.type === 'Spin & Rush') return 'spin_rush'
+  /* Betclic stocke le Tournament Type du header dans r.type (SKO, MKO…) */
+  const tt = (r.type ?? '').toUpperCase()
+  if (tt.includes('MKO') || tt.includes('MYSTERY')) return 'mystery_ko'
+  if (tt.includes('KO') || tt.includes('BOUNTY')) return 'ko'
   const u = r.tournament_name.toUpperCase()
   if (u.includes('MYSTERY') || u.includes('MYSTÈRE')) return 'mystery_ko'
   if (u.includes('SPACE')) return 'space_ko'
@@ -534,8 +538,10 @@ export default function TrackerDashboard() {
               const profit = r.net_profit ?? 0
               const fmt = detectFormat(r)
               const fmtMeta = FORMAT_META[fmt]
-              const hasPlacement = r.placement && r.total_players
-              const pColor = hasPlacement ? placementColor(r.placement!, r.total_players!) : DIM
+              /* Betclic MTT : placement connu mais taille du field inconnue —
+                 on affiche quand même la place, sans le « /total ». */
+              const hasPlacement = !!r.placement
+              const pColor = r.placement && r.total_players ? placementColor(r.placement, r.total_players) : SILVER
               return (
                 <div
                   key={r.id}
@@ -568,7 +574,8 @@ export default function TrackerDashboard() {
                     {hasPlacement ? (
                       <span style={{ fontSize: 12, fontWeight: 700, color: pColor, display: 'flex', alignItems: 'center', gap: 3 }}>
                         {r.placement === 1 && <Trophy size={10} color={GOLD} />}
-                        {ordinal(r.placement!)}<span style={{ fontWeight: 400, color: DIM }}>/{r.total_players}</span>
+                        {ordinal(r.placement!)}
+                        {r.total_players ? <span style={{ fontWeight: 400, color: DIM }}>/{r.total_players}</span> : null}
                       </span>
                     ) : <span style={{ fontSize: 12, color: DIM }}>-</span>}
                   </div>

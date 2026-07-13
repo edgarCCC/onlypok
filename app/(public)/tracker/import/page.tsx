@@ -286,8 +286,9 @@ export default function ImportPage() {
                 {parsed.map((t, i) => {
                   const profit = t.netProfit
                   const fm = FORMAT_META[t.format]
-                  const hasPlacement = t.placement > 0 && t.totalPlayers > 0
-                  const pColor = hasPlacement ? placementColor(t.placement, t.totalPlayers) : DIM
+                  /* Betclic MTT : placement connu, field inconnu → afficher quand même */
+                  const hasPlacement = t.placement > 0
+                  const pColor = t.placement > 0 && t.totalPlayers > 0 ? placementColor(t.placement, t.totalPlayers) : SILVER
                   return (
                     <div
                       key={t.id}
@@ -329,7 +330,8 @@ export default function ImportPage() {
                         {hasPlacement ? (
                           <span style={{ fontSize: 12, fontWeight: 700, color: pColor, display: 'flex', alignItems: 'center', gap: 3 }}>
                             {t.placement === 1 && <Trophy size={10} color={GOLD} />}
-                            {ordinal(t.placement)}<span style={{ fontWeight: 400, color: DIM }}>/{t.totalPlayers}</span>
+                            {ordinal(t.placement)}
+                            {t.totalPlayers > 0 ? <span style={{ fontWeight: 400, color: DIM }}>/{t.totalPlayers}</span> : null}
                           </span>
                         ) : <span style={{ fontSize: 12, color: DIM }}>-</span>}
                       </div>

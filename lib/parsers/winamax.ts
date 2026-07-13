@@ -253,8 +253,10 @@ export function parseHandHistory(text: string): { heroName: string; hands: Winam
     const lines = raw.split('\n')
     const header = lines[0] ?? ''
 
+    /* Blinds : 3 nombres en MTT avec ante "(150/300/600)", 2 nombres en
+       Expresso "(10/20)" — le 3e groupe est optionnel pour couvrir les deux. */
     const hm = header.match(
-      /Tournament "(.+)" buyIn:.+level: (\d+) - HandId: (#[\d-]+) - .+\((\d+)\/(\d+)\/(\d+)\) - (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) UTC/
+      /Tournament "(.+)" buyIn:.+level: (\d+) - HandId: (#[\d-]+) - .+\((\d+)\/(\d+)(?:\/(\d+))?\) - (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) UTC/
     )
     if (!hm) continue
 
