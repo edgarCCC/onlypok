@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import CoachCard from './CoachCard'
+import EdgeScrollZones from './EdgeScrollZones'
 import { CREAM, SILVER } from './coachTheme'
 
 const CARD_W = 300
@@ -16,7 +16,6 @@ export default function CoachRow({ title, subtitle, coaches, accentColor, onOpen
   onOpen: (coach: any) => void
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const scroll    = (dir: 'left' | 'right') => scrollRef.current?.scrollBy({ left: dir === 'right' ? 800 : -800, behavior: 'smooth' })
   const [showAll, setShowAll] = useState(false)
 
   return (
@@ -32,28 +31,15 @@ export default function CoachRow({ title, subtitle, coaches, accentColor, onOpen
             <p style={{ fontSize: 13, color: SILVER }}>{subtitle}</p>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {coaches.length > 1 && (
-            <span
-              onClick={() => setShowAll(v => !v)}
-              style={{ fontSize: 13, fontWeight: 600, color: SILVER, cursor: 'pointer', transition: 'color 0.15s', whiteSpace: 'nowrap' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = CREAM }}
-              onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = SILVER }}>
-              {showAll ? '← Réduire' : 'Voir tout →'}
-            </span>
-          )}
-          {!showAll && coaches.length > 1 && (
-            <div style={{ display: 'flex', gap: 8 }}>
-              {(['left', 'right'] as const).map(dir => (
-                <button key={dir} onClick={() => scroll(dir)} style={{ width: 36, height: 36, borderRadius: '50%', border: `1px solid rgba(232,228,220,0.1)`, background: 'rgba(232,228,220,0.03)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.25)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.07)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.1)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.03)' }}>
-                  {dir === 'left' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {coaches.length > 1 && (
+          <span
+            onClick={() => setShowAll(v => !v)}
+            style={{ fontSize: 13, fontWeight: 600, color: SILVER, cursor: 'pointer', transition: 'color 0.15s', whiteSpace: 'nowrap' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = CREAM }}
+            onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = SILVER }}>
+            {showAll ? '← Réduire' : 'Voir tout →'}
+          </span>
+        )}
       </div>
       {showAll ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gridAutoRows: `${CARD_H}px`, gap: 20 }}>
@@ -65,7 +51,7 @@ export default function CoachRow({ title, subtitle, coaches, accentColor, onOpen
         </div>
       ) : (
         <div style={{ position: 'relative' }}>
-          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 50, background: 'linear-gradient(to left, #07090e, transparent)', zIndex: 2, pointerEvents: 'none' }} />
+          <EdgeScrollZones scrollRef={scrollRef} />
           {/* paddingTop : laisse la place au lift hover sans clipping */}
           <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', paddingTop: 12, paddingBottom: 8 }}>
             {coaches.map(coach => (
