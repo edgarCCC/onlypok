@@ -70,7 +70,7 @@ export default function VideoComments({ formationId, coachId, videoUrl }: { form
             disabled={!text.trim() || sending}
             style={{
               marginTop: 8, padding: '9px 20px', borderRadius: 10, border: 'none',
-              background: text.trim() ? '#06b6d4' : 'rgba(255,255,255,0.06)',
+              background: text.trim() ? '#3b82f6' : 'rgba(255,255,255,0.06)',
               color: text.trim() ? '#fff' : SILVER,
               fontSize: 13, fontWeight: 600, cursor: text.trim() ? 'pointer' : 'default', transition: 'all 0.15s',
             }}

@@ -3,23 +3,22 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
-import { Search, ChevronRight, ChevronLeft, HelpCircle, Menu, X, Check, PlayCircle, Users, BookOpen, Star, MessageSquare, Clock, TrendingUp, Award, Send, FileText, Sparkles, Maximize2 } from 'lucide-react'
-import FormationCard from '@/components/formations/FormationCard'
+import { Search, HelpCircle, Menu, X, Check } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import dynamic from 'next/dynamic'
-
-const MindMap = dynamic(() => import('@/components/MindMap'), { ssr: false })
+import NetflixRow from '@/components/marketplace/NetflixRow'
+import VideoStudio from '@/components/marketplace/VideoStudio'
+import CoachDirectory from '@/components/marketplace/CoachDirectory'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
 
 const VARIANT_OPTIONS = [
-  { id: 'MTT',      label: 'MTT',        desc: 'Tournois multi-tables',    color: '#7c3aed' },
-  { id: 'Cash',     label: 'Cash Game',  desc: 'Tables cash 6-max / HU',  color: '#06b6d4' },
-  { id: 'Expresso', label: 'Expresso',   desc: 'Sit & Go hyper-turbo',    color: '#ef4444' },
-  { id: 'Live',     label: 'Live',       desc: 'Poker en casino / cercle', color: '#f59e0b' },
-  { id: 'PLO',      label: 'PLO',        desc: 'Pot-Limit Omaha',         color: '#a855f7' },
+  { id: 'MTT',      label: 'MTT',        desc: 'Tournois multi-tables' },
+  { id: 'Cash',     label: 'Cash Game',  desc: 'Tables cash 6-max / HU' },
+  { id: 'Expresso', label: 'Expresso',   desc: 'Sit & Go hyper-turbo' },
+  { id: 'Live',     label: 'Live',       desc: 'Poker en casino / cercle' },
+  { id: 'PLO',      label: 'PLO',        desc: 'Pot-Limit Omaha' },
 ]
 
 const FIELDS: Record<string, { key: string, label: string, placeholder: string, options: string[] }[]> = {
@@ -34,16 +33,65 @@ const FIELDS: Record<string, { key: string, label: string, placeholder: string, 
     { key: 'duration', label: 'Durée',    placeholder: 'Toutes', options: ['< 15min', '15–45min', '> 45min'] },
   ],
   coaching: [
-    { key: 'variant',  label: 'Variante',      placeholder: 'Toutes', options: VARIANT_OPTIONS.map(v => v.id) },
-    { key: 'budget',   label: 'Budget',        placeholder: 'Tous',   options: ['< 50€/h', '50–100€/h', '> 100€/h'] },
-    { key: 'dispo',    label: 'Disponibilité', placeholder: 'Quand ?',options: ['Cette semaine', 'Ce mois', 'Flexible'] },
+    { key: 'q',        label: 'Coach',    placeholder: 'Pseudo ou bio…', options: [] },
+    { key: 'variant',  label: 'Variante', placeholder: 'Toutes', options: VARIANT_OPTIONS.map(v => v.id) },
+    { key: 'budget',   label: 'Budget',   placeholder: 'Tous',   options: ['< 50€/h', '50–100€/h', '> 100€/h'] },
   ],
 }
 
 const TAB_COLORS: Record<string, string> = {
   formations: '#7c3aed',
-  videos:     '#06b6d4',
+  videos:     '#3b82f6',
   coaching:   '#f59e0b',
+}
+
+/* ─── Hero contextuel par onglet — hiérarchie de page ───────────────────────── */
+function TabHero({ tab, accentColor, count }: {
+  tab: 'formations' | 'videos' | 'coaching'
+  accentColor: string
+  count: number
+}) {
+  const copy = {
+    formations: {
+      eyebrow: 'Catalogue',
+      title: <>Construis un jeu <span style={{ color: accentColor }}>qui gagne</span></>,
+      sub: `${count} formation${count > 1 ? 's' : ''} structurée${count > 1 ? 's' : ''} par des pros aux résultats vérifiés`,
+    },
+    videos: {
+      eyebrow: 'Vidéothèque',
+      title: <>Progresse à <span style={{ color: accentColor }}>chaque session</span></>,
+      sub: `${count} vidéo${count > 1 ? 's' : ''} — replays, analyses de mains et concepts clés en format court`,
+    },
+    coaching: {
+      eyebrow: 'Coaching privé',
+      title: <>Un coach dédié à <span style={{ color: accentColor }}>ton jeu</span></>,
+      sub: `${count} coach${count > 1 ? 's' : ''} vérifié${count > 1 ? 's' : ''} — réserve ta session en trois clics`,
+    },
+  }[tab]
+
+  return (
+    <div style={{ marginBottom: 44 }}>
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 14,
+        padding: '5px 14px', borderRadius: 99,
+        background: `${accentColor}12`, border: `1px solid ${accentColor}30`,
+        transition: 'all 0.4s ease',
+      }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: accentColor, boxShadow: `0 0 8px ${accentColor}80` }} />
+        <span style={{ fontSize: 10, fontWeight: 700, color: accentColor, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          {copy.eyebrow}
+        </span>
+      </div>
+      <h1 style={{
+        fontFamily: 'var(--font-syne, sans-serif)',
+        fontSize: 'clamp(26px, 4vw, 42px)', fontWeight: 800, color: CREAM,
+        letterSpacing: '-1px', margin: '0 0 8px', lineHeight: 1.05,
+      }}>
+        {copy.title}
+      </h1>
+      <p style={{ fontSize: 13, color: 'rgba(232,228,220,0.45)', margin: 0 }}>{copy.sub}</p>
+    </div>
+  )
 }
 
 export default function FormationsPageClient({
@@ -51,11 +99,13 @@ export default function FormationsPageClient({
   initialReviews,
   initialUserRole,
   initialEligibleCoachIds = [],
+  initialCoaches = [],
 }: {
   initialFormations: any[]
   initialReviews: any[]
   initialUserRole: 'coach' | 'student' | null
   initialEligibleCoachIds?: string[]
+  initialCoaches?: any[]
 }) {
   const formations = initialFormations
   const allReviews = initialReviews
@@ -92,10 +142,22 @@ export default function FormationsPageClient({
   }, [supabase])
 
   const userRole = authRole
-  const searchRef = useRef<HTMLDivElement>(null)
+  const searchRef  = useRef<HTMLDivElement>(null)
+  const centerRef  = useRef<HTMLDivElement>(null)
+  const resultsRef = useRef<HTMLDivElement>(null)
 
-  const selectedVariantColor = VARIANT_OPTIONS.find(v => v.id === filters.variant)?.color
-  const accentColor = selectedVariantColor || TAB_COLORS[tab]
+  /* Loupe = valider la recherche : referme les panneaux et amène aux résultats
+     (la barre se replie en pilule avec le résumé des filtres). */
+  const runSearch = () => {
+    setActiveField(null)
+    setIsSearchOverlayOpen(false)
+    const top = resultsRef.current
+      ? resultsRef.current.getBoundingClientRect().top + window.scrollY - 110
+      : 0
+    window.scrollTo({ top: Math.max(top, 60), behavior: 'smooth' })
+  }
+
+  const accentColor = TAB_COLORS[tab]
   const fields = FIELDS[tab]
 
   useEffect(() => {
@@ -114,24 +176,33 @@ export default function FormationsPageClient({
   }, [])
 
   useEffect(() => {
+    /* Fermeture au 'click' (pas au 'mousedown') : refermer l'overlay pendant
+       le mousedown fait disparaître les onglets avant la fin du clic, et le
+       changement d'onglet n'aboutit jamais. La zone centrale du header
+       (onglets + pilule) est exclue : React attache ses événements sur
+       document dans l'App Router, un stopPropagation ne suffirait pas. */
     const handler = (e: MouseEvent) => {
+      if (centerRef.current?.contains(e.target as Node)) return
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setActiveField(null)
         setIsSearchOverlayOpen(false)
       }
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    document.addEventListener('click', handler)
+    return () => document.removeEventListener('click', handler)
   }, [])
 
   const filtered = formations.filter(f => {
-    const v = filters.variant, p = filters.price, d = filters.duration
+    const v = filters.variant, p = filters.price, d = filters.duration, l = filters.level
     const matchV = !v || f.variant === v
     const matchP = !p || (p === 'Gratuit' && f.price === 0) || (p === '< 30€' && f.price > 0 && f.price < 30) || (p === '30–60€' && f.price >= 30 && f.price <= 60) || (p === '> 60€' && f.price > 60)
-    const matchD = !d || (d === '< 2h' && f.duration_minutes < 120) || (d === '2h – 5h' && f.duration_minutes >= 120 && f.duration_minutes <= 300) || (d === '> 5h' && f.duration_minutes > 300)
+    const matchD = !d || (tab === 'videos'
+      ? (d === '< 15min' && f.duration_minutes < 15) || (d === '15–45min' && f.duration_minutes >= 15 && f.duration_minutes <= 45) || (d === '> 45min' && f.duration_minutes > 45)
+      : (d === '< 2h' && f.duration_minutes < 120) || (d === '2h – 5h' && f.duration_minutes >= 120 && f.duration_minutes <= 300) || (d === '> 5h' && f.duration_minutes > 300))
+    const matchL = !l || f.level === l
     const contentType = f.content_type ?? 'formation'
     const matchTab = tab === 'formations' ? contentType === 'formation' : tab === 'videos' ? contentType === 'video' : tab === 'coaching' ? contentType === 'coaching' : true
-    return matchTab && matchV && matchP && matchD
+    return matchTab && matchV && matchP && matchD && matchL
   })
 
   const tabReviews = useMemo(() => {
@@ -149,9 +220,20 @@ export default function FormationsPageClient({
   }
 
   const showBigSearch = !isScrolled || isSearchOverlayOpen
+  const hasContentFilters = Boolean(filters.variant || filters.price || filters.duration || filters.level)
+
+  /* Libellé de la pilule compacte : résumé des filtres actifs, sinon l'onglet */
+  const pillLabel = (() => {
+    const parts = (tab === 'coaching'
+      ? [filters.q, filters.variant, filters.budget]
+      : [filters.variant, filters.price, filters.level, filters.duration]
+    ).filter(Boolean)
+    if (parts.length) return parts.join(' · ')
+    return tab === 'coaching' ? 'Coachs' : tab === 'videos' ? 'Vidéos' : 'Formations'
+  })()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090e', color: '#fff', overflowX: 'hidden' }}>
+    <div className="sform-root" style={{ minHeight: '100vh', background: '#07090e', color: '#fff', overflowX: 'hidden' }}>
       <style>{`
         @media (max-width: 700px) {
           .sform-header-row { flex-wrap: wrap !important; height: auto !important; padding: 10px 16px !important; row-gap: 10px !important; }
@@ -159,6 +241,60 @@ export default function FormationsPageClient({
           .sform-search-inner { padding: 0 16px !important; }
           .sform-main { padding-left: 16px !important; padding-right: 16px !important; padding-top: 290px !important; }
           .sform-row-head { flex-wrap: wrap !important; gap: 10px !important; }
+          .sform-q-cell { padding: 12px 14px !important; }
+        }
+        .sform-root :is(button, a, input):focus-visible {
+          outline: 2px solid rgba(124,58,237,0.65);
+          outline-offset: 2px;
+          border-radius: 8px;
+        }
+        .sform-q-input::placeholder { color: rgba(138,138,138,0.5); }
+        /* Micro-interaction CTA — lift léger, flèche qui glisse, clic enfoncé */
+        .op-cta {
+          transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), filter 0.2s ease, opacity 0.2s ease, box-shadow 0.22s ease;
+        }
+        .op-cta:hover { transform: translateY(-1px); filter: brightness(1.07); }
+        .op-cta:active { transform: translateY(0) scale(0.98); filter: brightness(0.98); }
+        .op-cta-arrow { transition: transform 0.22s cubic-bezier(0.16,1,0.3,1); }
+        .op-cta:hover .op-cta-arrow { transform: translateX(3px); }
+        /* Lampe à lave — deux nappes organiques (une claire, une sombre) qui
+           flottent lentement dans la barre, sur des cycles désynchronisés */
+        .op-cta { position: relative; overflow: hidden; isolation: isolate; }
+        .op-cta::before, .op-cta::after {
+          content: '';
+          position: absolute;
+          width: 75%;
+          aspect-ratio: 1;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: -1;
+        }
+        .op-cta::before {
+          background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.33) 45%, transparent 70%);
+          mix-blend-mode: overlay;
+          top: -85%; left: -18%;
+          animation: opLavaA 4.7s ease-in-out infinite alternate;
+        }
+        .op-cta::after {
+          background: radial-gradient(circle, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.27) 45%, transparent 72%);
+          mix-blend-mode: soft-light;
+          bottom: -90%; right: -12%;
+          animation: opLavaB 6.3s ease-in-out infinite alternate;
+        }
+        @keyframes opLavaA {
+          0%   { transform: translate(0%, 0%) scale(1); }
+          50%  { transform: translate(70%, 30%) scale(1.3); }
+          100% { transform: translate(140%, -8%) scale(0.85); }
+        }
+        @keyframes opLavaB {
+          0%   { transform: translate(0%, 0%) scale(1.15); }
+          50%  { transform: translate(-75%, -25%) scale(0.8); }
+          100% { transform: translate(-150%, 12%) scale(1.25); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .op-cta, .op-cta-arrow, .op-cta::before, .op-cta::after { transition: none; animation: none; }
+          .op-cta:hover, .op-cta:active { transform: none; }
+          .op-cta:hover .op-cta-arrow { transform: none; }
         }
       `}</style>
 
@@ -193,14 +329,16 @@ export default function FormationsPageClient({
           </Link>
 
           {/* Centre */}
-          <div className="sform-header-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
+          <div ref={centerRef} className="sform-header-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
             {/* Tabs */}
             <div style={{ position: 'absolute', display: 'inline-flex', background: 'rgba(232,228,220,0.04)', border: `1px solid rgba(232,228,220,0.08)`, borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
               {(['formations','videos','coaching'] as const).map(t => {
                 const active = tab === t
-                const labels: Record<string,string> = { formations: 'Formations', videos: 'Vidéos', coaching: 'Coaching' }
+                const labels: Record<string,string> = { formations: 'Formations', videos: 'Vidéos', coaching: 'Coachs' }
                 return (
-                  <button key={t} onClick={() => { setTab(t); setFilters({}); setIsSearchOverlayOpen(false) }} style={{ padding: '8px 24px', borderRadius: 10, border: 'none', background: active ? `${TAB_COLORS[t]}28` : 'transparent', color: active ? CREAM : SILVER, fontSize: 13, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.25s' }}>
+                  <button key={t} onClick={() => { setTab(t); setFilters({}); setIsSearchOverlayOpen(false); window.history.replaceState(null, '', t === 'formations' ? '/formations' : `/formations?tab=${t}`) }} style={{ padding: '8px 24px', borderRadius: 10, border: 'none', background: active ? `${TAB_COLORS[t]}28` : 'transparent', color: active ? CREAM : SILVER, fontSize: 13, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.25s' }}
+                    onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
+                    onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
                     {labels[t]}
                   </button>
                 )
@@ -209,8 +347,8 @@ export default function FormationsPageClient({
 
             {/* Pilule compacte */}
             <div style={{ position: 'absolute', transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: !showBigSearch ? 1 : 0, pointerEvents: !showBigSearch ? 'auto' : 'none', transform: !showBigSearch ? 'translateY(0) scale(1)' : 'translateY(-16px) scale(0.92)' }}>
-              <button onClick={() => setIsSearchOverlayOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(240,244,255,0.05)', border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{filters.variant || 'Variante'}</span>
+              <button onClick={e => { e.stopPropagation(); setIsSearchOverlayOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(240,244,255,0.05)', border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: CREAM, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pillLabel}</span>
                 <div style={{ width: 1, height: 16, background: `rgba(240,244,255,0.12)` }} />
                 <span style={{ fontSize: 13, color: SILVER }}>Rechercher…</span>
                 <div style={{ width: 34, height: 34, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 12px ${accentColor}60` }}>
@@ -261,7 +399,7 @@ export default function FormationsPageClient({
                   <div style={{ padding: '8px 14px 12px', borderBottom: `1px solid rgba(240,244,255,0.05)`, marginBottom: 6 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: CREAM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Menu</span>
                   </div>
-                  {[['Mes formations', '/formations'], ['Coaches', '/coaches'], ['Tracker', '/track']].map(([label, href]) => (
+                  {[['Mes formations', '/formations'], ['Coaches', '/formations?tab=coaching'], ['Tracker', '/track']].map(([label, href]) => (
                     <Link key={label} href={href} style={{ display: 'block', padding: '9px 14px', fontSize: 13, color: SILVER, textDecoration: 'none', borderRadius: 8, transition: 'all 0.15s' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(232,228,220,0.05)'; (e.currentTarget as HTMLAnchorElement).style.color = CREAM }}
                       onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; (e.currentTarget as HTMLAnchorElement).style.color = SILVER }}>
@@ -286,6 +424,34 @@ export default function FormationsPageClient({
               {fields.map((field, idx) => {
                 const isActive = activeField === field.key
                 const isLast   = idx === fields.length - 1
+
+                /* Champ texte libre — recherche coach (pseudo / bio) */
+                if (field.key === 'q') {
+                  return (
+                    <div key="q" style={{ flex: 1, minWidth: 0, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <div className="sform-q-cell" style={{ flex: 1, minWidth: 0, padding: '12px 26px' }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, color: filters.q ? CREAM : SILVER, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>{field.label}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <input
+                            className="sform-q-input"
+                            size={1}
+                            value={filters.q ?? ''}
+                            onChange={e => { const v = e.target.value; setFilters(prev => ({ ...prev, q: v })) }}
+                            placeholder={field.placeholder}
+                            style={{ flex: 1, minWidth: 0, width: '100%', background: 'transparent', border: 'none', outline: 'none', color: CREAM, fontSize: 13, fontFamily: 'inherit', padding: 0 }}
+                          />
+                          {filters.q && (
+                            <span onClick={() => setFilters(prev => ({ ...prev, q: '' }))} style={{ color: SILVER, cursor: 'pointer', display: 'flex' }}><X size={12} /></span>
+                          )}
+                        </div>
+                      </div>
+                      {!isLast && activeField !== fields[idx+1]?.key && (
+                        <div style={{ width: 1, height: 22, background: `rgba(232,228,220,0.1)`, position: 'absolute', right: 0 }} />
+                      )}
+                    </div>
+                  )
+                }
+
                 return (
                   <div key={field.key} style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <button onClick={() => setActiveField(isActive ? null : field.key)} style={{ flex: 1, textAlign: 'left', border: 'none', padding: '12px 26px', cursor: 'pointer', background: isActive ? 'rgba(232,228,220,0.08)' : 'transparent', borderRadius: 40, transition: 'all 0.2s', width: '100%' }}>
@@ -326,17 +492,17 @@ export default function FormationsPageClient({
                             {VARIANT_OPTIONS.map(v => {
                               const selected = filters.variant === v.id
                               return (
-                                <button key={v.id} onClick={() => setFilter('variant', v.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: `1px solid ${selected ? v.color + '50' : 'rgba(232,228,220,0.05)'}`, background: selected ? `${v.color}18` : 'rgba(232,228,220,0.02)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', width: '100%' }}
+                                <button key={v.id} onClick={() => setFilter('variant', v.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: `1px solid ${selected ? accentColor + '50' : 'rgba(232,228,220,0.05)'}`, background: selected ? `${accentColor}14` : 'rgba(232,228,220,0.02)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', width: '100%' }}
                                   onMouseEnter={e => { if(!selected) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.05)' }}
                                   onMouseLeave={e => { if(!selected) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.02)' }}>
-                                  <div style={{ width: 36, height: 36, borderRadius: 9, background: `${v.color}30`, border: `1px solid ${v.color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0, color: v.color }}>
+                                  <div style={{ width: 36, height: 36, borderRadius: 9, background: 'rgba(232,228,220,0.05)', border: `1px solid ${selected ? accentColor + '50' : 'rgba(232,228,220,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0, color: selected ? accentColor : SILVER, transition: 'all 0.2s' }}>
                                     {v.id === 'MTT' ? '♠' : v.id === 'Cash' ? '♣' : v.id === 'Expresso' ? '♥' : v.id === 'Live' ? '♦' : v.id === 'PLO' ? '♠' : '♣'}
                                   </div>
                                   <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{v.label}</div>
                                     <div style={{ fontSize: 11, color: SILVER, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v.desc}</div>
                                   </div>
-                                  {selected && <Check size={15} color={v.color} style={{ flexShrink: 0 }} />}
+                                  {selected && <Check size={15} color={accentColor} style={{ flexShrink: 0 }} />}
                                 </button>
                               )
                             })}
@@ -362,7 +528,7 @@ export default function FormationsPageClient({
                 )
               })}
               <div style={{ paddingLeft: 8 }}>
-                <button style={{ width: 52, height: 52, borderRadius: '50%', background: accentColor, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 6px 20px ${accentColor}55`, flexShrink: 0, transition: 'box-shadow 0.3s' }}>
+                <button aria-label="Lancer la recherche" className="op-cta" onClick={runSearch} style={{ width: 52, height: 52, borderRadius: '50%', background: accentColor, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 6px 20px ${accentColor}55`, flexShrink: 0 }}>
                   <Search size={20} color="#fff" />
                 </button>
               </div>
@@ -375,18 +541,53 @@ export default function FormationsPageClient({
           CONTENU
       ══════════════════════ */}
       <main className="sform-main" style={{ paddingTop: 220, paddingLeft: 40, paddingRight: 40, paddingBottom: 100, position: 'relative', zIndex: 1 }}>
-        {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '100px 0' }}>
-            <div style={{ fontSize: 48, opacity: 0.1, marginBottom: 16 }}>♠</div>
-            <p style={{ color: 'rgba(232,228,220,0.2)', fontSize: 14 }}>
-              {tab === 'videos' ? 'Aucune vidéo disponible' : tab === 'coaching' ? 'Aucun coaching disponible' : 'Aucune formation disponible'}
+        <div ref={resultsRef}>
+          <TabHero
+            tab={tab}
+            accentColor={accentColor}
+            count={tab === 'coaching' ? initialCoaches.length : filtered.length}
+          />
+        </div>
+
+        {tab === 'coaching' ? (
+          /* ── Annuaire coachs — DA portée de l'ancienne page /coaches ── */
+          <CoachDirectory
+            coaches={initialCoaches}
+            searchQuery={filters.q ?? ''}
+            headerVariant={filters.variant ?? ''}
+            headerBudget={filters.budget ?? ''}
+          />
+        ) : filtered.length === 0 ? (
+          <div style={{
+            textAlign: 'center', padding: '90px 24px', maxWidth: 560, margin: '0 auto',
+            background: 'rgba(255,255,255,0.028)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 20,
+          }}>
+            <div style={{ fontSize: 44, opacity: 0.14, marginBottom: 14, color: accentColor }}>♠</div>
+            <p style={{ color: CREAM, fontSize: 15, fontWeight: 600, marginBottom: 6 }}>
+              {tab === 'videos' ? 'Aucune vidéo disponible' : 'Aucune formation disponible'}
             </p>
+            <p style={{ color: 'rgba(232,228,220,0.4)', fontSize: 13, margin: 0 }}>
+              {hasContentFilters ? 'Essayez de modifier vos filtres' : 'Revenez bientôt, le catalogue s’agrandit chaque semaine'}
+            </p>
+            {hasContentFilters && (
+              <button
+                onClick={() => setFilters({})}
+                style={{
+                  marginTop: 20, padding: '9px 20px', borderRadius: 10, cursor: 'pointer',
+                  background: `${accentColor}14`, border: `1px solid ${accentColor}30`,
+                  color: CREAM, fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = `${accentColor}24` }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = `${accentColor}14` }}>
+                Réinitialiser les filtres
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 52 }}>
             {filtered.slice(0, 10).length > 0 && (
               <NetflixRow
-                title={tab === 'videos' ? 'Top vidéos' : tab === 'coaching' ? 'Nos coachs' : 'Top formations'}
+                title={tab === 'videos' ? 'Top vidéos' : 'Top formations'}
                 subtitle="Les plus populaires du moment"
                 formations={filtered.slice(0, 10)}
                 accentColor={accentColor}
@@ -441,399 +642,6 @@ export default function FormationsPageClient({
         @keyframes modalIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
         @keyframes mindmapIn { from { opacity:0; transform:scale(0.98); } to { opacity:1; transform:scale(1); } }
       `}</style>
-    </div>
-  )
-}
-
-function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayVideo, eligibleCoachIds }: {
-  title: string, subtitle: string, formations: any[], accentColor: string, isTop10?: boolean
-  onPlayVideo?: (v: { url: string; title: string }) => void
-  eligibleCoachIds?: Set<string>
-}) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const scroll    = (dir: 'left'|'right') => scrollRef.current?.scrollBy({ left: dir === 'right' ? 800 : -800, behavior: 'smooth' })
-  const CREAM = '#f0f4ff', SILVER = 'rgba(240,244,255,0.45)'
-  const [showAll, setShowAll] = useState(false)
-
-  return (
-    <div>
-      <div className="sform-row-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22 }}>
-        <div>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: CREAM, letterSpacing: '-0.7px', marginBottom: 4 }}>
-            {title}
-          </h2>
-          <p style={{ fontSize: 13, color: SILVER }}>{subtitle}</p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span
-            onClick={() => setShowAll(v => !v)}
-            style={{ fontSize: 13, fontWeight: 600, color: SILVER, cursor: 'pointer', transition: 'color 0.15s', whiteSpace: 'nowrap' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = CREAM }}
-            onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = SILVER }}>
-            {showAll ? '← Réduire' : 'Voir tout →'}
-          </span>
-          {!showAll && (
-            <div style={{ display: 'flex', gap: 8 }}>
-              {(['left','right'] as const).map(dir => (
-                <button key={dir} onClick={() => scroll(dir)} style={{ width: 36, height: 36, borderRadius: '50%', border: `1px solid rgba(232,228,220,0.1)`, background: 'rgba(232,228,220,0.03)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.25)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.1)' }}>
-                  {dir === 'left' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      {showAll ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gridAutoRows: '270px', gap: 20 }}>
-          {formations.map((f, i) => (
-            <div key={f.id} style={{ position: 'relative', overflow: 'hidden', height: '100%' }}>
-              {isTop10 && (
-                <div style={{ position: 'absolute', left: -10, bottom: 10, fontSize: 110, fontWeight: 900, color: 'rgba(232,228,220,0.05)', zIndex: 0, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{i + 1}</div>
-              )}
-              <div
-                style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)', height: '100%' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px) scale(1.02)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = '' }}>
-                <FormationCard
-                  f={f}
-                  accentColor={accentColor}
-                  unverified={eligibleCoachIds ? !eligibleCoachIds.has(f.coach?.id ?? f.coach_id) : false}
-                  onPlay={f.price === 0 && f.content_type === 'video' && f.video_url
-                    ? () => onPlayVideo?.({ url: f.video_url, title: f.title })
-                    : undefined}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div style={{ position: 'relative' }}>
-          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 50, background: 'linear-gradient(to left, #07090e, transparent)', zIndex: 2, pointerEvents: 'none' }} />
-          <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 8 }}>
-            {formations.map((f, i) => (
-              <div key={f.id} style={{ width: isTop10 && i === 0 ? 340 : 290, height: 270, flexShrink: 0, position: 'relative' }}>
-                  <div
-                  style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)', height: '100%' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px) scale(1.02)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = '' }}>
-                  <FormationCard
-                    f={f}
-                    accentColor={accentColor}
-                    unverified={eligibleCoachIds ? !eligibleCoachIds.has(f.coach?.id ?? f.coach_id) : false}
-                    onPlay={f.price === 0 && f.content_type === 'video' && f.video_url
-                      ? () => onPlayVideo?.({ url: f.video_url, title: f.title })
-                      : undefined}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ─────────────────────────────────────────────────────────── */
-
-function getEmbedUrl(url: string): string {
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/)
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0`
-  const vm = url.match(/vimeo\.com\/(\d+)/)
-  if (vm) return `https://player.vimeo.com/video/${vm[1]}?autoplay=1`
-  return url
-}
-
-function VideoStudio({ video, onClose }: { video: { url: string; title: string }; onClose: () => void }) {
-  const supabase  = useMemo(() => createClient(), [])
-  const embedUrl  = getEmbedUrl(video.url)
-  const isNative  = !video.url.match(/youtube|youtu\.be|vimeo/)
-  const noteKey   = `onlypok_note_${video.url.slice(-60)}`
-  const synthKey  = `onlypok_synth_${video.url.slice(-60)}`
-  const MAX_SYNTH = 3
-
-  const C = '#f0f4ff', S = 'rgba(240,244,255,0.45)', D = 'rgba(240,244,255,0.2)', V = '#7c3aed'
-
-  const [tab,          setTab]          = useState<'notes' | 'comments'>('notes')
-  const [notes,        setNotes]        = useState('')
-  const [comments,     setComments]     = useState<any[]>([])
-  const [newComment,   setNewComment]   = useState('')
-  const [authUser,     setAuthUser]     = useState<any>(null)
-  const [posting,      setPosting]      = useState(false)
-  const [mindmap,           setMindmap]           = useState<string | null>(null)
-  const [synthesizing,      setSynthesizing]      = useState(false)
-  const [showMindmap,       setShowMindmap]        = useState(false)
-  const [fullscreenMindmap, setFullscreenMindmap] = useState(false)
-  const [synthCount,        setSynthCount]        = useState(0)
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setNotes(localStorage.getItem(noteKey) ?? '')
-      setSynthCount(parseInt(localStorage.getItem(synthKey) ?? '0', 10))
-    }
-    supabase.auth.getUser().then(({ data: d }: { data: any }) => setAuthUser(d.user))
-    supabase.from('video_comments')
-      .select('*, profile:profiles!student_id(username)')
-      .eq('video_url', video.url)
-      .order('created_at', { ascending: true })
-      .then(({ data }: { data: any }) => { if (data) setComments(data) })
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
-
-  const saveNote = (val: string) => {
-    setNotes(val)
-    if (typeof window !== 'undefined') localStorage.setItem(noteKey, val)
-  }
-
-  const synthesize = async () => {
-    if (!notes.trim() || synthesizing || synthCount >= MAX_SYNTH) return
-    setSynthesizing(true)
-    try {
-      const res = await fetch('/api/ai/synthesize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes, title: video.title }),
-      })
-      const { markdown } = await res.json()
-      if (markdown) {
-        setMindmap(markdown)
-        setShowMindmap(true)
-        const next = synthCount + 1
-        setSynthCount(next)
-        localStorage.setItem(synthKey, String(next))
-      }
-    } finally {
-      setSynthesizing(false)
-    }
-  }
-
-  const postComment = async () => {
-    if (!authUser || !newComment.trim() || posting) return
-    setPosting(true)
-    const { data } = await supabase.from('video_comments')
-      .insert({ student_id: authUser.id, video_url: video.url, content: newComment.trim() })
-      .select('*, profile:profiles(username)').single()
-    if (data) setComments(c => [...c, data])
-    setNewComment('')
-    setPosting(false)
-  }
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: '#04040a', display: 'flex', flexDirection: 'column', animation: 'fadeIn 0.18s ease' }}>
-
-      {/* ── Header ── */}
-      <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 6, height: 6, borderRadius: 2, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)' }} />
-          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: C }}>ONLYPOK</span>
-        </div>
-        <h2 style={{ fontSize: 13, fontWeight: 600, color: 'rgba(240,244,255,0.65)', margin: 0, maxWidth: 480, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {video.title}
-        </h2>
-        <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: S, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <X size={14} />
-        </button>
-      </div>
-
-      {/* ── Mind map plein écran ── */}
-      {fullscreenMindmap && mindmap && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'linear-gradient(160deg,#07070f 0%,#04040a 60%,#080812 100%)', display: 'flex', flexDirection: 'column', animation: 'mindmapIn 0.22s cubic-bezier(0.16,1,0.3,1)' }}>
-
-          {/* Ambient glow blobs */}
-          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-            <div style={{ position: 'absolute', top: '15%', left: '20%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%)', filter: 'blur(40px)' }} />
-            <div style={{ position: 'absolute', bottom: '20%', right: '15%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,0.06) 0%, transparent 70%)', filter: 'blur(40px)' }} />
-          </div>
-
-          {/* Header glass */}
-          <div style={{ position: 'relative', zIndex: 1, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(7,7,15,0.7)', backdropFilter: 'blur(20px)', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 6, height: 6, borderRadius: 2, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', boxShadow: '0 0 8px rgba(124,58,237,0.6)' }} />
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(240,244,255,0.5)', textTransform: 'uppercase' }}>Mind Map</span>
-              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)', margin: '0 4px' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#EDEDEF', maxWidth: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{video.title}</span>
-            </div>
-            <button onClick={() => setFullscreenMindmap(false)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(240,244,255,0.5)', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#EDEDEF' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(240,244,255,0.5)' }}>
-              <X size={12} /> Fermer
-            </button>
-          </div>
-
-          {/* Map */}
-          <div style={{ position: 'relative', zIndex: 1, flex: 1, minHeight: 0, padding: '8px 0' }}>
-            <MindMap markdown={mindmap} />
-          </div>
-        </div>
-      )}
-
-      {/* ── Body ── */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
-
-        {/* Player */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', background: '#020207', minWidth: 0 }}>
-          <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', background: '#000', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}>
-            {isNative
-              ? <video src={video.url} controls autoPlay style={{ width: '100%', height: '100%', display: 'block' }} />
-              : <iframe src={embedUrl} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen style={{ width: '100%', height: '100%', border: 'none', display: 'block' }} />
-            }
-          </div>
-        </div>
-
-        {/* ── Sidebar ── */}
-        <div style={{ width: 360, borderLeft: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', background: '#080810', flexShrink: 0 }}>
-
-          {/* Tabs */}
-          <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-            {([
-              { id: 'notes' as const,    label: 'Notes',          Icon: FileText },
-              { id: 'comments' as const, label: 'Commentaires',   Icon: MessageSquare },
-            ]).map(({ id, label, Icon }) => (
-              <button key={id} onClick={() => setTab(id)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '13px 8px', fontSize: 13, fontWeight: tab === id ? 700 : 400, color: tab === id ? C : S, background: 'transparent', border: 'none', borderBottom: `2px solid ${tab === id ? V : 'transparent'}`, cursor: 'pointer', transition: 'all 0.15s' }}>
-                <Icon size={13} /> {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab content */}
-          <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-
-            {tab === 'notes' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 16, gap: 10 }}>
-
-                {/* Toggle Notes / Mind map */}
-                {mindmap && (
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-                    <div style={{ display: 'flex', flex: 1, gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 3 }}>
-                      {(['notes', 'mindmap'] as const).map(v => (
-                        <button key={v} onClick={() => setShowMindmap(v === 'mindmap')}
-                          style={{ flex: 1, padding: '6px', borderRadius: 6, border: 'none', background: (v === 'mindmap') === showMindmap ? 'rgba(124,58,237,0.3)' : 'transparent', color: (v === 'mindmap') === showMindmap ? C : S, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}>
-                          {v === 'notes' ? 'Notes' : 'Mind map'}
-                        </button>
-                      ))}
-                    </div>
-                    {showMindmap && (
-                      <button onClick={() => setFullscreenMindmap(true)}
-                        title="Plein écran"
-                        style={{ width: 30, height: 30, borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: S, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}
-                        onMouseEnter={e => { e.currentTarget.style.color = C; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = S; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}>
-                        <Maximize2 size={13} />
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {showMindmap && mindmap ? (
-                  <div style={{ flex: 1, minHeight: 0, borderRadius: 10, overflow: 'hidden', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <MindMap markdown={mindmap} />
-                  </div>
-                ) : (
-                  <>
-                    <p style={{ fontSize: 11, color: D, margin: 0, lineHeight: 1.5, flexShrink: 0 }}>
-                      Sauvegardées automatiquement sur cet appareil.
-                    </p>
-                    <textarea
-                      value={notes}
-                      onChange={e => saveNote(e.target.value)}
-                      placeholder="Prenez des notes sur cette vidéo…&#10;&#10;Concepts clés, mains marquantes, points à retravailler…"
-                      style={{ flex: 1, minHeight: 280, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '12px 14px', color: C, fontSize: 13, fontFamily: 'inherit', resize: 'none', outline: 'none', lineHeight: 1.65, boxSizing: 'border-box' }}
-                      onFocus={e => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)')}
-                      onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
-                    />
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                      {notes.length > 0 && (
-                        <p style={{ fontSize: 11, color: D, margin: 0 }}>{notes.length} car.</p>
-                      )}
-                      <button
-                        onClick={synthesize}
-                        disabled={synthesizing || notes.trim().length === 0 || synthCount >= MAX_SYNTH}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: synthCount >= MAX_SYNTH || notes.trim().length === 0 || synthesizing ? 'rgba(124,58,237,0.1)' : 'linear-gradient(135deg,rgba(124,58,237,0.6),rgba(6,182,212,0.4))', color: synthCount >= MAX_SYNTH || notes.trim().length === 0 ? S : C, fontSize: 12, fontWeight: 700, cursor: synthCount >= MAX_SYNTH || notes.trim().length === 0 || synthesizing ? 'default' : 'pointer', transition: 'all 0.2s', opacity: synthesizing ? 0.7 : 1, marginLeft: 'auto' }}>
-                        <Sparkles size={12} />
-                        {synthesizing ? 'Synthèse…' : synthCount >= MAX_SYNTH ? `Limite atteinte (${MAX_SYNTH}/${MAX_SYNTH})` : `Synthétiser avec IA${synthCount > 0 ? ` (${synthCount}/${MAX_SYNTH})` : ''}`}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 16, gap: 10 }}>
-
-                {/* Comment list */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto' }}>
-                  {comments.length === 0 ? (
-                    <p style={{ color: D, fontSize: 13, textAlign: 'center', margin: '32px 0' }}>Aucun commentaire encore.</p>
-                  ) : (
-                    comments.map(c => (
-                      <div key={c.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '10px 12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa' }}>{c.profile?.username ?? 'Anonyme'}</span>
-                          <span style={{ fontSize: 10, color: D }}>{new Date(c.created_at).toLocaleDateString('fr-FR')}</span>
-                        </div>
-                        <p style={{ fontSize: 13, color: S, margin: 0, lineHeight: 1.55 }}>{c.content}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Comment input */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 12, flexShrink: 0 }}>
-                  {authUser ? (
-                    <>
-                      <textarea
-                        value={newComment}
-                        onChange={e => setNewComment(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postComment() }}
-                        placeholder="Ajoutez un commentaire…"
-                        rows={3}
-                        style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 12px', color: C, fontSize: 13, fontFamily: 'inherit', resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.55 }}
-                        onFocus={e => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)')}
-                        onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
-                      />
-                      <button onClick={postComment} disabled={!newComment.trim() || posting}
-                        style={{ marginTop: 8, width: '100%', padding: '9px', background: newComment.trim() ? V : 'rgba(124,58,237,0.15)', border: 'none', borderRadius: 8, color: newComment.trim() ? '#fff' : S, fontSize: 13, fontWeight: 600, cursor: newComment.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}>
-                        <Send size={13} /> {posting ? 'Envoi…' : 'Publier'}
-                      </button>
-                      <p style={{ fontSize: 11, color: D, margin: '6px 0 0', textAlign: 'center' }}>⌘ + Entrée pour publier</p>
-                    </>
-                  ) : (
-                    <p style={{ fontSize: 13, color: D, textAlign: 'center', margin: 0 }}>
-                      <Link href="/register" style={{ color: '#a78bfa', textDecoration: 'none' }}>Créez un compte</Link> pour commenter.
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function PlaceholderRow({ title, subtitle, icon, height = 180 }: { title: string, subtitle: string, icon: React.ReactNode, height?: number }) {
-  const CREAM = '#f0f4ff', SILVER = 'rgba(240,244,255,0.45)'
-  return (
-    <div>
-      <div style={{ marginBottom: 22 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10 }}>
-          {icon} {title}
-        </h2>
-        <p style={{ fontSize: 13, color: SILVER }}>{subtitle}</p>
-      </div>
-      <div style={{ display: 'flex', gap: 20 }}>
-        {[1,2,3,4].map(i => (
-          <div key={i} style={{ width: 290, flexShrink: 0, height, borderRadius: 20, border: `1px dashed rgba(232,228,220,0.08)`, background: 'rgba(232,228,220,0.015)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-            <span style={{ fontSize: 28, color: 'rgba(138,138,138,0.2)' }}>+</span>
-            <span style={{ color: 'rgba(138,138,138,0.4)', fontSize: 13 }}>Contenu à venir</span>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }

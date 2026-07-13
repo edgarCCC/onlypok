@@ -12,7 +12,7 @@ export const metadata = {
 export default async function FormationsPage() {
   const supabase = await createServerSupabaseClient()
 
-  const [{ data: formations }, { data: reviews }, { data: qualifiedProofs }] = await Promise.all([
+  const [{ data: formations }, { data: reviews }, { data: qualifiedProofs }, { data: coachesRaw }, { data: coachReviews }] = await Promise.all([
     supabase
       .from('formations')
       .select('*, coach:profiles(id, username, avatar_url, is_pro, years_experience, variants)')
@@ -26,6 +26,12 @@ export default async function FormationsPage() {
       .from('coach_proofs')
       .select('coach_id, category')
       .in('category', ['stats', 'longterme']),
+    supabase
+      .from('profiles')
+      .select('id, username, avatar_url, bio, variants, is_pro, years_experience, hourly_rate, coaching_mode, coaching_packages, formations(count)')
+      .eq('role', 'coach')
+      .order('created_at', { ascending: false }),
+    supabase.from('reviews').select('coach_id, rating').limit(2000),
   ])
 
   // Build set of coach_ids that have BOTH required proof categories
@@ -41,6 +47,30 @@ export default async function FormationsPage() {
   )
   const visibleFormations = formations ?? []
 
+  // Annuaire coachs (onglet Coachs) — notes moyennes + flag "Non vérifié"
+  const ratingMap: Record<string, { sum: number; count: number }> = {}
+  for (const r of coachReviews ?? []) {
+    if (!ratingMap[r.coach_id]) ratingMap[r.coach_id] = { sum: 0, count: 0 }
+    ratingMap[r.coach_id].sum += r.rating
+    ratingMap[r.coach_id].count++
+  }
+  // Réservation express : première offre coaching publiée de chaque coach
+  // (les formations sont triées de la plus récente à la plus ancienne)
+  const coachingByCoach = new Map<string, string>()
+  for (const f of visibleFormations) {
+    if ((f.content_type ?? 'formation') === 'coaching' && f.coach?.id && !coachingByCoach.has(f.coach.id)) {
+      coachingByCoach.set(f.coach.id, f.id)
+    }
+  }
+
+  const coaches = (coachesRaw ?? []).map((c: any) => ({
+    ...c,
+    unverified: !eligibleCoachIds.has(c.id),
+    avgRating: ratingMap[c.id] ? ratingMap[c.id].sum / ratingMap[c.id].count : null,
+    reviewCount: ratingMap[c.id]?.count ?? 0,
+    coachingFormationId: coachingByCoach.get(c.id) ?? null,
+  }))
+
   const { data: { user } } = await supabase.auth.getUser()
   let userRole: 'coach' | 'student' | null = null
   if (user) {
@@ -55,6 +85,7 @@ export default async function FormationsPage() {
         initialReviews={reviews ?? []}
         initialUserRole={userRole}
         initialEligibleCoachIds={[...eligibleCoachIds]}
+        initialCoaches={coaches}
       />
     </Suspense>
   )

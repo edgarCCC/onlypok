@@ -8,7 +8,7 @@ export const VARIANT_COLORS: Record<string, string> = {
   Expresso: '#ef4444', Live: '#f59e0b', PLO: '#a855f7',
 }
 export const TYPE_COLORS: Record<string, string> = {
-  formation: '#7c3aed', video: '#06b6d4', coaching: '#a855f7',
+  formation: '#7c3aed', video: '#3b82f6', coaching: '#a855f7',
 }
 export const TYPE_LABELS: Record<string, string> = {
   formation: 'Formation', video: 'Vidéo', coaching: 'Coaching',
@@ -50,7 +50,7 @@ export const HEADER_FIELDS: Record<string, { key: string; label: string; placeho
 }
 
 export const HEADER_TAB_COLORS: Record<string, string> = {
-  formations: '#7c3aed', videos: '#06b6d4', coaching: '#a855f7',
+  formations: '#7c3aed', videos: '#3b82f6', coaching: '#a855f7',
 }
 
 /* ─── calendar helpers ──────────────────────────────────────────────────────── */

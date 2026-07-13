@@ -25,14 +25,41 @@ type Formation = {
   }
 }
 
-const VARIANT_COLORS: Record<string, string> = {
-  MTT: '#7c3aed', Cash: '#06b6d4', Expresso: '#e11d48', Autre: '#7c3aed',
-}
+/* Palette restreinte : neutres + accents de marque. Aucune couleur par
+   variante ni par coach — l'accent vient de l'onglet, en touche discrète. */
+const CREAM  = '#f0f4ff'
+const AMBER  = '#f59e0b'
+const BLUE   = '#3b82f6'
+const BORDER     = 'rgba(255,255,255,0.07)'
+const BORDER_HOV = 'rgba(232,228,220,0.18)'
 
-const PALETTE = ['#7c3aed','#06b6d4','#a855f7','#ef4444','#f59e0b','#8b5cf6','#ec4899','#10b981']
-function hashColor(s: string) {
-  let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
-  return PALETTE[Math.abs(h) % PALETTE.length]
+/* CTA en dégradé 3 teintes de la couleur de l'onglet — la classe .op-cta
+   l'étire et le fait dériver lentement (background-position animé) */
+const CTA_GRADS: Record<string, string> = {
+  '#7c3aed': 'linear-gradient(110deg, #6d28d9, #8b5cf6, #a78bfa)',   // Formations
+  '#3b82f6': 'linear-gradient(110deg, #2563eb, #3b82f6, #60a5fa)',   // Vidéos
+  '#f59e0b': 'linear-gradient(110deg, #ea580c, #f59e0b, #fbbf24)',   // Coaching
+}
+const ctaGradient = (accent?: string) =>
+  CTA_GRADS[accent ?? ''] ?? CTA_GRADS['#7c3aed']
+
+/* CTA visuel — la carte entière est déjà cliquable (Link/onClick), ce bloc
+   n'est qu'une affordance, pas un élément interactif imbriqué. */
+function CardCta({ label, gradient, hovered }: { label: string; gradient: string; hovered: boolean }) {
+  return (
+    <div className="op-cta" style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+      width: '100%', padding: '9px', borderRadius: 10, marginTop: 12,
+      background: gradient, color: '#fff',
+      fontSize: 12.5, fontWeight: 700,
+      opacity: hovered ? 1 : 0.92,
+    }}>
+      {label}
+      <svg className="op-cta-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </div>
+  )
 }
 
 export default function FormationCard({
@@ -46,7 +73,6 @@ export default function FormationCard({
   const [hovered, setHovered] = useState(false)
   const isFree     = f.price === 0
   const isPlayable = isFree && f.content_type === 'video' && !!f.video_url && !!onPlay
-  const color      = VARIANT_COLORS[f.variant ?? ''] ?? accentColor ?? '#7c3aed'
 
   const crop        = f.thumbnail_crop
   const bgSize      = crop?.zoom != null ? `${crop.zoom * 100}%` : 'cover'
@@ -57,14 +83,14 @@ export default function FormationCard({
 
   const cardStyle: React.CSSProperties = {
     background: hovered ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.028)',
-    border: `1px solid ${hovered ? color + '55' : 'rgba(255,255,255,0.07)'}`,
+    border: `1px solid ${hovered ? BORDER_HOV : BORDER}`,
     borderRadius: 14,
     overflow: 'hidden',
     cursor: 'pointer',
     transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
     transition: 'border-color 0.22s, transform 0.22s, background 0.22s, box-shadow 0.22s',
     boxShadow: hovered
-      ? `0 16px 40px rgba(0,0,0,0.6), 0 0 0 1px ${color}22, 0 8px 20px ${color}18`
+      ? '0 16px 40px rgba(0,0,0,0.6)'
       : '0 2px 8px rgba(0,0,0,0.3)',
     height: '100%',
     display: 'flex',
@@ -74,7 +100,7 @@ export default function FormationCard({
   const thumbnail = (
     <div style={{
       height: 152,
-      background: heroImage ? undefined : `linear-gradient(145deg, ${color}18 0%, rgba(5,7,9,0.6) 100%)`,
+      background: heroImage ? undefined : 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(5,7,9,0.6) 100%)',
       backgroundImage: heroImage ? `url(${heroImage})` : undefined,
       backgroundSize: heroImage === coachAvatar ? 'cover' : (heroImage ? bgSize : undefined),
       backgroundPosition: heroImage === coachAvatar ? 'center top' : (heroImage ? bgPos : undefined),
@@ -85,42 +111,33 @@ export default function FormationCard({
     }}>
       {!heroImage && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 36, opacity: 0.14, color }}>♠</span>
+          <span style={{ fontSize: 36, opacity: 0.12, color: CREAM }}>♠</span>
           {f.variant && (
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', color, opacity: 0.35, textTransform: 'uppercase' }}>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', color: CREAM, opacity: 0.25, textTransform: 'uppercase' }}>
               {f.variant}
             </span>
           )}
         </div>
       )}
 
-      {/* Top accent bar */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-        background: `linear-gradient(to right, ${color}, ${color}40)`,
-        opacity: hovered ? 1 : 0.6,
-        transition: 'opacity 0.22s',
-      }} />
-
       {/* Badges */}
       <div style={{ position: 'absolute', top: 10, left: 10, right: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {f.variant
           ? <span style={{
-              fontSize: 9, fontWeight: 800, color: '#fff',
+              fontSize: 9, fontWeight: 700, color: 'rgba(240,244,255,0.85)',
               background: 'rgba(5,7,9,0.78)',
               backdropFilter: 'blur(8px)',
-              border: `1px solid ${color}55`,
+              border: '1px solid rgba(255,255,255,0.16)',
               padding: '2px 8px', borderRadius: 99,
               letterSpacing: '0.07em',
-              textShadow: `0 0 10px ${color}`,
             }}>{f.variant}</span>
           : <span />}
         <span style={{
           fontSize: 11, fontWeight: 700,
-          color: isFree ? '#06b6d4' : '#e8eaf0',
+          color: isFree ? BLUE : '#e8eaf0',
           background: 'rgba(5,7,9,0.78)',
           backdropFilter: 'blur(8px)',
-          border: `1px solid ${isFree ? 'rgba(6,182,212,0.45)' : 'rgba(255,255,255,0.18)'}`,
+          border: `1px solid ${isFree ? 'rgba(59,130,246,0.45)' : 'rgba(255,255,255,0.18)'}`,
           padding: '2px 8px', borderRadius: 99,
         }}>
           {isFree ? 'Gratuit' : `${f.price}€`}
@@ -193,6 +210,12 @@ export default function FormationCard({
           {f.content_type === 'video' ? 'Vidéo' : `${f.modules_count} module${f.modules_count !== 1 ? 's' : ''}`}
         </span>
       </div>
+
+      <CardCta
+        label={f.content_type === 'video' ? (isPlayable ? 'Regarder' : 'Voir la vidéo') : 'Voir la formation'}
+        gradient={ctaGradient(accentColor)}
+        hovered={hovered}
+      />
     </div>
   )
 
@@ -229,7 +252,6 @@ export default function FormationCard({
 function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: boolean }) {
   const [hovered, setHovered] = useState(false)
   const username  = f.coach?.username ?? 'Coach'
-  const color     = VARIANT_COLORS[f.variant ?? ''] ?? hashColor(username)
   const initials  = username.slice(0, 2).toUpperCase()
   const isPro     = f.coach?.is_pro ?? false
   const yearsExp  = f.coach?.years_experience ?? 0
@@ -242,119 +264,95 @@ function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: bo
         onMouseLeave={() => setHovered(false)}
         style={{
           background: hovered ? 'rgba(255,255,255,0.048)' : 'rgba(255,255,255,0.028)',
-          border: `1px solid ${hovered ? color + '45' : 'rgba(232,228,220,0.07)'}`,
-          borderRadius: 20,
+          border: `1px solid ${hovered ? BORDER_HOV : 'rgba(232,228,220,0.07)'}`,
+          borderRadius: 18,
           overflow: 'hidden',
           cursor: 'pointer',
-          transition: 'all 0.22s cubic-bezier(0.34,1.56,0.64,1)',
-          transform: hovered ? 'translateY(-5px)' : 'none',
-          boxShadow: hovered ? `0 20px 56px ${color}1a, 0 4px 16px rgba(0,0,0,0.4)` : '0 2px 8px rgba(0,0,0,0.3)',
+          transition: 'border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+          transform: hovered ? 'translateY(-4px)' : 'none',
+          boxShadow: hovered ? '0 20px 48px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.3)',
           display: 'flex', flexDirection: 'column', height: '100%',
+          padding: '18px 18px 16px',
         }}>
 
-        {/* Colour band — gradient only, avatar goes in the circle below */}
-        <div style={{
-          height: 68,
-          background: `linear-gradient(135deg, ${color}30 0%, ${color}0c 65%, transparent 100%)`,
-          position: 'relative', flexShrink: 0,
-        }}>
-          <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 55% 140% at 8% 50%, ${color}1c, transparent)` }} />
-          {isPro && !unverified && (
-            <div style={{
-              position: 'absolute', top: 10, left: 14,
-              display: 'flex', alignItems: 'center', gap: 4,
-              padding: '3px 10px', borderRadius: 99,
-              background: 'rgba(245,158,11,0.18)', border: '1px solid rgba(245,158,11,0.4)',
-            }}>
-              <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.1em' }}>PRO</span>
-            </div>
-          )}
-          {unverified && (
-            <div style={{
-              position: 'absolute', top: 10, left: 14,
-              display: 'flex', alignItems: 'center', gap: 4,
-              padding: '3px 8px', borderRadius: 99,
-              background: 'rgba(100,116,139,0.25)', border: '1px solid rgba(100,116,139,0.4)',
-            }}>
-              <span style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.08em' }}>Non vérifié</span>
-            </div>
-          )}
-          {f.variant && (
-            <span style={{
-              position: 'absolute', top: 10, right: 14,
-              fontSize: 9, fontWeight: 800, color: '#fff',
-              background: 'rgba(5,7,9,0.78)', backdropFilter: 'blur(8px)',
-              border: `1px solid ${color}55`, padding: '2px 8px', borderRadius: 99,
-              letterSpacing: '0.07em', textShadow: `0 0 10px ${color}`,
-            }}>{f.variant}</span>
-          )}
+        {/* Avatar + prix */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
+            border: `1px solid ${hovered ? BORDER_HOV : 'rgba(232,228,220,0.12)'}`,
+            background: 'rgba(255,255,255,0.04)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden', fontSize: 15, fontWeight: 700, color: CREAM,
+            position: 'relative', transition: 'border-color 0.2s ease',
+          }}>
+            {f.coach?.avatar_url
+              ? <Image src={f.coach.avatar_url} alt="" fill sizes="52px" style={{ objectFit: 'cover' }} />
+              : initials}
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: AMBER, lineHeight: 1, letterSpacing: '-0.5px' }}>{f.price}€</div>
+            <div style={{ fontSize: 9, color: 'rgba(232,228,220,0.28)', marginTop: 2 }}>coaching</div>
+          </div>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: '0 18px 18px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          {/* Avatar + price row */}
-          <div style={{ marginTop: -28, marginBottom: 10, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: '50%', padding: 2.5, flexShrink: 0,
-              background: `conic-gradient(from 135deg, ${color}, ${color}55, ${color})`,
-            }}>
-              <div style={{
-                width: '100%', height: '100%', borderRadius: '50%', background: '#07090e',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                overflow: 'hidden', fontSize: 16, fontWeight: 800, color: '#fff',
-                position: 'relative',
-              }}>
-                {f.coach?.avatar_url
-                  ? <Image src={f.coach.avatar_url} alt="" fill sizes="56px" style={{ objectFit: 'cover' }} />
-                  : initials}
-              </div>
-            </div>
-            <div style={{ padding: '5px 10px', borderRadius: 10, background: `${color}12`, border: `1px solid ${color}30`, textAlign: 'right' }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color, lineHeight: 1, letterSpacing: '-0.5px' }}>{f.price}€</div>
-              <div style={{ fontSize: 9, color: 'rgba(232,228,220,0.28)', marginTop: 1 }}>coaching</div>
-            </div>
-          </div>
-
-          {/* Name */}
-          <h3 style={{ fontSize: 15, fontWeight: 800, color: '#E8E4DC', margin: '0 0 3px', letterSpacing: '-0.3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {/* Nom + badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6, minWidth: 0 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 800, color: '#E8E4DC', margin: 0, letterSpacing: '-0.3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {username}
           </h3>
-
-          {/* Desc */}
-          {f.short_desc && (
-            <p style={{
-              fontSize: 11.5, color: 'rgba(232,228,220,0.45)', lineHeight: 1.55, margin: '0 0 10px',
-              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1,
-            }}>{f.short_desc}</p>
+          {isPro && !unverified && (
+            <span style={{
+              fontSize: 9, fontWeight: 800, color: AMBER, letterSpacing: '0.1em',
+              padding: '2px 7px', borderRadius: 99, flexShrink: 0,
+              background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
+            }}>PRO</span>
           )}
-
-          {/* Variants */}
-          {variants.length > 0 && (
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 }}>
-              {variants.slice(0, 3).map((v: string) => (
-                <span key={v} style={{
-                  fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 99,
-                  background: `${color}12`, color, border: `1px solid ${color}28`, letterSpacing: '0.04em',
-                }}>{v}</span>
-              ))}
-            </div>
+          {unverified && (
+            <span style={{
+              fontSize: 9, fontWeight: 600, color: 'rgba(232,228,220,0.4)', letterSpacing: '0.06em',
+              padding: '2px 7px', borderRadius: 99, flexShrink: 0,
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(232,228,220,0.1)',
+            }}>Non vérifié</span>
           )}
-
-          {/* Stats */}
-          <div style={{
-            display: 'flex', padding: '9px 0', marginTop: 'auto',
-            borderTop: '1px solid rgba(232,228,220,0.07)',
-            justifyContent: 'space-between', alignItems: 'center',
-          }}>
-            <span style={{ fontSize: 10.5, color: 'rgba(232,228,220,0.36)' }}>
-              {f.coach?.username ?? '—'}
-              {f.level ? <span style={{ color: 'rgba(232,228,220,0.22)' }}> · {f.level}</span> : null}
-            </span>
-            {yearsExp > 0 && (
-              <span style={{ fontSize: 10, color: 'rgba(232,228,220,0.28)' }}>{yearsExp} ans exp.</span>
-            )}
-          </div>
         </div>
+
+        {/* Desc */}
+        {f.short_desc && (
+          <p style={{
+            fontSize: 11.5, color: 'rgba(232,228,220,0.45)', lineHeight: 1.55, margin: '0 0 10px',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1,
+          }}>{f.short_desc}</p>
+        )}
+
+        {/* Variants — chips neutres */}
+        {variants.length > 0 && (
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 }}>
+            {variants.slice(0, 3).map((v: string) => (
+              <span key={v} style={{
+                fontSize: 9.5, fontWeight: 600, padding: '3px 9px', borderRadius: 99,
+                background: 'rgba(255,255,255,0.04)', color: 'rgba(232,228,220,0.45)',
+                border: '1px solid rgba(232,228,220,0.08)', letterSpacing: '0.03em',
+              }}>{v}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Stats */}
+        <div style={{
+          display: 'flex', padding: '9px 0 0', marginTop: 'auto',
+          borderTop: '1px solid rgba(232,228,220,0.07)',
+          justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span style={{ fontSize: 10.5, color: 'rgba(232,228,220,0.36)' }}>
+            {f.variant ?? 'Coaching'}
+            {f.level ? <span style={{ color: 'rgba(232,228,220,0.22)' }}> · {f.level}</span> : null}
+          </span>
+          {yearsExp > 0 && (
+            <span style={{ fontSize: 10, color: 'rgba(232,228,220,0.28)' }}>{yearsExp} ans exp.</span>
+          )}
+        </div>
+
+        <CardCta label="Réserver" gradient={ctaGradient(AMBER)} hovered={hovered} />
       </div>
     </Link>
   )

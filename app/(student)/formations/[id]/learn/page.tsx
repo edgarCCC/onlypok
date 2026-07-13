@@ -367,7 +367,7 @@ function LearnInner() {
   if (loading || !formation) return <FourAcesLoader />
 
   const isVideoType = formation.content_type === 'video'
-  const typeColor   = isVideoType ? '#06b6d4' : '#7c3aed'
+  const typeColor   = isVideoType ? '#3b82f6' : '#7c3aed'
   const lessonDone  = currentLesson ? completedIds.includes(currentLesson.id) : false
 
   const rightColWidth = notesCollapsed ? '52px' : '300px'
