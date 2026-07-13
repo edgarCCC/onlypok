@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-const SCROLL_SPEED = 9 // px par frame (~540 px/s)
+const SCROLL_SPEED = 3.5 // px par frame (~210 px/s)
 
 /* ─── Zones de défilement aux bords d'une rangée scrollable ───────────────────
    Poser le curseur sur un bord fait défiler la rangée en continu (façon
