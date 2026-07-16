@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendAdminAlertEmail } from '@/lib/email'
 import { recordPurchaseFromSession } from '@/lib/purchases'
+import { ensureCoachingBookings } from '@/lib/bookings'
 
 // POST /api/stripe/verify-session
 // Fallback: called on success redirect if webhook hasn't fired yet.
@@ -98,7 +99,8 @@ async function handleVerifySession(req: NextRequest) {
     }).catch(() => {})
   }
 
-  // For coaching: ensure booking(s) exist
+  // For coaching: bookings + notifications via la lib partagée
+  // (même chemin que le webhook Stripe — idempotence incluse)
   if (contentType === 'coaching') {
     if (!coachId) {
       console.error('[verify-session] coachId is null/empty — booking will be created without coach_id', {
@@ -106,69 +108,26 @@ async function handleVerifySession(req: NextRequest) {
       })
     }
 
-    const paymentIntentId = typeof session.payment_intent === 'string'
-      ? session.payment_intent
-      : (session.payment_intent as any)?.id ?? null
+    const { error: bookingError, firstStatus, alreadyComplete } =
+      await ensureCoachingBookings(adminSupabase, stripe, session)
 
-    // Determine how many sessions this pack covers
-    let sessionsCount = 1
-    if (packIndex !== null && !isNaN(packIndex)) {
-      const { data: formData, error: formError } = await adminSupabase
-        .from('formations').select('coaching_packs').eq('id', formationId).single()
-      if (formError) console.error('[verify-session] coaching_packs fetch error:', formError.message)
-      const pack = (formData?.coaching_packs as any[])?.[packIndex]
-      if (!pack) console.error('[verify-session] pack not found at index', packIndex, 'formation', formationId)
-      if (pack?.hours && pack.hours > 1) sessionsCount = pack.hours
+    if (bookingError) {
+      console.error('[verify-session] booking FAILED', { error: bookingError.message, code: bookingError.code })
+      sendAdminAlertEmail({
+        subject: 'verify-session — booking payé non créé',
+        details: {
+          stripe_session: session_id, formation_id: formationId,
+          student_id: userId, coach_id: coachId,
+          erreur: bookingError.message, code: bookingError.code,
+        },
+      }).catch(() => {})
+      return NextResponse.json({ error: bookingError.message }, { status: 500 })
     }
 
-    // Idempotency: count existing bookings for this payment
-    const [anchorRes, suffixRes] = await Promise.all([
-      adminSupabase.from('bookings').select('id', { count: 'exact', head: true }).eq('stripe_session_id', session_id),
-      adminSupabase.from('bookings').select('id', { count: 'exact', head: true }).like('stripe_session_id', `${session_id}_%`),
-    ])
-    if (anchorRes.error) console.error('[verify-session] idempotency anchor query error:', anchorRes.error.message, anchorRes.error.code)
-    if (suffixRes.error) console.error('[verify-session] idempotency suffix query error:', suffixRes.error.message, suffixRes.error.code)
-
-    const startIdx = (anchorRes.count ?? 0) + (suffixRes.count ?? 0)
-
-    if (startIdx >= sessionsCount) {
-      return NextResponse.json({ ok: true, type: 'coaching', coach_id: coachId, formation_id: formationId })
-    }
-
-    for (let i = startIdx; i < sessionsCount; i++) {
-      const isFirst = i === 0
-      const full: Record<string, unknown> = {
-        formation_id:             formationId,
-        student_id:               userId,
-        coach_id:                 coachId,
-        pack_index:               packIndex,
-        status:                   'paid_pending_schedule',
-        scheduled_at:             isFirst ? scheduledAt : null,
-        stripe_session_id:        i === 0 ? session_id : `${session_id}_${i}`,
-        stripe_payment_intent_id: paymentIntentId,
-      }
-
-      const { error: bookingError } = await adminSupabase.from('bookings').insert(full)
-
-      if (bookingError) {
-        if (bookingError.code === '23505') {
-          continue
-        }
-        console.error('[verify-session] booking insert FAILED', { i, error: bookingError.message, code: bookingError.code })
-        sendAdminAlertEmail({
-          subject: 'verify-session — booking payé non créé',
-          details: {
-            stripe_session: session_id, formation_id: formationId,
-            student_id: userId, coach_id: coachId,
-            session_index: `${i + 1}/${sessionsCount}`, erreur: bookingError.message, code: bookingError.code,
-          },
-        }).catch(() => {})
-        return NextResponse.json({ error: bookingError.message }, { status: 500 })
-      }
-
-    }
-
-    return NextResponse.json({ ok: true, type: 'coaching', coach_id: coachId, formation_id: formationId })
+    return NextResponse.json({
+      ok: true, type: 'coaching', coach_id: coachId, formation_id: formationId,
+      first_status: firstStatus ?? null, already_complete: alreadyComplete ?? false,
+    })
   }
 
   return NextResponse.json({ ok: true, type: contentType, formation_id: formationId })

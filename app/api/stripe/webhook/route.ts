@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
-import { sendCoachNewBookingEmail, sendAdminAlertEmail } from '@/lib/email'
+import { sendAdminAlertEmail } from '@/lib/email'
 import { recordPurchaseFromSession } from '@/lib/purchases'
+import { ensureCoachingBookings } from '@/lib/bookings'
 
 /* Disable body parsing — Stripe needs the raw buffer to verify the signature */
 export const runtime = 'nodejs'
@@ -51,79 +52,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'purchase insert failed' }, { status: 500 })
     }
 
-    /* Pour les coachings : créer N bookings selon pack.hours */
+    /* Pour les coachings : bookings + notifications via la lib partagée
+       (même chemin que verify-session — idempotence incluse) */
     if (contentType === 'coaching' && coachId) {
-      const paymentIntentId = typeof session.payment_intent === 'string'
-        ? session.payment_intent
-        : (session.payment_intent as any)?.id ?? null
-
-      /* Fetch formation first to determine sessions count */
-      const { data: formation } = await supabase
-        .from('formations').select('title, coaching_packs').eq('id', formationId).single()
-
-      let sessionsCount = 1
-      const pack = packIndex !== null && Array.isArray(formation?.coaching_packs)
-        ? (formation!.coaching_packs as any[])[packIndex]
-        : null
-      if (pack?.hours && pack.hours > 1) sessionsCount = pack.hours
-
-      /* Idempotency: count existing bookings for this session */
-      const [{ count: anchorCount }, { count: suffixedCount }] = await Promise.all([
-        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('stripe_session_id', session.id),
-        supabase.from('bookings').select('id', { count: 'exact', head: true }).like('stripe_session_id', `${session.id}_%`),
-      ])
-
-      const startIdx = (anchorCount ?? 0) + (suffixedCount ?? 0)
-      if (startIdx < sessionsCount) {
-        for (let i = startIdx; i < sessionsCount; i++) {
-          const isFirst = i === 0
-          const { error: bookingError } = await supabase.from('bookings').insert({
-            formation_id:             formationId,
-            student_id:               userId,
-            coach_id:                 coachId,
-            pack_index:               packIndex,
-            status:                   'paid_pending_schedule',
-            scheduled_at:             isFirst ? (scheduledAt ?? null) : null,
-            stripe_session_id:        i === 0 ? session.id : `${session.id}_${i}`,
-            stripe_payment_intent_id: paymentIntentId,
-          })
-          if (bookingError && bookingError.code !== '23505') {
-            /* Un élève a payé mais sa session n'existe pas : 500 pour que Stripe
-               retente (l'idempotence ci-dessus reprendra où on s'est arrêté). */
-            console.error('[stripe/webhook] booking insert error:', bookingError.message)
-            sendAdminAlertEmail({
-              subject: 'Webhook Stripe — booking payé non créé',
-              details: {
-                stripe_session: session.id, formation_id: formationId,
-                student_id: userId, coach_id: coachId,
-                session_index: `${i + 1}/${sessionsCount}`, erreur: bookingError.message,
-              },
-            }).catch(() => {})
-            return NextResponse.json({ error: 'booking insert failed' }, { status: 500 })
-          }
-        }
+      const { error: bookingError } = await ensureCoachingBookings(supabase, stripe, session)
+      if (bookingError) {
+        /* Un élève a payé mais sa session n'existe pas : 500 pour que Stripe
+           retente (l'idempotence de la lib reprendra où on s'est arrêté). */
+        console.error('[stripe/webhook] booking error:', bookingError.message)
+        sendAdminAlertEmail({
+          subject: 'Webhook Stripe — booking payé non créé',
+          details: {
+            stripe_session: session.id, formation_id: formationId,
+            student_id: userId, coach_id: coachId, erreur: bookingError.message,
+          },
+        }).catch(() => {})
+        return NextResponse.json({ error: 'booking insert failed' }, { status: 500 })
       }
-
-      /* Notification pour le coach */
-      const { data: student } = await supabase
-        .from('profiles').select('username').eq('id', userId).single()
-
-      await supabase.from('notifications').insert({
-        user_id: coachId,
-        type:    'new_request',
-        title:   'Nouvelle réservation de coaching',
-        body:    `${student?.username ?? 'Un élève'} a réservé "${formation?.title ?? 'votre coaching'}". Acceptez ou refusez dans 48h.`,
-        data:    { booking_formation_id: formationId, student_id: userId },
-      })
-
-      /* Email au coach */
-      sendCoachNewBookingEmail({
-        coachId,
-        studentUsername: student?.username ?? 'Un élève',
-        formationTitle:  formation?.title ?? 'votre coaching',
-        packLabel:       pack?.label ?? null,
-        price:           pack?.price ?? null,
-      }).catch(err => console.error('[stripe/webhook] email error:', err.message))
     }
   }
 

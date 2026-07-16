@@ -111,6 +111,9 @@ function Dashboard() {
   const [purchases,  setPurchases]  = useState<Purchase[]>([])
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const paymentSuccess = params.get('payment') === 'success'
+  /* Statut réel de la réservation après vérification du paiement :
+     'scheduled' (résa instantanée), 'pending_coach_approval', 'paid_pending_schedule' */
+  const [verifiedStatus, setVerifiedStatus] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -132,6 +135,8 @@ function Dashboard() {
           })
           if (res.ok) {
             localStorage.removeItem('onlypok_pending_session')
+            const j = await res.json().catch(() => ({}))
+            if (j?.first_status) setVerifiedStatus(j.first_status)
           } else {
             const body = await res.json().catch(() => ({}))
             console.error('[schedule] verify-session failed', res.status, body)
@@ -305,7 +310,13 @@ function Dashboard() {
             <CheckCircle size={20} color={EMER} />
             <div>
               <p style={{ fontSize: 14, color: '#34d399', fontWeight: 700, margin: 0 }}>Paiement reçu !</p>
-              <p style={{ fontSize: 12, color: SILVER, margin: '2px 0 0' }}>Ta demande est en attente d'approbation par le coach. Tu pourras choisir un créneau une fois acceptée.</p>
+              <p style={{ fontSize: 12, color: SILVER, margin: '2px 0 0' }}>
+                {verifiedStatus === 'scheduled'
+                  ? 'Ta session est confirmée — retrouve le lien de visio ci-dessous.'
+                  : verifiedStatus === 'pending_coach_approval'
+                    ? 'Ton créneau a été proposé au coach — tu seras notifié dès qu’il l’accepte.'
+                    : 'Ta réservation est enregistrée — choisis ton créneau ci-dessous.'}
+              </p>
             </div>
           </div>
         )}
