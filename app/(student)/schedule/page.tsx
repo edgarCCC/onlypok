@@ -146,6 +146,9 @@ function Dashboard() {
         }
       }
 
+      // Complétion paresseuse : bascule les sessions passées en 'completed'
+      await fetch('/api/bookings/complete-past', { method: 'POST' }).catch(() => {})
+
       // Bookings — simple select without FK join to avoid PostgREST cache issues
       const bookingRes = await supabase
         .from('bookings')

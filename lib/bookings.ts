@@ -2,10 +2,41 @@ import Stripe from 'stripe'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { sendCoachNewBookingEmail, sendStudentBookingAcceptedEmail } from '@/lib/email'
 
-/* Jitsi Meet — gratuit, sans clé API, nom de room non devinable */
+/* Jitsi Meet — repli gratuit sans clé API, nom de room non devinable */
 export function createMeetingUrl(bookingId: string): string {
   const room = `onlypok-${bookingId.replace(/-/g, '').slice(0, 20)}`
   return `https://meet.jit.si/${room}`
+}
+
+/* Room visio pro via Daily.co (onlypok.daily.co/…), avec repli Jitsi si
+   l'API échoue. La room expire 2h après l'heure de session (24h si inconnue)
+   — Daily la nettoie tout seul. */
+export async function createMeetingRoom(bookingId: string, scheduledAt?: string | null): Promise<string> {
+  const apiKey = process.env.DAILY_API_KEY
+  if (!apiKey) return createMeetingUrl(bookingId)
+
+  const name = `onlypok-${bookingId.replace(/-/g, '').slice(0, 16)}`
+  const exp  = scheduledAt
+    ? Math.floor(new Date(scheduledAt).getTime() / 1000) + 2 * 3600
+    : Math.floor(Date.now() / 1000) + 24 * 3600
+
+  try {
+    const res  = await fetch('https://api.daily.co/v1/rooms', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, properties: { exp, enable_chat: true, enable_screenshare: true } }),
+    })
+    const data = await res.json()
+    if (res.ok && data.url) return data.url as string
+    if (typeof data.info === 'string' && data.info.includes('already exists')) {
+      const domain = (data.domain_name as string | undefined) ?? 'onlypok.daily.co'
+      return `https://${domain}/${name}`
+    }
+    console.error('[bookings] Daily room creation failed:', JSON.stringify(data).slice(0, 200))
+  } catch (err) {
+    console.error('[bookings] Daily API error:', (err as Error).message)
+  }
+  return createMeetingUrl(bookingId)
 }
 
 export type EnsureBookingsResult = {
@@ -123,6 +154,7 @@ export async function ensureCoachingBookings(
   /* Résa instantanée : capture du paiement + lien visio, comme le ferait
      l'acceptation du coach. Si la capture échoue, on repasse la session en
      attente d'approbation pour que le chemin coach (accept) capture plus tard. */
+  let finalMeetingUrl: string | null = null
   if (firstStatus === 'scheduled' && anchorId) {
     let captured = true
     if (paymentIntentId) {
@@ -139,7 +171,8 @@ export async function ensureCoachingBookings(
       }
     }
     if (captured) {
-      await admin.from('bookings').update({ meeting_url: createMeetingUrl(anchorId) }).eq('id', anchorId)
+      finalMeetingUrl = await createMeetingRoom(anchorId, firstScheduledAt)
+      await admin.from('bookings').update({ meeting_url: finalMeetingUrl }).eq('id', anchorId)
     } else {
       await admin.from('bookings').update({ status: 'pending_coach_approval' }).eq('id', anchorId)
       firstStatus = 'pending_coach_approval'
@@ -181,7 +214,7 @@ export async function ensureCoachingBookings(
         type:    'booking_accepted',
         title:   'Coaching confirmé !',
         body:    `Votre session "${formTitle}" est confirmée. Retrouvez le lien de visio dans votre planning.`,
-        data:    { booking_id: anchorId, meeting_url: createMeetingUrl(anchorId) },
+        data:    { booking_id: anchorId, meeting_url: finalMeetingUrl },
       })
       sendStudentBookingAcceptedEmail({
         studentId:      userId,

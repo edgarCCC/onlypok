@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { sendStudentBookingAcceptedEmail } from '@/lib/email'
-
-function createMeetingUrl(bookingId: string): string {
-  // Jitsi Meet — free, no API key, unguessable room name
-  const room = `onlypok-${bookingId.replace(/-/g, '').slice(0, 20)}`
-  return `https://meet.jit.si/${room}`
-}
+import { createMeetingRoom } from '@/lib/bookings'
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
@@ -43,8 +38,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Generate meeting URL (Jitsi — free, no API key required)
-  const meetingUrl = createMeetingUrl(booking_id)
+  // Room visio Daily (onlypok.daily.co) avec repli Jitsi si l'API échoue
+  const meetingUrl = await createMeetingRoom(booking_id, booking.scheduled_at)
 
   const { error } = await supabase
     .from('bookings')

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
-import { ChevronDown, Tag, FileText, CalendarDays, Clock, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ChevronDown, Tag, FileText, CalendarDays, Clock, TrendingUp, AlertCircle, CheckCircle2, Video } from 'lucide-react'
 
 const BG     = '#07090e'
 const CREAM  = '#f0f4ff'
@@ -29,6 +29,7 @@ type Booking = {
   scheduled_at: string | null
   status: 'paid_pending_schedule' | 'scheduled' | 'completed'
   pack_index: number | null
+  meeting_url: string | null
   formation: { id: string; title: string; price: number; variant: string | null } | null
   student: { id: string; username: string | null; avatar_url: string | null } | null
   notes: string
@@ -93,16 +94,28 @@ export default function CoachSessionsPage() {
     if (!user) return
     let cancelled = false
     ;(async () => {
-      const { data: rows } = await supabase
+      // Complétion paresseuse : bascule les sessions passées en 'completed'
+      await fetch('/api/bookings/complete-past', { method: 'POST' }).catch(() => {})
+
+      /* Pas de join embarqué profiles!student_id : la FK bookings→profiles
+         n'existe pas dans le cache PostgREST (elle pointe auth.users) et le
+         join fait échouer TOUTE la requête. On sépare, comme /schedule. */
+      const { data: rawRows } = await supabase
         .from('bookings')
         .select(`
-          id, created_at, scheduled_at, status, pack_index,
-          formation:formations(id, title, price, variant),
-          student:profiles!student_id(id, username, avatar_url)
+          id, created_at, scheduled_at, status, pack_index, student_id, meeting_url,
+          formation:formations(id, title, price, variant)
         `)
         .eq('coach_id', user.id)
         .in('status', ['paid_pending_schedule', 'scheduled', 'completed'])
         .order('created_at', { ascending: false })
+
+      const studentIds = [...new Set((rawRows ?? []).map((r: any) => r.student_id).filter(Boolean))]
+      const { data: students } = studentIds.length
+        ? await supabase.from('profiles').select('id, username, avatar_url').in('id', studentIds)
+        : { data: [] as any[] }
+      const studentMap = new Map((students ?? []).map((s: any) => [s.id, s]))
+      const rows = (rawRows ?? []).map((r: any) => ({ ...r, student: studentMap.get(r.student_id) ?? null }))
 
       const bookingIds = (rows ?? []).map((r: any) => r.id)
       let notesMap = new Map<string, { id: string; notes: string; tags: string[]; progress_score: number | null }>()
@@ -124,6 +137,7 @@ export default function CoachSessionsPage() {
             scheduled_at: r.scheduled_at ?? null,
             status: r.status,
             pack_index: r.pack_index ?? null,
+            meeting_url: r.meeting_url ?? null,
             formation: Array.isArray(r.formation) ? r.formation[0] ?? null : r.formation ?? null,
             student: Array.isArray(r.student) ? r.student[0] ?? null : r.student ?? null,
             notes: n?.notes ?? '',
@@ -252,6 +266,13 @@ export default function CoachSessionsPage() {
                       )}
                       {b.formation?.price != null && b.formation.price > 0 && (
                         <span style={{ color: EMER }}>{b.formation.price}€</span>
+                      )}
+                      {b.status === 'scheduled' && b.meeting_url && (
+                        <a href={b.meeting_url} target="_blank" rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          style={{ display: 'flex', alignItems: 'center', gap: 4, color: CYAN, textDecoration: 'none', fontWeight: 700 }}>
+                          <Video size={10} /> Rejoindre la visio
+                        </a>
                       )}
                     </div>
                   </div>
