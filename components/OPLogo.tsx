@@ -4,9 +4,6 @@ interface OPLogoProps {
 }
 
 export default function OPLogo({ size = 32, variant = 'dark' }: OPLogoProps) {
-  const s  = size / 90
-  const fs = Math.round(39 * s)
-
   const bg: Record<string, string> = {
     light:  '#f0f4ff',
     dark:   '#0d0d18',
@@ -25,26 +22,28 @@ export default function OPLogo({ size = 32, variant = 'dark' }: OPLogoProps) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       position: 'relative', overflow: 'hidden',
     }}>
-      {/* Monogramme OP, légèrement remonté pour laisser place à la courbe */}
+      {/* Monogramme OP, remonté pour laisser place à la courbe d'apprentissage */}
       <div style={{
+        position: 'absolute', left: 0, right: 0, top: `${(120 / 512) * size}px`,
+        textAlign: 'center',
         fontFamily: 'var(--font-syne, sans-serif)',
-        fontWeight: 800, fontSize: fs,
+        fontWeight: 800, fontSize: `${(158 / 512) * size}px`,
         color: textColor,
         letterSpacing: '-0.05em', lineHeight: 1,
         userSelect: 'none',
-        transform: `translateY(${-11 * s}px)`,
       }}>
         OP
       </div>
-      {/* Courbe de winning : le graphe de bankroll qui monte, en flèche */}
+      {/* Courbe de Dunning-Kruger : pic de confiance → vallée → progression.
+         viewBox 512 indépendant de la taille de rendu (le SVG s'adapte). */}
       <svg
-        viewBox="0 0 90 90"
+        viewBox="0 0 512 512"
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
       >
-        <path d="M 26,68.5 L 37.5,64.5 L 47,68 L 62.5,56.5"
-          stroke={curveColor} strokeWidth={3.3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M 58,56 L 63,56 L 63,61"
-          stroke={curveColor} strokeWidth={3.3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M 148,372 L 188,332 C 200,346 212,388 244,392 C 292,398 322,364 360,336"
+          stroke={curveColor} strokeWidth={18} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M 336,332 L 362,334 L 360,360"
+          stroke={curveColor} strokeWidth={18} fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>
   )
