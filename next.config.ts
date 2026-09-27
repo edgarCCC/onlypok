@@ -1,19 +1,22 @@
 import type { NextConfig } from "next";
 
 // Content-Security-Policy — scopée aux origines réellement utilisées par
-// OnlyPok (Stripe, Daily.co, YouTube, Supabase, Vercel Analytics).
+// OnlyPok (Stripe, Daily.co, YouTube, Vimeo, Supabase + realtime, Vercel Analytics).
 // 'unsafe-inline' est requis par le bootstrap Next.js sans nonce ; 'unsafe-eval'
 // est volontairement EXCLU (protège contre l'exécution de scripts injectés).
 // ⚠️ À valider sur un déploiement preview avant la prod : si un écran casse
 // (visio, embed vidéo), élargir l'origine concernée plutôt que de retirer la CSP.
+// Barre de feedback Vercel : injectée uniquement sur les déploiements preview.
+const VERCEL_LIVE = process.env.VERCEL_ENV === 'preview' ? ' https://vercel.live' : '';
+
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com",
+  `script-src 'self' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com${VERCEL_LIVE}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.supabase.co https://img.youtube.com https://i.ytimg.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://va.vercel-scripts.com https://vitals.vercel-insights.com",
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.daily.co https://www.youtube.com https://www.youtube-nocookie.com",
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://va.vercel-scripts.com https://vitals.vercel-insights.com${VERCEL_LIVE}`,
+  `frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.daily.co https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com${VERCEL_LIVE}`,
   "media-src 'self' blob: https://*.supabase.co",
   "worker-src 'self' blob:",
   "frame-ancestors 'none'",
