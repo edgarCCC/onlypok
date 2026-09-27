@@ -143,18 +143,18 @@ export default function StudentDashboard() {
           .eq('completed', true),
 
         supabase.from('messages')
-          .select('from_id, to_id, content, created_at')
-          .or(`from_id.eq.${uid},to_id.eq.${uid}`)
+          .select('sender_id, receiver_id, content, created_at')
+          .or(`sender_id.eq.${uid},receiver_id.eq.${uid}`)
           .order('created_at', { ascending: false })
           .limit(30),
 
         supabase.from('formation_progress')
-          .select(`lesson_id, formation_id, created_at,
+          .select(`lesson_id, formation_id, completed_at,
             lesson:formation_lessons(id, title),
             formation:formations(id, title)`)
           .eq('user_id', uid)
           .eq('completed', true)
-          .order('created_at', { ascending: false })
+          .order('completed_at', { ascending: false })
           .limit(8),
       ])
 
@@ -204,8 +204,8 @@ export default function StudentDashboard() {
       // Attach last message per coach
       const msgs = msgRows ?? []
       for (const [coachId, entry] of coachMap) {
-        const m = msgs.find((m: any) => m.from_id === coachId || m.to_id === coachId)
-        if (m) entry.lastMessage = { content: m.content, created_at: m.created_at, from_me: m.from_id === uid }
+        const m = msgs.find((m: any) => m.sender_id === coachId || m.receiver_id === coachId)
+        if (m) entry.lastMessage = { content: m.content, created_at: m.created_at, from_me: m.sender_id === uid }
       }
       setCoaches([...coachMap.values()])
 
@@ -233,7 +233,7 @@ export default function StudentDashboard() {
           const lesson    = Array.isArray(r.lesson)    ? r.lesson[0]    : r.lesson
           const formation = Array.isArray(r.formation) ? r.formation[0] : r.formation
           if (!lesson || !formation) return null
-          return { lessonId: r.lesson_id, title: lesson.title, formationId: formation.id, formationTitle: formation.title, completedAt: r.created_at }
+          return { lessonId: r.lesson_id, title: lesson.title, formationId: formation.id, formationTitle: formation.title, completedAt: r.completed_at }
         }).filter(Boolean) as LessonItem[]
       )
 
