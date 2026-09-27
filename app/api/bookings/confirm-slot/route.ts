@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendCoachSlotConfirmedEmail, sendStudentSlotConfirmedEmail } from '@/lib/email'
 
 // POST /api/bookings/confirm-slot
@@ -31,27 +31,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Booking not found or already scheduled' }, { status: 404 })
   }
 
-  // Check the slot is not already taken by another booking for this coach
+  // Check the slot is not already taken by another booking for this coach.
+  // Service-role : la RLS cache à l'élève les réservations des autres élèves,
+  // un client user-scoped ne verrait donc jamais le conflit.
+  const admin = createAdminSupabaseClient()
   if (booking.coach_id) {
-    const { data: conflict } = await supabase
+    const { data: conflicts } = await admin
       .from('bookings')
       .select('id')
       .eq('coach_id', booking.coach_id)
       .eq('scheduled_at', scheduled_at)
       .in('status', ['scheduled', 'pending_coach_approval'])
       .neq('id', booking_id)
-      .maybeSingle()
+      .limit(1)
 
-    if (conflict) {
+    if (conflicts?.length) {
       return NextResponse.json({ error: 'Ce créneau est déjà pris' }, { status: 409 })
     }
   }
 
-  // Move to pending_coach_approval with the proposed slot
-  const { error } = await supabase
+  // Move to pending_coach_approval with the proposed slot (écriture service-role :
+  // aucune écriture client n'est autorisée sur bookings — RLS)
+  const { error } = await admin
     .from('bookings')
     .update({ status: 'pending_coach_approval', scheduled_at })
     .eq('id', booking_id)
+    .eq('status', 'paid_pending_schedule')
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -67,8 +72,8 @@ export async function POST(req: NextRequest) {
     const studentUsername = (fullBooking.student as any)?.username ?? "L'élève"
     const coachUsername   = (fullBooking.coach as any)?.username ?? 'Votre coach'
 
-    // In-app notification to coach
-    await supabase.from('notifications').insert({
+    // In-app notification to coach (insertion réservée au service-role — RLS)
+    await createAdminSupabaseClient().from('notifications').insert({
       user_id: booking.coach_id,
       type:    'slot_proposed',
       title:   'Créneau proposé',

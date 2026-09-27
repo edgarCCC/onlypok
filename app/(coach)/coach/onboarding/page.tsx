@@ -2,6 +2,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { fetchOwnProfile } from '@/lib/own-profile'
 import { useUser } from '@/hooks/useUser'
 import {
   Plus, Minus, Trash2, Upload, Check, Zap, CalendarCheck,
@@ -135,7 +136,7 @@ export default function OnboardingPage() {
     initialized.current = true
     ;(async () => {
       const [{ data: p }, { data: pr }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        fetchOwnProfile(supabase, user.id),
         supabase.from('coach_proofs').select('*').eq('coach_id', user.id).order('order_index'),
       ])
 

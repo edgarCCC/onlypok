@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendStudentBookingDeclinedEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
@@ -31,7 +31,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { error } = await supabase
+  // Écriture service-role (propriété + statut vérifiés ci-dessus ; aucune écriture client sur bookings — RLS)
+  const { error } = await createAdminSupabaseClient()
     .from('bookings')
     .update({ status: 'declined_by_coach' })
     .eq('id', booking_id)
@@ -44,7 +45,8 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await supabase
     .from('profiles').select('username').eq('id', user.id).single()
 
-  await supabase.from('notifications').insert({
+  // Notifications : insertion réservée au service-role (RLS)
+  await createAdminSupabaseClient().from('notifications').insert({
     user_id: booking.student_id,
     type:    'booking_declined',
     title:   'Coaching refusé',

@@ -25,9 +25,9 @@ export default async function HomePage() {
     { count: formationCount },
     { data: reviewsData },
   ] = await Promise.all([
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
     supabase.from('profiles').select('username').eq('role', 'student').order('created_at', { ascending: false }).limit(3),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'coach'),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'coach'),
     supabase.from('formations').select('*', { count: 'exact', head: true }),
     admin.from('reviews').select('rating'),
   ])

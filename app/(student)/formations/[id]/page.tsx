@@ -4,6 +4,38 @@ import { recordPurchaseFromSession } from '@/lib/purchases'
 import FormationDetailClient from './FormationDetailClient'
 import { notFound } from 'next/navigation'
 
+type ServerSupabase = Awaited<ReturnType<typeof createServerSupabaseClient>>
+type LessonRow = { id: string; video_url?: string | null; pdf_url?: string | null } & Record<string, unknown>
+type ChapterRow = { formation_lessons?: LessonRow[] } & Record<string, unknown>
+
+/* Programme complet (titres, durées, gratuit/payant) visible par tous, mais
+   video_url/pdf_url fournis uniquement pour les leçons que la RLS laisse voir
+   à l'utilisateur (gratuites, achetées, coach propriétaire). La formation
+   elle-même a déjà été lue via le client user-scoped (publiée ou à soi). */
+async function loadProgram(supabase: ServerSupabase, formationId: string): Promise<ChapterRow[]> {
+  const admin = createAdminSupabaseClient()
+  const [{ data: structure }, { data: unlocked }] = await Promise.all([
+    admin
+      .from('formation_chapters')
+      .select('*, formation_lessons(id, chapter_id, formation_id, title, video_type, duration, is_free, order_index, created_at)')
+      .eq('formation_id', formationId)
+      .order('order_index'),
+    supabase
+      .from('formation_lessons')
+      .select('id, video_url, pdf_url')
+      .eq('formation_id', formationId),
+  ])
+  const media = new Map((unlocked ?? []).map((l: LessonRow) => [l.id, l]))
+  return ((structure ?? []) as ChapterRow[]).map(ch => ({
+    ...ch,
+    formation_lessons: (ch.formation_lessons ?? []).map(l => ({
+      ...l,
+      video_url: media.get(l.id)?.video_url ?? null,
+      pdf_url:   media.get(l.id)?.pdf_url ?? null,
+    })),
+  }))
+}
+
 export default async function FormationDetailPage({
   params,
   searchParams,
@@ -51,14 +83,7 @@ export default async function FormationDetailPage({
 
   const results = await Promise.allSettled([
     /* 0 — chapters (formation type only) */
-    isFormationType
-      ? supabase
-          .from('formation_chapters')
-          .select('*, formation_lessons(*)')
-          .eq('formation_id', id)
-          .order('order_index')
-          .then(r => r.data ?? [])
-      : Promise.resolve([]),
+    isFormationType ? loadProgram(supabase, id) : Promise.resolve([]),
 
     /* 1 — coach proofs */
     formation.coach?.id

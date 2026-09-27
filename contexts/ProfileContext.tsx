@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { fetchOwnProfile } from '@/lib/own-profile'
 import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 export type Profile = {
@@ -63,13 +64,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = useCallback(async (u: User) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', u.id)
-      .single()
+    const { data, error } = await fetchOwnProfile(supabase, u.id)
     if (error) console.error('[ProfileContext] fetchProfile failed:', error.message)
-    setProfile(data ?? null)
+    setProfile((data as Profile | null) ?? null)
   }, [supabase])
 
   const refreshProfile = useCallback(async () => {

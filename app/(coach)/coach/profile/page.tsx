@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { fetchOwnProfile } from '@/lib/own-profile'
 import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import ProofGalleryModal from '@/components/ProofGalleryModal'
@@ -161,7 +162,7 @@ export default function CoachProfilePage() {
     if (!user) return
     ;(async () => {
       const [{ data: p }, { data: pr }, { data: r }, { data: f }, pay] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        fetchOwnProfile(supabase, user.id),
         supabase.from('coach_proofs').select('*').eq('coach_id', user.id).order('order_index'),
         supabase.from('reviews').select('rating').eq('coach_id', user.id),
         supabase.from('formations').select('id').eq('coach_id', user.id).eq('published', true),
