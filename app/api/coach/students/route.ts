@@ -29,13 +29,21 @@ export async function GET() {
       : { data: [], error: null },
     admin
       .from('bookings')
-      .select('id, created_at, scheduled_at, status, pack_index, student_id, formation_id, formations(id, title), profiles!student_id(id, username, avatar_url)')
+      .select('id, created_at, scheduled_at, status, pack_index, student_id, formation_id, formations(id, title)')
       .eq('coach_id', user.id)
       .in('status', ['paid_pending_schedule', 'pending_coach_approval', 'scheduled', 'completed'])
       .order('scheduled_at', { ascending: false }),
   ])
 
   const bookings = bookingsRes.data ?? []
+
+  // bookings n'a pas de clé étrangère vers profiles : jointure impossible côté
+  // PostgREST (PGRST200, la requête entière échouait). Profils lus à part.
+  const studentIds = [...new Set(bookings.map((b: any) => b.student_id).filter(Boolean))]
+  const { data: studentProfiles } = studentIds.length
+    ? await admin.from('profiles').select('id, username, avatar_url').in('id', studentIds)
+    : { data: [] }
+  const profileMap = new Map((studentProfiles ?? []).map((p: any) => [p.id, p]))
 
   // Fetch coaching_sessions notes for all bookings
   const bookingIds = bookings.map((b: any) => b.id)
@@ -56,7 +64,7 @@ export async function GET() {
     pack_index: b.pack_index,
     student_id: b.student_id,
     formation: Array.isArray(b.formations) ? b.formations[0] ?? null : b.formations ?? null,
-    student: Array.isArray(b.profiles) ? b.profiles[0] ?? null : b.profiles ?? null,
+    student: profileMap.get(b.student_id) ?? null,
     notes: notesMap.get(b.id)?.notes ?? '',
     tags: notesMap.get(b.id)?.tags ?? [],
     progress_score: notesMap.get(b.id)?.progress_score ?? null,

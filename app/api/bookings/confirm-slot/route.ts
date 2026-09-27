@@ -61,16 +61,19 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Fetch details for notifications and emails
-  const { data: fullBooking } = await supabase
-    .from('bookings')
-    .select('coach_id, student_id, formation:formations(title), coach:profiles!coach_id(username), student:profiles!student_id(username)')
-    .eq('id', booking_id)
-    .single()
+  // bookings n'a pas de clé étrangère vers profiles : l'ancienne jointure
+  // profiles!coach_id échouait (PGRST200) et AUCUNE notification/email ne partait.
+  // Requêtes séparées.
+  const [{ data: formation }, { data: people }] = await Promise.all([
+    admin.from('formations').select('title').eq('id', booking.formation_id).maybeSingle(),
+    admin.from('profiles').select('id, username').in('id', [booking.coach_id, booking.student_id].filter(Boolean)),
+  ])
+  const usernameOf = (id: string | null) => people?.find(p => p.id === id)?.username
 
-  if (fullBooking && booking.coach_id) {
-    const formationTitle  = (fullBooking.formation as any)?.title ?? 'votre coaching'
-    const studentUsername = (fullBooking.student as any)?.username ?? "L'élève"
-    const coachUsername   = (fullBooking.coach as any)?.username ?? 'Votre coach'
+  if (booking.coach_id) {
+    const formationTitle  = formation?.title ?? 'votre coaching'
+    const studentUsername = usernameOf(booking.student_id) ?? "L'élève"
+    const coachUsername   = usernameOf(booking.coach_id) ?? 'Votre coach'
 
     // In-app notification to coach (insertion réservée au service-role — RLS)
     await createAdminSupabaseClient().from('notifications').insert({
