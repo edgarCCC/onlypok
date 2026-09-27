@@ -9,6 +9,10 @@ export async function GET(req: NextRequest) {
 
   const session_id = req.nextUrl.searchParams.get('session_id')
   if (!session_id) return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
+  // Valide le format Stripe avant toute interpolation dans un filtre .or() (anti-injection PostgREST).
+  if (!/^cs_[A-Za-z0-9_]+$/.test(session_id)) {
+    return NextResponse.json({ error: 'Invalid session_id' }, { status: 400 })
+  }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
   const admin  = createAdminSupabaseClient()
@@ -18,8 +22,8 @@ export async function GET(req: NextRequest) {
     session = await stripe.checkout.sessions.retrieve(session_id, {
       expand: ['payment_intent'],
     })
-  } catch (e: any) {
-    return NextResponse.json({ error: 'Stripe session not found', detail: e.message }, { status: 404 })
+  } catch (e: unknown) {
+    return NextResponse.json({ error: 'Stripe session not found', detail: e instanceof Error ? e.message : String(e) }, { status: 404 })
   }
 
   const meta = session.metadata ?? {}

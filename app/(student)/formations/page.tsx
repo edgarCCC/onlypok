@@ -25,7 +25,10 @@ export default async function FormationsPage() {
     supabase
       .from('coach_proofs')
       .select('coach_id, category')
-      .in('category', ['stats', 'longterme']),
+      .in('category', ['stats', 'longterme'])
+      // Badge « vérifié » = preuves RÉELLEMENT validées par un admin, pas juste
+      // uploadées. Sans ce filtre, tout coach devenait vérifié dès l'onboarding.
+      .eq('validation_status', 'approved'),
     supabase
       .from('profiles')
       .select('id, username, avatar_url, bio, variants, is_pro, years_experience, hourly_rate, coaching_mode, coaching_packages, formations(count)')

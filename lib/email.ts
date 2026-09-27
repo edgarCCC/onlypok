@@ -15,6 +15,16 @@ async function getUserEmail(userId: string): Promise<string | null> {
   return data.user?.email ?? null
 }
 
+/* ── Échappe les valeurs utilisateur avant interpolation HTML (anti-injection) ── */
+function esc(value: string | null | undefined): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 /* ── Shared HTML shell ────────────────────────────────────── */
 function shell(body: string) {
   return `<!DOCTYPE html>
@@ -92,7 +102,7 @@ export async function sendCoachNewBookingEmail({
     <p style="font-size:12px;color:rgba(232,228,220,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Nouvelle réservation</p>
 
     <h1 style="font-size:22px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;">
-      ${studentUsername} veut un coaching
+      ${esc(studentUsername)} veut un coaching
     </h1>
 
     <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:24px;line-height:1.55;">
@@ -105,11 +115,11 @@ export async function sendCoachNewBookingEmail({
         <td align="right">${pill('Coaching', '#7c3aed', 'rgba(124,58,237,0.12)')}</td>
       </tr>
       <tr>
-        <td colspan="2" style="font-size:15px;font-weight:700;color:#e8e4dc;padding-bottom:12px;">${formationTitle}</td>
+        <td colspan="2" style="font-size:15px;font-weight:700;color:#e8e4dc;padding-bottom:12px;">${esc(formationTitle)}</td>
       </tr>
       ${packLabel ? `<tr>
         <td style="font-size:12px;color:rgba(232,228,220,0.4);">Pack</td>
-        <td align="right" style="font-size:13px;color:#06b6d4;font-weight:600;">${packLabel}</td>
+        <td align="right" style="font-size:13px;color:#06b6d4;font-weight:600;">${esc(packLabel)}</td>
       </tr>` : ''}
       ${price != null ? `<tr>
         <td style="font-size:12px;color:rgba(232,228,220,0.4);padding-top:6px;">Montant retenu</td>
@@ -163,8 +173,8 @@ export async function sendStudentBookingAcceptedEmail({
     </h1>
 
     <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:24px;line-height:1.55;text-align:center;">
-      <strong style="color:#e8e4dc;">${coachUsername}</strong> a accepté votre demande pour<br/>
-      <em style="color:#a78bfa;">${formationTitle}</em>.<br/>
+      <strong style="color:#e8e4dc;">${esc(coachUsername)}</strong> a accepté votre demande pour<br/>
+      <em style="color:#a78bfa;">${esc(formationTitle)}</em>.<br/>
       Choisissez maintenant votre créneau dans votre planning.
     </p>
 
@@ -209,8 +219,8 @@ export async function sendStudentBookingDeclinedEmail({
     </h1>
 
     <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:20px;line-height:1.55;">
-      <strong style="color:#e8e4dc;">${coachUsername}</strong> n'a pas pu accepter votre demande de coaching pour
-      <em style="color:#a78bfa;">${formationTitle}</em>.
+      <strong style="color:#e8e4dc;">${esc(coachUsername)}</strong> n'a pas pu accepter votre demande de coaching pour
+      <em style="color:#a78bfa;">${esc(formationTitle)}</em>.
     </p>
 
     <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:14px 18px;margin-bottom:8px;">
@@ -265,7 +275,7 @@ export async function sendCoachSlotConfirmedEmail({
     </h1>
 
     <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:22px;line-height:1.55;">
-      <strong style="color:#e8e4dc;">${studentUsername}</strong> a sélectionné un créneau pour votre coaching <em style="color:#a78bfa;">${formationTitle}</em>.
+      <strong style="color:#e8e4dc;">${esc(studentUsername)}</strong> a sélectionné un créneau pour votre coaching <em style="color:#a78bfa;">${esc(formationTitle)}</em>.
     </p>
 
     <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:16px 18px;margin-bottom:22px;">
@@ -336,7 +346,7 @@ export async function sendStudentSlotConfirmedEmail({
     </h1>
 
     <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:22px;line-height:1.55;text-align:center;">
-      Coaching <em style="color:#a78bfa;">${formationTitle}</em> avec <strong style="color:#e8e4dc;">${coachUsername}</strong>
+      Coaching <em style="color:#a78bfa;">${esc(formationTitle)}</em> avec <strong style="color:#e8e4dc;">${esc(coachUsername)}</strong>
     </p>
 
     <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:18px 20px;margin-bottom:22px;">

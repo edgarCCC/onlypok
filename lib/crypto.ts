@@ -64,7 +64,9 @@ export function isEncryptedPaymentValue(value: string | null | undefined): boole
 
 /**
  * Chiffre une valeur de paiement. Renvoie null pour null/vide.
- * Si la clé env manque : log d'erreur et renvoie la valeur en clair (pas de casse prod).
+ * Fail-closed : en production, si la clé env manque, on LÈVE une erreur plutôt
+ * que d'écrire des coordonnées de paiement en clair (garanti au niveau de la
+ * librairie, pas seulement chez l'appelant). En dev, on tolère le clair.
  * Une valeur déjà chiffrée est renvoyée telle quelle (idempotent).
  */
 export function encryptPaymentField(plain: string | null | undefined): string | null {
@@ -72,7 +74,14 @@ export function encryptPaymentField(plain: string | null | undefined): string | 
   if (isEncryptedPaymentValue(plain)) return plain
 
   const key = getEncryptionKey()
-  if (!key) return plain
+  if (!key) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'PAYMENT_INFO_ENC_KEY absente/invalide : écriture de coordonnées de paiement en clair refusée.',
+      )
+    }
+    return plain // dev uniquement
+  }
 
   const iv = randomBytes(IV_LENGTH)
   const cipher = createCipheriv(ALGO, key, iv)

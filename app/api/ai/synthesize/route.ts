@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
 
 export const maxDuration = 60
+
+const MAX_NOTES_LEN = 8000
+const MAX_TITLE_LEN = 200
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Anti-abus (brûlage de crédits API) : 15 synthèses / minute / utilisateur.
+  const limit = rateLimit(`synthesize:${user.id}`, 15, 60_000)
+  if (!limit.ok) return tooManyRequests(limit.retryAfter)
 
   try {
     const { notes, title } = await req.json()
@@ -15,6 +23,12 @@ export async function POST(req: NextRequest) {
     if (!notes?.trim()) {
       return NextResponse.json({ error: 'Notes vides' }, { status: 400 })
     }
+
+    if (typeof notes !== 'string' || notes.length > MAX_NOTES_LEN) {
+      return NextResponse.json({ error: 'Notes trop longues (8000 caractères max)' }, { status: 400 })
+    }
+
+    const safeTitle = typeof title === 'string' ? title.slice(0, MAX_TITLE_LEN) : ''
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json({ error: 'Clé API manquante' }, { status: 500 })
@@ -30,7 +44,7 @@ export async function POST(req: NextRequest) {
           role: 'user',
           content: `Tu synthétises des notes de cours de poker en mind map Markdown.
 
-Notes de la vidéo "${title}" :
+Notes de la vidéo "${safeTitle}" :
 ${notes}
 
 RÈGLES STRICTES :
@@ -63,8 +77,8 @@ Réponds UNIQUEMENT avec le Markdown, rien d'autre.`,
     const markdown = (message.content[0] as { type: string; text: string }).text
 
     return NextResponse.json({ markdown })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[synthesize]', err)
-    return NextResponse.json({ error: err?.message ?? 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Synthèse indisponible' }, { status: 500 })
   }
 }

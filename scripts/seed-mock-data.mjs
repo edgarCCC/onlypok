@@ -192,7 +192,7 @@ for (const c of COACHES.filter(c => c.verified)) {
     caption: category === 'stats' ? 'Tracker 12 derniers mois' : 'Graph lifetime',
     category,
     order_index: i,
-    validation_status: 'validated',
+    validation_status: 'approved',
   }))
   const { error } = await admin.from('coach_proofs').insert(rows)
   if (error) throw new Error(`proofs ${c.username}: ${error.message}`)

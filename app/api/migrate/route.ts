@@ -288,8 +288,12 @@ DROP POLICY IF EXISTS "bookings_select_own" ON bookings;
 DROP POLICY IF EXISTS "bookings_insert_own" ON bookings;
 DROP POLICY IF EXISTS "bookings_update_own" ON bookings;
 CREATE POLICY "bookings_select_own" ON bookings FOR SELECT USING (auth.uid() = student_id OR auth.uid() = coach_id);
-CREATE POLICY "bookings_insert_own" ON bookings FOR INSERT WITH CHECK (true);
-CREATE POLICY "bookings_update_own" ON bookings FOR UPDATE USING (auth.uid() = student_id OR auth.uid() = coach_id);
+-- SÉCURITÉ : aucune policy INSERT côté client. La création d'une réservation
+-- passe exclusivement par le service-role (webhook Stripe / verify-session),
+-- sinon un élève pourrait créer une session "payée" à 0€ sans paiement.
+CREATE POLICY "bookings_update_own" ON bookings FOR UPDATE
+  USING (auth.uid() = student_id OR auth.uid() = coach_id)
+  WITH CHECK (auth.uid() = student_id OR auth.uid() = coach_id);
 
 -- Progression vidéo (watch time par leçon)
 CREATE TABLE IF NOT EXISTS video_progress (

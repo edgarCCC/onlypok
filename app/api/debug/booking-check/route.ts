@@ -10,6 +10,10 @@ export async function GET(req: NextRequest) {
 
   const session_id = req.nextUrl.searchParams.get('session_id')
   if (!session_id) return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
+  // Valide le format Stripe avant toute interpolation dans un filtre .or() (anti-injection PostgREST).
+  if (!/^cs_[A-Za-z0-9_]+$/.test(session_id)) {
+    return NextResponse.json({ error: 'Invalid session_id' }, { status: 400 })
+  }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
   const admin  = createAdminSupabaseClient()
@@ -22,8 +26,8 @@ export async function GET(req: NextRequest) {
   let stripeError: string | null = null
   try {
     session = await stripe.checkout.sessions.retrieve(session_id, { expand: ['payment_intent'] })
-  } catch (e: any) {
-    stripeError = e.message
+  } catch (e: unknown) {
+    stripeError = e instanceof Error ? e.message : String(e)
   }
 
   const meta = session?.metadata ?? {}
@@ -54,7 +58,7 @@ export async function GET(req: NextRequest) {
   if (user && meta.user_id && user.id !== meta.user_id)     issues.push(`User mismatch: auth=${user.id} meta=${meta.user_id}`)
   if (!user)                                                issues.push('No auth session — verify-session will return 401')
   if (!formation)                                           issues.push('Formation not found in DB')
-  if (formation && !(formation as any).coach_id)            issues.push('Formation has no coach_id in DB')
+  if (formation && !(formation as { coach_id?: string }).coach_id) issues.push('Formation has no coach_id in DB')
   if (bookingsError)                                        issues.push(`Bookings query error: ${bookingsError.message}`)
 
   return NextResponse.json({

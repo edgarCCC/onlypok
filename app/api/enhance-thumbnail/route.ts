@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { createClient } from '@supabase/supabase-js'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { fetchPublicBuffer } from '@/lib/net-guard'
+import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
 
 export const maxDuration = 30
 
@@ -10,10 +12,19 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// L'image source doit provenir du Storage Supabase du projet (pas d'URL arbitraire → anti-SSRF).
+const SUPABASE_HOST = (() => {
+  try { return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname } catch { return '' }
+})()
+
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Anti-abus : opération lourde (fetch + sharp). Max 10 / minute / utilisateur.
+  const limit = rateLimit(`enhance:${user.id}`, 10, 60_000)
+  if (!limit.ok) return tooManyRequests(limit.retryAfter)
 
   const { image_url, formation_id, user_id } = await req.json()
 
@@ -33,10 +44,17 @@ export async function POST(req: NextRequest) {
     .single()
   if (!formation) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  /* 1 ── Télécharge l'image originale */
-  const imgRes = await fetch(image_url)
-  if (!imgRes.ok) return NextResponse.json({ error: 'Cannot fetch image' }, { status: 502 })
-  const original = Buffer.from(await imgRes.arrayBuffer())
+  /* 1 ── Télécharge l'image originale (URL restreinte au Storage Supabase, taille bornée) */
+  let original: Buffer
+  try {
+    original = await fetchPublicBuffer(image_url, {
+      allowHosts: SUPABASE_HOST ? [SUPABASE_HOST] : undefined,
+      maxBytes: 15 * 1024 * 1024,
+      timeoutMs: 10_000,
+    })
+  } catch {
+    return NextResponse.json({ error: 'Image source invalide' }, { status: 400 })
+  }
 
   /* 2 ── Amélioration avec sharp (gratuit, traitement local)
      - Upscale 2× avec Lanczos (meilleure qualité)
@@ -59,7 +77,8 @@ export async function POST(req: NextRequest) {
     .upload(path, enhanced, { contentType: 'image/jpeg', upsert: true })
 
   if (uploadErr) {
-    return NextResponse.json({ error: uploadErr.message }, { status: 500 })
+    console.error('[enhance-thumbnail] upload', uploadErr.message)
+    return NextResponse.json({ error: 'Échec de l\'envoi de l\'image' }, { status: 500 })
   }
 
   const { data: urlData } = supabaseAdmin.storage

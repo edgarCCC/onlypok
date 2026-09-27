@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { fetchPublicText } from '@/lib/net-guard'
 
 export const runtime = 'nodejs'
 
@@ -83,17 +84,19 @@ export async function GET(req: NextRequest) {
 
   try {
     const icsUrl = calUrl.replace(/^webcal:\/\//i, 'https://')
-    const res = await fetch(icsUrl, {
+    // Anti-SSRF : l'URL de calendrier est fournie par le coach ; on impose https
+    // et on rejette toute IP interne. La réponse ICS est bornée en taille.
+    const text = await fetchPublicText(icsUrl, {
+      protocols: ['https:'],
       headers: { 'User-Agent': 'OnlyPok/1.0 Calendar Sync' },
-      signal: AbortSignal.timeout(8000),
+      timeoutMs: 8000,
     })
-    if (!res.ok) throw new Error(`ICS fetch failed: ${res.status}`)
-    const text = await res.text()
     const busy = parseIcs(text, weekStart, weekEnd)
     return NextResponse.json({ busy })
-  } catch (err: any) {
-    console.error('[calendar/busy-times]', err.message)
-    return NextResponse.json({ error: err.message, busy: [] }, { status: 502 })
+  } catch (err: unknown) {
+    // On ne renvoie jamais le message brut (oracle SSRF) : réponse générique.
+    console.error('[calendar/busy-times]', err instanceof Error ? err.message : err)
+    return NextResponse.json({ error: 'Calendrier indisponible', busy: [] }, { status: 502 })
   }
 }
 
