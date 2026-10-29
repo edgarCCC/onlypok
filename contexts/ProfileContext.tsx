@@ -21,7 +21,6 @@ export type Profile = {
   advantages: string[] | null
   coaching_mode: 'auto' | 'manual' | null
   hourly_rate: number | null
-  weekend_rate_pct: number | null
   coaching_packages: unknown[] | null
   years_experience: number | null
   is_pro: boolean | null

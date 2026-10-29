@@ -399,7 +399,7 @@ export default function FormationsPageClient({
                   <div style={{ padding: '8px 14px 12px', borderBottom: `1px solid rgba(240,244,255,0.05)`, marginBottom: 6 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: CREAM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Menu</span>
                   </div>
-                  {[['Mes formations', '/formations'], ['Coaches', '/formations?tab=coaching'], ['Tracker', '/track']].map(([label, href]) => (
+                  {[['Mes formations', '/formations'], ['Coaches', '/formations?tab=coaching'], ['Tracker', '/tracker']].map(([label, href]) => (
                     <Link key={label} href={href} style={{ display: 'block', padding: '9px 14px', fontSize: 13, color: SILVER, textDecoration: 'none', borderRadius: 8, transition: 'all 0.15s' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(232,228,220,0.05)'; (e.currentTarget as HTMLAnchorElement).style.color = CREAM }}
                       onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; (e.currentTarget as HTMLAnchorElement).style.color = SILVER }}>

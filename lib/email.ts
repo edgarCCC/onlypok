@@ -131,7 +131,7 @@ export async function sendCoachNewBookingEmail({
       Le paiement est retenu sur le compte de l'élève. Il sera libéré après votre acceptation.
     </p>
 
-    ${cta('Voir la demande →', `${appUrl}/coach/requests`, '#7c3aed')}
+    ${cta('Voir la demande →', `${appUrl}/coach/agenda?tab=validate`, '#7c3aed')}
   `)
 
   const resend = getResend(); if (!resend) return
@@ -302,7 +302,7 @@ export async function sendCoachSlotConfirmedEmail({
 
     ${cta('Rejoindre la session →', meetingUrl, '#06b6d4')}
     &nbsp;&nbsp;
-    ${cta('Voir mes sessions →', `${appUrl}/coach/sessions`, '#7c3aed')}
+    ${cta('Voir mes sessions →', `${appUrl}/coach/agenda?tab=upcoming`, '#7c3aed')}
   `)
 
   const resend = getResend(); if (!resend) return

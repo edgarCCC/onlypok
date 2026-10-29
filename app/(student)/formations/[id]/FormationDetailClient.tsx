@@ -12,7 +12,7 @@ import type { Proof } from '@/components/ProofGalleryModal'
 import VideoStudio from '@/components/VideoStudio'
 import { HIGHLIGHTS } from '@/lib/highlights'
 import {
-  CREAM, SILVER, VARIANT_COLORS, TYPE_COLORS, REVIEW_CATEGORIES, generateSlots,
+  CREAM, SILVER, VARIANT_COLORS, TYPE_COLORS, REVIEW_CATEGORIES, generateSlots, fetchTakenSlots,
 } from './shared'
 import DetailHeader from './DetailHeader'
 import FormationHero from './FormationHero'
@@ -145,11 +145,10 @@ export default function FormationDetailClient({
     if (!coachId || (initialFormation?.content_type ?? 'formation') !== 'coaching') return
     setCalLoading(true)
     const load = async () => {
-      const [{ data: avails }, { data: booked }] = await Promise.all([
+      const [{ data: avails }, bookedTs] = await Promise.all([
         supabase.from('availabilities').select('day_of_week, slot').eq('coach_id', coachId).eq('booked', false),
-        supabase.from('bookings').select('scheduled_at').eq('coach_id', coachId).eq('status', 'scheduled').not('scheduled_at', 'is', null),
+        fetchTakenSlots(coachId),
       ])
-      const bookedTs = (booked ?? []).map((b: any) => b.scheduled_at).filter(Boolean)
       setCalSlots(generateSlots(avails ?? [], bookedTs))
       setCalLoading(false)
     }
@@ -196,7 +195,12 @@ export default function FormationDetailClient({
     })
     if (error) {
       console.error('[review insert]', error.code, error.message, error.details, error.hint)
-      setReviewError(`Erreur : ${error.message}`)
+      // 42501 = refus RLS (pas d'achat / de session avec ce coach), 23505 = avis déjà posté
+      setReviewError(
+        error.code === '42501' ? 'Seuls les élèves ayant acheté une formation ou une session avec ce coach peuvent laisser un avis.'
+        : error.code === '23505' ? 'Vous avez déjà laissé un avis pour ce coach.'
+        : 'Impossible d’enregistrer votre avis, réessayez dans un instant.'
+      )
       setSubmitting(false)
       return
     }
@@ -232,12 +236,6 @@ export default function FormationDetailClient({
   const packs        = formation.coaching_packs ?? []
   const currentPack  = packs[selectedPack]
   const coach        = formation.coach
-
-  /* Weekend pricing — detected client-side (display only; Stripe re-checks server-side) */
-  const isWeekend = (() => { const d = new Date().getDay(); return d === 0 || d === 6 })()
-  const weekendPct: number = coach?.weekend_rate_pct ?? 0
-  const weekendMultiplier = (contentType === 'coaching' && isWeekend && weekendPct > 0) ? 1 + weekendPct / 100 : 1
-  const applyWeekend = (price: number) => weekendMultiplier > 1 ? Math.round(price * weekendMultiplier) : price
 
   const showBigSearch = !isScrolled || isSearchOverlayOpen
 
@@ -285,7 +283,7 @@ export default function FormationDetailClient({
     : effectivePrice === 0 ? 'Accéder gratuitement'
     : contentType === 'coaching'
       ? calSelSlot
-        ? `Réserver · ${slotLabel} — ${applyWeekend(effectivePrice)}€`
+        ? `Réserver · ${slotLabel} — ${effectivePrice}€`
         : 'Sélectionne un créneau ↓'
       : `Acheter — ${effectivePrice}€`
 
@@ -585,15 +583,10 @@ export default function FormationDetailClient({
             <div style={{ padding: '40px 0', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
                 <h2 style={{ fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: 0 }}>Packs disponibles</h2>
-                {weekendMultiplier > 1 && (
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', color: '#f59e0b' }}>
-                    Tarif week-end +{weekendPct}%
-                  </span>
-                )}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(packs.length, 3)}, 1fr)`, gap: 12 }}>
                 {packs.map((pack: any, i: number) => {
-                  const displayPrice = applyWeekend(pack.price)
+                  const displayPrice = pack.price
                   return (
                     <div key={i} onClick={() => setSelectedPack(i)}
                       style={{ background: selectedPack === i ? `${typeColor}12` : 'rgba(232,228,220,0.03)', border: `1px solid ${selectedPack === i ? typeColor + '50' : 'rgba(232,228,220,0.08)'}`, borderRadius: 14, padding: '20px', cursor: 'pointer', transition: 'all 0.2s' }}>
@@ -603,7 +596,6 @@ export default function FormationDetailClient({
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
                         <span style={{ fontSize: 22, fontWeight: 800, color: selectedPack === i ? typeColor : CREAM }}>{displayPrice}€</span>
-                        {weekendMultiplier > 1 && <span style={{ fontSize: 11, color: SILVER, textDecoration: 'line-through' }}>{pack.price}€</span>}
                       </div>
                       <div style={{ fontSize: 11, color: SILVER, marginBottom: 8 }}>{pack.hours}h · {pack.hours > 0 && displayPrice > 0 ? Math.round(displayPrice / pack.hours) + '€/h' : ''}</div>
                       {pack.desc && <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.5, margin: 0 }}>{pack.desc}</p>}
@@ -642,7 +634,6 @@ export default function FormationDetailClient({
           selectedPack={selectedPack}
           setSelectedPack={setSelectedPack}
           currentPack={currentPack}
-          applyWeekend={applyWeekend}
           hasPurchased={hasPurchased}
           paying={paying}
           ctaLabel={ctaLabel}

@@ -93,12 +93,11 @@ function NewFormationInner() {
   // Pre-fill coaching offer from profile
   useEffect(() => {
     if (!user) return
-    supabase.from('profiles').select('coaching_mode, hourly_rate, weekend_rate_pct, coaching_packages, cal_url').eq('id', user.id).single()
+    supabase.from('profiles').select('coaching_mode, hourly_rate, coaching_packages, cal_url').eq('id', user.id).single()
       .then(({ data: p }: { data: any }) => {
         if (!p) return
         if (p.coaching_mode)      setCoachingMode(p.coaching_mode)
         if (p.hourly_rate)        setHourlyRate(String(p.hourly_rate))
-        if (p.weekend_rate_pct)   setWeekendPct(p.weekend_rate_pct)
         if (p.coaching_packages?.length) setPackages(p.coaching_packages)
         if (p.cal_url)            setCalUrl(p.cal_url)
       })
@@ -109,7 +108,6 @@ function NewFormationInner() {
   // Coaching offer
   const [coachingMode, setCoachingMode] = useState<'auto' | 'manual' | null>('manual')
   const [hourlyRate,   setHourlyRate]   = useState('80')
-  const [weekendPct,   setWeekendPct]   = useState(0)
   const [packages,     setPackages]     = useState<Pkg[]>([
     { id: '1', name: 'Starter',     sessions: 1,  price: '80',  desc: "1 session d'1h pour démarrer" },
     { id: '2', name: 'Progression', sessions: 5,  price: '350', desc: '5 sessions pour progresser vite' },
@@ -225,7 +223,6 @@ function NewFormationInner() {
       await supabase.from('profiles').update({
         coaching_mode:     coachingMode,
         hourly_rate:       Number(hourlyRate) || null,
-        weekend_rate_pct:  weekendPct,
         coaching_packages: packages,
       }).eq('id', user.id)
     }
@@ -580,29 +577,20 @@ function NewFormationInner() {
                       </div>
                     </Field>
 
-                    {/* Tarif + supplément week-end */}
-                    <div className="cnew-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                      <Field label="Tarif horaire (€/h)">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 20, color: SILVER, fontWeight: 300 }}>€</span>
-                          <input type="number" min="0" max="9999" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)}
-                            style={{ ...inputStyle, fontSize: 24, fontWeight: 800, textAlign: 'center', padding: '10px', width: '100%' }} />
-                          <span style={{ fontSize: 13, color: SILVER }}>/h</span>
-                        </div>
-                        {Number(hourlyRate) > 0 && (
-                          <p style={{ fontSize: 11, color: SILVER, marginTop: 6 }}>
-                            Élève paie ≈ <strong style={{ color: CREAM }}>€{Math.round(Number(hourlyRate) * 1.08)}</strong> (frais +8 %)
-                          </p>
-                        )}
-                      </Field>
-                      <Field label={`Supplément week-end (${weekendPct}%)`}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <OfferStepper onClick={() => setWeekendPct(p => Math.max(0, p - 5))}><Minus size={14} /></OfferStepper>
-                          <span style={{ fontSize: 24, fontWeight: 800, color: CREAM, minWidth: 48, textAlign: 'center' }}>+{weekendPct}%</span>
-                          <OfferStepper onClick={() => setWeekendPct(p => Math.min(50, p + 5))}><Plus size={14} /></OfferStepper>
-                        </div>
-                      </Field>
-                    </div>
+                    {/* Tarif horaire */}
+                    <Field label="Tarif horaire (€/h)">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 20, color: SILVER, fontWeight: 300 }}>€</span>
+                        <input type="number" min="0" max="9999" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)}
+                          style={{ ...inputStyle, fontSize: 24, fontWeight: 800, textAlign: 'center', padding: '10px', width: '100%' }} />
+                        <span style={{ fontSize: 13, color: SILVER }}>/h</span>
+                      </div>
+                      {Number(hourlyRate) > 0 && (
+                        <p style={{ fontSize: 11, color: SILVER, marginTop: 6 }}>
+                          Élève paie ≈ <strong style={{ color: CREAM }}>€{Math.round(Number(hourlyRate) * 1.08)}</strong> (frais +8 %)
+                        </p>
+                      )}
+                    </Field>
 
                     {/* Forfaits multi-sessions */}
                     <Field label="Forfaits multi-sessions">
@@ -660,7 +648,7 @@ function NewFormationInner() {
                   <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.65, margin: 0 }}>
                     Les élèves choisissent leur créneau directement sur ta page coaching — aucun compte externe requis.
                     Configure tes disponibilités dans ton{' '}
-                    <a href="/coach/calendar" style={{ color: '#a855f7', textDecoration: 'underline' }}>calendrier coach</a>.
+                    <a href="/coach/agenda?tab=availability" style={{ color: '#a855f7', textDecoration: 'underline' }}>calendrier coach</a>.
                   </p>
                 </div>
               </>

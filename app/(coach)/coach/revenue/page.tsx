@@ -372,7 +372,7 @@ export default function RevenuePage() {
                       {/* Action */}
                       {type === 'coaching' ? (
                         <Link
-                          href="/coach/requests"
+                          href="/coach/agenda"
                           style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: AMBER, textDecoration: 'none', padding: '4px 8px', borderRadius: 6, border: `1px solid ${AMBER}30`, background: `${AMBER}0a`, whiteSpace: 'nowrap' }}
                         >
                           Planifier <ArrowUpRight size={10} />

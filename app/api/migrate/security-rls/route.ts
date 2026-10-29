@@ -70,7 +70,7 @@ REVOKE SELECT ON profiles FROM anon, authenticated;
 GRANT SELECT (
   id, username, role, bio, xp, created_at, onboarding_completed,
   years_experience, is_pro, rooms, variants, advantages, coaching_mode,
-  hourly_rate, weekend_rate_pct, coaching_packages, coaching_packs, country,
+  hourly_rate, coaching_packages, coaching_packs, country,
   target_players, avatar_url, vision, co_coach_ids, cal_url, privacy_prefs
 ) ON profiles TO anon, authenticated;
 

@@ -5,6 +5,8 @@ import { assertAdmin } from '@/lib/assert-admin'
 
 // GET /api/debug/session?session_id=cs_xxx
 export async function GET(req: NextRequest) {
+  // Outil de diagnostic : désactivé en production (404), dispo en preview/local.
+  if (process.env.VERCEL_ENV === 'production') return new NextResponse(null, { status: 404 })
   if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const session_id = req.nextUrl.searchParams.get('session_id')

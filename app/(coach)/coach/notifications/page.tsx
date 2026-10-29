@@ -57,24 +57,27 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     if (!user) return
-    setLoading(true)
     supabase
       .from('notifications')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(80)
-      .then(({ data }: { data: Notif[] | null }) => { setNotifs(data ?? []); setLoading(false) })
+      // La table stocke read_at (date de lecture) : on en dérive le booléen read.
+      .then(({ data }: { data: (Omit<Notif, 'read'> & { read_at: string | null })[] | null }) => {
+        setNotifs((data ?? []).map(n => ({ ...n, read: !!n.read_at })))
+        setLoading(false)
+      })
   }, [user, supabase])
 
   const markAll = async () => {
     if (!user) return
-    await supabase.from('notifications').update({ read: true }).eq('user_id', user.id).eq('read', false)
+    await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('user_id', user.id).is('read_at', null)
     setNotifs(prev => prev.map(n => ({ ...n, read: true })))
   }
 
   const markOne = async (id: string) => {
-    await supabase.from('notifications').update({ read: true }).eq('id', id)
+    await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id)
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
   }
 
@@ -93,11 +96,11 @@ export default function NotificationsPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM, padding: '40px 48px 80px' }}>
+    <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM, padding: '40px clamp(16px,4vw,48px) 80px' }}>
       <div style={{ maxWidth: 720, margin: '0 auto' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 32 }}>
           <div>
             <p style={{ fontSize: 11, color: SILVER, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 6px' }}>Espace coach</p>
             <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 6px', fontFamily: 'var(--font-syne, sans-serif)', color: CREAM }}>

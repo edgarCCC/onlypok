@@ -34,32 +34,17 @@ export async function POST(req: NextRequest) {
       if (existing) return NextResponse.json({ error: 'Already purchased' }, { status: 409 })
     }
 
-    /* weekend multiplier — applied server-side so it can't be bypassed */
     const isCoachingType = formation.content_type === 'coaching'
-    let weekendMultiplier = 1
-    if (isCoachingType && formation.coach_id) {
-      const { data: coachProfile } = await supabase
-        .from('profiles')
-        .select('weekend_rate_pct')
-        .eq('id', formation.coach_id)
-        .single()
-      const pct = coachProfile?.weekend_rate_pct ?? 0
-      if (pct > 0) {
-        const now = new Date()
-        const day = now.getDay() // 0 = dimanche, 6 = samedi
-        if (day === 0 || day === 6) weekendMultiplier = 1 + pct / 100
-      }
-    }
 
     let unitAmount: number
     let productName: string
     if (isCoachingType && Array.isArray(formation.coaching_packs) && pack_index != null) {
       const pack = formation.coaching_packs[pack_index]
       if (!pack) return NextResponse.json({ error: 'Pack not found' }, { status: 404 })
-      unitAmount = Math.round(pack.price * weekendMultiplier * 100)
-      productName = `${formation.title} — ${pack.label ?? `Pack ${pack_index + 1}`}${weekendMultiplier > 1 ? ' (tarif week-end)' : ''}`
+      unitAmount = Math.round(pack.price * 100)
+      productName = `${formation.title} — ${pack.label ?? `Pack ${pack_index + 1}`}`
     } else {
-      unitAmount = Math.round(formation.price * weekendMultiplier * 100)
+      unitAmount = Math.round(formation.price * 100)
       productName = formation.title
     }
 

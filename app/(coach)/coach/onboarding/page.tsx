@@ -86,7 +86,7 @@ type FormData = {
   rooms: string[]; yearsExp: number; isPro: boolean | null; variants: string[]
   advantages: string[]; bio: string; vision: string
   coachingMode: 'auto' | 'manual' | null
-  hourlyRate: string; weekendPct: number; packages: Package[]
+  hourlyRate: string; packages: Package[]
   phone: string; addressLine: string; city: string; zipCode: string; country: string
   isCompany: boolean | null; companyName: string; siret: string; vatNumber: string
 }
@@ -95,18 +95,18 @@ const EMPTY: FormData = {
   rooms: [], yearsExp: 3, isPro: null, variants: [],
   advantages: [], bio: '', vision: '',
   coachingMode: null,
-  hourlyRate: '80', weekendPct: 0, packages: [],
+  hourlyRate: '80', packages: [],
   phone: '', addressLine: '', city: '', zipCode: '', country: 'France',
   isCompany: null, companyName: '', siret: '', vatNumber: '',
 }
 
 /* ─── Progress ─── */
-const TOTAL = 13
+const TOTAL = 12
 // Phase 1: 0-3 (4) | Phase 2: 4-7 (4) | Phase 3: 8-12 (5)
 const phaseProgress = (step: number, phase: number) => {
   if (phase === 0) return step > 3 ? 1 : Math.min(1, (step + 1) / 4)
   if (phase === 1) return step < 4 ? 0 : step > 7 ? 1 : Math.min(1, (step - 3) / 4)
-  return step < 8 ? 0 : Math.min(1, (step - 7) / 5)
+  return step < 8 ? 0 : Math.min(1, (step - 7) / 4)
 }
 
 /* ══════════════════════════════════════════════════════
@@ -154,7 +154,7 @@ export default function OnboardingPage() {
 
       // Restore step depuis localStorage
       const savedStep = localStorage.getItem(`pokme_onboarding_step_${user.id}`)
-      if (savedStep !== null) setStep(Number(savedStep))
+      if (savedStep !== null) setStep(Math.min(TOTAL - 1, Math.max(0, Number(savedStep) || 0)))
 
       // Pré-remplir le form avec les données déjà en base
       if (p) {
@@ -168,7 +168,6 @@ export default function OnboardingPage() {
           vision:       p.vision ?? '',
           coachingMode: p.coaching_mode ?? null,
           hourlyRate:   String(p.hourly_rate ?? 80),
-          weekendPct:   p.weekend_rate_pct ?? 0,
           packages:     p.coaching_packages ?? [],
           phone:        p.phone ?? '',
           addressLine:  p.address_line ?? '',
@@ -200,7 +199,7 @@ export default function OnboardingPage() {
     if (step === 5) return form.advantages.length > 0
     if (step === 8) return form.coachingMode !== null
     if (step === 9) return Number(form.hourlyRate) > 0
-    if (step === 12) return (
+    if (step === 11) return (
       form.phone.trim().length > 0 &&
       form.addressLine.trim().length > 0 &&
       form.city.trim().length > 0 &&
@@ -223,7 +222,6 @@ export default function OnboardingPage() {
     advantages:        form.advantages,
     coaching_mode:     form.coachingMode,
     hourly_rate:       Number(form.hourlyRate) || null,
-    weekend_rate_pct:  form.weekendPct,
     coaching_packages: form.packages,
     phone:             form.phone.trim() ? `${phoneCode}${form.phone.trim()}` : null,
     address_line:      form.addressLine || null,
@@ -570,7 +568,7 @@ export default function OnboardingPage() {
 
       /* ══ PRIX SEMAINE ══ */
       case 9: return (
-        <StepShell title="Votre tarif horaire" subtitle="Prix pour une session de coaching en semaine. Vous pourrez le modifier à tout moment.">
+        <StepShell title="Votre tarif horaire" subtitle="Prix pour une session de coaching. Vous pourrez le modifier à tout moment.">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, padding: '20px 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 56, fontWeight: 300, color: SILVER }}>€</span>
@@ -594,38 +592,8 @@ export default function OnboardingPage() {
         </StepShell>
       )
 
-      /* ══ PRIX WEEK-END — stepper ══ */
-      case 10: return (
-        <StepShell title="Tarif week-end" subtitle="Ajoutez un supplément pour les vendredis, samedis et dimanches.">
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32, padding: '20px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <span style={{ fontSize: 72, fontWeight: 800, color: CREAM, letterSpacing: '-3px' }}>
-                {Math.round(Number(form.hourlyRate || 0) * (1 + form.weekendPct / 100))}
-              </span>
-              <span style={{ fontSize: 28, color: SILVER, fontWeight: 300 }}> €/h</span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-              <span style={{ fontSize: 13, color: SILVER }}>Supplément week-end</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                <StepperBtn onClick={() => set('weekendPct', Math.max(0, form.weekendPct - 5))}><Minus size={16} /></StepperBtn>
-                <div style={{ minWidth: 72, textAlign: 'center', fontSize: 40, fontWeight: 800, color: CREAM, letterSpacing: '-1px' }}>
-                  {form.weekendPct}<span style={{ fontSize: 22, fontWeight: 400, color: SILVER }}> %</span>
-                </div>
-                <StepperBtn onClick={() => set('weekendPct', Math.min(50, form.weekendPct + 5))}><Plus size={16} /></StepperBtn>
-              </div>
-              <p style={{ fontSize: 12, color: DIM, margin: 0 }}>
-                {form.weekendPct === 0
-                  ? 'Même tarif tous les jours — laissez à 0 % si vous préférez.'
-                  : `+${form.weekendPct} % le week-end · par tranches de 5 %`}
-              </p>
-            </div>
-          </div>
-        </StepShell>
-      )
-
       /* ══ FORFAITS ══ */
-      case 11: return (
+      case 10: return (
         <StepShell title="Proposez des forfaits" subtitle="Packs multi-sessions à prix réduit. Optionnel — vous pouvez passer cette étape.">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {form.packages.map((pkg, i) => (
@@ -687,7 +655,7 @@ export default function OnboardingPage() {
       )
 
       /* ══ INFOS PERSO + STATUT LÉGAL (fusionnés) ══ */
-      case 12: return (
+      case 11: return (
         <StepShell title="Informations & statut légal" subtitle="Confidentielles — jamais visibles des élèves. Obligatoires pour les paiements.">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 

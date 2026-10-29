@@ -295,7 +295,7 @@ export default function CoachDashboard() {
                     <Calendar size={14} color="#f59e0b" />
                     <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Sessions coaching à planifier</h2>
                   </div>
-                  <Link href="/coach/calendar"
+                  <Link href="/coach/agenda"
                     style={{ fontSize: 10, color: '#f59e0b', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, padding: '4px 10px', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 7 }}>
                     Voir le calendrier
                   </Link>
@@ -329,7 +329,7 @@ export default function CoachDashboard() {
                             <span style={{ fontSize: 10, color: SILVER, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
                           </div>
                           <span style={{ fontSize: 10, color: SILVER, flexShrink: 0 }}>{date}</span>
-                          <Link href="/coach/requests"
+                          <Link href="/coach/agenda"
                             style={{ fontSize: 10, fontWeight: 700, color: '#f59e0b', textDecoration: 'none', padding: '4px 10px', borderRadius: 7, border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.08)', flexShrink: 0, whiteSpace: 'nowrap' }}>
                             Planifier →
                           </Link>

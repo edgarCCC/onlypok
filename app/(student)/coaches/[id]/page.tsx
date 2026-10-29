@@ -88,7 +88,7 @@ type Coach = {
   bio: string | null; vision: string | null; variants: string[] | null
   is_pro: boolean | null; years_experience: number | null; hourly_rate: number | null
   coaching_mode: string | null; coaching_packages: { name: string; sessions: number; price: number }[] | null
-  weekend_rate_pct: number | null; advantages: string[] | null; target_players: string[] | null
+  advantages: string[] | null; target_players: string[] | null
   rooms: string[] | null
 }
 type Review = { rating: number; comment: string | null; created_at: string; student: { username: string | null; avatar_url: string | null } | null }
@@ -112,7 +112,7 @@ export default function CoachProfilePage() {
 
     Promise.all([
       supabase.from('profiles')
-        .select('id, username, avatar_url, bio, vision, variants, is_pro, years_experience, hourly_rate, coaching_mode, coaching_packages, weekend_rate_pct, advantages, target_players, rooms')
+        .select('id, username, avatar_url, bio, vision, variants, is_pro, years_experience, hourly_rate, coaching_mode, coaching_packages, advantages, target_players, rooms')
         .eq('id', id).eq('role', 'coach').single(),
       supabase.from('reviews')
         .select('rating, comment, created_at, student:profiles!student_id(username, avatar_url)')
@@ -155,12 +155,6 @@ export default function CoachProfilePage() {
   const targetPlayers: string[] = coach.target_players ?? []
   const packages = coach.coaching_packages ?? []
 
-  const nowDay    = new Date().getDay()
-  const isWeekend = nowDay === 0 || nowDay === 6
-  const weekendPct: number = coach.weekend_rate_pct ?? 0
-  const weekendMul = (isWeekend && weekendPct > 0) ? 1 + weekendPct / 100 : 1
-  const applyWeekend = (price: number) => weekendMul > 1 ? Math.round(price * weekendMul) : price
-
   const coachingFormations = formations.filter(f => f.content_type === 'coaching')
   const videoFormations    = formations.filter(f => f.content_type === 'video')
   const pureFormations     = formations.filter(f => f.content_type !== 'coaching' && f.content_type !== 'video')
@@ -173,16 +167,16 @@ export default function CoachProfilePage() {
   if (coach.hourly_rate) {
     pricingOptions.push({
       label: '1 session',
-      detail: `${applyWeekend(coach.hourly_rate)}€${weekendPct > 0 && weekendMul === 1 ? ` (+${weekendPct}% week-end)` : ''}`,
-      price: applyWeekend(coach.hourly_rate),
+      detail: `${coach.hourly_rate}€`,
+      price: coach.hourly_rate,
       packIndex: null,
     })
   }
   packages.forEach((pkg, i) => {
     pricingOptions.push({
       label: `${pkg.sessions} session${pkg.sessions > 1 ? 's' : ''}${pkg.name ? ` — ${pkg.name}` : ''}`,
-      detail: `${applyWeekend(pkg.price)}€`,
-      price: applyWeekend(pkg.price),
+      detail: `${pkg.price}€`,
+      price: pkg.price,
       packIndex: i,
     })
   })
@@ -265,7 +259,6 @@ export default function CoachProfilePage() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, fontSize: 13, color: SILVER }}>
                   {coach.years_experience && <span><Clock size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />{coach.years_experience} an{coach.years_experience > 1 ? 's' : ''} d'expérience</span>}
                   {coach.hourly_rate && <span style={{ color: CREAM, fontWeight: 700 }}>{coach.hourly_rate}€<span style={{ color: SILVER, fontWeight: 400 }}>/h</span></span>}
-                  {weekendPct > 0 && <span style={{ color: '#f59e0b' }}>+{weekendPct}% week-end</span>}
                 </div>
 
                 {/* Trust stats */}
@@ -465,7 +458,6 @@ export default function CoachProfilePage() {
                   </div>
                   <div style={{ fontSize: 12, color: SILVER, marginTop: 6 }}>
                     {pricingOptions[selectedPkgIdx]?.label}
-                    {weekendPct > 0 && weekendMul === 1 && <span style={{ color: '#f59e0b', marginLeft: 6 }}>+{weekendPct}% week-end</span>}
                   </div>
                 </div>
 

@@ -733,7 +733,7 @@ export default function EditFormationPage() {
                   <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.65, margin: 0 }}>
                     Les élèves choisissent leur créneau directement sur ta page coaching.
                     Configure tes disponibilités dans ton{' '}
-                    <a href="/coach/calendar" style={{ color: '#a855f7', textDecoration: 'underline' }}>calendrier coach</a>.
+                    <a href="/coach/agenda?tab=availability" style={{ color: '#a855f7', textDecoration: 'underline' }}>calendrier coach</a>.
                   </p>
                 </div>
               </>

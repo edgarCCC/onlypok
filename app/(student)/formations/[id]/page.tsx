@@ -49,7 +49,7 @@ export default async function FormationDetailPage({
 
   const { data: formation, error } = await supabase
     .from('formations')
-    .select('*, coach:profiles(id, username, bio, avatar_url, weekend_rate_pct, created_at, variants, years_experience, rooms, advantages, target_players, is_pro)')
+    .select('*, coach:profiles(id, username, bio, avatar_url, created_at, variants, years_experience, rooms, advantages, target_players, is_pro)')
     .eq('id', id)
     .single()
 

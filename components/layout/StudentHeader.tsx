@@ -16,7 +16,7 @@ const TABS = [
   { href: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
   { href: '/formations', label: 'Marketplace', icon: ShoppingBag },
   { href: '/train',      label: 'Trainer',    icon: Brain },
-  { href: '/track',      label: 'Tracker',    icon: BarChart2 },
+  { href: '/tracker',    label: 'Tracker',    icon: BarChart2 },
   { href: '/schedule',   label: 'Planning',   icon: Calendar },
   { href: '/messages',   label: 'Messages',   icon: MessageSquare },
 ]

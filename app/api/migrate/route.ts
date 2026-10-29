@@ -22,7 +22,6 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS advantages        TEXT[]  DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS coaching_mode     TEXT,
   ADD COLUMN IF NOT EXISTS hourly_rate       INTEGER,
-  ADD COLUMN IF NOT EXISTS weekend_rate_pct  INTEGER DEFAULT 0,
   ADD COLUMN IF NOT EXISTS coaching_packages JSONB   DEFAULT '[]',
   ADD COLUMN IF NOT EXISTS phone             TEXT,
   ADD COLUMN IF NOT EXISTS address_line      TEXT,

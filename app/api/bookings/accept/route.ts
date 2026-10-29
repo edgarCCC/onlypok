@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendStudentBookingAcceptedEmail } from '@/lib/email'
-import { createMeetingRoom } from '@/lib/bookings'
+import { createMeetingRoom, isBookingRefunded } from '@/lib/bookings'
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
@@ -27,13 +27,17 @@ export async function POST(req: NextRequest) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
     try {
       await stripe.paymentIntents.capture(booking.stripe_payment_intent_id)
-    } catch (err: any) {
+    } catch (e: unknown) {
+      const err = e as { message?: string; code?: string }
       // Already captured = idempotent success
-      if (err?.message?.includes('already been captured') || err?.code === 'charge_already_captured') {
-        // Paiement déjà capturé — on continue
+      if (err.message?.includes('already been captured') || err.code === 'charge_already_captured') {
+        // Paiement déjà capturé (séance 2+ d'un pack) — sauf si CETTE séance a été remboursée
+        if (await isBookingRefunded(stripe, booking.stripe_payment_intent_id, booking_id)) {
+          return NextResponse.json({ error: 'Cette séance a déjà été remboursée, elle ne peut plus être confirmée.' }, { status: 409 })
+        }
       } else {
         console.error('[bookings/accept] stripe capture failed:', err.message)
-        return NextResponse.json({ error: 'Stripe capture failed: ' + err.message }, { status: 500 })
+        return NextResponse.json({ error: 'Le paiement n\u2019a pas pu être encaissé (autorisation expirée ?). Contactez le support.' }, { status: 500 })
       }
     }
   }

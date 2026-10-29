@@ -8,10 +8,12 @@ import type { NextConfig } from "next";
 // (visio, embed vidéo), élargir l'origine concernée plutôt que de retirer la CSP.
 // Barre de feedback Vercel : injectée uniquement sur les déploiements preview.
 const VERCEL_LIVE = process.env.VERCEL_ENV === 'preview' ? ' https://vercel.live' : '';
+// React a besoin d'eval() en développement uniquement (piles d'appels, overlay).
+const DEV_EVAL = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : '';
 
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com${VERCEL_LIVE}`,
+  `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://js.stripe.com https://va.vercel-scripts.com${VERCEL_LIVE}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.supabase.co https://img.youtube.com https://i.ytimg.com",
   "font-src 'self' data:",
@@ -50,6 +52,10 @@ const nextConfig: NextConfig = {
         pathname: '/vi/**',
       },
     ],
+  },
+  async redirects() {
+    // Ancien tracker (/track) remplacé par /tracker.
+    return [{ source: '/track', destination: '/tracker', permanent: true }];
   },
   async headers() {
     return [{ source: '/(.*)', headers: SECURITY_HEADERS }];

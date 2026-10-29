@@ -442,7 +442,7 @@ export default function StudentDashboard() {
         <div className="sdash-nav" style={{ marginTop: 48, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {[
             { href: '/train',    label: 'Trainer',  Icon: Brain,        color: AMBER  },
-            { href: '/track',    label: 'Tracker',  Icon: BarChart2,    color: EMER   },
+            { href: '/tracker',  label: 'Tracker',  Icon: BarChart2,    color: EMER   },
             { href: '/messages', label: 'Messages', Icon: MessageSquare, color: CYAN  },
           ].map(({ href, label, Icon, color }) => (
             <Link key={href} href={href} style={{ textDecoration: 'none' }}>

@@ -71,6 +71,19 @@ export function calGetMonthDays(year: number, month: number) {
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   return { offset: (firstDay + 6) % 7, daysInMonth }
 }
+/* Créneaux déjà occupés chez un coach (tous élèves confondus) — via le serveur,
+   la RLS ne laissant voir à l'élève que ses propres réservations. */
+export async function fetchTakenSlots(coachId: string): Promise<string[]> {
+  try {
+    const res = await fetch(`/api/bookings/taken-slots?coach_id=${encodeURIComponent(coachId)}`)
+    if (!res.ok) return []
+    const json = await res.json() as { taken?: string[] }
+    return json.taken ?? []
+  } catch {
+    return []
+  }
+}
+
 export function generateSlots(
   availabilities: { day_of_week: number; slot: string }[],
   bookedTimestamps: string[],

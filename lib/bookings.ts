@@ -227,3 +227,90 @@ export async function ensureCoachingBookings(
 
   return { error: null, firstStatus }
 }
+
+export type DeclinePaymentResult =
+  | { ok: true; mode: 'none' | 'cancelled' | 'refunded'; refundedCents?: number; voidedSiblingIds: string[] }
+  | { ok: false; error: string }
+
+/* ─── Libération du paiement quand le coach refuse une session ───────────────
+   Toutes les sessions d'un pack partagent UN SEUL PaymentIntent :
+   - PI encore en autorisation (rien capturé) → on l'annule ; le pack entier
+     est alors caduc, ses autres sessions non tenues passent aussi en refus
+     (sinon l'élève pourrait réserver des sessions jamais payées).
+   - PI déjà capturé (session 2+ d'un pack accepté) → remboursement PARTIEL de
+     la part de cette session (montant / nb de sessions du pack), borné au
+     restant remboursable. Clé d'idempotence = booking, un double clic ne
+     rembourse pas deux fois. */
+export async function releaseDeclinedBookingPayment(
+  admin: SupabaseClient,
+  stripe: Stripe,
+  booking: { id: string; stripe_payment_intent_id: string | null },
+): Promise<DeclinePaymentResult> {
+  const piId = booking.stripe_payment_intent_id
+  if (!piId) return { ok: true, mode: 'none', voidedSiblingIds: [] }
+
+  let pi: Stripe.PaymentIntent
+  try {
+    pi = await stripe.paymentIntents.retrieve(piId, { expand: ['latest_charge'] })
+  } catch (err) {
+    return { ok: false, error: `PaymentIntent introuvable : ${(err as Error).message}` }
+  }
+
+  if (pi.status === 'canceled') return { ok: true, mode: 'cancelled', voidedSiblingIds: [] }
+
+  if (pi.status === 'requires_capture') {
+    try {
+      await stripe.paymentIntents.cancel(piId)
+    } catch (err) {
+      return { ok: false, error: `Annulation Stripe échouée : ${(err as Error).message}` }
+    }
+    // Le PI est annulé : les autres séances du pack ne sont plus payées. Une
+    // nouvelle tentative en cas d'échec, puis alerte de réconciliation.
+    const voidSiblings = () => admin
+      .from('bookings')
+      .update({ status: 'declined_by_coach' })
+      .eq('stripe_payment_intent_id', piId)
+      .neq('id', booking.id)
+      .in('status', ['paid_pending_schedule', 'pending_coach_approval'])
+      .select('id')
+    let res = await voidSiblings()
+    if (res.error) res = await voidSiblings()
+    if (res.error) {
+      console.error('[RECONCILE] PI annulé mais séances du pack non annulées', { piId, bookingId: booking.id, error: res.error.message })
+    }
+    return { ok: true, mode: 'cancelled', voidedSiblingIds: (res.data ?? []).map(s => s.id) }
+  }
+
+  if (pi.status !== 'succeeded') {
+    return { ok: false, error: `Paiement dans un état inattendu (${pi.status})` }
+  }
+
+  const { count } = await admin
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('stripe_payment_intent_id', piId)
+  const sessionsCount = Math.max(count ?? 1, 1)
+
+  const charge      = pi.latest_charge as Stripe.Charge | null
+  const alreadyBack = charge?.amount_refunded ?? 0
+  const refundable  = pi.amount_received - alreadyBack
+  const amount      = Math.min(Math.floor(pi.amount_received / sessionsCount), refundable)
+  if (amount <= 0) return { ok: true, mode: 'refunded', refundedCents: 0, voidedSiblingIds: [] }
+
+  try {
+    await stripe.refunds.create(
+      { payment_intent: piId, amount, metadata: { booking_id: booking.id, reason: 'declined_by_coach' } },
+      { idempotencyKey: `decline-${booking.id}` },
+    )
+  } catch (err) {
+    return { ok: false, error: `Remboursement Stripe échoué : ${(err as Error).message}` }
+  }
+  return { ok: true, mode: 'refunded', refundedCents: amount, voidedSiblingIds: [] }
+}
+
+/* Une séance donnée a-t-elle déjà été remboursée (refus coach) ? Sert de garde
+   avant de confirmer une séance dont le paiement est « déjà capturé ». */
+export async function isBookingRefunded(stripe: Stripe, piId: string, bookingId: string): Promise<boolean> {
+  const refunds = await stripe.refunds.list({ payment_intent: piId, limit: 100 })
+  return refunds.data.some(r => r.metadata?.booking_id === bookingId && r.status !== 'failed' && r.status !== 'canceled')
+}

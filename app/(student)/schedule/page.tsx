@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { fetchTakenSlots } from '../formations/[id]/shared'
 import {
   Calendar, Clock, CheckCircle, AlertCircle, ChevronLeft, ChevronRight,
   Loader2, BookOpen, Video, Zap, ArrowRight, CalendarDays, ChevronDown, Link2, User, FileText,
@@ -646,17 +647,16 @@ function SlotPicker() {
   useEffect(() => {
     if (!coachId) return
     const load = async () => {
-      const [{ data: coachData }, { data: formData }, { data: avails }, { data: bookings }] = await Promise.all([
+      const [{ data: coachData }, { data: formData }, { data: avails }, bookedTs] = await Promise.all([
         supabase.from('profiles').select('id, username, avatar_url, bio').eq('id', coachId).single(),
         formationId
           ? supabase.from('formations').select('id, title').eq('id', formationId).single()
           : Promise.resolve({ data: null }),
         supabase.from('availabilities').select('day_of_week, slot').eq('coach_id', coachId).eq('booked', false),
-        supabase.from('bookings').select('scheduled_at').eq('coach_id', coachId).eq('status', 'scheduled').not('scheduled_at', 'is', null),
+        fetchTakenSlots(coachId),
       ])
       setCoach(coachData)
       setFormation(formData)
-      const bookedTs = (bookings ?? []).map((b: any) => b.scheduled_at).filter(Boolean)
       setSlots(generateUpcomingSlots(avails ?? [], bookedTs))
     }
     load()

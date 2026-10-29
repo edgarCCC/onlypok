@@ -68,7 +68,7 @@ export function CreditConfirmModal({ typeColor, pendingCount, onConfirm, onClose
 }
 
 /* ─── Colonne droite sticky : prix + CTA + features ─────────────────────────── */
-export default function PurchaseSidebar({ formation, contentType, typeColor, packs, selectedPack, setSelectedPack, currentPack, applyWeekend, hasPurchased, paying, ctaLabel, ctaDisabled, onCTA, onBuyLater, checkoutError, isCoachingPaid, calSelSlot, effectivePrice, allLessonsCount, chaptersCount, freeLessons }: {
+export default function PurchaseSidebar({ formation, contentType, typeColor, packs, selectedPack, setSelectedPack, currentPack, hasPurchased, paying, ctaLabel, ctaDisabled, onCTA, onBuyLater, checkoutError, isCoachingPaid, calSelSlot, effectivePrice, allLessonsCount, chaptersCount, freeLessons }: {
   formation: any
   contentType: string
   typeColor: string
@@ -76,7 +76,6 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
   selectedPack: number
   setSelectedPack: (i: number) => void
   currentPack: any
-  applyWeekend: (price: number) => number
   hasPurchased: boolean
   paying: boolean
   ctaLabel: string
@@ -124,11 +123,11 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
                   <span style={{ fontSize: 11, fontWeight: 600, color: SILVER, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{currentPack?.label}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                  <span style={{ fontSize: 38, fontWeight: 900, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1 }}>{currentPack ? applyWeekend(currentPack.price) : ''}</span>
+                  <span style={{ fontSize: 38, fontWeight: 900, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1 }}>{currentPack ? currentPack.price : ''}</span>
                   <span style={{ fontSize: 18, fontWeight: 600, color: SILVER }}>€</span>
                   <span style={{ fontSize: 13, color: 'rgba(232,228,220,0.35)', marginLeft: 2 }}>/ {currentPack?.hours}h</span>
                 </div>
-                {currentPack?.hours > 0 && <p style={{ fontSize: 12, color: 'rgba(232,228,220,0.3)', margin: '6px 0 0' }}>soit {Math.round(applyWeekend(currentPack.price) / currentPack.hours)}€/h</p>}
+                {currentPack?.hours > 0 && <p style={{ fontSize: 12, color: 'rgba(232,228,220,0.3)', margin: '6px 0 0' }}>soit {Math.round(currentPack.price / currentPack.hours)}€/h</p>}
               </div>
             </>
           )}
@@ -192,7 +191,7 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
             }}
               onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = `${typeColor}30`; b.style.boxShadow = `0 0 24px ${typeColor}40`; b.style.transform = 'translateY(-1px)' }}
               onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = `${typeColor}18`; b.style.boxShadow = 'none'; b.style.transform = 'translateY(0)' }}>
-              Racheter — {applyWeekend(effectivePrice)}€ →
+              Racheter — {effectivePrice}€ →
             </button>
           )}
 
@@ -220,7 +219,7 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
                 b.style.boxShadow = `0 0 0 0 ${typeColor}00`
                 b.style.transform = 'translateY(0)'
               }}>
-              Acheter{effectivePrice > 0 ? ` — ${applyWeekend(effectivePrice)}€` : ''} · planifier plus tard →
+              Acheter{effectivePrice > 0 ? ` — ${effectivePrice}€` : ''} · planifier plus tard →
             </button>
           )}
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendStudentBookingDeclinedEmail } from '@/lib/email'
+import { releaseDeclinedBookingPayment } from '@/lib/bookings'
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
@@ -21,23 +22,29 @@ export async function POST(req: NextRequest) {
 
   if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
-  if (booking.stripe_payment_intent_id) {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
-    try {
-      await stripe.paymentIntents.cancel(booking.stripe_payment_intent_id)
-    } catch (err: any) {
-      console.error('[bookings/decline] stripe cancel failed:', err.message)
-      return NextResponse.json({ error: 'Stripe cancel failed: ' + err.message }, { status: 500 })
-    }
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
+  const admin  = createAdminSupabaseClient()
+  const payment = await releaseDeclinedBookingPayment(admin, stripe, booking)
+  if (!payment.ok) {
+    console.error('[bookings/decline]', payment.error)
+    return NextResponse.json({ error: 'Le remboursement a échoué, réessayez ou contactez le support.' }, { status: 500 })
   }
 
   // Écriture service-role (propriété + statut vérifiés ci-dessus ; aucune écriture client sur bookings — RLS)
-  const { error } = await createAdminSupabaseClient()
+  const { data: updated, error } = await admin
     .from('bookings')
     .update({ status: 'declined_by_coach' })
     .eq('id', booking_id)
+    .eq('status', 'pending_coach_approval')
+    .select('id')
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    // Stripe a déjà libéré/remboursé : la réservation doit être corrigée à la main.
+    console.error('[RECONCILE] paiement libéré mais statut non mis à jour', { booking_id, mode: payment.mode, error: error.message })
+    return NextResponse.json({ error: 'Le refus a été enregistré côté paiement mais pas sur la réservation. Réessayez.' }, { status: 500 })
+  }
+  // Requête concurrente (double clic) : déjà traitée, pas de seconde notification
+  if (!updated?.length) return NextResponse.json({ success: true, already: true })
 
   const { data: formation } = await supabase
     .from('formations').select('title').eq('id', booking.formation_id).single()
@@ -46,12 +53,16 @@ export async function POST(req: NextRequest) {
     .from('profiles').select('username').eq('id', user.id).single()
 
   // Notifications : insertion réservée au service-role (RLS)
-  await createAdminSupabaseClient().from('notifications').insert({
+  await admin.from('notifications').insert({
     user_id: booking.student_id,
     type:    'booking_declined',
     title:   'Coaching refusé',
-    body:    `Votre demande de coaching "${formation?.title ?? 'coaching'}" a été refusée. Vous serez remboursé sous 5-10 jours ouvrés.`,
-    data:    { booking_id },
+    body:    payment.mode === 'cancelled' && payment.voidedSiblingIds.length
+      ? `Votre coaching "${formation?.title ?? 'coaching'}" a été refusé : le pack entier est annulé, aucun montant ne sera débité.`
+      : payment.mode === 'refunded'
+        ? `Votre session "${formation?.title ?? 'coaching'}" a été refusée. Cette session vous est remboursée sous 5-10 jours ouvrés.`
+        : `Votre demande de coaching "${formation?.title ?? 'coaching'}" a été refusée. Aucun montant ne sera débité.`,
+    data:    { booking_id, voided_booking_ids: payment.voidedSiblingIds },
   })
 
   sendStudentBookingDeclinedEmail({
