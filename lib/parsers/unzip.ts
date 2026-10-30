@@ -9,7 +9,11 @@ export async function extractTxtFromZip(file: File): Promise<{ name: string; con
       if (err) { reject(err); return }
       const results: { name: string; content: string }[] = []
       for (const [name, data] of Object.entries(files)) {
-        if (name.endsWith('.txt') && data.length > 0) {
+        /* Ignore les métadonnées macOS (__MACOSX/, fichiers AppleDouble « ._x.txt »)
+           et accepte l'extension quelle que soit la casse (.TXT). */
+        const base = name.split('/').pop() ?? name
+        if (name.startsWith('__MACOSX/') || base.startsWith('._')) continue
+        if (name.toLowerCase().endsWith('.txt') && data.length > 0) {
           results.push({ name, content: new TextDecoder('utf-8').decode(data) })
         }
       }

@@ -46,14 +46,15 @@ export default function ImportPage() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const processFiles = useCallback(async (files: File[]) => {
-    const accepted = files.filter(f => f.name.endsWith('.txt') || f.name.endsWith('.zip'))
+    const isZip = (f: File) => f.name.toLowerCase().endsWith('.zip')
+    const accepted = files.filter(f => isZip(f) || f.name.toLowerCase().endsWith('.txt'))
     if (!accepted.length) { setError('Aucun fichier .txt ou .zip détecté.'); return }
     setLoading(true); setError(''); setSaved(false); setParsed([])
 
     // Expand ZIPs into raw text entries
     const texts: string[] = []
     for (const file of accepted) {
-      if (file.name.endsWith('.zip')) {
+      if (isZip(file)) {
         try {
           const extracted = await extractTxtFromZip(file)
           texts.push(...extracted.map(e => e.content))

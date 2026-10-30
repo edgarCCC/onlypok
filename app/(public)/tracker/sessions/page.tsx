@@ -44,19 +44,26 @@ export default function SessionsPage() {
   const save = async () => {
     if (!user || !form.buy_in || !form.cash_out) return
     setSaving(true)
-    const { data } = await supabase.from('tracker_sessions').insert({
+    const { data, error } = await supabase.from('tracker_sessions').insert({
       user_id: user.id, date: form.date, stakes: form.stakes, variant: form.variant,
       location: form.location, buy_in: parseInt(form.buy_in), cash_out: parseInt(form.cash_out),
       duration: form.duration ? parseInt(form.duration) : null, notes: form.notes || null,
     }).select().single()
-    if (data) setSessions(prev => [data, ...prev])
+    /* En cas d'échec, on garde le formulaire ouvert et rempli (pas de perte de saisie). */
+    if (error || !data) {
+      console.error('[sessions] insert failed:', error?.message)
+      setSaving(false)
+      return
+    }
+    setSessions(prev => [data, ...prev])
     setShowForm(false)
     setForm({ date: new Date().toISOString().slice(0,10), stakes: '25NL', variant: 'NLH', location: 'online', buy_in: '', cash_out: '', duration: '', notes: '' })
     setSaving(false)
   }
 
   const del = async (id: string) => {
-    await supabase.from('tracker_sessions').delete().eq('id', id)
+    const { error } = await supabase.from('tracker_sessions').delete().eq('id', id)
+    if (error) { console.error('[sessions] delete failed:', error.message); return }
     setSessions(prev => prev.filter(s => s.id !== id))
   }
 
