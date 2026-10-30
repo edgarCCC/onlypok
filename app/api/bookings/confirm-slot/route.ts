@@ -96,7 +96,6 @@ export async function POST(req: NextRequest) {
       studentUsername,
       formationTitle,
       scheduledAt:     scheduled_at,
-      meetingUrl:      null as any,
     }).catch(err => console.error('[confirm-slot] coach email error:', err.message))
 
     // Email to student confirming their request was sent
@@ -105,7 +104,6 @@ export async function POST(req: NextRequest) {
       coachUsername,
       formationTitle,
       scheduledAt:  scheduled_at,
-      meetingUrl:   null as any,
     }).catch(err => console.error('[confirm-slot] student email error:', err.message))
   }
 

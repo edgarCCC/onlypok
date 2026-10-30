@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { fetchTakenSlots } from '../formations/[id]/shared'
+import { generateWeeklySlots, timeZoneNotice, shortTimeZoneName, getLocalTimeZone, DEFAULT_COACH_TIMEZONE, COACH_APPROVAL_HOURS } from '@/lib/timezone'
 import {
   Calendar, Clock, CheckCircle, AlertCircle, ChevronLeft, ChevronRight,
   Loader2, BookOpen, Video, Zap, ArrowRight, CalendarDays, ChevronDown, Link2, User, FileText,
@@ -20,7 +21,6 @@ const EMER   = '#10b981'
 const MONTH_NAMES = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
 const DAY_NAMES   = ['Lu','Ma','Me','Je','Ve','Sa','Di']
 
-function dowToJS(dow: number) { return dow % 7 }
 function formatDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
@@ -33,30 +33,14 @@ function getMonthDays(year: number, month: number) {
   const offset = (firstDay + 6) % 7
   return { offset, daysInMonth }
 }
+/* Les créneaux 'HH:MM' sont l'heure murale du coach (Europe/Paris par défaut) :
+   conversion en instants absolus, affichés ensuite dans le fuseau de l'élève. */
 function generateUpcomingSlots(
   availabilities: { day_of_week: number; slot: string }[],
   bookedTimestamps: string[],
   weeksAhead = 8
 ): Date[] {
-  const now    = new Date()
-  const cutoff = new Date(now.getTime() + weeksAhead * 7 * 24 * 3600 * 1000)
-  const booked = new Set(bookedTimestamps.map(t => new Date(t).toISOString()))
-  const result: Date[] = []
-  for (const avail of availabilities) {
-    const jsDow = dowToJS(avail.day_of_week)
-    const [hh, mm] = avail.slot.split(':').map(Number)
-    const current = new Date(now)
-    const diff = (jsDow - current.getDay() + 7) % 7
-    current.setDate(current.getDate() + (diff === 0 ? 0 : diff))
-    current.setHours(hh, mm, 0, 0)
-    if (current <= now) current.setDate(current.getDate() + 7)
-    while (current <= cutoff) {
-      if (!booked.has(current.toISOString())) result.push(new Date(current))
-      current.setDate(current.getDate() + 7)
-    }
-  }
-  result.sort((a, b) => a.getTime() - b.getTime())
-  return result
+  return generateWeeklySlots(availabilities, bookedTimestamps, { weeksAhead, timeZone: DEFAULT_COACH_TIMEZONE })
 }
 
 /* ─────────────── Dashboard "Mes sessions" ─────────────── */
@@ -81,11 +65,18 @@ type Purchase = {
   coach: { username: string | null } | null
 }
 
+/* Heure convertie dans le fuseau de l'élève, fuseau indiqué (ex. « UTC+1 ») */
 function fmtDT(iso: string) {
-  return new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+  const d = new Date(iso)
+  return `${d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} (${shortTimeZoneName(d, getLocalTimeZone())})`
 }
 
 function StatusBadge({ status }: { status: string }) {
+  if (status === 'pending_coach_approval') return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(249,115,22,0.12)', color: '#f97316', border: '1px solid rgba(249,115,22,0.25)' }}>
+      <Clock size={9} /> En attente du coach
+    </span>
+  )
   if (status === 'scheduled') return (
     <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: `${EMER}15`, color: EMER, border: `1px solid ${EMER}30` }}>
       <CheckCircle size={9} /> Planifiée
@@ -367,7 +358,13 @@ function Dashboard() {
                         {b.formation?.title ?? 'Coaching'}
                       </p>
                       <p style={{ margin: '3px 0 0', fontSize: 12, color: SILVER }}>
-                        {b.coach?.username ? `Coach : ${b.coach.username}` : ''} · Paiement retenu, en attente d'acceptation
+                        {b.coach?.username ? `Coach : ${b.coach.username} · ` : ''}
+                        {b.scheduled_at
+                          ? <>Créneau proposé : <span style={{ color: CREAM }}>{fmtDT(b.scheduled_at)}</span></>
+                          : 'Créneau proposé'}
+                      </p>
+                      <p style={{ margin: '3px 0 0', fontSize: 11, color: DIM }}>
+                        Paiement retenu · le coach a {COACH_APPROVAL_HOURS} h pour confirmer. En cas de refus, tu es remboursé.
                       </p>
                     </div>
                     <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: 'rgba(249,115,22,0.12)', color: '#f97316', border: '1px solid rgba(249,115,22,0.25)', whiteSpace: 'nowrap' }}>
@@ -669,6 +666,7 @@ function SlotPicker() {
   }, [slots, curYear, curMonth])
 
   const daySlots = useMemo(() => selDay ? slots.filter(s => isSameDay(s, selDay)) : [], [slots, selDay])
+  const tzNotice = useMemo(() => timeZoneNotice(DEFAULT_COACH_TIMEZONE), [])
 
   const confirmSlot = async () => {
     if (!selSlot || !bookingId) return
@@ -687,18 +685,24 @@ function SlotPicker() {
 
   const { offset, daysInMonth } = getMonthDays(curYear, curMonth)
 
+  /* confirm-slot passe la réservation en pending_coach_approval : rien n'est
+     confirmé tant que le coach n'a pas accepté. */
   if (confirmed) return (
     <div style={{ minHeight: '100vh', background: '#07090e', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ textAlign: 'center', maxWidth: 420 }}>
-        <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', border: '2px solid rgba(16,185,129,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-          <CheckCircle size={36} color="#10b981" />
+      <div style={{ textAlign: 'center', maxWidth: 440 }}>
+        <div style={{ width: 72, height: 72, borderRadius: '50%', background: `${AMBER}18`, border: `2px solid ${AMBER}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+          <Clock size={34} color={AMBER} />
         </div>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: CREAM, marginBottom: 8, fontFamily: 'var(--font-syne,sans-serif)' }}>Séance confirmée !</h1>
-        <p style={{ color: SILVER, fontSize: 14, lineHeight: 1.6, marginBottom: 28 }}>
-          Ta session avec <strong style={{ color: CREAM }}>{coach?.username}</strong> est planifiée pour le&nbsp;
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: CREAM, marginBottom: 8, fontFamily: 'var(--font-syne,sans-serif)' }}>Demande envoyée !</h1>
+        <p style={{ color: SILVER, fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>
+          Tu as proposé à <strong style={{ color: CREAM }}>{coach?.username ?? 'ton coach'}</strong> le créneau du&nbsp;
           <strong style={{ color: CREAM }}>
             {selSlot?.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à {selSlot?.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-          </strong>.
+          </strong>
+          {selSlot && <> ({shortTimeZoneName(selSlot, getLocalTimeZone())})</>}.
+        </p>
+        <p style={{ color: SILVER, fontSize: 14, lineHeight: 1.6, marginBottom: 28 }}>
+          Le coach a <strong style={{ color: AMBER }}>{COACH_APPROVAL_HOURS} h</strong> pour confirmer. Tu recevras une notification dès sa réponse ; en cas de refus, tu es remboursé.
         </p>
         <button onClick={() => router.push('/schedule')} style={{ padding: '12px 28px', background: `linear-gradient(135deg,${PURPLE},${CYAN})`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
           Voir mon planning
@@ -755,6 +759,9 @@ function SlotPicker() {
           <p style={{ color: SILVER, fontSize: 14 }}>
             {formation ? `Formation : ${formation.title} · ` : ''}
             Coach : <span style={{ color: CREAM }}>{coach?.username ?? '…'}</span>
+          </p>
+          <p style={{ display: 'flex', alignItems: 'center', gap: 6, color: DIM, fontSize: 12, marginTop: 6 }}>
+            <Clock size={12} /> {tzNotice}
           </p>
         </div>
 

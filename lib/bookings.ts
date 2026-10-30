@@ -248,6 +248,7 @@ export async function ensureCoachingBookings(
         coachUsername:  coachProfile?.username ?? 'Votre coach',
         formationTitle: formTitle,
         bookingId:      anchorId,
+        scheduledAt:    firstScheduledAt,
       }).catch(err => console.error('[bookings] email élève error:', (err as Error).message))
     }
   }

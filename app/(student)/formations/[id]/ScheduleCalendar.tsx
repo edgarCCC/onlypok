@@ -1,6 +1,14 @@
 'use client'
+import { useSyncExternalStore } from 'react'
 import { Calendar, Clock, ChevronLeft, ChevronRight, CheckCircle, X, Loader2 } from 'lucide-react'
 import { CREAM, SILVER, MONTH_NAMES, CAL_DAYS, calFormatDate, calIsSameDay, calGetMonthDays } from './shared'
+import { DEFAULT_COACH_TIMEZONE, timeZoneNotice } from '@/lib/timezone'
+
+/* Le fuseau de l'élève n'existe que dans le navigateur : null au rendu serveur
+   et à l'hydratation, puis la mention réelle côté client (pas d'écart d'hydratation). */
+const noopSubscribe = () => () => {}
+const getTzNotice = () => timeZoneNotice(DEFAULT_COACH_TIMEZONE)
+const getServerTzNotice = () => null
 
 /* ─── Native slot picker (coaching) : calendar + time slots ─────────────────── */
 export default function ScheduleCalendar({ typeColor, calSlots, calLoading, calYear, calMonth, setCalYear, setCalMonth, calSelDay, setCalSelDay, calSelSlot, setCalSelSlot }: {
@@ -16,13 +24,20 @@ export default function ScheduleCalendar({ typeColor, calSlots, calLoading, calY
   calSelSlot: Date | null
   setCalSelSlot: (d: Date | null) => void
 }) {
+  const tzNotice = useSyncExternalStore(noopSubscribe, getTzNotice, getServerTzNotice)
+
   return (
     <div id="slot-picker" style={{ padding: '40px 0', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <Calendar size={18} color={typeColor} />
         <h2 style={{ fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: 0 }}>Choisis ton créneau</h2>
       </div>
-      <p style={{ fontSize: 14, color: SILVER, marginBottom: 24 }}>Sélectionne un jour puis un horaire disponible</p>
+      <p style={{ fontSize: 14, color: SILVER, marginBottom: tzNotice ? 6 : 24 }}>Sélectionne un jour puis un horaire disponible</p>
+      {tzNotice && (
+        <p style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: SILVER, opacity: 0.75, marginBottom: 24 }}>
+          <Clock size={12} /> {tzNotice}
+        </p>
+      )}
 
       {calLoading ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '32px 0', color: SILVER }}>

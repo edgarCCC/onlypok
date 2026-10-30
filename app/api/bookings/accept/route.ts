@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
     coachUsername:  coach?.username ?? 'Votre coach',
     formationTitle: formation?.title ?? 'votre coaching',
     bookingId:      booking_id,
+    scheduledAt:    booking.scheduled_at ?? null,
   }).catch(err => console.error('[bookings/accept] email error:', err.message))
 
   return NextResponse.json({ success: true, meeting_url: meetingUrl })

@@ -5,6 +5,7 @@ import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import { Check, Loader2, Calendar, Plus, X, TrendingUp } from 'lucide-react'
 import SelectInput from '@/components/ui/SelectInput'
+import { DEFAULT_COACH_TIMEZONE } from '@/lib/timezone'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -330,6 +331,7 @@ export default function AvailabilityPanel() {
           <Calendar size={15} color={CYAN} style={{ flexShrink: 0, marginTop: 1 }} />
           <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.6, margin: 0 }}>
             Les créneaux déjà réservés sont protégés. Tu peux ajouter plusieurs plages par jour (ex : 9h–12h + 14h–18h).
+            {' '}Les horaires sont à l&apos;heure de Paris ({DEFAULT_COACH_TIMEZONE}) : les élèves d&apos;un autre fuseau les voient convertis dans le leur.
           </p>
         </div>
 

@@ -1,4 +1,5 @@
 /* ─── Shared constants & pure helpers for the formation detail page ─────────── */
+import { generateWeeklySlots, DEFAULT_COACH_TIMEZONE } from '@/lib/timezone'
 
 export const CREAM  = '#f0f4ff'
 export const SILVER = 'rgba(240,244,255,0.45)'
@@ -89,25 +90,9 @@ export function generateSlots(
   bookedTimestamps: string[],
   weeksAhead = 8
 ): Date[] {
-  const now    = new Date()
-  const cutoff = new Date(now.getTime() + weeksAhead * 7 * 24 * 3600 * 1000)
-  const booked = new Set(bookedTimestamps.map(t => new Date(t).toISOString()))
-  const result: Date[] = []
-  for (const avail of availabilities) {
-    const jsDow = avail.day_of_week % 7
-    const [hh, mm] = avail.slot.split(':').map(Number)
-    const cur = new Date(now)
-    const diff = (jsDow - cur.getDay() + 7) % 7
-    cur.setDate(cur.getDate() + (diff === 0 ? 0 : diff))
-    cur.setHours(hh, mm, 0, 0)
-    if (cur <= now) cur.setDate(cur.getDate() + 7)
-    while (cur <= cutoff) {
-      if (!booked.has(cur.toISOString())) result.push(new Date(cur))
-      cur.setDate(cur.getDate() + 7)
-    }
-  }
-  result.sort((a, b) => a.getTime() - b.getTime())
-  return result
+  /* 'HH:MM' = heure murale du coach (Europe/Paris) : instants absolus,
+     affichés ensuite dans le fuseau du navigateur de l'élève. */
+  return generateWeeklySlots(availabilities, bookedTimestamps, { weeksAhead, timeZone: DEFAULT_COACH_TIMEZONE })
 }
 
 /* ─── video url helpers ─────────────────────────────────────────────────────── */
