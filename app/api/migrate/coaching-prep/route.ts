@@ -26,6 +26,8 @@ CREATE POLICY "cp_all_own"    ON coaching_prep FOR ALL    USING (auth.uid() = st
 `
 
 export async function GET() {
+  // Migration ponctuelle : désactivée en production (404), dispo en preview/local.
+  if (process.env.VERCEL_ENV === 'production') return new NextResponse(null, { status: 404 })
   if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const mgmtToken = process.env.SUPABASE_MANAGEMENT_TOKEN

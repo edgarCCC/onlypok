@@ -23,6 +23,8 @@ CREATE POLICY "vc_delete" ON video_comments FOR DELETE USING (auth.uid() = stude
 const FULL_SQL = VARIANT_SQL + COMMENTS_SQL
 
 export async function GET() {
+  // Migration ponctuelle : désactivée en production (404), dispo en preview/local.
+  if (process.env.VERCEL_ENV === 'production') return new NextResponse(null, { status: 404 })
   if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // 1. Try Supabase Management API (requires SUPABASE_MANAGEMENT_TOKEN)

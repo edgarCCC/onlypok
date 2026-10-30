@@ -344,6 +344,8 @@ CREATE POLICY "messages_update_own" ON messages FOR UPDATE USING (auth.uid() = t
 `
 
 export async function GET() {
+  // Migration ponctuelle : désactivée en production (404), dispo en preview/local.
+  if (process.env.VERCEL_ENV === 'production') return new NextResponse(null, { status: 404 })
   if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const mgmtToken = process.env.SUPABASE_MANAGEMENT_TOKEN

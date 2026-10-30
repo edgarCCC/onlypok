@@ -1,0 +1,5 @@
+-- Extrait de app/api/migrate/security-rls/route.ts (constante SQL), déjà exécuté le cas échéant.
+-- Le SQL de cette route est une recopie de sql/security-rls.sql, qui reste la source de vérité :
+-- il n'est pas dupliqué ici. Attention, la copie embarquée dans la route est altérée :
+-- les délimiteurs « $$ » des fonctions et blocs DO y sont devenus « $ » (SQL invalide).
+-- Pour (ré)appliquer ce durcissement, utiliser sql/security-rls.sql.

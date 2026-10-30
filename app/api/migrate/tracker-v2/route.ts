@@ -42,6 +42,8 @@ CREATE POLICY "ttx_delete_own" ON tracker_transactions FOR DELETE USING (auth.ui
 `
 
 export async function GET() {
+  // Migration ponctuelle : désactivée en production (404), dispo en preview/local.
+  if (process.env.VERCEL_ENV === 'production') return new NextResponse(null, { status: 404 })
   if (!await assertAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // 1. Supabase Management API (si SUPABASE_MANAGEMENT_TOKEN présent)

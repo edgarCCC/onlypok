@@ -9,6 +9,10 @@ const VIOLET = '#7c3aed'
 const CARD   = 'rgba(232,228,220,0.03)'
 const BORDER = 'rgba(232,228,220,0.08)'
 
+// Les routes /api/migrate/* répondent 404 en production : on ne les propose qu'en preview/local.
+// NEXT_PUBLIC_VERCEL_ENV est exposée automatiquement par Vercel (variables système).
+const IS_PRODUCTION = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+
 const MIGRATIONS = [
   {
     id: 'fix-variant-constraint',
@@ -185,16 +189,18 @@ export default function AdminPanel({ validationsHref }: { validationsHref: strin
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-          {/* Migrations */}
-          <section>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <Database size={15} color={SILVER} />
-              <h2 style={{ fontSize: 13, fontWeight: 700, color: SILVER, margin: 0, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Migrations DB</h2>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {MIGRATIONS.map(m => <MigrationCard key={m.id} migration={m} />)}
-            </div>
-          </section>
+          {/* Migrations (hors production) */}
+          {!IS_PRODUCTION && (
+            <section>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <Database size={15} color={SILVER} />
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: SILVER, margin: 0, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Migrations DB</h2>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {MIGRATIONS.map(m => <MigrationCard key={m.id} migration={m} />)}
+              </div>
+            </section>
+          )}
 
           {/* Sécurité */}
           <section>
