@@ -6,6 +6,8 @@ import {
   TrendingUp, Coins, Plus, Trash2, ArrowDownToLine, ArrowUpFromLine, AlertCircle, Check,
 } from 'lucide-react'
 import { TrackerShell, Card, KpiStrip, SectionLabel, Empty, T, NUM, eur, pnlColor } from '@/components/tracker/ui'
+import BankrollChart from '@/components/tracker/BankrollChart'
+import { computeBankroll, loadAllTournaments, loadBankrollExtras } from '@/lib/tracker-bankroll'
 
 type Tournament  = { date: string; net_profit: number }
 type CashSession = { date: string; buy_in: number; cash_out: number }
@@ -15,62 +17,6 @@ const inp: React.CSSProperties = {
   width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}`,
   borderRadius: 8, padding: '9px 12px', color: T.cream, fontSize: 13, outline: 'none',
   boxSizing: 'border-box', fontFamily: 'inherit',
-}
-
-/* Courbe SVG — points journaliers agrégés */
-function BankrollChart({ points, color }: { points: { label: string; value: number }[]; color: string }) {
-  const [hover, setHover] = useState<number | null>(null)
-  if (points.length < 2) return null
-  const min = Math.min(...points.map(p => p.value))
-  const max = Math.max(...points.map(p => p.value))
-  const range = max - min || 1
-  const W = 800; const H = 240; const PAD = 36
-
-  const x = (i: number) => PAD + (i / (points.length - 1)) * (W - PAD * 2)
-  const y = (v: number) => H - PAD - ((v - min) / range) * (H - PAD * 2)
-
-  const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(p.value)}`).join(' ')
-  const fill = `${path} L${x(points.length - 1)},${H - PAD} L${x(0)},${H - PAD} Z`
-  const zeroInRange = min < 0 && max > 0
-
-  return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 240, display: 'block' }}
-      onMouseLeave={() => setHover(null)}
-      onMouseMove={e => {
-        const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect()
-        const px = ((e.clientX - rect.left) / rect.width) * W
-        const i = Math.round(((px - PAD) / (W - PAD * 2)) * (points.length - 1))
-        setHover(Math.max(0, Math.min(points.length - 1, i)))
-      }}
-    >
-      <defs>
-        <linearGradient id="bkg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.18" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {zeroInRange && (
-        <line x1={PAD} x2={W - PAD} y1={y(0)} y2={y(0)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4 4" />
-      )}
-      <path d={fill} fill="url(#bkg)" />
-      <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      {hover !== null && (
-        <g>
-          <line x1={x(hover)} x2={x(hover)} y1={PAD / 2} y2={H - PAD} stroke="rgba(255,255,255,0.14)" />
-          <circle cx={x(hover)} cy={y(points[hover].value)} r="4" fill={color} />
-          <text
-            x={Math.min(Math.max(x(hover), PAD + 44), W - PAD - 44)} y={PAD / 2 + 4}
-            fill={T.cream} fontSize="12" fontWeight="700" textAnchor="middle"
-          >
-            {points[hover].label} · {Math.round(points[hover].value)} €
-          </text>
-        </g>
-      )}
-      <text x={PAD} y={H - 8} fill={T.dim} fontSize="10">{points[0].label}</text>
-      <text x={W - PAD} y={H - 8} fill={T.dim} fontSize="10" textAnchor="end">{points[points.length - 1].label}</text>
-    </svg>
-  )
 }
 
 export default function BankrollPage() {
@@ -98,26 +44,20 @@ export default function BankrollPage() {
       if (!user) { setLoading(false); return }
       setUser({ id: user.id })
 
-      const [tRes, sRes, txRes, setRes] = await Promise.all([
-        supabase.from('tournament_results').select('date, net_profit').eq('user_id', user.id).order('date'),
-        supabase.from('tracker_sessions').select('date, buy_in, cash_out').eq('user_id', user.id).order('date'),
-        supabase.from('tracker_transactions').select('id, date, type, amount, notes').eq('user_id', user.id).order('date'),
-        supabase.from('tracker_settings').select('initial_bankroll').eq('user_id', user.id).maybeSingle(),
+      const [tRes, extras] = await Promise.all([
+        loadAllTournaments<Tournament>(supabase, user.id, 'date, net_profit'),
+        loadBankrollExtras<CashSession, Transaction>(supabase, user.id),
       ])
 
-      setTournaments((tRes.data as Tournament[]) ?? [])
-      setCashSessions((sRes.data as CashSession[]) ?? [])
-      // Table absente → migration tracker-v2 pas encore lancée.
-      // PostgREST renvoie PGRST205, le code SQL brut serait 42P01 — on couvre les deux.
-      const missingTable = (e: { code?: string; message?: string } | null) =>
-        !!e && (e.code === '42P01' || e.code === 'PGRST205' || (e.message ?? '').includes('Could not find the table'))
-      if (missingTable(txRes.error) || missingTable(setRes.error)) {
+      if (tRes.error) console.error('[bankroll] tournaments load failed:', tRes.error.message)
+      setTournaments(tRes.data)
+      setCashSessions(extras.cashSessions)
+      if (extras.needsMigration) {
         setNeedsMigration(true)
       } else {
-        setTransactions((txRes.data as Transaction[]) ?? [])
-        const br = Number(setRes.data?.initial_bankroll ?? 0)
-        setInitialBr(br)
-        setBrDraft(String(br))
+        setTransactions(extras.transactions)
+        setInitialBr(extras.initialBankroll)
+        setBrDraft(String(extras.initialBankroll))
       }
       setLoading(false)
     })()
@@ -161,31 +101,11 @@ export default function BankrollPage() {
     if (!error) setTransactions(prev => prev.filter(t => t.id !== id))
   }, [supabase])
 
-  /* ── Bankroll unifiée : MTT importés + cash + dépôts/retraits ── */
-  const { points, current, mttProfit, cashProfit, netDeposits } = useMemo(() => {
-    const deltasByDay = new Map<string, number>()
-    const add = (date: string, delta: number) => {
-      const d = date.slice(0, 10)
-      deltasByDay.set(d, (deltasByDay.get(d) ?? 0) + delta)
-    }
-    let mtt = 0, cash = 0, dep = 0
-    tournaments.forEach(t  => { const v = Number(t.net_profit) || 0; mtt += v;  add(t.date, v) })
-    cashSessions.forEach(s => { const v = (s.cash_out - s.buy_in) || 0; cash += v; add(s.date, v) })
-    transactions.forEach(t => {
-      const v = t.type === 'deposit' ? Number(t.amount) : -Number(t.amount)
-      dep += v
-      add(t.date, v)
-    })
-
-    const days = [...deltasByDay.keys()].sort()
-    let running = initialBr
-    const pts: { label: string; value: number }[] = [{ label: 'Départ', value: initialBr }]
-    for (const d of days) {
-      running += deltasByDay.get(d)!
-      pts.push({ label: new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' }), value: running })
-    }
-    return { points: pts, current: running, mttProfit: mtt, cashProfit: cash, netDeposits: dep }
-  }, [tournaments, cashSessions, transactions, initialBr])
+  /* ── Bankroll unifiée : MTT importés + cash + dépôts/retraits (formule partagée avec le dashboard) ── */
+  const { points, current, mttProfit, cashProfit, netDeposits } = useMemo(
+    () => computeBankroll({ initialBankroll: initialBr, tournaments, cashSessions, transactions }),
+    [tournaments, cashSessions, transactions, initialBr],
+  )
 
   const chartColor = current - initialBr - netDeposits >= 0 ? T.green : T.red
 

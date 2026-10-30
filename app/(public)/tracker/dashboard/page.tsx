@@ -5,7 +5,13 @@ import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Trophy, Zap, BarChart2, Upload } from 'lucide-react'
 import { SERIES_CFG, type SeriesKey } from './chartTokens'
-import { TrackerShell, Card, KpiStrip, Seg, SectionLabel, FormatBadge, RoomDot, Th, Td, Empty, T, NUM, eur, pnlColor } from '@/components/tracker/ui'
+import { TrackerShell, Card, KpiStrip, Seg, SectionLabel, FormatBadge, RoomDot, Th, Td, Empty, T, eur, pnlColor } from '@/components/tracker/ui'
+import BankrollHero from '@/components/tracker/BankrollHero'
+import RecentResults, { type RecentResult } from '@/components/tracker/RecentResults'
+import {
+  computeBankroll, cashSessionProfit, loadAllTournaments, loadBankrollExtras,
+  type BankrollCashSession, type BankrollTransaction,
+} from '@/lib/tracker-bankroll'
 
 // recharts est lourd (~90kb gzip) — chargé client-side uniquement
 const TournamentCharts = dynamic(() => import('./TournamentCharts'), {
@@ -91,6 +97,10 @@ function agg(rows: Row[]) {
   return { count: rows.length, profit, buyIn, roi, itm, perHour }
 }
 
+type CashRow = BankrollCashSession & { id: string; stakes: string | null; variant: string | null }
+
+const RECENT_COUNT = 10
+
 const GRID_BREAKDOWN = '110px 110px 1fr 90px 100px 80px 70px 90px'
 const GRID_HISTORY   = '1fr 92px 64px 84px 92px 76px 64px 92px'
 
@@ -99,6 +109,10 @@ export default function TrackerDashboard() {
   const [rows,   setRows]     = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
   const [userId, setUserId]   = useState<string | null>(null)
+  const [cashSessions, setCashSessions] = useState<CashRow[]>([])
+  const [transactions, setTransactions] = useState<BankrollTransaction[]>([])
+  const [initialBr,    setInitialBr]    = useState(0)
+  const [needsMigration, setNeedsMigration] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -106,16 +120,42 @@ export default function TrackerDashboard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
       setUserId(user.id)
-      const { data } = await supabase
-        .from('tournament_results')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false })
-      setRows((data ?? []) as Row[])
+      const [{ data, error }, extras] = await Promise.all([
+        loadAllTournaments<Row>(supabase, user.id, '*', false),
+        loadBankrollExtras<CashRow>(supabase, user.id, { sessions: 'id, date, stakes, variant, buy_in, cash_out' }),
+      ])
+      if (error) console.error('[dashboard] tournaments load failed:', error.message)
+      setRows(data)
+      setCashSessions(extras.cashSessions)
+      setTransactions(extras.transactions)
+      setInitialBr(extras.initialBankroll)
+      setNeedsMigration(extras.needsMigration)
       setLoading(false)
     }
     load()
   }, [])
+
+  /* Bankroll globale — toutes périodes, même formule que /tracker/bankroll */
+  const bankroll = useMemo(
+    () => computeBankroll({ initialBankroll: initialBr, tournaments: rows, cashSessions, transactions }),
+    [initialBr, rows, cashSessions, transactions],
+  )
+
+  /* 10 derniers résultats, tournois importés + sessions cash */
+  const recent = useMemo<RecentResult[]>(() => {
+    const fromTournaments: RecentResult[] = rows.slice(0, RECENT_COUNT).map(r => ({
+      key: `t-${r.id}`, date: r.date, kind: 'tournament', label: r.tournament_name,
+      room: r.room || 'winamax', format: detectFormat(r), profit: Number(r.net_profit) || 0,
+    }))
+    const fromCash: RecentResult[] = cashSessions.map(s => ({
+      key: `c-${s.id}`, date: s.date, kind: 'cash',
+      label: [s.stakes, s.variant].filter(Boolean).join(' · ') || 'Session cash',
+      profit: cashSessionProfit(s),
+    }))
+    return [...fromTournaments, ...fromCash]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, RECENT_COUNT)
+  }, [rows, cashSessions])
 
   const filtered = useMemo(() => {
     if (period === 'all') return rows
@@ -209,7 +249,18 @@ export default function TrackerDashboard() {
 
   const isPositive = total.profit >= 0
 
-  if (!loading && rows.length === 0) {
+  if (loading) {
+    return (
+      <TrackerShell wide>
+        <Card style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div role="status" aria-label="Chargement" style={{ width: 28, height: 28, border: `2px solid ${T.violet}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        </Card>
+      </TrackerShell>
+    )
+  }
+
+  const hasAnyData = rows.length > 0 || cashSessions.length > 0 || transactions.length > 0 || initialBr !== 0
+  if (!hasAnyData) {
     return (
       <TrackerShell>
         <Card>
@@ -231,7 +282,32 @@ export default function TrackerDashboard() {
   }
 
   return (
-    <TrackerShell wide actions={<Seg options={PERIODS} value={period} onChange={setPeriod} />}>
+    <TrackerShell wide>
+
+      {/* ── Accueil : bankroll globale + derniers résultats (toutes sources) ── */}
+      <BankrollHero summary={bankroll} initialBankroll={initialBr} needsMigration={needsMigration} />
+      {recent.length > 0 && <RecentResults results={recent} hasTournaments={rows.length > 0} />}
+
+      {rows.length === 0 ? (
+        <Card>
+          <Empty
+            icon={<BarChart2 size={40} color={T.cream} />}
+            title="Aucun tournoi importé"
+            sub="Glisse tes fichiers Winamax ou Betclic dans l’import : résultats, ROI, ITM et stats préflop sont calculés automatiquement."
+            cta={
+              <Link href="/tracker/import" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 24px', borderRadius: 10, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>
+                <Upload size={14} /> Importer mes résultats
+              </Link>
+            }
+          />
+        </Card>
+      ) : (<>
+
+      {/* ── Tournois : analyse par période ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', margin: '28px 0 12px' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.11em', color: T.dim }}>Tournois — analyse par période</span>
+        <Seg options={PERIODS} value={period} onChange={setPeriod} />
+      </div>
 
       {/* ── KPIs ── */}
       <KpiStrip items={[
@@ -303,6 +379,7 @@ export default function TrackerDashboard() {
 
       {/* ── Historique ── */}
       <Card pad={false}>
+        <div id="historique" style={{ scrollMarginTop: 90 }} />
         <div style={{ padding: '16px 20px 0' }}>
           <SectionLabel right={<span style={{ fontSize: 11, color: T.dim }}>{filtered.length} tournois</span>}>
             Historique des tournois
@@ -348,6 +425,7 @@ export default function TrackerDashboard() {
         </div>
         </div>
       </Card>
+      </>)}
 
     </TrackerShell>
   )

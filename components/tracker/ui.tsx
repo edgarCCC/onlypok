@@ -54,11 +54,14 @@ export function TrackerShell({ children, actions, wide }: {
       <style>{`
         .trk-nav a { transition: color 0.15s ease, background 0.15s ease; }
         .trk-row:hover { background: rgba(255,255,255,0.022); }
+        .trk-link { transition: color 0.15s ease; }
+        .trk-link:hover, .trk-link:focus-visible { color: #f0f4ff !important; }
         .trk-scroll::-webkit-scrollbar { width: 4px; height: 4px }
         .trk-scroll::-webkit-scrollbar-thumb { background: rgba(240,244,255,0.12); border-radius: 99px }
         @media (max-width: 760px) {
           .trk-head { flex-wrap: wrap; }
           .trk-kpis { grid-template-columns: repeat(2, 1fr) !important; }
+          .trk-hide-sm { display: none; }
         }
         @keyframes spin { to { transform: rotate(360deg) } }
       `}</style>
