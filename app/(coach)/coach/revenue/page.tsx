@@ -54,7 +54,10 @@ export default function RevenuePage() {
 
   useEffect(() => {
     if (!user) return
-    fetch('/api/coach/purchases?limit=100')
+    // formation_purchases est un registre (1 ligne = 1 paiement, R10) : chaque
+    // ligne est une vente. La limite doit couvrir tout l'historique, sinon les
+    // totaux (net, brut, commission, seuil micro) sont tronqués.
+    fetch('/api/coach/purchases?limit=5000')
       .then(r => r.ok ? r.json() : { purchases: [] })
       .then(d => { setPurchases(d.purchases ?? []); setLoading(false) })
       .catch(() => setLoading(false))

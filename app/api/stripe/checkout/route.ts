@@ -23,15 +23,22 @@ export async function POST(req: NextRequest) {
       return Array.isArray(c) ? c[0]?.avatar_url : c?.avatar_url
     })()
 
-    /* already purchased */
+    /* already purchased — bloquant pour une formation / vidéo (achat unique),
+       jamais pour le coaching (on peut racheter un pack). formation_purchases
+       est un registre (1 ligne par paiement) : .limit(1) et non .single(), qui
+       échouerait dès 2 lignes et laisserait passer un double achat. */
     if (formation.content_type !== 'coaching') {
-      const { data: existing } = await supabase
+      const { data: existing, error: existingError } = await supabase
         .from('formation_purchases')
         .select('id')
         .eq('formation_id', formation_id)
         .eq('user_id', user.id)
-        .single()
-      if (existing) return NextResponse.json({ error: 'Already purchased' }, { status: 409 })
+        .limit(1)
+      if (existingError) {
+        console.error('[stripe/checkout] purchase check failed:', existingError.message)
+        return NextResponse.json({ error: 'Vérification de l’achat impossible, réessayez.' }, { status: 500 })
+      }
+      if (existing && existing.length > 0) return NextResponse.json({ error: 'Already purchased' }, { status: 409 })
     }
 
     const isCoachingType = formation.content_type === 'coaching'

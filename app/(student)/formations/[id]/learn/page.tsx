@@ -248,12 +248,12 @@ function LearnInner() {
 
       if (user) {
         const [{ data: purchase }, { data: prog }] = await Promise.all([
-          supabase.from('formation_purchases').select('id').eq('formation_id', id).eq('user_id', user.id).maybeSingle(),
+          supabase.from('formation_purchases').select('id').eq('formation_id', id).eq('user_id', user.id).limit(1),
           supabase.from('formation_progress')
             .select('lesson_id')
             .eq('formation_id', id).eq('user_id', user.id).eq('completed', true),
         ])
-        const purchased = !!purchase || free
+        const purchased = (purchase?.length ?? 0) > 0 || free
         setHasPurchased(purchased)
         if (!purchased) { router.replace(`/formations/${id}`); return }
 

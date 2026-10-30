@@ -110,8 +110,8 @@ export default async function FormationDetailPage({
     user
       ? supabase
           .from('formation_purchases').select('id')
-          .eq('formation_id', id).eq('user_id', user.id).single()
-          .then(r => !!r.data || formation.price === 0)
+          .eq('formation_id', id).eq('user_id', user.id).limit(1)
+          .then(r => (r.data?.length ?? 0) > 0 || formation.price === 0)
       : Promise.resolve(formation.price === 0),
   ])
 
