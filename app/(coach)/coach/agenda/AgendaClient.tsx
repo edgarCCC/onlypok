@@ -36,7 +36,7 @@ export default function AgendaClient() {
   const router   = useRouter()
   const pathname = usePathname()
   const params   = useSearchParams()
-  const { loading, error, bookings, setBookings, notes, setNotes, notesEnabled } = useAgendaData(user?.id)
+  const { loading, error, bookings, setBookings, notes, setNotes, notesError } = useAgendaData(user?.id)
 
   const pending = bookings
     .filter(b => b.status === 'pending_coach_approval')
@@ -154,7 +154,7 @@ export default function AgendaClient() {
           {!loading && !error && tab === 'upcoming' && <UpcomingPanel bookings={bookings} />}
 
           {!loading && !error && tab === 'history' && user && (
-            <HistoryPanel bookings={bookings} notes={notes} notesEnabled={notesEnabled} coachId={user.id}
+            <HistoryPanel bookings={bookings} notes={notes} notesError={notesError} coachId={user.id}
               onNotesSaved={(id, n) => setNotes(prev => ({ ...prev, [id]: n }))} />
           )}
 

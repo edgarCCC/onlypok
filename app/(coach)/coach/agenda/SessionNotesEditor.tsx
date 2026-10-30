@@ -33,6 +33,7 @@ export default function SessionNotesEditor({ bookingId, coachId, studentId, init
   const [score, setScore]       = useState(initial.progress_score ?? 5)
   const [saving, setSaving]     = useState(false)
   const [status, setStatus]     = useState<'idle' | 'saved' | 'error'>('idle')
+  const [errorMsg, setErrorMsg] = useState('')
 
   const toggleTag = (tag: string) =>
     setTags(cur => cur.includes(tag) ? cur.filter(t => t !== tag) : [...cur, tag])
@@ -48,7 +49,11 @@ export default function SessionNotesEditor({ bookingId, coachId, studentId, init
           .select('id').single()
     setSaving(false)
     if (res.error || !res.data) {
-      console.error('[agenda] notes save failed:', res.error?.message)
+      console.error('[agenda] notes save failed:', res.error?.code, res.error?.message)
+      // 23505 : une fiche existe déjà pour cette réservation (index unique booking_id)
+      setErrorMsg(res.error?.code === '23505'
+        ? 'Des notes existent déjà pour cette séance : rechargez la page.'
+        : 'Échec de l\u2019enregistrement, réessayez.')
       setStatus('error')
       return
     }
@@ -101,8 +106,8 @@ export default function SessionNotesEditor({ bookingId, coachId, studentId, init
       </div>
 
       <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12 }}>
-        {status === 'saved' && <span style={{ fontSize: 12, color: GREEN }}>Notes enregistrées</span>}
-        {status === 'error' && <span style={{ fontSize: 12, color: RED }}>Échec de l&apos;enregistrement, réessayez.</span>}
+        {status === 'saved' && <span role="status" style={{ fontSize: 12, color: GREEN }}>Notes enregistrées</span>}
+        {status === 'error' && <span role="alert" style={{ fontSize: 12, color: RED }}>{errorMsg}</span>}
         <button onClick={save} disabled={saving}
           style={{ padding: '9px 22px', borderRadius: 10, background: `linear-gradient(135deg,${VIOLET},${CYAN})`, border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}>
           {saving ? 'Enregistrement…' : 'Enregistrer les notes'}

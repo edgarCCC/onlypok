@@ -14,8 +14,8 @@ export function useAgendaData(coachId: string | undefined) {
   const [error, setError]       = useState<string | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [notes, setNotes]       = useState<Record<string, SessionNotes>>({})
-  /* false tant que sql/coach-session-notes.sql n'est pas appliqué (colonnes absentes) */
-  const [notesEnabled, setNotesEnabled] = useState(true)
+  /* Échec de lecture des notes de séance : signalé dans l'onglet Historique */
+  const [notesError, setNotesError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!coachId) return
@@ -66,8 +66,10 @@ export function useAgendaData(coachId: string | undefined) {
 
       const nErr = (nRes as { error?: { code?: string; message: string } | null }).error
       if (nErr) {
-        console.warn('[agenda] session notes unavailable (sql/coach-session-notes.sql à exécuter):', nErr.message)
-        setNotesEnabled(false)
+        console.error('[agenda] session notes query error:', nErr.code, nErr.message)
+        setNotesError('Impossible de charger vos notes de séance. Rechargez la page avant de les modifier.')
+      } else {
+        setNotesError(null)
       }
       const n: Record<string, SessionNotes> = {}
       for (const row of (nRes.data ?? []) as { id: string; booking_id: string; notes: string | null; tags: string[] | null; progress_score: number | null }[]) {
@@ -81,5 +83,5 @@ export function useAgendaData(coachId: string | undefined) {
     return () => { alive = false }
   }, [coachId, supabase])
 
-  return { loading, error, bookings, setBookings, notes, setNotes, notesEnabled }
+  return { loading, error, bookings, setBookings, notes, setNotes, notesError }
 }

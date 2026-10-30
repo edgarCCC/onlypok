@@ -15,10 +15,10 @@ const fmt = (iso: string | null) => iso
   : 'Sans date'
 
 /* Séances passées (avec notes de séance) et demandes refusées. */
-export default function HistoryPanel({ bookings, notes, notesEnabled, coachId, onNotesSaved }: {
+export default function HistoryPanel({ bookings, notes, notesError, coachId, onNotesSaved }: {
   bookings: Booking[]
   notes: Record<string, SessionNotes>
-  notesEnabled: boolean
+  notesError: string | null
   coachId: string
   onNotesSaved: (bookingId: string, n: SessionNotes) => void
 }) {
@@ -46,13 +46,17 @@ export default function HistoryPanel({ bookings, notes, notesEnabled, coachId, o
         ))}
       </div>
 
+      {notesError && (
+        <p role="alert" style={{ fontSize: 13, color: RED, margin: '0 0 12px' }}>{notesError}</p>
+      )}
+
       {list.length === 0 && (
         <EmptyState icon={History} color={VIOLET} title="Rien dans l'historique" sub="Vos séances terminées et leurs notes apparaîtront ici." />
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {list.map(b => {
-          const canNote = notesEnabled && b.status !== 'declined_by_coach'
+          const canNote = b.status !== 'declined_by_coach'
           const open    = expanded === b.id
           const n       = notes[b.id]
           return (
