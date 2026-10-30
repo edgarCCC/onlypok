@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Hors périmètre du projet (worktrees agents, rapports de tests, graphify) :
+    ".claude/**",
+    "playwright-report/**",
+    "test-results/**",
+    "graphify-out/**",
   ]),
 ]);
 
