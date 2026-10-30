@@ -39,6 +39,17 @@ export async function createMeetingRoom(bookingId: string, scheduledAt?: string 
   return createMeetingUrl(bookingId)
 }
 
+/* Index unique partiel posé par sql/bookings-slot-unique.sql : un seul booking
+   'scheduled' / 'pending_coach_approval' par (coach_id, scheduled_at). Le nom
+   permet de distinguer ce conflit de créneau d'un doublon de stripe_session_id
+   (idempotence), qui renvoie lui aussi 23505. */
+export const SLOT_UNIQUE_INDEX = 'bookings_coach_slot_active_uniq'
+
+export function isSlotConflictError(err: { code?: string; message?: string; details?: string } | null | undefined): boolean {
+  if (!err || err.code !== '23505') return false
+  return `${err.message ?? ''} ${err.details ?? ''}`.includes(SLOT_UNIQUE_INDEX)
+}
+
 export type EnsureBookingsResult = {
   error: { message: string; code?: string } | null
   /* statut donné à la 1re session du pack (utile pour la bannière côté élève) */
@@ -111,15 +122,15 @@ export async function ensureCoachingBookings(
   let firstScheduledAt: string | null = null
   if (startIdx === 0 && scheduledAt && coachId) {
     /* Le créneau est-il encore libre ? (course possible pendant le checkout) */
-    const { data: conflict } = await admin
+    const { data: conflicts } = await admin
       .from('bookings')
       .select('id')
       .eq('coach_id', coachId)
       .eq('scheduled_at', scheduledAt)
       .in('status', ['scheduled', 'pending_coach_approval'])
-      .maybeSingle()
+      .limit(1)
 
-    if (!conflict) {
+    if (!conflicts?.length) {
       firstScheduledAt = scheduledAt
       firstStatus = coachProfile?.coaching_mode === 'auto' ? 'scheduled' : 'pending_coach_approval'
     }
@@ -141,8 +152,24 @@ export async function ensureCoachingBookings(
       stripe_payment_intent_id: paymentIntentId,
       price_paid:               isFirst ? pricePaid : null,
     }
-    const { data: inserted, error: bookingError } = await admin
+    let { data: inserted, error: bookingError } = await admin
       .from('bookings').insert(row).select('id').single()
+
+    /* Créneau pris entre la vérification ci-dessus et l'insertion (course
+       entre deux paiements) : l'index unique refuse. Le paiement est acquis,
+       on crée quand même la séance mais sans créneau — l'élève en choisira
+       un autre. */
+    if (bookingError && isFirst && row.scheduled_at && isSlotConflictError(bookingError)) {
+      console.error('[bookings] créneau pris pendant le paiement, repli paid_pending_schedule', { sessionId: session.id, scheduledAt: row.scheduled_at })
+      firstStatus      = 'paid_pending_schedule'
+      firstScheduledAt = null
+      const retry = await admin
+        .from('bookings')
+        .insert({ ...row, status: 'paid_pending_schedule', scheduled_at: null })
+        .select('id').single()
+      inserted     = retry.data
+      bookingError = retry.error
+    }
 
     if (bookingError) {
       if (bookingError.code === '23505') continue

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendCoachSlotConfirmedEmail, sendStudentSlotConfirmedEmail } from '@/lib/email'
+import { isSlotConflictError } from '@/lib/bookings'
 
 // POST /api/bookings/confirm-slot
 // Body: { booking_id, scheduled_at }
@@ -58,6 +59,11 @@ export async function POST(req: NextRequest) {
     .eq('id', booking_id)
     .eq('status', 'paid_pending_schedule')
 
+  // 23505 sur l'index unique bookings_coach_slot_active_uniq : un autre élève a
+  // pris ce créneau entre la vérification ci-dessus et l'écriture (course).
+  if (isSlotConflictError(error)) {
+    return NextResponse.json({ error: 'Ce créneau vient d’être réservé par un autre élève. Choisissez-en un autre.' }, { status: 409 })
+  }
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Fetch details for notifications and emails
