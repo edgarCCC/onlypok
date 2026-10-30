@@ -12,6 +12,7 @@ import {
 import Link from 'next/link'
 import FourAcesLoader from '@/components/FourAcesLoader'
 import VideoStudio from '@/components/VideoStudio'
+import { parseVideoUrl, withEmbedParams } from '@/lib/video-url'
 
 const BG     = '#050709'
 const SURF   = 'rgba(255,255,255,0.028)'
@@ -23,11 +24,11 @@ const EMER   = '#10b981'
 
 type ProgressRow = { lesson_id: string }
 
+/* Parsing commun (lib/video-url) : gère aussi shorts/embed et conserve le hash Vimeo (?h=). */
 function getEmbedUrl(url: string): { src: string; isNative: boolean } {
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/)
-  if (yt) return { src: `https://www.youtube.com/embed/${yt[1]}?rel=0`, isNative: false }
-  const vm = url.match(/vimeo\.com\/(\d+)/)
-  if (vm) return { src: `https://player.vimeo.com/video/${vm[1]}`, isNative: false }
+  const parsed = parseVideoUrl(url)
+  if (parsed?.provider === 'youtube') return { src: withEmbedParams(parsed.embedUrl, { rel: '0' }), isNative: false }
+  if (parsed?.provider === 'vimeo') return { src: parsed.embedUrl, isNative: false }
   return { src: url, isNative: true }
 }
 

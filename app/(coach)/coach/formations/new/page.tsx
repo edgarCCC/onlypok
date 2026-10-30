@@ -8,6 +8,8 @@ import PublishOverlay from '@/components/PublishOverlay'
 import { HIGHLIGHTS_COACHING, HIGHLIGHTS_FORMATION, HIGHLIGHTS_VIDEO } from '@/lib/highlights'
 import SelectInput from '@/components/ui/SelectInput'
 import NumberStepper from '@/components/ui/NumberStepper'
+import VideoUrlCheck from '@/components/formations/VideoUrlCheck'
+import { parseVideoUrl } from '@/lib/video-url'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -247,7 +249,7 @@ function NewFormationInner() {
             formation_id: data.id,
             title: l.title,
             video_url: l.video_url || null,
-            video_type: l.video_url?.includes('vimeo') ? 'vimeo' : 'youtube',
+            video_type: parseVideoUrl(l.video_url)?.provider === 'vimeo' ? 'vimeo' : 'youtube',
             is_free: l.is_free,
             order_index: li,
           })
@@ -432,7 +434,8 @@ function NewFormationInner() {
                         {/* Leçons */}
                         <div style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                           {chapter.lessons.map((lesson, li) => (
-                            <div key={li} className="cnew-lesson-row" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div key={li}>
+                            <div className="cnew-lesson-row" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <Video size={13} color={SILVER} style={{ flexShrink: 0, opacity: 0.5 }} />
                               <input
                                 value={lesson.title}
@@ -454,6 +457,8 @@ function NewFormationInner() {
                                   <Trash2 size={11} />
                                 </button>
                               )}
+                            </div>
+                            {lesson.video_url.trim() && <div style={{ paddingLeft: 23 }}><VideoUrlCheck url={lesson.video_url} isPaid={!lesson.is_free && price > 0} /></div>}
                             </div>
                           ))}
                           <button type="button" onClick={() => addLesson(ci)} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: SILVER, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', transition: 'color 0.15s' }}
@@ -485,7 +490,7 @@ function NewFormationInner() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <Field label="Titre *"><input value={title} onChange={e => { setTitle(e.target.value); markDirty() }} required placeholder="Ex : Analyse session MTT — Final Table" style={inputStyle} /></Field>
                     <Field label="Description"><textarea value={desc} onChange={e => { setDesc(e.target.value); markDirty() }} placeholder="De quoi parle cette vidéo ?" rows={4} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} /></Field>
-                    <Field label="URL de la vidéo"><input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." style={inputStyle} /></Field>
+                    <Field label="URL de la vidéo"><input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." style={inputStyle} /><VideoUrlCheck url={videoUrl} isPaid={price > 0} /></Field>
                   </div>
                 </Section>
                 <Section title="Options">

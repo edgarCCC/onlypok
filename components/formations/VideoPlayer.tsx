@@ -1,29 +1,25 @@
 'use client'
 
+import { parseVideoUrl } from '@/lib/video-url'
+
 type Props = {
   url: string
   type: 'youtube' | 'vimeo' | 'upload' | string
 }
 
-function getYoutubeId(url: string) {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
-  return match ? match[1] : null
-}
-
-function getVimeoId(url: string) {
-  const match = url.match(/vimeo\.com\/(\d+)/)
-  return match ? match[1] : null
-}
+const IFRAME_STYLE: React.CSSProperties = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }
+const RATIO_BOX: React.CSSProperties = { position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden' }
 
 export default function VideoPlayer({ url, type }: Props) {
-  if (type === 'youtube' || url.includes('youtube') || url.includes('youtu.be')) {
-    const id = getYoutubeId(url)
-    if (!id) return <div style={{ color: 'var(--text-muted)' }}>URL YouTube invalide</div>
+  const parsed = parseVideoUrl(url)
+
+  if (parsed?.provider === 'youtube') {
     return (
-      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden' }}>
+      <div style={RATIO_BOX}>
         <iframe
-          src={`https://www.youtube.com/embed/${id}`}
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+          src={parsed.embedUrl}
+          title="Vidéo YouTube"
+          style={IFRAME_STYLE}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
@@ -31,18 +27,25 @@ export default function VideoPlayer({ url, type }: Props) {
     )
   }
 
-  if (type === 'vimeo' || url.includes('vimeo')) {
-    const id = getVimeoId(url)
-    if (!id) return <div style={{ color: 'var(--text-muted)' }}>URL Vimeo invalide</div>
+  if (parsed?.provider === 'vimeo') {
     return (
-      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden' }}>
+      <div style={RATIO_BOX}>
         <iframe
-          src={`https://player.vimeo.com/video/${id}`}
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+          src={parsed.embedUrl}
+          title="Vidéo Vimeo"
+          style={IFRAME_STYLE}
+          allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
         />
       </div>
     )
+  }
+
+  if (type === 'youtube' || url.includes('youtube') || url.includes('youtu.be')) {
+    return <div style={{ color: 'var(--text-muted)' }}>URL YouTube invalide</div>
+  }
+  if (type === 'vimeo' || url.includes('vimeo')) {
+    return <div style={{ color: 'var(--text-muted)' }}>URL Vimeo invalide</div>
   }
 
   return (

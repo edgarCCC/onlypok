@@ -13,6 +13,7 @@ import FourAcesLoader from '@/components/FourAcesLoader'
 import { HIGHLIGHTS_COACHING, HIGHLIGHTS_FORMATION, HIGHLIGHTS_VIDEO } from '@/lib/highlights'
 import SelectInput from '@/components/ui/SelectInput'
 import NumberStepper from '@/components/ui/NumberStepper'
+import VideoUrlCheck from '@/components/formations/VideoUrlCheck'
 
 type Pack = { label: string; hours: number; price: number; desc: string }
 
@@ -431,9 +432,7 @@ export default function EditFormationPage() {
                   <div>
                     <p style={label()}>URL vidéo (YouTube / Vimeo)</p>
                     <input value={formation.video_url ?? ''} onChange={e => updateField('video_url', e.target.value)} placeholder="https://youtube.com/watch?v=…" style={field()} />
-                    <p style={{ fontSize: 11.5, color: '#fbbf24', margin: '8px 0 0', lineHeight: 1.5 }}>
-                      ⚠️ Mets ta vidéo en « Non répertoriée » (YouTube) ou « Privée avec lien » (Vimeo) pour protéger ton contenu payant.
-                    </p>
+                    <VideoUrlCheck url={formation.video_url ?? ''} isPaid={(formation.price ?? 0) > 0} />
                   </div>
                 )}
 
@@ -553,6 +552,7 @@ export default function EditFormationPage() {
                                     options={[{ value: 'youtube', label: 'YouTube' }, { value: 'vimeo', label: 'Vimeo' }, { value: 'upload', label: 'Upload' }]}
                                     style={{ width: 110 }} selectStyle={{ fontSize: 12, padding: '8px 32px 8px 10px' }} />
                                 </div>
+                                {editingLesson.video_url.trim() && <VideoUrlCheck url={editingLesson.video_url} isPaid={!editingLesson.is_free && (formation?.price ?? 0) > 0} />}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: SILVER }}>
                                     <input type="checkbox" checked={editingLesson.is_free} onChange={e => setEditingLesson(p => ({ ...p, is_free: e.target.checked }))} />
@@ -601,6 +601,7 @@ export default function EditFormationPage() {
                                 options={[{ value: 'youtube', label: 'YouTube' }, { value: 'vimeo', label: 'Vimeo' }, { value: 'upload', label: 'Upload' }]}
                                 style={{ width: 110 }} selectStyle={{ fontSize: 12, padding: '8px 32px 8px 10px' }} />
                             </div>
+                            {newLesson.video_url.trim() && <VideoUrlCheck url={newLesson.video_url} isPaid={!newLesson.is_free && (formation?.price ?? 0) > 0} />}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: SILVER }}>
                                 <input type="checkbox" checked={newLesson.is_free} onChange={e => setNewLesson(p => ({ ...p, is_free: e.target.checked }))} />

@@ -2,12 +2,27 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { Lock, Share2, MessageSquare } from 'lucide-react'
-import { CREAM, SILVER, getYtId, getVimeoId } from './shared'
+import { CREAM, SILVER } from './shared'
+import { parseVideoUrl, withEmbedParams } from '@/lib/video-url'
+
+/* Le lien prime sur le type stocké (une leçon « youtube » par défaut peut pointer
+   vers Vimeo) ; le hash des liens Vimeo privés est conservé dans l'embed. */
+function providerOf(url: string, type: string): 'youtube' | 'vimeo' | 'native' {
+  const p = parseVideoUrl(url)?.provider
+  if (p === 'youtube' || p === 'vimeo') return p
+  if (p === 'file') return 'native'
+  if (type === 'youtube' || url.includes('youtu')) return 'youtube'
+  if (type === 'vimeo' || url.includes('vimeo')) return 'vimeo'
+  return 'native'
+}
+const ytIdOf = (url: string) => { const p = parseVideoUrl(url); return p?.provider === 'youtube' ? p.id : null }
+const vimeoEmbedOf = (url: string) => { const p = parseVideoUrl(url); return p?.provider === 'vimeo' ? p.embedUrl : null }
 
 /* ─── Full video player (purchased / free) ──────────────────────────────────── */
 export function VideoPlayer({ url, type }: { url: string; type: string }) {
-  if (type === 'youtube' || url.includes('youtu')) {
-    const ytId = getYtId(url)
+  const provider = providerOf(url, type)
+  if (provider === 'youtube') {
+    const ytId = ytIdOf(url)
     if (!ytId) return null
     return (
       <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden' }}>
@@ -17,12 +32,12 @@ export function VideoPlayer({ url, type }: { url: string; type: string }) {
       </div>
     )
   }
-  if (type === 'vimeo' || url.includes('vimeo')) {
-    const vimeoId = getVimeoId(url)
-    if (!vimeoId) return null
+  if (provider === 'vimeo') {
+    const vimeoSrc = vimeoEmbedOf(url)
+    if (!vimeoSrc) return null
     return (
       <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden' }}>
-        <iframe src={`https://player.vimeo.com/video/${vimeoId}`}
+        <iframe src={vimeoSrc}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           allowFullScreen allow="autoplay; fullscreen" />
       </div>
@@ -76,8 +91,8 @@ export default function VideoPreview({ url, type, color, onEnded }: {
 
   /* ── YouTube IFrame API ── */
   useEffect(() => {
-    if (type !== 'youtube' && !url.includes('youtu')) return
-    const ytId = getYtId(url)
+    if (providerOf(url, type) !== 'youtube') return
+    const ytId = ytIdOf(url)
     if (!ytId) return
 
     let seekPoller: ReturnType<typeof setInterval>
@@ -130,7 +145,7 @@ export default function VideoPreview({ url, type, color, onEnded }: {
 
   /* ── Vimeo postMessage ── */
   useEffect(() => {
-    if (type !== 'vimeo' && !url.includes('vimeo')) return
+    if (providerOf(url, type) !== 'vimeo') return
     const handler = (e: MessageEvent) => {
       if (!e.data || typeof e.data !== 'string') return
       try {
@@ -172,7 +187,8 @@ export default function VideoPreview({ url, type, color, onEnded }: {
 
   /* ── player JSX ── */
   let player: React.ReactNode
-  if (type === 'youtube' || url.includes('youtu')) {
+  const provider = providerOf(url, type)
+  if (provider === 'youtube') {
     if (ytError) {
       player = (
         <div style={{ aspectRatio: '16/9', background: '#0f1218', borderRadius: 12,
@@ -187,12 +203,12 @@ export default function VideoPreview({ url, type, color, onEnded }: {
         </div>
       )
     }
-  } else if (type === 'vimeo' || url.includes('vimeo')) {
-    const vimeoId = getVimeoId(url)
-    player = vimeoId ? (
+  } else if (provider === 'vimeo') {
+    const vimeoSrc = vimeoEmbedOf(url)
+    player = vimeoSrc ? (
       <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 12, overflow: 'hidden' }}>
         <iframe
-          src={`https://player.vimeo.com/video/${vimeoId}?api=1`}
+          src={withEmbedParams(vimeoSrc, { api: '1' })}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           allowFullScreen allow="autoplay; fullscreen" />
       </div>

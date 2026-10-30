@@ -4,6 +4,7 @@ import { X, FileText, MessageSquare, Send, Sparkles, Maximize2 } from 'lucide-re
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import dynamic from 'next/dynamic'
+import { parseVideoUrl, withEmbedParams } from '@/lib/video-url'
 
 const MindMap = dynamic(() => import('@/components/MindMap'), { ssr: false })
 
@@ -11,17 +12,16 @@ const C = '#f0f4ff', S = 'rgba(240,244,255,0.45)', D = 'rgba(240,244,255,0.2)', 
 const MAX_SYNTH = 3
 
 function getEmbedUrl(url: string): string {
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/)
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0`
-  const vm = url.match(/vimeo\.com\/(\d+)/)
-  if (vm) return `https://player.vimeo.com/video/${vm[1]}?autoplay=1`
-  return url
+  const parsed = parseVideoUrl(url)
+  if (parsed?.provider === 'youtube') return withEmbedParams(parsed.embedUrl, { autoplay: '1', rel: '0' })
+  if (parsed?.provider === 'vimeo') return withEmbedParams(parsed.embedUrl, { autoplay: '1' }) // conserve ?h= (Vimeo privé)
+  return parsed?.embedUrl ?? url
 }
 
 export default function VideoStudio({ video, onClose }: { video: { url: string; title: string }; onClose: () => void }) {
   const supabase = useMemo(() => createClient(), [])
   const embedUrl = getEmbedUrl(video.url)
-  const isNative = !video.url.match(/youtube|youtu\.be|vimeo/)
+  const isNative = !['youtube', 'vimeo'].includes(parseVideoUrl(video.url)?.provider ?? '')
   const noteKey  = `onlypok_note_${video.url.slice(-60)}`
   const synthKey = `onlypok_synth_${video.url.slice(-60)}`
 

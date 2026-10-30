@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { BookOpen, PlayCircle, ChevronDown, ChevronUp, Lock } from 'lucide-react'
-import { CREAM, SILVER, getYtId } from './shared'
+import { CREAM, SILVER } from './shared'
+import { parseVideoUrl } from '@/lib/video-url'
 
 /* ─── Programme de la formation : accordéon chapitres / leçons ──────────────── */
 export default function ProgramSection({ chapters, typeColor, hasPurchased, allLessonsCount, freeLessons, onPlayLesson }: {
@@ -63,8 +64,7 @@ export default function ProgramSection({ chapters, typeColor, hasPurchased, allL
                   {lessons.map((lesson: any) => {
                     const locked = !lesson.is_free && !hasPurchased
                     const canPlay = (lesson.is_free || hasPurchased) && !!lesson.video_url
-                    const ytId = lesson.video_url ? getYtId(lesson.video_url) : null
-                    const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null
+                    const thumbUrl = parseVideoUrl(lesson.video_url)?.thumbnailUrl ?? null
                     return (
                       <div key={lesson.id}
                         onClick={canPlay ? () => onPlayLesson({ url: lesson.video_url, type: lesson.video_type ?? 'youtube', title: lesson.title }) : undefined}
