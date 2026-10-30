@@ -24,12 +24,14 @@ export default function LazyBelowFold({ studentCount, coachCount, formationCount
     <>
       <ManifestoSection />
       <FeaturesScroll />
-      <StatsSection
-        studentCount={studentCount}
-        coachCount={coachCount}
-        formationCount={formationCount}
-        avgRating={avgRating}
-      />
+      {studentCount > 0 && (
+        <StatsSection
+          studentCount={studentCount}
+          coachCount={coachCount}
+          formationCount={formationCount}
+          avgRating={avgRating}
+        />
+      )}
       <CoachesSpotlight />
       <TestimonialsSection />
       <FinalCTA />

@@ -25,7 +25,7 @@ const STEPS = [
   {
     n: '03',
     title: 'Mesure tes progrès',
-    desc: 'Dashboard personnalisé, métriques live et feedback IA pour itérer vite.',
+    desc: 'Dashboard personnalisé, métriques live et synthèse IA de tes notes pour itérer vite.',
     accent: '#a855f7',
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
   },

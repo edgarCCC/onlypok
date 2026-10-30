@@ -11,7 +11,7 @@ gsap.registerPlugin(ScrollTrigger, useGSAP)
 const FEATURES_STUDENT = [
   'Accès à toutes les formations',
   'Coaching 1:1 avec des pros',
-  'Outils d\'analyse et review IA',
+  'Outils d\'analyse et synthèse IA de tes notes',
   'Progression et classements',
   'Communauté privée',
 ]

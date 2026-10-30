@@ -15,10 +15,10 @@ const FEATURES = [
   {
     seat: 'HJ',
     accent: '#5dc8ff',
-    title: 'Review IA',
-    desc: 'Analyse automatique de vos mains avec détection des fuites et recommandations personnalisées en temps réel.',
-    stat: '98%',
-    statLabel: 'précision analyse',
+    title: 'Synthèse IA',
+    desc: 'Vos notes de cours transformées automatiquement en mind map claire et structurée.',
+    stat: 'IA',
+    statLabel: 'notes en mind map',
   },
   {
     seat: 'CO',

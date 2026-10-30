@@ -5,46 +5,25 @@ import type { CSSProperties } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
-import { RankFish1, RankFish2, RankFish3 } from './ranks'
+import type { RankFish1 } from './ranks'
 import Flag from './Flag'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
-const TESTIMONIALS = [
-  {
-    quote: "En 3 mois avec OnlyPok, j'ai doublé mon ROI sur les MTT. Le coaching 1:1 avec Marcus a transformé ma vision du jeu en position.",
-    pseudo: 'DRAGONRIVER_X',
-    country: 'FR',
-    format: 'MTT',
-    rating: 5,
-    accent: 'oklch(0.72 0.22 295)',
-    Avatar: RankFish1,
-    memberSince: '3 mois',
-    offset: 0,
-  },
-  {
-    quote: "La Review IA est bluffante. Elle m'a détecté une fuite sur mes donk-bets en OOP que je n'avais pas vue depuis 2 ans. Outil indispensable.",
-    pseudo: 'ACEFACTORY_K',
-    country: 'BE',
-    format: 'CASH GAME',
-    rating: 5,
-    accent: 'oklch(0.72 0.16 200)',
-    Avatar: RankFish2,
-    memberSince: '5 mois',
-    offset: 40,
-  },
-  {
-    quote: "Meilleure plateforme de poker training que j'ai testée. Contenu dense, coachs disponibles, communauté sérieuse. Pas de fla fla.",
-    pseudo: 'ICM_WIZARD',
-    country: 'CH',
-    format: 'EXPRESSO',
-    rating: 5,
-    accent: 'oklch(0.62 0.22 15)',
-    Avatar: RankFish3,
-    memberSince: '7 mois',
-    offset: -20,
-  },
-]
+type Testimonial = {
+  quote: string
+  pseudo: string
+  country: string
+  format: string
+  rating: number
+  accent: string
+  Avatar: typeof RankFish1
+  memberSince: string
+  offset: number
+}
+
+// Aucun avis réel publié pour l'instant : la section reste masquée tant que la liste est vide.
+const TESTIMONIALS: Testimonial[] = []
 
 function Stars({ count, accent }: { count: number; accent: string }) {
   return (
@@ -59,7 +38,7 @@ function Stars({ count, accent }: { count: number; accent: string }) {
   )
 }
 
-function TestiCard({ t, delay }: { t: typeof TESTIMONIALS[0]; delay: number }) {
+function TestiCard({ t, delay }: { t: Testimonial; delay: number }) {
   const { Avatar, accent } = t
 
   return (
@@ -201,6 +180,8 @@ export default function TestimonialsSection() {
       })
     })
   }, { scope: containerRef })
+
+  if (TESTIMONIALS.length === 0) return null
 
   return (
     <section
