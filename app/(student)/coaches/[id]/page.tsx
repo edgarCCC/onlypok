@@ -102,6 +102,7 @@ export default function CoachProfilePage() {
 
   const [coach,         setCoach]         = useState<Coach | null>(null)
   const [reviews,       setReviews]       = useState<Review[]>([])
+  const [reviewsError,  setReviewsError]  = useState(false)
   const [formations,    setFormations]    = useState<Formation[]>([])
   const [loading,       setLoading]       = useState(true)
   const [selectedPkgIdx, setSelectedPkgIdx] = useState(0)
@@ -120,9 +121,11 @@ export default function CoachProfilePage() {
       supabase.from('formations')
         .select('id, title, price, content_type, thumbnail_url')
         .eq('coach_id', id).eq('published', true),
-    ]).then(([{ data: c }, { data: r }, { data: f }]) => {
+    ]).then(([{ data: c }, { data: r, error: rErr }, { data: f }]) => {
       if (!c) { router.push('/404'); return }
       setCoach(c as Coach)
+      if (rErr) console.error('[coach profile] reviews load failed:', rErr.code, rErr.message)
+      setReviewsError(!!rErr)
       setReviews((r ?? []).map((rev: any) => ({
         ...rev,
         student: Array.isArray(rev.student) ? (rev.student[0] ?? null) : (rev.student ?? null),
@@ -399,8 +402,18 @@ export default function CoachProfilePage() {
             )}
 
             {/* Avis */}
+            {reviewsError && (
+              <SectionCard title="Avis">
+                <p style={{ fontSize: 13, color: '#fca5a5', lineHeight: 1.6, margin: 0 }}>
+                  Impossible de charger les avis pour le moment. Rechargez la page dans un instant.
+                </p>
+              </SectionCard>
+            )}
             {reviews.length > 0 && (
               <SectionCard title={`Avis (${reviews.length})`}>
+                <p style={{ fontSize: 11, color: SILVER, lineHeight: 1.5, margin: '-8px 0 16px' }}>
+                  Depuis le 30/10/2026, seuls les élèves ayant terminé une séance ou acheté le contenu peuvent publier un avis.
+                </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {reviews.map((r, i) => (
                     <div key={i} style={{ paddingBottom: i < reviews.length - 1 ? 16 : 0, borderBottom: i < reviews.length - 1 ? '1px solid rgba(240,244,255,0.06)' : 'none' }}>

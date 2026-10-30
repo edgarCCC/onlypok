@@ -5,6 +5,26 @@ import { Star, BookOpen, MessageSquare, TrendingUp, Clock, Award, X, CheckCircle
 import { CREAM, SILVER, REVIEW_CATEGORIES, timeAgo, memberSince, ratingLabel } from './shared'
 import VideoComments from './VideoComments'
 
+/* ─── Messages d'erreur d'avis ─────────────────────────────────────────────────
+   Règles RLS (sql/security-rls-reviews.sql) : un avis coaching exige une séance
+   terminée avec ce coach ; un avis formation / vidéo exige l'achat de CETTE
+   formation. 42501 = refus RLS, 23505 = avis déjà posté. */
+export function reviewRuleText(contentType: string): string {
+  return contentType === 'coaching'
+    ? 'Les avis coaching sont réservés aux élèves ayant terminé au moins une séance avec ce coach.'
+    : contentType === 'video'
+      ? 'Les avis sont réservés aux élèves ayant acheté cette vidéo.'
+      : 'Les avis sont réservés aux élèves ayant acheté cette formation.'
+}
+
+export function reviewInsertErrorMessage(code: string | undefined, contentType: string): string {
+  if (code === '42501') return reviewRuleText(contentType)
+  if (code === '23505') return contentType === 'coaching'
+    ? 'Vous avez déjà laissé un avis coaching pour ce coach.'
+    : 'Vous avez déjà laissé un avis pour ce coach.'
+  return 'Impossible d’enregistrer votre avis, réessayez dans un instant.'
+}
+
 /* ─── Star picker ──────────────────────────────────────────────────────────── */
 export function StarPicker({ value, onChange }: { value: number, onChange: (v: number) => void }) {
   const [hovered, setHovered] = useState(0)
@@ -371,6 +391,13 @@ export default function ReviewSection({ reviews, avgRating, distribution, catego
             )}
           </div>
         </div>
+
+        {/* Coaching : l'achat ne suffit pas, il faut une séance terminée (RLS) */}
+        {hasPurchased && !userHasReview && contentType === 'coaching' && (
+          <p style={{ fontSize: 12, color: SILVER, margin: '-36px 0 36px', lineHeight: 1.5 }}>
+            {reviewRuleText(contentType)}
+          </p>
+        )}
 
         {reviews.length === 0 ? (
           <div style={{ background: 'rgba(232,228,220,0.02)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 14, padding: '64px', textAlign: 'center' }}>

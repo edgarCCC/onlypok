@@ -20,7 +20,7 @@ import { SalesVideoSection } from './VideoPreview'
 import ProgramSection from './ProgramSection'
 import ScheduleCalendar from './ScheduleCalendar'
 import PurchaseSidebar, { CreditConfirmModal } from './PurchaseSidebar'
-import ReviewSection, { ReviewModal } from './ReviewSection'
+import ReviewSection, { ReviewModal, reviewInsertErrorMessage } from './ReviewSection'
 import CoachPresentation from './CoachPresentation'
 
 function HighlightRow({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
@@ -187,6 +187,7 @@ export default function FormationDetailClient({
     const overall = Math.round(rated.reduce((a, b) => a + b, 0) / rated.length)
     const { error } = await supabase.from('reviews').insert({
       coach_id:         formation.coach.id,
+      formation_id:     formation.id,
       student_id:       user.id,
       rating:           overall,
       comment:          reviewComment.trim() || null,
@@ -195,12 +196,8 @@ export default function FormationDetailClient({
     })
     if (error) {
       console.error('[review insert]', error.code, error.message, error.details, error.hint)
-      // 42501 = refus RLS (pas d'achat / de session avec ce coach), 23505 = avis déjà posté
-      setReviewError(
-        error.code === '42501' ? 'Seuls les élèves ayant acheté une formation ou une session avec ce coach peuvent laisser un avis.'
-        : error.code === '23505' ? 'Vous avez déjà laissé un avis pour ce coach.'
-        : 'Impossible d’enregistrer votre avis, réessayez dans un instant.'
-      )
+      // 42501 = refus RLS (séance non terminée / formation non achetée), 23505 = avis déjà posté
+      setReviewError(reviewInsertErrorMessage(error.code, contentType))
       setSubmitting(false)
       return
     }
