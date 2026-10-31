@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { ArrowLeft, Search, Menu, HelpCircle, Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
@@ -14,7 +14,10 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
   setIsSearchOverlayOpen: (v: boolean) => void
 }) {
   const router = useRouter()
-  const { user, profile, signOut } = useUser()
+  const pathname = usePathname()
+  const { user, profile, signOut, loading } = useUser()
+  /* `next` est ignoré par /login aujourd'hui ; il servira au retour après connexion (N2 / P2). */
+  const loginHref = `/login?next=${encodeURIComponent(pathname)}`
 
   const [showMenu, setShowMenu]           = useState(false)
   const ct0 = initialContentType
@@ -56,7 +59,21 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
         <div style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)', animation: 'fadeIn 0.3s ease' }} />
       )}
 
-      <header style={{
+      <style>{`
+        .fdet-header :is(a, button):focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; }
+        /* « Se connecter » visiteur : dans la rangée à partir de 960px, dans le menu en dessous (N1 / P1) */
+        .fdet-login-row { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1); }
+        .fdet-login-menu { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease; }
+        @media (hover: hover) and (pointer: fine) {
+          .fdet-login-row:hover, .fdet-login-menu:hover { color: ${CREAM}; background-color: rgba(232,228,220,0.05); }
+        }
+        .fdet-login-row:active { transform: scale(0.97); }
+        @media (prefers-reduced-motion: reduce) { .fdet-login-row:active { transform: none; } }
+        @media (max-width: 959px) { .fdet-login-row { display: none !important; } }
+        @media (min-width: 960px) { .fdet-login-menu { display: none !important; } }
+      `}</style>
+
+      <header className="fdet-header" style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
         background: isScrolled ? 'rgba(7,9,14,0.97)' : 'transparent',
         backdropFilter: isScrolled ? 'blur(20px)' : 'none',
@@ -147,16 +164,22 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
                 onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(240,244,255,0.08)' }}>
                 Mon espace
               </Link>
-            ) : (
-              <Link href="/register?role=coach"
-                style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none',
-                  padding: '8px 16px', border: '1px solid rgba(240,244,255,0.08)',
-                  borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(232,228,220,0.25)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(240,244,255,0.08)' }}>
-                Devenir coach
-              </Link>
-            )}
+            ) : !loading ? (
+              <>
+                <Link href={loginHref} className="fdet-login-row"
+                  style={{ fontSize: 13, fontWeight: 600, textDecoration: 'none', padding: '8px 12px', borderRadius: 10, whiteSpace: 'nowrap' }}>
+                  Se connecter
+                </Link>
+                <Link href="/become-coach"
+                  style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none',
+                    padding: '8px 16px', border: '1px solid rgba(240,244,255,0.08)',
+                    borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(232,228,220,0.25)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(240,244,255,0.08)' }}>
+                  Devenir coach
+                </Link>
+              </>
+            ) : null}
             <button
               style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
@@ -164,7 +187,7 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
               <HelpCircle size={16} />
             </button>
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setShowMenu(v => !v)}
+              <button onClick={() => setShowMenu(v => !v)} aria-label="Menu" aria-expanded={showMenu}
                 style={{ width: 38, height: 38, borderRadius: 10,
                   background: showMenu ? 'rgba(232,228,220,0.08)' : 'rgba(232,228,220,0.03)',
                   border: '1px solid rgba(232,228,220,0.08)', color: CREAM,
@@ -184,12 +207,19 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
                       {label}
                     </Link>
                   ))}
-                  <button onClick={() => signOut()}
-                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, color: SILVER, background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.05)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
-                    Déconnexion
-                  </button>
+                  {user ? (
+                    <button onClick={() => signOut()}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, color: SILVER, background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.05)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
+                      Déconnexion
+                    </button>
+                  ) : !loading ? (
+                    <Link href={loginHref} className="fdet-login-menu"
+                      style={{ display: 'block', padding: '9px 14px', fontSize: 13, textDecoration: 'none', borderRadius: 8 }}>
+                      Se connecter
+                    </Link>
+                  ) : null}
                 </div>
               )}
             </div>

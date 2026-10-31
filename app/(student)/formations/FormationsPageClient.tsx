@@ -244,10 +244,20 @@ export default function FormationsPageClient({
           .sform-q-cell { padding: 12px 14px !important; }
         }
         .sform-root :is(button, a, input):focus-visible {
-          outline: 2px solid rgba(124,58,237,0.65);
+          outline: 2px solid #7c3aed;
           outline-offset: 2px;
           border-radius: 8px;
         }
+        /* « Se connecter » visiteur : dans la rangée à partir de 960px, dans le menu en dessous (N1 / P1) */
+        .sform-login-row { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1); }
+        .sform-login-menu { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease; }
+        @media (hover: hover) and (pointer: fine) {
+          .sform-login-row:hover, .sform-login-menu:hover { color: ${CREAM}; background-color: rgba(232,228,220,0.05); }
+        }
+        .sform-login-row:active { transform: scale(0.97); }
+        @media (prefers-reduced-motion: reduce) { .sform-login-row:active { transform: none; } }
+        @media (max-width: 959px) { .sform-login-row { display: none !important; } }
+        @media (min-width: 960px) { .sform-login-menu { display: none !important; } }
         .sform-q-input::placeholder { color: rgba(138,138,138,0.5); }
         /* Micro-interaction CTA — lift léger, flèche qui glisse, clic enfoncé */
         .op-cta {
@@ -377,13 +387,19 @@ export default function FormationsPageClient({
                 </span>
               </Link>
             ) : !authLoading ? (
-              <Link
-                href="/become-coach"
-                style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none', padding: '8px 16px', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.25)` }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.1)` }}>
-                Devenir coach
-              </Link>
+              <>
+                <Link href="/login" className="sform-login-row"
+                  style={{ fontSize: 13, fontWeight: 600, textDecoration: 'none', padding: '8px 12px', borderRadius: 10, whiteSpace: 'nowrap' }}>
+                  Se connecter
+                </Link>
+                <Link
+                  href="/become-coach"
+                  style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none', padding: '8px 16px', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.25)` }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.1)` }}>
+                  Devenir coach
+                </Link>
+              </>
             ) : null}
             <button style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(232,228,220,0.03)', border: `1px solid rgba(232,228,220,0.08)`, color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
@@ -391,7 +407,7 @@ export default function FormationsPageClient({
               <HelpCircle size={16} />
             </button>
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setShowMenu(!showMenu)} style={{ width: 38, height: 38, borderRadius: 10, background: showMenu ? 'rgba(232,228,220,0.08)' : 'rgba(232,228,220,0.03)', border: `1px solid rgba(232,228,220,0.08)`, color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
+              <button onClick={() => setShowMenu(!showMenu)} aria-label="Menu" aria-expanded={showMenu} style={{ width: 38, height: 38, borderRadius: 10, background: showMenu ? 'rgba(232,228,220,0.08)' : 'rgba(232,228,220,0.03)', border: `1px solid rgba(232,228,220,0.08)`, color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
                 <Menu size={16} />
               </button>
               {showMenu && (
@@ -406,11 +422,18 @@ export default function FormationsPageClient({
                       {label}
                     </Link>
                   ))}
-                  <button onClick={() => signOut()} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, color: SILVER, background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.05)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
-                    Déconnexion
-                  </button>
+                  {isLoggedIn ? (
+                    <button onClick={() => signOut()} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, color: SILVER, background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.05)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
+                      Déconnexion
+                    </button>
+                  ) : (
+                    <Link href="/login" className="sform-login-menu"
+                      style={{ display: 'block', padding: '9px 14px', fontSize: 13, textDecoration: 'none', borderRadius: 8 }}>
+                      Se connecter
+                    </Link>
+                  )}
                 </div>
               )}
             </div>

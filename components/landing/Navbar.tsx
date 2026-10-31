@@ -1,35 +1,35 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
-import { createClient } from '@/lib/supabase/client'
+import { useUser } from '@/hooks/useUser'
 import { Menu, X } from 'lucide-react'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
+// « Tarifs » retiré : l'ancre /#tarifs n'existe pas tant que PricingTeaser n'est pas monté (AUDIT-APPLE n° 16).
 const NAV_LINKS = [
   { label: 'Formations', href: '/formations' },
   { label: 'Coachs',     href: '/coaches' },
-  { label: 'Tarifs',     href: '/#tarifs' },
 ]
+
+const NAV_CTA_TRANSITION = 'background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1)'
+
+const MENU_BTN: React.CSSProperties = {
+  padding: '13px', borderRadius: 10, textAlign: 'center',
+  color: '#f0f4ff', textDecoration: 'none', fontSize: 14, fontWeight: 700,
+}
 
 export default function Navbar() {
   const navRef  = useRef<HTMLElement>(null)
   const chipRef = useRef<HTMLDivElement>(null)
-  const [role, setRole] = useState<'coach' | 'student' | null>(null)
+  // Contexte profil global (app/providers.tsx) : `loading` évite d'afficher les liens visiteur à un connecté.
+  const { user, profile, loading } = useUser()
+  const role = profile?.role ?? null
   const [menuOpen, setMenuOpen] = useState(false)
-
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }: { data: { user: any } }) => {
-      if (!user) return
-      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      setRole(data?.role ?? null)
-    })
-  }, [])
 
   useGSAP(() => {
     const nav = navRef.current
@@ -72,10 +72,12 @@ export default function Navbar() {
   return (
     <nav
       ref={navRef}
+      className="landing-nav"
       style={{
         position: 'fixed', top: 0, left: 0, right: 0,
-        zIndex: 100, display: 'flex',
-        alignItems: 'center', justifyContent: 'space-between',
+        // Grille 1fr/auto/1fr : les liens centraux ne bougent pas quand la zone de droite change (chargement, visiteur, connecté).
+        zIndex: 100, display: 'grid', gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'center',
         padding: '0 clamp(20px,4vw,48px)', height: 68,
         backgroundColor: 'transparent',
         borderBottom: '1px solid transparent',
@@ -122,27 +124,37 @@ export default function Navbar() {
         ))}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {role ? (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+        {loading ? null : user ? (
           <Link
             href={spaceHref}
             className="nav-cta"
-            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(240,244,255,0.85)', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' }}
+            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(240,244,255,0.85)', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: NAV_CTA_TRANSITION }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)'; e.currentTarget.style.color = '#f0f4ff' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(240,244,255,0.85)' }}
           >
             Mon espace
           </Link>
         ) : (
-          <Link
-            href="/become-coach"
-            className="nav-cta"
-            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)', color: '#f0f4ff', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.22)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.8)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.12)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)' }}
-          >
-            Devenir coach
-          </Link>
+          <>
+            {/* Connexion : lien secondaire à côté du CTA d'inscription (N1 / P1). Sous 800 px il passe dans le menu. */}
+            <Link
+              href="/login"
+              className="nav-login"
+              style={{ padding: '10px 12px', borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 600 }}
+            >
+              Se connecter
+            </Link>
+            <Link
+              href="/become-coach"
+              className="nav-cta"
+              style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)', color: '#f0f4ff', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: NAV_CTA_TRANSITION }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.22)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.8)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.12)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)' }}
+            >
+              Devenir coach
+            </Link>
+          </>
         )}
 
         <button
@@ -174,21 +186,41 @@ export default function Navbar() {
               {label}
             </a>
           ))}
-          <Link href={role ? spaceHref : '/login'} onClick={() => setMenuOpen(false)}
-            style={{
-              marginTop: 16, padding: '13px', borderRadius: 10, textAlign: 'center',
-              border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)',
-              color: '#f0f4ff', textDecoration: 'none', fontSize: 14, fontWeight: 700,
-            }}>
-            {role ? 'Mon espace' : 'Se connecter'}
-          </Link>
+          {loading ? null : user ? (
+            <Link href={spaceHref} className="nav-menu-cta" onClick={() => setMenuOpen(false)}
+              style={{ ...MENU_BTN, marginTop: 16, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)' }}>
+              Mon espace
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="nav-menu-cta" onClick={() => setMenuOpen(false)}
+                style={{ ...MENU_BTN, marginTop: 16, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
+                Se connecter
+              </Link>
+              <Link href="/become-coach" className="nav-menu-cta" onClick={() => setMenuOpen(false)}
+                style={{ ...MENU_BTN, marginTop: 10, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)' }}>
+                Devenir coach
+              </Link>
+            </>
+          )}
         </div>
       )}
 
       <style>{`
+        .nav-login { color: rgba(240,244,255,0.75); transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1); }
+        .nav-menu-cta { display: block; transition: transform 0.1s cubic-bezier(0.23,1,0.32,1); }
+        @media (hover: hover) and (pointer: fine) {
+          .nav-login:hover { color: #f0f4ff; background-color: rgba(255,255,255,0.05); }
+        }
+        .nav-cta:active, .nav-login:active, .nav-menu-cta:active { transform: scale(0.97); }
+        .landing-nav :is(a, button):focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; border-radius: 8px; }
+        @media (prefers-reduced-motion: reduce) {
+          .nav-cta:active, .nav-login:active, .nav-menu-cta:active { transform: none; }
+        }
         @media (max-width: 800px) {
           .nav-links { display: none !important; }
           .nav-burger { display: flex !important; }
+          .nav-login { display: none !important; }
         }
         @media (max-width: 420px) {
           .nav-cta { display: none !important; }

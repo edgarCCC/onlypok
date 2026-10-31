@@ -5,7 +5,7 @@ import Link from 'next/link'
 const COLS = [
   {
     title: 'Produit',
-    links: [{ label: 'Formations', href: '/formations' }, { label: 'Coachs', href: '/coaches' }, { label: 'Tarifs', href: '/#tarifs' }, { label: 'Coaching 1:1', href: '/register' }],
+    links: [{ label: 'Formations', href: '/formations' }, { label: 'Coachs', href: '/coaches' }, { label: 'Coaching 1:1', href: '/formations?tab=coaching' }],
   },
   {
     title: 'Outils',
@@ -17,10 +17,21 @@ const COLS = [
   },
 ]
 
-function SocialIcon({ path }: { path: string }) {
+// Réseaux sociaux : une icône n'est affichée que lorsque son URL est renseignée (AUDIT-APPLE n° 16).
+const SOCIAL_LINKS: { label: string; href: string; path: string }[] = [
+  { label: 'Twitter / X', href: '', path: 'M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z' },
+  { label: 'Discord',     href: '', path: 'M21 2H3v20l4-4h14V2z' },
+  { label: 'YouTube',     href: '', path: 'M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z M9.75 15.02l5.75-3.02-5.75-3.02v6.04z' },
+]
+const ACTIVE_SOCIAL_LINKS = SOCIAL_LINKS.filter(s => s.href)
+
+function SocialIcon({ label, href, path }: { label: string; href: string; path: string }) {
   return (
     <a
-      href="#"
+      href={href}
+      aria-label={label}
+      target="_blank"
+      rel="noopener noreferrer"
       style={{
         width: 36, height: 36, borderRadius: 8,
         border: '1px solid rgba(255,255,255,0.08)',
@@ -59,11 +70,11 @@ export default function Footer() {
             <p style={{ fontSize: 13, color: 'rgba(240,244,255,0.3)', lineHeight: 1.7, maxWidth: 240, fontFamily: 'var(--font-space,sans-serif)', marginBottom: 24 }}>
               La plateforme de référence pour les joueurs de poker qui jouent pour gagner.
             </p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <SocialIcon path="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
-              <SocialIcon path="M21 2H3v20l4-4h14V2z" />
-              <SocialIcon path="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z M9.75 15.02l5.75-3.02-5.75-3.02v6.04z" />
-            </div>
+            {ACTIVE_SOCIAL_LINKS.length > 0 && (
+              <div style={{ display: 'flex', gap: 8 }}>
+                {ACTIVE_SOCIAL_LINKS.map(s => <SocialIcon key={s.label} {...s} />)}
+              </div>
+            )}
           </div>
 
           {COLS.map(col => (
