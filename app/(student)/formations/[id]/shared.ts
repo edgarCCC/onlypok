@@ -1,5 +1,6 @@
 /* ─── Shared constants & pure helpers for the formation detail page ─────────── */
 import { generateWeeklySlots, DEFAULT_COACH_TIMEZONE } from '@/lib/timezone'
+import { MIN_LEAD_MINUTES } from '@/lib/slots'
 
 export const CREAM  = '#f0f4ff'
 export const SILVER = 'rgba(240,244,255,0.45)'
@@ -92,7 +93,7 @@ export function generateSlots(
 ): Date[] {
   /* 'HH:MM' = heure murale du coach (Europe/Paris) : instants absolus,
      affichés ensuite dans le fuseau du navigateur de l'élève. */
-  return generateWeeklySlots(availabilities, bookedTimestamps, { weeksAhead, timeZone: DEFAULT_COACH_TIMEZONE })
+  return generateWeeklySlots(availabilities, bookedTimestamps, { weeksAhead, timeZone: DEFAULT_COACH_TIMEZONE, minLeadMinutes: MIN_LEAD_MINUTES })
 }
 
 /* ─── video url helpers ─────────────────────────────────────────────────────── */

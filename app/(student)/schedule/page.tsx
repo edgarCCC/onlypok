@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { fetchTakenSlots } from '../formations/[id]/shared'
 import { generateWeeklySlots, timeZoneNotice, shortTimeZoneName, getLocalTimeZone, DEFAULT_COACH_TIMEZONE, COACH_APPROVAL_HOURS } from '@/lib/timezone'
+import { MIN_LEAD_MINUTES } from '@/lib/slots'
 import {
   Calendar, Clock, CheckCircle, AlertCircle, ChevronLeft, ChevronRight,
   Loader2, BookOpen, Video, Zap, ArrowRight, CalendarDays, ChevronDown, Link2, User, FileText,
@@ -40,7 +41,7 @@ function generateUpcomingSlots(
   bookedTimestamps: string[],
   weeksAhead = 8
 ): Date[] {
-  return generateWeeklySlots(availabilities, bookedTimestamps, { weeksAhead, timeZone: DEFAULT_COACH_TIMEZONE })
+  return generateWeeklySlots(availabilities, bookedTimestamps, { weeksAhead, timeZone: DEFAULT_COACH_TIMEZONE, minLeadMinutes: MIN_LEAD_MINUTES })
 }
 
 /* ─────────────── Dashboard "Mes sessions" ─────────────── */

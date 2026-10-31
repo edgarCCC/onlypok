@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
+import { validateSlot, supabaseSlotStore, SLOT_REJECTION_HTTP } from '@/lib/slots'
 
 export async function POST(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
@@ -63,6 +64,27 @@ export async function POST(req: NextRequest) {
     if (isCoaching && !coachId) {
       console.error('[stripe/checkout] formation has no coach_id — booking will be orphaned', { formation_id })
     }
+
+    /* R3 — le créneau choisi est validé AVANT la création de la session Stripe
+       (ISO strict, délai minimal, grille, disponibilités du coach, déjà pris).
+       Optionnel : packs ou résa sans créneau n'en envoient pas. Après paiement,
+       lib/bookings.ts reprend la valeur canonique depuis les metadata. */
+    let scheduledAtIso = ''
+    if (isCoaching && scheduled_at != null && scheduled_at !== '') {
+      let slot: Awaited<ReturnType<typeof validateSlot>>
+      try {
+        slot = await validateSlot({ coachId, scheduledAt: scheduled_at }, supabaseSlotStore(createAdminSupabaseClient()))
+      } catch (err) {
+        console.error('[stripe/checkout] vérification du créneau impossible:', (err as Error).message)
+        return NextResponse.json({ error: 'Vérification du créneau impossible, réessaie.' }, { status: 500 })
+      }
+      if (!slot.ok) {
+        console.warn('[stripe/checkout] créneau refusé', { formation_id, coachId, scheduled_at: String(scheduled_at).slice(0, 64), reason: slot.reason, userId: user.id })
+        const { status, message } = SLOT_REJECTION_HTTP[slot.reason]
+        return NextResponse.json({ error: message, code: slot.reason }, { status })
+      }
+      scheduledAtIso = slot.scheduledAt
+    }
     // {CHECKOUT_SESSION_ID} is a Stripe template variable — replaced with the real session ID at redirect time
     const successUrl = isCoaching
       ? `${origin}/schedule?payment=success&session_id={CHECKOUT_SESSION_ID}`
@@ -95,15 +117,16 @@ export async function POST(req: NextRequest) {
         coach_id:     coachId,
         content_type: formation.content_type,
         pack_index:   pack_index != null ? String(pack_index) : '',
-        scheduled_at: scheduled_at ?? '',
+        scheduled_at: scheduledAtIso,
       },
       success_url: successUrl,
       cancel_url:  `${origin}/formations/${formation_id}`,
     })
 
     return NextResponse.json({ url: session.url })
-  } catch (err: any) {
-    console.error('[stripe/checkout]', err.message)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err) {
+    // Détail (Stripe, Supabase, JSON) dans les logs seulement, jamais renvoyé au client.
+    console.error('[stripe/checkout]', (err as Error).message)
+    return NextResponse.json({ error: 'Impossible de lancer le paiement, réessaie.' }, { status: 500 })
   }
 }

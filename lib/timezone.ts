@@ -10,6 +10,7 @@ export const DEFAULT_COACH_TIMEZONE = 'Europe/Paris'
    Purement informatif : aucune expiration automatique n'existe à ce jour. */
 export const COACH_APPROVAL_HOURS = 48
 
+const MINUTE_MS = 60_000
 const HOUR_MS = 3600_000
 const DAY_MS  = 24 * HOUR_MS
 
@@ -115,14 +116,17 @@ export function timeZoneNotice(coachTimeZone: string = DEFAULT_COACH_TIMEZONE, a
 /** Génère les créneaux à venir à partir des disponibilités hebdomadaires.
     `day_of_week` : 1 = lundi … 7 = dimanche ; `slot` : 'HH:MM' dans le fuseau du coach.
     Les instants renvoyés sont absolus : l'affichage local (toLocale*) les convertit
-    automatiquement dans le fuseau de l'élève. */
+    automatiquement dans le fuseau de l'élève.
+    `minLeadMinutes` : délai minimal avant le début (0 par défaut) ; les sélecteurs élève
+    passent MIN_LEAD_MINUTES (lib/slots.ts) pour ne proposer que ce que le serveur accepte. */
 export function generateWeeklySlots(
   availabilities: { day_of_week: number; slot: string }[],
   bookedTimestamps: string[],
-  { weeksAhead = 8, timeZone = DEFAULT_COACH_TIMEZONE, now = new Date() }: {
-    weeksAhead?: number; timeZone?: string; now?: Date
+  { weeksAhead = 8, timeZone = DEFAULT_COACH_TIMEZONE, now = new Date(), minLeadMinutes = 0 }: {
+    weeksAhead?: number; timeZone?: string; now?: Date; minLeadMinutes?: number
   } = {},
 ): Date[] {
+  const earliest = now.getTime() + minLeadMinutes * MINUTE_MS
   const cutoff = now.getTime() + weeksAhead * 7 * DAY_MS
   const booked = new Set(
     bookedTimestamps.map(t => new Date(t)).filter(d => !Number.isNaN(d.getTime())).map(d => d.toISOString()),
@@ -141,7 +145,7 @@ export function generateWeeklySlots(
       const cal = new Date(Date.UTC(today.year, today.month - 1, today.day + diff + week * 7))
       const slot = zonedTimeToUtc(cal.getUTCFullYear(), cal.getUTCMonth() + 1, cal.getUTCDate(), hh, mm, timeZone)
       const t = slot.getTime()
-      if (t <= now.getTime() || t > cutoff) continue
+      if (t <= now.getTime() || t < earliest || t > cutoff) continue
       if (booked.has(slot.toISOString()) || seen.has(t)) continue
       seen.add(t)
       result.push(slot)
