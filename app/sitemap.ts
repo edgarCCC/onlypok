@@ -1,24 +1,15 @@
 import type { MetadataRoute } from 'next'
+import { PUBLIC_ROUTES } from '@/lib/routes'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://onlypok.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${BASE_URL}/`,                        changeFrequency: 'weekly',  priority: 1 },
-    { url: `${BASE_URL}/formations`,              changeFrequency: 'daily',   priority: 0.9 },
-    { url: `${BASE_URL}/trainer`,                 changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/trainer/ranges`,          changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${BASE_URL}/trainer/equity`,          changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${BASE_URL}/trainer/quiz`,            changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${BASE_URL}/tracker`,                 changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${BASE_URL}/register`,                changeFrequency: 'yearly',  priority: 0.5 },
-    { url: `${BASE_URL}/become-coach`,            changeFrequency: 'yearly',  priority: 0.5 },
-    { url: `${BASE_URL}/legal/mentions-legales`,  changeFrequency: 'yearly',  priority: 0.1 },
-    { url: `${BASE_URL}/legal/cgu`,               changeFrequency: 'yearly',  priority: 0.1 },
-    { url: `${BASE_URL}/legal/confidentialite`,   changeFrequency: 'yearly',  priority: 0.1 },
-    { url: `${BASE_URL}/legal/cookies`,           changeFrequency: 'yearly',  priority: 0.1 },
-  ]
+  const staticRoutes: MetadataRoute.Sitemap = PUBLIC_ROUTES.map(({ path, changeFrequency, priority }) => ({
+    url: `${BASE_URL}${path}`,
+    changeFrequency,
+    priority,
+  }))
 
   try {
     const admin = createAdminSupabaseClient()

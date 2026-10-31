@@ -1,7 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { ADMIN_LOGIN_ROUTE, isAdminRoute, isCoachRoute, isStudentRoute } from '@/lib/routes'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -27,22 +28,15 @@ export async function middleware(request: NextRequest) {
   // Ne pas exécuter la logique de redirection sur les routes API
   if (pathname.startsWith('/api/')) return supabaseResponse
 
-  const coachRoutes   = ['/coach']
-  const adminRoutes   = ['/admin']
-  const studentRoutes = ['/dashboard', '/schedule', '/track', '/train', '/messages', '/coaching']
-
-  // Match par segment exact : '/train' protège /train et /train/*, mais pas /trainer
-  const matches = (route: string) => pathname === route || pathname.startsWith(`${route}/`)
-
   // Porte d'entrée de l'interface admin : accessible déconnecté
-  const isAdminLogin = pathname === '/admin/login'
+  const isAdminLogin = pathname === ADMIN_LOGIN_ROUTE
 
   if (!user) {
     if (isAdminLogin) return supabaseResponse
-    if (adminRoutes.some(matches)) {
+    if (isAdminRoute(pathname)) {
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
-    const isProtected = [...coachRoutes, ...studentRoutes].some(matches)
+    const isProtected = isCoachRoute(pathname) || isStudentRoute(pathname)
     if (isProtected) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -57,7 +51,7 @@ export async function middleware(request: NextRequest) {
 
   const role = profile?.role
 
-  if (coachRoutes.some(matches) && role !== 'coach' && role !== 'admin') {
+  if (isCoachRoute(pathname) && role !== 'coach' && role !== 'admin') {
     return NextResponse.redirect(new URL('/formations', request.url))
   }
 
@@ -69,7 +63,7 @@ export async function middleware(request: NextRequest) {
       : supabaseResponse
   }
 
-  if (adminRoutes.some(matches) && role !== 'admin') {
+  if (isAdminRoute(pathname) && role !== 'admin') {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
