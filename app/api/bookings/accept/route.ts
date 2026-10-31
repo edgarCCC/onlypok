@@ -3,14 +3,20 @@ import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendStudentBookingAcceptedEmail } from '@/lib/email'
 import { createMeetingRoom, isBookingRefunded } from '@/lib/bookings'
+import { object, readJsonBody, uuid } from '@/lib/validate'
+
+// POST /api/bookings/accept — Body: { booking_id }
+// Q11 : schéma (UUID) avant toute lecture en base ; 415 / 413 / 400 gérés par readJsonBody.
+const AcceptBody = object({ booking_id: uuid() })
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
 
-  const { booking_id } = await req.json()
-  if (!booking_id) return NextResponse.json({ error: 'Missing booking_id' }, { status: 400 })
+  const body = await readJsonBody(req, AcceptBody, { tag: 'bookings/accept' })
+  if (!body.ok) return body.response
+  const { booking_id } = body.data
 
   const { data: booking } = await supabase
     .from('bookings')
@@ -51,7 +57,11 @@ export async function POST(req: NextRequest) {
     .update({ status: 'scheduled', ...(meetingUrl ? { meeting_url: meetingUrl } : {}) })
     .eq('id', booking_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    // Paiement déjà capturé côté Stripe : à rapprocher à la main (détail dans les logs seulement).
+    console.error('[RECONCILE] paiement capturé mais statut non mis à jour', { booking_id, error: error.message })
+    return NextResponse.json({ error: 'Paiement encaissé mais confirmation non enregistrée : réessayez ou contactez le support.' }, { status: 500 })
+  }
 
   const { data: formation } = await supabase
     .from('formations').select('title').eq('id', booking.formation_id).single()

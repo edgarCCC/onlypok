@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
 import { decryptPaymentField, encryptPaymentField, isPaymentEncryptionConfigured } from '@/lib/crypto'
+import { object, oneOf, optional, readJsonBody, string } from '@/lib/validate'
 
 /**
  * Coordonnées de paiement du coach (audit item 41).
@@ -13,6 +14,7 @@ import { decryptPaymentField, encryptPaymentField, isPaymentEncryptionConfigured
 const ENCRYPTED_FIELDS = ['iban', 'paypal_email', 'stripe_account', 'revolut_tag', 'payment_notes'] as const
 /* Champ non sensible (simple identifiant de méthode : 'iban' | 'paypal' | 'stripe' | 'revolut') */
 const PLAIN_FIELDS = ['preferred_payment'] as const
+const PAYMENT_METHODS = ['iban', 'paypal', 'stripe', 'revolut'] as const
 
 type EncryptedField = (typeof ENCRYPTED_FIELDS)[number]
 type PlainField = (typeof PLAIN_FIELDS)[number]
@@ -20,6 +22,17 @@ type PaymentField = EncryptedField | PlainField
 
 const ALL_FIELDS: readonly PaymentField[] = [...ENCRYPTED_FIELDS, ...PLAIN_FIELDS]
 const MAX_FIELD_LENGTH = 500
+
+/* Q11 — mise à jour partielle : seules les clés présentes sont écrites ; null ou ''
+   vident le champ ; preferred_payment est limité aux méthodes connues. */
+const PaymentInfoBody = object({
+  iban:              optional(string({ max: MAX_FIELD_LENGTH })),
+  paypal_email:      optional(string({ max: MAX_FIELD_LENGTH })),
+  stripe_account:    optional(string({ max: MAX_FIELD_LENGTH })),
+  revolut_tag:       optional(string({ max: MAX_FIELD_LENGTH })),
+  payment_notes:     optional(string({ max: MAX_FIELD_LENGTH })),
+  preferred_payment: optional(oneOf(PAYMENT_METHODS)),
+})
 
 async function getAuthenticatedUser() {
   const userClient = await createServerSupabaseClient()
@@ -63,28 +76,15 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: 'Chiffrement non configuré — contactez le support' }, { status: 503 })
   }
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: 'JSON invalide' }, { status: 400 })
-  }
-  if (typeof body !== 'object' || body === null) {
-    return NextResponse.json({ error: 'Payload invalide' }, { status: 400 })
-  }
+  // Content-Type (415), taille (413), JSON, types, longueurs et enum (400) : lib/validate.ts
+  const body = await readJsonBody(req, PaymentInfoBody, { tag: 'coach/payment-info' })
+  if (!body.ok) return body.response
 
-  const payload = body as Record<string, unknown>
   const update: Record<string, string | null> = {}
 
   for (const field of ALL_FIELDS) {
-    if (!(field in payload)) continue // update partiel autorisé
-    const value = payload[field]
-    if (value !== null && typeof value !== 'string') {
-      return NextResponse.json({ error: `Champ ${field} invalide` }, { status: 400 })
-    }
-    if (typeof value === 'string' && value.length > MAX_FIELD_LENGTH) {
-      return NextResponse.json({ error: `Champ ${field} trop long (max ${MAX_FIELD_LENGTH})` }, { status: 400 })
-    }
+    if (!(field in body.data)) continue // update partiel autorisé
+    const value = body.data[field] ?? null
     const normalized = value === '' ? null : value
     update[field] = (ENCRYPTED_FIELDS as readonly string[]).includes(field)
       ? encryptPaymentField(normalized)

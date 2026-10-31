@@ -2,11 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
+import { object, optional, readJsonBody, string } from '@/lib/validate'
 
 export const maxDuration = 60
 
 const MAX_NOTES_LEN = 8000
 const MAX_TITLE_LEN = 200
+/* 8 000 caractères UTF-8 (4 octets max) + titre : 64 Ko suffisent. */
+const MAX_BODY_BYTES = 64 * 1024
+
+/* Q11 — notes typées et bornées (coût API) ; le titre vient de la base (aucune
+   longueur max côté formulaire) : typé puis tronqué à MAX_TITLE_LEN, jamais refusé, comme avant. */
+const SynthesizeBody = object({
+  notes: string({ min: 1, max: MAX_NOTES_LEN }),
+  title: optional(string({ max: MAX_TITLE_LEN, truncate: true })),
+})
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
@@ -17,19 +27,17 @@ export async function POST(req: NextRequest) {
   const limit = rateLimit(`synthesize:${user.id}`, 15, 60_000)
   if (!limit.ok) return tooManyRequests(limit.retryAfter)
 
+  const body = await readJsonBody(req, SynthesizeBody, { tag: 'ai/synthesize', maxBytes: MAX_BODY_BYTES })
+  if (!body.ok) return body.response
+  const { notes, title } = body.data
+
+  if (!notes.trim()) {
+    return NextResponse.json({ error: 'Notes vides' }, { status: 400 })
+  }
+
+  const safeTitle = title ?? ''
+
   try {
-    const { notes, title } = await req.json()
-
-    if (!notes?.trim()) {
-      return NextResponse.json({ error: 'Notes vides' }, { status: 400 })
-    }
-
-    if (typeof notes !== 'string' || notes.length > MAX_NOTES_LEN) {
-      return NextResponse.json({ error: 'Notes trop longues (8000 caractères max)' }, { status: 400 })
-    }
-
-    const safeTitle = typeof title === 'string' ? title.slice(0, MAX_TITLE_LEN) : ''
-
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json({ error: 'Clé API manquante' }, { status: 500 })
     }

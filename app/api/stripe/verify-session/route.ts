@@ -4,51 +4,46 @@ import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/sup
 import { sendAdminAlertEmail } from '@/lib/email'
 import { recordPurchaseFromSession } from '@/lib/purchases'
 import { ensureCoachingBookings } from '@/lib/bookings'
+import { object, readJsonBody, string } from '@/lib/validate'
 
 // POST /api/stripe/verify-session
 // Fallback: called on success redirect if webhook hasn't fired yet.
 // Verifies the Stripe session, creates booking/purchase if missing.
+
+// Body: { session_id } — Q11 : identifiant de session Checkout Stripe (cs_…), borné.
+const VerifySessionBody = object({ session_id: string({ min: 1, max: 255, pattern: /^cs_[A-Za-z0-9_]+$/ }) })
+
 export async function POST(req: NextRequest) {
   try {
     return await handleVerifySession(req)
-  } catch (err: any) {
-    console.error('[verify-session] UNHANDLED EXCEPTION:', err?.message ?? err, err?.stack)
-    return NextResponse.json({ error: err?.message ?? 'Internal server error' }, { status: 500 })
+  } catch (err: unknown) {
+    // Détail (Stripe, Supabase) dans les logs seulement, jamais renvoyé au client.
+    console.error('[verify-session] UNHANDLED EXCEPTION:', err instanceof Error ? err.message : err, err instanceof Error ? err.stack : undefined)
+    return NextResponse.json({ error: 'Vérification du paiement impossible, réessaie.' }, { status: 500 })
   }
 }
 
 async function handleVerifySession(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
 
-  let body: any
-  try {
-    body = await req.json()
-  } catch (e: any) {
-    console.error('[verify-session] failed to parse request body:', e.message)
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
-  }
-
-  const { session_id } = body
-  if (!session_id) {
-    console.error('[verify-session] missing session_id in request body')
-    return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
-  }
-
-
   const supabase      = await createServerSupabaseClient()
   const adminSupabase = createAdminSupabaseClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    console.error('[verify-session] unauthenticated — cookie missing or expired', { session_id })
+    console.error('[verify-session] unauthenticated — cookie missing or expired')
     return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
   }
+
+  const body = await readJsonBody(req, VerifySessionBody, { tag: 'stripe/verify-session' })
+  if (!body.ok) return body.response
+  const { session_id } = body.data
 
   let session: Stripe.Checkout.Session
   try {
     session = await stripe.checkout.sessions.retrieve(session_id)
-  } catch (e: any) {
-    console.error('[verify-session] stripe session not found', { session_id, err: e.message })
+  } catch (e: unknown) {
+    console.error('[verify-session] stripe session not found', { session_id, err: e instanceof Error ? e.message : e })
     return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   }
 
@@ -121,7 +116,8 @@ async function handleVerifySession(req: NextRequest) {
           erreur: bookingError.message, code: bookingError.code,
         },
       }).catch(() => {})
-      return NextResponse.json({ error: bookingError.message }, { status: 500 })
+      // Détail dans les logs et l'alerte admin ; le client reçoit un message générique.
+      return NextResponse.json({ error: 'Paiement reçu mais réservation non créée : contacte le support.' }, { status: 500 })
     }
 
     return NextResponse.json({

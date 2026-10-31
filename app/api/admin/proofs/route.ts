@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { assertAdmin } from '@/lib/assert-admin'
 import { sendCoachProofReviewedEmail } from '@/lib/email'
+import { object, oneOf, optional, readJsonBody, string, uuid } from '@/lib/validate'
 
 /* Libellés catégories — mêmes clés que l'écran de validation */
 const CAT_LABELS: Record<string, string> = {
@@ -13,6 +14,15 @@ const CAT_LABELS: Record<string, string> = {
   pokerstats: 'PokerStats / HM3',
   palmares:   'Palmarès',
 }
+
+/* Q11 — POST : UUID de la preuve, statut parmi deux valeurs, motif borné
+   (il est recopié dans la notification et l'email envoyés au coach). */
+const REASON_MAX_LENGTH = 1000
+const ProofReviewBody = object({
+  proofId: uuid(),
+  status:  oneOf(['approved', 'rejected']),
+  reason:  optional(string({ max: REASON_MAX_LENGTH })),
+})
 
 /* Les opérations passent par le client service-role : le client session (RLS)
    ne voit/modifie pas les preuves des autres users — un update RLS-bloqué
@@ -42,10 +52,9 @@ export async function POST(req: Request) {
   const user = await assertAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { proofId, status, reason } = await req.json()
-  if (!proofId || !['approved', 'rejected'].includes(status)) {
-    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
-  }
+  const body = await readJsonBody(req, ProofReviewBody, { tag: 'admin/proofs' })
+  if (!body.ok) return body.response
+  const { proofId, status, reason } = body.data
 
   const admin = createAdminSupabaseClient()
   const { data, error } = await admin
@@ -58,7 +67,11 @@ export async function POST(req: Request) {
     .eq('id', proofId)
     .select('id, coach_id, category')
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    // Détail dans les logs seulement, jamais renvoyé au client.
+    console.error('[admin/proofs] update failed:', error.message)
+    return NextResponse.json({ error: 'Mise à jour de la preuve impossible.' }, { status: 500 })
+  }
   if (!data || data.length === 0) {
     return NextResponse.json({ error: 'Preuve introuvable — aucune ligne modifiée' }, { status: 404 })
   }

@@ -14,6 +14,7 @@ import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
+import { NOTE_MAX_LENGTH } from '@/lib/constants'
 import { Send, Search, MessageSquare, Inbox, Check, CheckCheck, NotebookPen, ChevronDown, ChevronUp, Paperclip, FileText } from 'lucide-react'
 
 /* ── Theme tokens ───────────────────────────────────────── */
@@ -214,7 +215,8 @@ function CoachMessagesInner() {
   const [sending, setSending]               = useState(false)
   const [search, setSearch]                 = useState('')
   const [note, setNote]                     = useState('')
-  const [noteSaved, setNoteSaved]           = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [noteSaved, setNoteSaved]           = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [noteError, setNoteError]           = useState('')
   const [noteOpen, setNoteOpen]             = useState(false)
 
   const [uploading, setUploading]   = useState(false)
@@ -337,19 +339,28 @@ function CoachMessagesInner() {
   const handleNoteChange = useCallback((val: string) => {
     setNote(val)
     setNoteSaved('saving')
+    setNoteError('')
     if (noteTimerRef.current) clearTimeout(noteTimerRef.current)
     noteTimerRef.current = setTimeout(async () => {
       if (!activeStudentId) return
       try {
-        await fetch('/api/coach/student-notes', {
+        const res = await fetch('/api/coach/student-notes', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ student_id: activeStudentId, content: val }),
         })
+        if (!res.ok) {
+          // Q11 : refus serveur (note trop longue, session expirée…) → affiché, jamais « sauvegardé »
+          const json = (await res.json().catch(() => ({}))) as { error?: string }
+          setNoteError(json.error ?? 'Enregistrement impossible, réessaie.')
+          setNoteSaved('error')
+          return
+        }
         setNoteSaved('saved')
         setTimeout(() => setNoteSaved('idle'), 2000)
       } catch {
-        setNoteSaved('idle')
+        setNoteError('Connexion impossible, la note n’est pas enregistrée.')
+        setNoteSaved('error')
       }
     }, 1500)
   }, [activeStudentId])
@@ -837,6 +848,14 @@ function CoachMessagesInner() {
                 {noteSaved === 'saved' && (
                   <span style={{ fontSize: 10, color: VIOLET, fontWeight: 500 }}>✓ sauvegardé</span>
                 )}
+                {noteSaved === 'error' && (
+                  <span
+                    title={noteError}
+                    style={{ fontSize: 10, color: '#ef4444', fontWeight: 500, maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  >
+                    {noteError || 'non enregistré'}
+                  </span>
+                )}
                 {!noteOpen && note && (
                   <span style={{
                     fontSize: 11, color: SILVER, fontStyle: 'italic',
@@ -856,6 +875,7 @@ function CoachMessagesInner() {
                     onChange={e => handleNoteChange(e.target.value)}
                     placeholder={`Niveau actuel, axes de travail, objectifs pour ${activeConv.student.username ?? 'cet élève'}…`}
                     rows={4}
+                    maxLength={NOTE_MAX_LENGTH}
                     style={{
                       width: '100%', boxSizing: 'border-box',
                       background: 'rgba(0,0,0,0.3)',

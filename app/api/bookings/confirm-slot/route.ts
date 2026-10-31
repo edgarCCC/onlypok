@@ -3,22 +3,26 @@ import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/sup
 import { sendCoachSlotConfirmedEmail, sendStudentSlotConfirmedEmail } from '@/lib/email'
 import { isSlotConflictError } from '@/lib/bookings'
 import { validateSlot, supabaseSlotStore, SLOT_REJECTION_HTTP } from '@/lib/slots'
+import { object, readJsonBody, string, uuid } from '@/lib/validate'
 
 // POST /api/bookings/confirm-slot
 // Body: { booking_id, scheduled_at }
 // Student proposes a time slot → status becomes pending_coach_approval
 // Coach then accepts (captures Stripe, generates Jitsi link) or declines
+
+// Q11 : type et longueur seulement — le format ISO strict, le délai, la grille et
+// les disponibilités restent à validateSlot (R3), sans doublon.
+const ConfirmSlotBody = object({ booking_id: uuid(), scheduled_at: string({ min: 1, max: 64 }) })
+
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
 
-  const { booking_id, scheduled_at } = await req.json()
-
-  if (!booking_id || !scheduled_at) {
-    return NextResponse.json({ error: 'Missing booking_id or scheduled_at' }, { status: 400 })
-  }
+  const body = await readJsonBody(req, ConfirmSlotBody, { tag: 'bookings/confirm-slot' })
+  if (!body.ok) return body.response
+  const { booking_id, scheduled_at } = body.data
 
   // Verify ownership and current status
   const { data: booking } = await supabase

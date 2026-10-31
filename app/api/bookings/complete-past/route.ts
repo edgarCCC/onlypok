@@ -6,7 +6,7 @@ import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/sup
    depuis plus d'une heure basculent en 'completed'. Appelée au chargement du
    planning élève et de l'espace sessions coach — pas besoin de cron, le statut
    est juste au moment où quelqu'un le regarde. Limitée aux bookings de
-   l'utilisateur connecté (élève ou coach). */
+   l'utilisateur connecté (élève ou coach). Aucun corps lu (Q11 : rien à valider). */
 export async function POST() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -24,8 +24,9 @@ export async function POST() {
     .select('id')
 
   if (error) {
+    // Détail dans les logs seulement, jamais renvoyé au client.
     console.error('[complete-past]', error.message)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: 'Mise à jour des séances passées impossible.' }, { status: 500 })
   }
   return NextResponse.json({ ok: true, completed: data?.length ?? 0 })
 }

@@ -2,15 +2,29 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { validateSlot, supabaseSlotStore, SLOT_REJECTION_HTTP } from '@/lib/slots'
+import { int, object, optional, readJsonBody, string, uuid } from '@/lib/validate'
+
+/* Q11 — schéma du corps : UUID de formation, index de pack entier borné (l'index
+   réel est ensuite contrôlé contre formation.coaching_packs → 400), créneau typé
+   et borné seulement — le format ISO strict, le délai, la grille et les
+   disponibilités restent à validateSlot (R3), sans doublon. */
+const MAX_PACK_INDEX = 99 // l'UI coach ne plafonne pas le nombre de packs : garde-fou large
+const CheckoutBody = object({
+  formation_id: uuid(),
+  pack_index:   optional(int({ min: 0, max: MAX_PACK_INDEX })),
+  scheduled_at: optional(string({ max: 64 })),
+})
 
 export async function POST(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
   try {
-    const { formation_id, pack_index, scheduled_at } = await req.json()
-
     const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
+
+    const body = await readJsonBody(req, CheckoutBody, { tag: 'stripe/checkout' })
+    if (!body.ok) return body.response
+    const { formation_id, pack_index, scheduled_at } = body.data
 
     const { data: formation, error } = await supabase
       .from('formations')
@@ -48,7 +62,10 @@ export async function POST(req: NextRequest) {
     let productName: string
     if (isCoachingType && Array.isArray(formation.coaching_packs) && pack_index != null) {
       const pack = formation.coaching_packs[pack_index]
-      if (!pack) return NextResponse.json({ error: 'Pack not found' }, { status: 404 })
+      if (!pack) {
+        console.warn('[stripe/checkout] pack inconnu', { formation_id, pack_index, userId: user.id })
+        return NextResponse.json({ error: 'Pack inconnu pour cette formation.', code: 'unknown_pack' }, { status: 400 })
+      }
       unitAmount = Math.round(pack.price * 100)
       productName = `${formation.title} — ${pack.label ?? `Pack ${pack_index + 1}`}`
     } else {

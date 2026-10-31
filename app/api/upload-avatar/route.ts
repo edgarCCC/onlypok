@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { readFormFile } from '@/lib/validate'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 Mo
 const AVATAR_SIZE   = 512             // px, carré
@@ -11,15 +12,11 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await userClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const form = await req.formData()
-  const file = form.get('file') as File | null
-  if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
+  // Q11 — multipart obligatoire (415), formulaire lisible, champ `file` présent et non vide (400), 5 Mo max (413)
+  const upload = await readFormFile(req, { tag: 'upload-avatar', maxBytes: MAX_FILE_SIZE, tooLargeMessage: 'Image trop lourde (max 5 Mo)' })
+  if (!upload.ok) return upload.response
 
-  if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: 'Image trop lourde (max 5 Mo)' }, { status: 413 })
-  }
-
-  const bytes = await file.arrayBuffer()
+  const bytes = await upload.file.arrayBuffer()
 
   /* Ré-encodage sharp : valide que c'est une vraie image (rejette PDF/scripts
      renommés) et garantit un vrai JPEG au contentType déclaré. */
@@ -41,7 +38,11 @@ export async function POST(req: NextRequest) {
     .from('avatars')
     .upload(path, buffer, { contentType: 'image/jpeg', upsert: true })
 
-  if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 })
+  if (uploadError) {
+    // Détail dans les logs seulement, jamais renvoyé au client.
+    console.error('[upload-avatar] storage upload failed:', uploadError.message)
+    return NextResponse.json({ error: 'Envoi de l’image impossible, réessaie.' }, { status: 500 })
+  }
 
   const { data: urlData } = admin.storage.from('avatars').getPublicUrl(path)
   const url = `${urlData.publicUrl}?t=${Date.now()}`
@@ -56,5 +57,6 @@ export async function POST(req: NextRequest) {
     // Column may not exist yet — still return the URL so the UI shows the image
   }
 
-  return NextResponse.json({ url, dbError: dbError?.message ?? null })
+  // Aucun appelant ne lit ce drapeau ; le message brut de la base reste dans les logs.
+  return NextResponse.json({ url, profileUpdated: !dbError })
 }

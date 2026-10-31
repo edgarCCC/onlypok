@@ -3,14 +3,20 @@ import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendStudentBookingDeclinedEmail } from '@/lib/email'
 import { releaseDeclinedBookingPayment } from '@/lib/bookings'
+import { object, readJsonBody, uuid } from '@/lib/validate'
+
+// POST /api/bookings/decline — Body: { booking_id }
+// Q11 : schéma (UUID) avant toute lecture en base ; 415 / 413 / 400 gérés par readJsonBody.
+const DeclineBody = object({ booking_id: uuid() })
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
 
-  const { booking_id } = await req.json()
-  if (!booking_id) return NextResponse.json({ error: 'Missing booking_id' }, { status: 400 })
+  const body = await readJsonBody(req, DeclineBody, { tag: 'bookings/decline' })
+  if (!body.ok) return body.response
+  const { booking_id } = body.data
 
   const { data: booking } = await supabase
     .from('bookings')

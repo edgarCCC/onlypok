@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { fetchPublicBuffer } from '@/lib/net-guard'
 import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
+import { object, readJsonBody, string, uuid } from '@/lib/validate'
 
 export const maxDuration = 30
 
@@ -17,6 +18,14 @@ const SUPABASE_HOST = (() => {
   try { return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname } catch { return '' }
 })()
 
+/* Q11 — URL typée et bornée (l'hôte est ensuite restreint par fetchPublicBuffer), UUIDs stricts. */
+const MAX_URL_LENGTH = 2048
+const EnhanceBody = object({
+  image_url:    string({ min: 1, max: MAX_URL_LENGTH }),
+  formation_id: uuid(),
+  user_id:      uuid(),
+})
+
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -26,11 +35,9 @@ export async function POST(req: NextRequest) {
   const limit = rateLimit(`enhance:${user.id}`, 10, 60_000)
   if (!limit.ok) return tooManyRequests(limit.retryAfter)
 
-  const { image_url, formation_id, user_id } = await req.json()
-
-  if (!image_url || !formation_id || !user_id) {
-    return NextResponse.json({ error: 'Missing params' }, { status: 400 })
-  }
+  const body = await readJsonBody(req, EnhanceBody, { tag: 'enhance-thumbnail' })
+  if (!body.ok) return body.response
+  const { image_url, formation_id, user_id } = body.data
 
   if (user.id !== user_id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

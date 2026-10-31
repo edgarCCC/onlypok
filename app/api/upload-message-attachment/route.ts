@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
 import { sniffMime } from '@/lib/file-type'
+import { readFormFile } from '@/lib/validate'
 
 const MAX_SIZE = 10 * 1024 * 1024 // 10 MB
 
@@ -9,10 +10,10 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await userClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const form = await req.formData()
-  const file = form.get('file') as File | null
-  if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
-  if (file.size > MAX_SIZE) return NextResponse.json({ error: 'Fichier trop lourd (max 10 Mo)' }, { status: 400 })
+  // Q11 — multipart obligatoire (415), formulaire lisible, champ `file` présent et non vide (400), 10 Mo max (413)
+  const upload = await readFormFile(req, { tag: 'upload-message-attachment', maxBytes: MAX_SIZE, tooLargeMessage: 'Fichier trop lourd (max 10 Mo)' })
+  if (!upload.ok) return upload.response
+  const file = upload.file
 
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)

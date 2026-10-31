@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { PostgrestError, SupabaseClient, User } from '@supabase/supabase-js'
 import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
 import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
+import { boolean, object, optional, readJsonBody } from '@/lib/validate'
 
 /**
  * POST /api/coach/apply — un élève connecté devient coach après avoir accepté
@@ -14,8 +15,8 @@ import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
  * Corps attendu (JSON) : { acceptTerms: true }
  * Réponses :
  *   200 { ok: true, role: 'coach', alreadyCoach, termsRecorded }
- *   400 JSON invalide ou conditions non acceptées · 401 non connecté
- *   403 compte non élève (admin) · 409 profil modifié entre-temps
+ *   400 JSON invalide, acceptTerms non booléen ou conditions non acceptées · 401 non connecté
+ *   403 compte non élève (admin) · 409 profil modifié entre-temps · 413 corps trop volumineux
  *   415 Content-Type autre que JSON · 429 trop de tentatives · 500 écriture impossible
  *
  * Profil absent (upsert client échoué après signUp, compte social sans passage
@@ -37,7 +38,9 @@ const APPLY_RATE_WINDOW_MS = 60_000 // …par minute et par utilisateur
 const USERNAME_MAX_LENGTH = 24
 const USERNAME_RETRIES = 3
 
-type ApplyBody = { acceptTerms?: unknown }
+// Q11 : acceptTerms facultatif ici (un coach déjà promu reçoit 200 sans l'envoyer), booléen strict sinon.
+const ApplyBody = object({ acceptTerms: optional(boolean()) })
+
 type ProfileRow = { id: string; role: string | null }
 type UserMeta = { username?: string; full_name?: string; name?: string; avatar_url?: string }
 
@@ -95,19 +98,9 @@ export async function POST(req: NextRequest) {
   const limit = rateLimit(`coach-apply:${user.id}`, APPLY_RATE_LIMIT, APPLY_RATE_WINDOW_MS)
   if (!limit.ok) return tooManyRequests(limit.retryAfter)
 
-  const contentType = req.headers.get('content-type') ?? ''
-  if (!contentType.toLowerCase().includes('application/json')) {
-    return NextResponse.json({ error: 'Content-Type application/json requis' }, { status: 415 })
-  }
-  let body: ApplyBody
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: 'JSON invalide' }, { status: 400 })
-  }
-  if (typeof body !== 'object' || body === null) {
-    return NextResponse.json({ error: 'Payload invalide' }, { status: 400 })
-  }
+  // Content-Type (415), taille (413), JSON et schéma (400) : lib/validate.ts
+  const body = await readJsonBody(req, ApplyBody, { tag: 'coach/apply' })
+  if (!body.ok) return body.response
 
   const admin = createAdminSupabaseClient()
   const { data: existing, error: readError } = await admin
@@ -133,7 +126,7 @@ export async function POST(req: NextRequest) {
   if (profile.role !== 'student') {
     return NextResponse.json({ error: 'Réservé aux comptes élève' }, { status: 403 })
   }
-  if (body.acceptTerms !== true) {
+  if (body.data.acceptTerms !== true) {
     return NextResponse.json({ error: 'Tu dois accepter les conditions coach' }, { status: 400 })
   }
 
