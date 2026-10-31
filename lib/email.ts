@@ -1,10 +1,8 @@
 import { Resend } from 'resend'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { COACH_APPROVAL_HOURS, DEFAULT_COACH_TIMEZONE } from '@/lib/timezone'
+import { getAppUrl } from '@/lib/app-origin'
 
-/* Domaine définitif pas encore acheté : tout dérive de NEXT_PUBLIC_APP_URL,
-   repli sur le domaine Vercel actuel. Aucune URL de domaine en dur ailleurs. */
-const FALLBACK_APP_URL = 'https://onlypok.vercel.app'
 /* Expéditeur de test Resend (fonctionne sans domaine vérifié, vers le compte
    propriétaire uniquement). Définir EMAIL_FROM une fois le domaine vérifié. */
 const FALLBACK_FROM = 'OnlyPok <onboarding@resend.dev>'
@@ -13,11 +11,6 @@ const FALLBACK_FROM = 'OnlyPok <onboarding@resend.dev>'
    on force le fuseau du coach et on l'indique dans le texte. */
 const EMAIL_TIMEZONE = DEFAULT_COACH_TIMEZONE
 const EMAIL_TZ_LABEL = 'heure de Paris'
-
-function getAppUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_APP_URL?.trim() || FALLBACK_APP_URL
-  return raw.replace(/\/+$/, '')
-}
 
 function getFrom(): string {
   return process.env.EMAIL_FROM?.trim() || FALLBACK_FROM

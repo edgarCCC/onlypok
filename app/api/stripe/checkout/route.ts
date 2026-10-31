@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { validateSlot, supabaseSlotStore, SLOT_REJECTION_HTTP } from '@/lib/slots'
 import { int, object, optional, readJsonBody, string, uuid } from '@/lib/validate'
+import { resolveAppOrigin } from '@/lib/app-origin'
 
 /* Q11 — schéma du corps : UUID de formation, index de pack entier borné (l'index
    réel est ensuite contrôlé contre formation.coaching_packs → 400), créneau typé
@@ -73,7 +74,9 @@ export async function POST(req: NextRequest) {
       productName = formation.title
     }
 
-    const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    // URL de retour Stripe : le header Origin (choisi par l'appelant) n'est repris que s'il est
+    // une origine connue de l'application, sinon NEXT_PUBLIC_APP_URL (lib/app-origin.ts).
+    const origin = resolveAppOrigin(req)
 
     const coachId    = (formation as any).coach_id ?? ''
     const isCoaching = formation.content_type === 'coaching'
