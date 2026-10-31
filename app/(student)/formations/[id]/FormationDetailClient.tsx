@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
+import { withNext } from '@/lib/auth-redirect'
 import { Star, Check } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -59,7 +60,7 @@ export default function FormationDetailClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
-  const { user } = useUser()
+  const { user, loading: userLoading } = useUser()
 
   const paymentJustCompleted = searchParams.get('payment') === 'success'
 
@@ -261,6 +262,12 @@ export default function FormationDetailClient({
     return { ...cat, avg }
   })
 
+  /* Visiteur (session résolue, aucun utilisateur) : les CTA mènent à la connexion
+     ou à l'inscription, avec retour sur cette fiche, query comprise (N2) */
+  const isVisitor = !user && !userLoading
+  const query = searchParams.toString()
+  const fichePath = `/formations/${id}${query ? `?${query}` : ''}`
+
   /* CTA — for coaching, prices live in packs, not formation.price (which is always 0) */
   const coachingPackPrice = currentPack ? Number(currentPack.price) : 0
   const isCoachingPaid = contentType === 'coaching' && packs.some((p: any) => Number(p.price) > 0)
@@ -277,7 +284,7 @@ export default function FormationDetailClient({
     ? contentType === 'coaching' ? 'Voir mes sessions →'
     : contentType === 'video'   ? 'Regarder la vidéo →'
     : 'Continuer la formation →'
-    : effectivePrice === 0 ? 'Accéder gratuitement'
+    : effectivePrice === 0 ? (isVisitor ? 'Créer un compte gratuit' : 'Accéder gratuitement')
     : contentType === 'coaching'
       ? calSelSlot
         ? `Réserver · ${slotLabel} — ${effectivePrice}€`
@@ -311,6 +318,8 @@ export default function FormationDetailClient({
 
   const handleCTA = async () => {
     if (hasPurchased || effectivePrice === 0) {
+      // Le lecteur /learn exige la connexion : le visiteur crée d'abord son compte
+      if (isVisitor) { router.push(withNext('/register', fichePath)); return }
       if (contentType === 'coaching') {
         router.push('/schedule')
       } else {
@@ -327,7 +336,7 @@ export default function FormationDetailClient({
       }
       return
     }
-    if (!user) { router.push('/login'); return }
+    if (!user) { router.push(withNext('/login', fichePath)); return }
 
     if (contentType === 'coaching' && pendingCount > 0) {
       setCreditConfirmTarget('slot')
@@ -338,7 +347,7 @@ export default function FormationDetailClient({
   }
 
   const handleBuyLater = async () => {
-    if (!user) { router.push('/login'); return }
+    if (!user) { router.push(withNext('/login', fichePath)); return }
     if (pendingCount > 0) {
       setCreditConfirmTarget('later')
       setShowCreditConfirm(true)

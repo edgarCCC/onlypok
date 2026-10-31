@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { ADMIN_LOGIN_ROUTE, isAdminRoute, isCoachRoute, isStudentRoute } from '@/lib/routes'
+import { homeForRole, isAuthRoute, safeNext } from '@/lib/auth-redirect'
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -38,7 +39,10 @@ export async function proxy(request: NextRequest) {
     }
     const isProtected = isCoachRoute(pathname) || isStudentRoute(pathname)
     if (isProtected) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      // Retour après connexion (N2) : /login reçoit le chemin et la query d'origine
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`)
+      return NextResponse.redirect(loginUrl)
     }
     return supabaseResponse
   }
@@ -65,6 +69,14 @@ export async function proxy(request: NextRequest) {
 
   if (isAdminRoute(pathname) && role !== 'admin') {
     return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Connecté sur /login ou /register : retour à la page demandée (`next` sûr et
+  // hors pages d'auth, sinon boucle), à défaut vers son espace selon le rôle
+  if (isAuthRoute(pathname)) {
+    const target = safeNext(request.nextUrl.searchParams.get('next'))
+    const dest = target && !isAuthRoute(target) ? target : homeForRole(role)
+    return NextResponse.redirect(new URL(dest, request.url))
   }
 
   return supabaseResponse

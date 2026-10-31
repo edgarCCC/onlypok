@@ -1,8 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { safeNext, withNext } from '@/lib/auth-redirect'
 import { Eye, EyeOff, ArrowRight, CheckCircle, BookOpen, Users, Brain, BarChart2, ChevronLeft, Mail } from 'lucide-react'
 
 const CREAM   = '#f0f4ff'
@@ -27,7 +28,25 @@ const Q_GOALS    = [
   { key: 'fun',        label: 'Prendre du plaisir',      sub: 'Jouer mieux et apprécier le jeu' },
 ]
 
+/* /register est prérendue : useSearchParams exige une frontière Suspense (doc Next 16,
+   use-search-params). Le fallback est le même formulaire sans `next`, pour que
+   le HTML initial soit le formulaire complet et non un écran vide. */
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<RegisterForm next={null} />}>
+      <RegisterFormWithNext />
+    </Suspense>
+  )
+}
+
+/* `next` : page interne à rouvrir une fois le compte créé (fiche formation,
+   lien depuis /login). Toute autre valeur est ignorée par safeNext. */
+function RegisterFormWithNext() {
+  const next = safeNext(useSearchParams().get('next'))
+  return <RegisterForm next={next} />
+}
+
+function RegisterForm({ next }: { next: string | null }) {
   const router   = useRouter()
   const [username, setUsername] = useState('')
   const [email,    setEmail]    = useState('')
@@ -51,7 +70,7 @@ export default function RegisterPage() {
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}${withNext('/auth/callback', next)}` },
     })
     if (error) setError('Inscription Google indisponible pour le moment.')
   }
@@ -84,7 +103,7 @@ export default function RegisterPage() {
       }).eq('id', userId)
     }
     if (hasSession) {
-      router.push('/formations')
+      router.push(next ?? '/formations')
     } else {
       setEmailSent(true)
     }
@@ -128,7 +147,7 @@ export default function RegisterPage() {
         <p style={{ color: DIM, fontSize: 13, lineHeight: 1.6, margin: '0 0 28px' }}>
           Clique dessus pour activer ton compte et accéder à l'espace élève.
         </p>
-        <Link href="/login" style={{
+        <Link href={withNext('/login', next)} style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           padding: '13px 28px', borderRadius: 12, textDecoration: 'none',
           background: `linear-gradient(135deg, #0891b2, ${CYAN})`,
@@ -210,7 +229,7 @@ export default function RegisterPage() {
               style={{ width: '100%', padding: '15px', borderRadius: 13, border: 'none', background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: qSaving ? 'not-allowed' : 'pointer', opacity: qSaving ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 0 28px rgba(6,182,212,0.45)', transition: 'all 0.2s', fontFamily: 'inherit' }}>
               {qSaving ? 'Enregistrement…' : <>Accéder à mon espace <ArrowRight size={15} /></>}
             </button>
-            <button onClick={() => { if (hasSession) router.push('/formations'); else setEmailSent(true) }}
+            <button onClick={() => { if (hasSession) router.push(next ?? '/formations'); else setEmailSent(true) }}
               style={{ width: '100%', marginTop: 10, padding: '11px', background: 'none', border: 'none', color: DIM, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
               Passer cette étape
             </button>
@@ -395,7 +414,7 @@ export default function RegisterPage() {
             <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
           </div>
 
-          <Link href="/login"
+          <Link href={withNext('/login', next)}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               padding: '14px', borderRadius: 13, textDecoration: 'none',

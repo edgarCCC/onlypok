@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
+import { homeForRole, safeNext } from '@/lib/auth-redirect'
 
-/* GET /auth/callback?code=…
+/* GET /auth/callback?code=…&next=…
    Retour OAuth (Google…) : échange le code contre une session, garantit
    l'existence du profil (créé en élève au premier login social), puis
-   redirige selon le rôle. */
+   redirige vers `next` (chemin interne validé) ou selon le rôle. */
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next')
+  // Redirection ouverte (P17) : seul un chemin interne est accepté, « //evil.com » est ignoré
+  const next = safeNext(searchParams.get('next'))
 
   if (!code) return NextResponse.redirect(`${origin}/login?error=oauth`)
 
@@ -49,8 +51,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const dest = next && next.startsWith('/')
-    ? next
-    : role === 'coach' ? '/coach/dashboard' : '/formations'
-  return NextResponse.redirect(`${origin}${dest}`)
+  return NextResponse.redirect(`${origin}${next ?? homeForRole(role)}`)
 }

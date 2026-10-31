@@ -1,13 +1,32 @@
 'use client'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { homeForRole, safeNext, withNext } from '@/lib/auth-redirect'
 import { Eye, EyeOff, ArrowRight, BookOpen, Users, ChevronLeft } from 'lucide-react'
 
 type Mode = 'student' | 'coach'
 
+/* /login est prérendue : useSearchParams exige une frontière Suspense (doc Next 16,
+   use-search-params). Le fallback est le même formulaire sans `next`, pour que
+   le HTML initial soit le formulaire complet et non un écran vide. */
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginForm next={null} />}>
+      <LoginFormWithNext />
+    </Suspense>
+  )
+}
+
+/* `next` : page interne à rouvrir après connexion (posée par le proxy, la fiche
+   formation ou DetailHeader). Toute autre valeur est ignorée par safeNext. */
+function LoginFormWithNext() {
+  const next = safeNext(useSearchParams().get('next'))
+  return <LoginForm next={next} />
+}
+
+function LoginForm({ next }: { next: string | null }) {
   const router     = useRouter()
   const [mode,     setMode]     = useState<Mode>('student')
   const [email,    setEmail]    = useState('')
@@ -21,7 +40,7 @@ export default function LoginPage() {
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}${withNext('/auth/callback', next)}` },
     })
     if (error) setError('Connexion Google indisponible pour le moment.')
   }
@@ -34,7 +53,7 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setError('Email ou mot de passe incorrect.'); setLoading(false); return }
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
-    router.push(profile?.role === 'coach' ? '/coach/dashboard' : '/formations')
+    router.push(next ?? homeForRole(profile?.role))
   }
 
   const isCoach  = mode === 'coach'
@@ -297,7 +316,7 @@ export default function LoginPage() {
               Créer mon espace coach <ArrowRight size={14} />
             </Link>
           ) : (
-            <Link href="/register"
+            <Link href={withNext('/register', next)}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 padding: '14px', borderRadius: 13, textDecoration: 'none',
