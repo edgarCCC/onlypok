@@ -33,6 +33,9 @@ export default async function FormationsPage() {
       .from('profiles')
       .select('id, username, avatar_url, bio, variants, is_pro, years_experience, hourly_rate, coaching_mode, coaching_packages, formations(count)')
       .eq('role', 'coach')
+      // Annuaire public : seuls les coachs dont l'onboarding est terminé (N3).
+      // Un élève passé coach reste invisible tant qu'il n'a pas finalisé son profil.
+      .eq('onboarding_completed', true)
       .order('created_at', { ascending: false }),
     supabase.from('reviews').select('coach_id, rating').limit(2000),
   ])

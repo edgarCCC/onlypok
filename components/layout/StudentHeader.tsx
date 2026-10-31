@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { LogOut, ChevronDown, LayoutDashboard, ShoppingBag, Brain, BarChart2, Calendar, MessageSquare, Camera, Loader2, Sparkles } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
-import { createClient } from '@/lib/supabase/client'
 
 const CREAM  = '#f0f4ff'
 const DIM    = 'rgba(240,244,255,0.42)'
@@ -23,7 +22,7 @@ const TABS = [
 
 export default function StudentHeader() {
   const pathname    = usePathname()
-  const { profile, signOut, refreshProfile } = useUser()
+  const { profile, signOut } = useUser()
   const router = useRouter()
 
   const roleBadge = profile?.role === 'coach'
@@ -32,16 +31,10 @@ export default function StudentHeader() {
       ? { label: 'Admin', color: '#f59e0b', border: 'rgba(245,158,11,0.35)' }
       : { label: 'Élève', color: VIOLET, border: 'rgba(124,58,237,0.35)' }
   const [profileOpen, setProfileOpen]   = useState(false)
-  const [becomingCoach, setBecomingCoach] = useState(false)
-
-  const becomeCoach = useCallback(async () => {
-    if (!profile?.id) return
-    setBecomingCoach(true)
-    const supabase = createClient()
-    await supabase.from('profiles').update({ role: 'coach' }).eq('id', profile.id)
-    await refreshProfile()
-    router.push('/coach/onboarding')
-  }, [profile?.id, refreshProfile, router])
+  /* Le rôle ne s'écrit plus depuis le navigateur : la page /become-coach
+     (connectée) fait accepter les conditions coach puis appelle
+     POST /api/coach/apply, qui passe le profil en coach côté serveur (N3). */
+  const becomeCoach = useCallback(() => { router.push('/become-coach') }, [router])
   const [hoveredTab, setHoveredTab]   = useState<string | null>(null)
   const [avatarUrl, setAvatarUrl]     = useState<string | null>(null)
   const [uploading, setUploading]     = useState(false)
@@ -279,22 +272,16 @@ export default function StudentHeader() {
 
               {/* Become coach */}
               {profile?.role === 'student' && (
-                <button onClick={becomeCoach} disabled={becomingCoach} style={{
+                <button onClick={becomeCoach} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                   padding: '10px 14px', borderRadius: 9, border: 'none',
-                  background: 'transparent', cursor: becomingCoach ? 'not-allowed' : 'pointer', transition: 'background 0.12s',
-                  opacity: becomingCoach ? 0.6 : 1,
+                  background: 'transparent', cursor: 'pointer', transition: 'background 0.12s',
                 }}
-                  onMouseEnter={e => { if (!becomingCoach) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.1)' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.1)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
                 >
-                  {becomingCoach
-                    ? <Loader2 size={13} color="#a78bfa" style={{ animation: 'spin 1s linear infinite' }} />
-                    : <Sparkles size={13} color="#a78bfa" />
-                  }
-                  <span style={{ fontSize: 13, fontWeight: 500, color: '#a78bfa' }}>
-                    {becomingCoach ? 'Passage en cours…' : 'Devenir Coach'}
-                  </span>
+                  <Sparkles size={13} color="#a78bfa" />
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#a78bfa' }}>Devenir Coach</span>
                 </button>
               )}
 

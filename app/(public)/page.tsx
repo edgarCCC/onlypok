@@ -30,7 +30,8 @@ export default async function HomePage() {
   ] = await Promise.all([
     supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
     supabase.from('profiles').select('username').eq('role', 'student').order('created_at', { ascending: false }).limit(3),
-    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'coach'),
+    // Compteur public aligné sur l'annuaire : coachs au profil finalisé (N3)
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'coach').eq('onboarding_completed', true),
     supabase.from('formations').select('*', { count: 'exact', head: true }).eq('published', true),
     admin.from('reviews').select('rating'),
   ])
