@@ -14,6 +14,7 @@ import { HIGHLIGHTS_COACHING, HIGHLIGHTS_FORMATION, HIGHLIGHTS_VIDEO } from '@/l
 import SelectInput from '@/components/ui/SelectInput'
 import NumberStepper from '@/components/ui/NumberStepper'
 import VideoUrlCheck from '@/components/formations/VideoUrlCheck'
+import { videoLinkColumns, writeLessonVideo, syncFormationVideo, isVideoLinkRefused } from '@/lib/video-columns'
 
 type Pack = { label: string; hours: number; price: number; desc: string }
 
@@ -65,9 +66,9 @@ export default function EditFormationPage() {
   const [editingChapterId, setEditingChapterId]       = useState<string | null>(null)
   const [editingChapterTitle, setEditingChapterTitle] = useState('')
   const [addingLesson, setAddingLesson]               = useState<string | null>(null)
-  const [newLesson, setNewLesson] = useState({ title: '', video_url: '', video_type: 'youtube', is_free: false })
+  const [newLesson, setNewLesson] = useState({ title: '', video_url: '', is_free: false })
   const [editingLessonId, setEditingLessonId]         = useState<string | null>(null)
-  const [editingLesson, setEditingLesson]             = useState({ title: '', video_url: '', video_type: 'youtube', is_free: false })
+  const [editingLesson, setEditingLesson]             = useState({ title: '', video_url: '', is_free: false })
 
   const [publishError, setPublishError]   = useState<string | null>(null)
   const [uploadError, setUploadError]     = useState<string | null>(null)
@@ -119,6 +120,10 @@ export default function EditFormationPage() {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(async () => {
       setSaving(true)
+      /* Contenu payant : un lien qui n'est ni YouTube ni Vimeo n'est pas enregistré
+         (VideoUrlCheck l'affiche en rouge) ; les autres champs le sont. */
+      const isVideo     = updated.content_type === 'video'
+      const refusedLink = isVideo && isVideoLinkRefused(updated.video_url, (updated.price ?? 0) > 0)
       await supabase.from('formations').update({
         title:          updated.title,
         description:    updated.description,
@@ -126,11 +131,14 @@ export default function EditFormationPage() {
         price:          updated.price,
         level:          updated.level,
         variant:        updated.variant,
-        video_url:      updated.video_url ?? null,
+        video_url:      refusedLink ? undefined : (updated.video_url ?? null),
         cal_url:        updated.cal_url ?? null,
         coaching_packs: updatedPacks ?? null,
         highlights:     updatedHighlights ?? null,
       }).eq('id', id)
+      /* Miroir protégé du lien vidéo (formation_videos, V1) : non bloquant tant
+         que V2 n'a pas basculé les lectures élève dessus. */
+      if (isVideo && !refusedLink) await syncFormationVideo(supabase, String(id), updated.video_url)
       setSaving(false)
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
@@ -155,7 +163,13 @@ export default function EditFormationPage() {
 
   const changeType = async (t: ContentType) => {
     setContentType(t)
+    if (formation) setFormation({ ...formation, content_type: t })
     await supabase.from('formations').update({ content_type: t }).eq('id', id)
+    /* Miroir formation_videos : ligne supprimée quand le type quitte « video »
+       (V4 : supprimer aussi l'asset chez l'hébergeur), recréée depuis l'ancien
+       lien quand il y revient, sauf lien refusé (payant sans YouTube/Vimeo). */
+    const link = t === 'video' && !isVideoLinkRefused(formation?.video_url, (formation?.price ?? 0) > 0) ? formation?.video_url : null
+    await syncFormationVideo(supabase, String(id), link)
   }
 
   const togglePublish = async () => {
@@ -260,12 +274,19 @@ export default function EditFormationPage() {
     setChapters(p => p.map(c => c.id === chId ? { ...c, title } : c))
     setEditingChapterId(null)
   }
+  /* Leçon payante (formation payante, leçon non gratuite) : lien YouTube ou
+     Vimeo obligatoire ; VideoUrlCheck affiche le refus sous le champ. */
+  const lessonLinkRefused = (lesson: { video_url: string; is_free: boolean }) =>
+    isVideoLinkRefused(lesson.video_url, !lesson.is_free && (formation?.price ?? 0) > 0)
   const addLesson = async (chId: string) => {
-    if (!newLesson.title.trim()) return
+    if (!newLesson.title.trim() || lessonLinkRefused(newLesson)) return
     const order = chapters.find(c => c.id === chId)?.formation_lessons?.length ?? 0
-    const { data } = await supabase.from('formation_lessons').insert({ chapter_id: chId, formation_id: id, title: newLesson.title, video_url: newLesson.video_url || null, video_type: newLesson.video_type, is_free: newLesson.is_free, order_index: order }).select().single()
+    const { data } = await writeLessonVideo(
+      { chapter_id: chId, formation_id: id, title: newLesson.title, video_url: newLesson.video_url || null, ...videoLinkColumns(newLesson.video_url), is_free: newLesson.is_free, order_index: order },
+      row => supabase.from('formation_lessons').insert(row).select().single(),
+    )
     setChapters(p => p.map(c => c.id === chId ? { ...c, formation_lessons: [...(c.formation_lessons ?? []), data] } : c))
-    setNewLesson({ title: '', video_url: '', video_type: 'youtube', is_free: false })
+    setNewLesson({ title: '', video_url: '', is_free: false })
     setAddingLesson(null)
     const total = chapters.reduce((a, c) => a + (c.formation_lessons?.length ?? 0), 0) + 1
     await supabase.from('formations').update({ modules_count: total }).eq('id', id)
@@ -276,23 +297,22 @@ export default function EditFormationPage() {
   }
   const updateLesson = async (chId: string, lId: string) => {
     const title = editingLesson.title.trim()
-    if (!title) return
-    await supabase.from('formation_lessons').update({
-      title,
-      video_url:  editingLesson.video_url || null,
-      video_type: editingLesson.video_type,
-      is_free:    editingLesson.is_free,
-    }).eq('id', lId)
+    if (!title || lessonLinkRefused(editingLesson)) return
+    const videoColumns = videoLinkColumns(editingLesson.video_url)
+    await writeLessonVideo(
+      { title, video_url: editingLesson.video_url || null, ...videoColumns, is_free: editingLesson.is_free },
+      row => supabase.from('formation_lessons').update(row).eq('id', lId),
+    )
     setChapters(p => p.map(c => c.id === chId
       ? { ...c, formation_lessons: c.formation_lessons.map((l: any) => l.id === lId
-          ? { ...l, title, video_url: editingLesson.video_url || null, video_type: editingLesson.video_type, is_free: editingLesson.is_free }
+          ? { ...l, title, video_url: editingLesson.video_url || null, ...videoColumns, is_free: editingLesson.is_free }
           : l) }
       : c))
     setEditingLessonId(null)
   }
   const startEditLesson = (lesson: any) => {
     setEditingLessonId(lesson.id)
-    setEditingLesson({ title: lesson.title, video_url: lesson.video_url ?? '', video_type: lesson.video_type ?? 'youtube', is_free: lesson.is_free ?? false })
+    setEditingLesson({ title: lesson.title, video_url: lesson.video_url ?? '', is_free: lesson.is_free ?? false })
   }
   const toggleLessonFree = async (chId: string, lesson: any) => {
     await supabase.from('formation_lessons').update({ is_free: !lesson.is_free }).eq('id', lesson.id)
@@ -548,9 +568,6 @@ export default function EditFormationPage() {
                                     onChange={e => setEditingLesson(p => ({ ...p, video_url: e.target.value }))}
                                     placeholder="URL YouTube ou Vimeo"
                                     style={field({ flex: 1, fontSize: 12 })} />
-                                  <SelectInput value={editingLesson.video_type} onChange={v => setEditingLesson(p => ({ ...p, video_type: v }))}
-                                    options={[{ value: 'youtube', label: 'YouTube' }, { value: 'vimeo', label: 'Vimeo' }, { value: 'upload', label: 'Upload' }]}
-                                    style={{ width: 110 }} selectStyle={{ fontSize: 12, padding: '8px 32px 8px 10px' }} />
                                 </div>
                                 {editingLesson.video_url.trim() && <VideoUrlCheck url={editingLesson.video_url} isPaid={!editingLesson.is_free && (formation?.price ?? 0) > 0} />}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -597,9 +614,6 @@ export default function EditFormationPage() {
                             <input value={newLesson.title} onChange={e => setNewLesson(p => ({ ...p, title: e.target.value }))} placeholder="Titre de la leçon" style={field()} autoFocus />
                             <div style={{ display: 'flex', gap: 8 }}>
                               <input value={newLesson.video_url} onChange={e => setNewLesson(p => ({ ...p, video_url: e.target.value }))} placeholder="URL YouTube ou Vimeo" style={field({ flex: 1 })} />
-                              <SelectInput value={newLesson.video_type} onChange={v => setNewLesson(p => ({ ...p, video_type: v }))}
-                                options={[{ value: 'youtube', label: 'YouTube' }, { value: 'vimeo', label: 'Vimeo' }, { value: 'upload', label: 'Upload' }]}
-                                style={{ width: 110 }} selectStyle={{ fontSize: 12, padding: '8px 32px 8px 10px' }} />
                             </div>
                             {newLesson.video_url.trim() && <VideoUrlCheck url={newLesson.video_url} isPaid={!newLesson.is_free && (formation?.price ?? 0) > 0} />}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -613,7 +627,7 @@ export default function EditFormationPage() {
                             </div>
                           </div>
                         ) : (
-                          <button onClick={() => { setAddingLesson(ch.id); setNewLesson({ title: '', video_url: '', video_type: 'youtube', is_free: false }) }}
+                          <button onClick={() => { setAddingLesson(ch.id); setNewLesson({ title: '', video_url: '', is_free: false }) }}
                             style={{ width: '100%', padding: '10px 16px', border: 'none', borderTop: '1px solid rgba(232,228,220,0.04)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.15s' }}
                             onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
                             onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>

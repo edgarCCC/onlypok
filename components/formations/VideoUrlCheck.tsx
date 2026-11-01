@@ -2,9 +2,12 @@
 
 import Image from 'next/image'
 import { parseVideoUrl } from '@/lib/video-url'
+import { isVideoLinkRefused, VIDEO_LINK_REQUIRED } from '@/lib/video-columns'
 
 /* ── Contrôle de saisie côté coach : validation, mini-aperçu, consigne ──────────
-   Non bloquant : un fichier vidéo direct (.mp4…) reste accepté. */
+   Contenu payant : seul un lien YouTube ou Vimeo est accepté (refus affiché ici,
+   écriture bloquée par les pages coach). Un fichier vidéo direct (.mp4…) n'est
+   toléré que pour du gratuit. */
 const OK_COLOR   = '#22c55e'
 const ERR_COLOR  = '#f87171'
 const HINT_COLOR = 'rgba(240,244,255,0.45)'
@@ -15,6 +18,7 @@ export default function VideoUrlCheck({ url, isPaid }: { url: string; isPaid: bo
   const parsed = value ? parseVideoUrl(value) : null
 
   const status = !value ? null
+    : isVideoLinkRefused(value, isPaid) ? { color: ERR_COLOR, text: `${VIDEO_LINK_REQUIRED} (contenu payant).` }
     : !parsed ? { color: ERR_COLOR, text: 'Lien non reconnu : colle un lien YouTube (watch, youtu.be, shorts) ou Vimeo (vimeo.com/…).' }
     : parsed.provider === 'youtube' ? { color: OK_COLOR, text: 'Lien YouTube reconnu.' }
     : parsed.provider === 'vimeo' ? { color: OK_COLOR, text: parsed.hash ? 'Lien Vimeo privé reconnu (clé de partage conservée).' : 'Lien Vimeo reconnu.' }

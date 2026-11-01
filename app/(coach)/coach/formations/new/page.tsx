@@ -9,7 +9,7 @@ import { HIGHLIGHTS_COACHING, HIGHLIGHTS_FORMATION, HIGHLIGHTS_VIDEO } from '@/l
 import SelectInput from '@/components/ui/SelectInput'
 import NumberStepper from '@/components/ui/NumberStepper'
 import VideoUrlCheck from '@/components/formations/VideoUrlCheck'
-import { parseVideoUrl } from '@/lib/video-url'
+import { videoLinkColumns, writeLessonVideo, syncFormationVideo, isVideoLinkRefused, VIDEO_LINK_REQUIRED } from '@/lib/video-columns'
 
 const CREAM  = '#f0f4ff'
 const SILVER = 'rgba(240,244,255,0.45)'
@@ -180,6 +180,15 @@ function NewFormationInner() {
     if (!user || !title.trim()) return null
     if (!desc.trim()) { setError('La description est requise'); return null }
     if (tab === 'video' && !videoUrl.trim()) { setError("L'URL de la vidéo est requise"); return null }
+    /* Contenu payant : lien YouTube ou Vimeo obligatoire (fichier direct ou lien
+       non reconnu tolérés seulement pour du gratuit). Vérifié avant toute écriture. */
+    if (tab === 'video' && isVideoLinkRefused(videoUrl, price > 0)) { setError(VIDEO_LINK_REQUIRED); return null }
+    if (tab === 'formation' && price > 0) {
+      const refused = chapters
+        .flatMap((c, ci) => c.lessons.map((l, li) => ({ l, ci, li })))
+        .find(({ l }) => l.title.trim() && !l.is_free && isVideoLinkRefused(l.video_url, true))
+      if (refused) { setError(`Leçon ${refused.li + 1} (ch.${refused.ci + 1}) : ${VIDEO_LINK_REQUIRED}`); return null }
+    }
     const thumbnail_url = miniature ? await uploadMiniature() : null
     if (miniature && !thumbnail_url) return null
 
@@ -211,6 +220,10 @@ function NewFormationInner() {
       }
       return null
     }
+
+    /* Miroir protégé du lien vidéo (formation_videos, V1) : non bloquant tant
+       que V2 n'a pas basculé les lectures élève dessus. */
+    if (tab === 'video' && data) await syncFormationVideo(supabase, data.id, videoUrl)
 
     // Upload gallery photos for coaching
     if (tab === 'coaching' && data && galleryFiles.length > 0) {
@@ -244,15 +257,15 @@ function NewFormationInner() {
         for (let li = 0; li < ch.lessons.length; li++) {
           const l = ch.lessons[li]
           if (!l.title.trim()) continue
-          const { error: lErr } = await supabase.from('formation_lessons').insert({
+          const { error: lErr } = await writeLessonVideo({
             chapter_id: chData.id,
             formation_id: data.id,
             title: l.title,
             video_url: l.video_url || null,
-            video_type: parseVideoUrl(l.video_url)?.provider === 'vimeo' ? 'vimeo' : 'youtube',
+            ...videoLinkColumns(l.video_url),
             is_free: l.is_free,
             order_index: li,
-          })
+          }, row => supabase.from('formation_lessons').insert(row))
           if (lErr) { setError(`Leçon ${li + 1} (ch.${ci + 1}) : ${lErr.message}`); return null }
         }
       }
