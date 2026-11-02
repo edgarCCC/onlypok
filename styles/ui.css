@@ -1,0 +1,310 @@
+/* OnlyPok — composants de base (tâche D9).
+   Reproduit .claude/finalisation/design/planche-composants.html avec les tokens de styles/tokens.css.
+   Préfixe ui- pour les composants ; les aides typographiques gardent les noms de la DA (.t-title, .num, .clamp2…).
+   Les classes .is-hover, .is-active et .is-focus forcent un état pour la page de kit (app/(dev)/ui-kit) :
+   elles reproduisent exactement les règles :hover (pointeur fin), :active et :focus-visible. */
+
+/* ── Racine d'une page migrée ─────────────────────────────────────────────── */
+.ui-page { min-height: 100vh; background: var(--bg); color: var(--text); font: 400 var(--text-body)/1.55 var(--font-text); -webkit-font-smoothing: antialiased; }
+/* Le grain de l'ancien body (app/globals.css) n'a plus cours sur une page migrée */
+body:has(.ui-page) { background: var(--bg); }
+body:has(.ui-page)::before { content: none; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+/* ── Typographie : cinq niveaux (DA §2.2) et aides ────────────────────────── */
+.t-display { font: 700 var(--text-display)/1.04 var(--font-display); letter-spacing: -.035em; }
+.t-title { font: 600 var(--text-title)/1.12 var(--font-display); letter-spacing: -.025em; }
+.t-heading { font: 600 var(--text-heading)/1.3 var(--font-text); letter-spacing: -.01em; }
+.t-body { font: 400 var(--text-body)/1.55 var(--font-text); }
+.t-label { font: 500 var(--text-label)/1.4 var(--font-text); }
+.t-caps { font: 600 var(--text-caps)/1.4 var(--font-text); letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); }
+.t-2 { color: var(--text-2); }
+.t-3 { color: var(--text-3); }
+.num { font-variant-numeric: tabular-nums slashed-zero; }
+.big-num { font: 600 var(--text-title)/1 var(--font-text); letter-spacing: -.02em; font-variant-numeric: tabular-nums slashed-zero; }
+.clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ui-wrap { max-width: 1200px; margin: 0 auto; padding: 0 var(--space-4); }
+@media (min-width: 768px) { .ui-wrap { padding: 0 var(--space-6); } }
+@media (min-width: 1280px) { .ui-wrap { padding: 0 var(--space-8); } }
+
+/* ── Button ───────────────────────────────────────────────────────────────── */
+/* Un libellé long revient à la ligne (jamais de défilement horizontal à 320 px) ; la hauteur minimale reste 44 px */
+.ui-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text);
+  font: 500 .9375rem/1.25 var(--font-text);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms var(--ease-out), background-color var(--dur-hover) ease, border-color var(--dur-hover) ease, color var(--dur-hover) ease;
+}
+.ui-btn-sm { min-height: 32px; padding: var(--space-1) var(--space-3); font-size: var(--text-label); }
+/* Cible tactile de 48 px pour le petit bouton (32 + 2 × 8 au-delà du bord), sans changer la mise en page */
+.ui-btn-sm::before { content: ""; position: absolute; inset: -9px 0; }
+.ui-btn-lg { min-height: 48px; padding: var(--space-2) var(--space-6); font-size: 1rem; }
+/* Retour à l'appui : scale(.97) en 100 ms, retour en 160 ms */
+.ui-btn:not(.ui-btn-link):active:not(:disabled):not([aria-disabled="true"]), .ui-btn:not(.ui-btn-link).is-active { transform: scale(.97); transition-duration: var(--dur-press); }
+.ui-btn.is-focus { outline: 2px solid var(--focus); outline-offset: 3px; }
+.ui-btn:disabled, .ui-btn[aria-disabled="true"] { cursor: not-allowed; }
+/* Un lien désactivé (href + disabled) garde sa place et sa taille ; hors tabulation et clic annulé côté composant (Button.tsx) */
+.ui-btn[aria-busy="true"] { cursor: progress; }
+/* Primaire : bleu plat, texte --on-brand (4,9:1), un seul par écran. Le survol est discret par construction : au-delà, le texte perd AA. */
+.ui-btn-primary { background: var(--brand); color: var(--on-brand); }
+.ui-btn-primary.is-hover { background: var(--brand-hover); }
+.ui-btn-primary:disabled, .ui-btn-primary[aria-disabled="true"]:not([aria-busy="true"]) { background: var(--surface-3); color: var(--text-disabled); }
+/* Secondaire : contour --border-strong */
+.ui-btn-secondary { border-color: var(--border-strong); }
+.ui-btn-secondary.is-hover { background: var(--surface-2); border-color: var(--text-3); }
+.ui-btn-secondary:disabled, .ui-btn-secondary[aria-disabled="true"]:not([aria-busy="true"]) { border-color: var(--border); color: var(--text-disabled); }
+/* Action secondaire forte : contour neutre, libellé orange 600 (6,4:1). Une par écran, quand elle est l'urgence du jour. */
+.ui-btn-strong { border-color: var(--border-strong); color: var(--accent); font-weight: 600; }
+.ui-btn-strong.is-hover { background: var(--surface-2); }
+.ui-btn-strong:disabled, .ui-btn-strong[aria-disabled="true"]:not([aria-busy="true"]) { border-color: var(--border); color: var(--text-disabled); }
+/* Lien d'action : bleu texte (6,7:1), soulignement au survol sans transition, zone de 44 px par padding compensé */
+/* Lien d'action : corps 16 px / 1,55 comme la planche, zone de 48,8 px (≥ 44) par padding compensé d'une marge négative */
+.ui-btn-link {
+  min-height: 0;
+  padding: var(--space-3) 0;
+  margin: calc(-1 * var(--space-3)) 0;
+  border: 0;
+  border-radius: var(--radius-cell);
+  justify-content: flex-start;
+  color: var(--brand-text);
+  font-size: 1rem;
+  line-height: 1.55;
+  text-align: left;
+  text-underline-offset: .2em;
+  text-decoration-thickness: 1px;
+  transition: none;
+}
+.ui-btn-link:active, .ui-btn-link.is-active { transform: none; }
+.ui-btn-link.is-hover { text-decoration: underline; }
+.ui-btn-link:disabled, .ui-btn-link[aria-disabled="true"]:not([aria-busy="true"]) { color: var(--text-disabled); text-decoration: none; }
+/* Flèche décorative : texte alternatif vide pour les lecteurs d'écran (la première déclaration est le repli des navigateurs sans cette syntaxe) */
+.ui-btn-link[data-arrow="right"]::after { content: " →"; content: " →" / ""; }
+.ui-btn-link[data-arrow="down"]::after { content: " ↓"; content: " ↓" / ""; }
+@media (hover: hover) and (pointer: fine) {
+  .ui-btn-primary:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--brand-hover); }
+  .ui-btn-secondary:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--surface-2); border-color: var(--text-3); }
+  .ui-btn-strong:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--surface-2); }
+  .ui-btn-link:hover:not(:disabled):not([aria-disabled="true"]) { text-decoration: underline; }
+}
+/* La seule boucle autorisée du produit : l'indicateur de chargement d'un bouton pendant sa propre action (reste actif en mouvement réduit, 16 px) */
+.ui-spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ui-spin 700ms linear infinite; flex-shrink: 0; }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.ui-card { display: flex; flex-direction: column; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); color: inherit; text-decoration: none; }
+.ui-card-pad-sm { padding: var(--space-4); }
+.ui-card-pad-md { padding: var(--space-6); }
+/* Survol : un palier de plus et le titre en bleu texte. Pas de translation, pas d'ombre, pas d'échelle. */
+.ui-card-interactive { cursor: pointer; transition: transform 160ms var(--ease-out), background-color var(--dur-hover) ease, border-color var(--dur-hover) ease; }
+.ui-card-interactive .t-heading { transition: color var(--dur-hover) ease; }
+.ui-card-interactive.is-hover { background: var(--surface-2); border-color: var(--border-strong); }
+.ui-card-interactive.is-hover .t-heading { color: var(--brand-text); }
+.ui-card-interactive:active, .ui-card-interactive.is-active { transform: scale(.97); transition-duration: var(--dur-press); }
+.ui-card.is-focus { outline: 2px solid var(--focus); outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) {
+  .ui-card-interactive:hover { background: var(--surface-2); border-color: var(--border-strong); }
+  .ui-card-interactive:hover .t-heading { color: var(--brand-text); }
+}
+/* Vignette 16/9 ; sans image, le mot « Formation » en --text-3 */
+.ui-card-media {
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: var(--text-label);
+}
+.ui-card-media:first-child { border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0; }
+.ui-card-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ui-card-body { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-4); }
+
+/* ── Section ──────────────────────────────────────────────────────────────── */
+.ui-section { padding: var(--space-8) 0; scroll-margin-top: 64px; }
+.ui-section-gap-sm { padding: var(--space-6) 0; }
+.ui-section-gap-lg { padding: var(--space-16) 0; }
+@media (min-width: 768px) { .ui-section-gap-lg { padding: var(--space-24) 0; } }
+.ui-section-divider { border-top: 1px solid var(--border); }
+.ui-section-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2) var(--space-6); margin-bottom: var(--space-6); }
+.ui-section-head-text { display: flex; flex-direction: column; gap: var(--space-2); flex: 1 1 20rem; min-width: 0; }
+.ui-section-sub { color: var(--text-2); max-width: 44rem; }
+.ui-section-action { flex-shrink: 0; }
+
+/* ── EmptyState ───────────────────────────────────────────────────────────── */
+/* Une phrase concrète et une action. Pas d'icône dans un rond, pas d'illustration, pas de compteur à zéro. */
+.ui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+.ui-empty p { color: var(--text-2); max-width: 36rem; }
+.ui-empty-icon { display: inline-flex; color: var(--text-2); }
+.ui-empty-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  width: 100%;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+}
+
+/* ── Badge ────────────────────────────────────────────────────────────────── */
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 20px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  color: var(--text-2);
+  font: 600 var(--text-caps)/1 var(--font-text);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+/* « Nouveau » : fond orange, texte charcoal (6,4:1), sur le contenu publié depuis moins de 14 jours, un par liste */
+.ui-badge-new { background: var(--accent); border-width: 0; color: var(--on-accent); }
+/* Point d'état + libellé : « Planifiée » en --brand, « Annulée » en neutre. Le mot porte le sens, la couleur le double. */
+.ui-badge-status { min-height: 0; padding: 0; border: 0; color: var(--text-2); font: 500 var(--text-label)/1.4 var(--font-text); letter-spacing: 0; text-transform: none; }
+.ui-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); flex-shrink: 0; }
+.ui-dot-neutral { background: var(--text-3); }
+
+/* ── Field ────────────────────────────────────────────────────────────────── */
+/* Identifié par son remplissage --surface-2, son libellé, son filet à 40 % (3,06:1) et l'anneau de focus. L'erreur est un message seul. */
+.ui-field { display: flex; flex-direction: column; gap: var(--space-1); width: 100%; min-width: 0; }
+.ui-field-label { font: 500 var(--text-label)/1.4 var(--font-text); color: var(--text); }
+.ui-input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  font: 400 var(--text-body)/1.5 var(--font-text);
+  transition: border-color var(--dur-hover) ease, background-color var(--dur-hover) ease;
+}
+textarea.ui-input { min-height: 96px; padding: var(--space-2) var(--space-3); resize: vertical; }
+.ui-input::placeholder { color: var(--text-3); }
+.ui-input.is-hover { border-color: var(--text-3); }
+.ui-input.is-focus { outline: 2px solid var(--focus); outline-offset: 3px; }
+.ui-input:disabled { background: var(--surface); border-color: var(--border); color: var(--text-disabled); cursor: not-allowed; }
+.ui-field-help { font-size: var(--text-label); color: var(--text-3); }
+.ui-field-error { font-size: var(--text-label); color: var(--error); }
+@media (hover: hover) and (pointer: fine) { .ui-input:hover:not(:disabled) { border-color: var(--text-3); } }
+
+/* ── Skeleton ─────────────────────────────────────────────────────────────── */
+/* Structure finale en --surface-2, rayon du composant, sans reflet ; visible après 300 ms d'attente seulement */
+.ui-skeleton { display: block; background: var(--surface-2); border-radius: var(--radius-cell); opacity: 1; transition: opacity 0s 300ms; }
+@starting-style { .ui-skeleton { opacity: 0; } }
+.ui-skeleton-line { width: 100%; height: 12px; }
+.ui-skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
+.ui-skeleton-thumb { width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius-control); }
+.ui-card > .ui-skeleton-thumb:first-child { border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0; }
+.ui-skeleton-block { min-height: 48px; border-radius: var(--radius-control); }
+
+/* ── List et ListRow ──────────────────────────────────────────────────────── */
+.ui-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+/* Deux colonnes dès que le conteneur le permet (320 px par colonne au moins), jamais plus de deux : la colonne vaut au moins 45 % */
+.ui-list-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, max(320px, 45%)), 1fr)); column-gap: var(--space-8); }
+.ui-list-item { list-style: none; min-width: 0; }
+/* Ligne à filet : padding de 12 px compensé par une marge négative, pour que le fond du survol et le trait de sélection respirent */
+.ui-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 48px;
+  min-width: 0;
+  padding: var(--space-3);
+  margin: 0 calc(-1 * var(--space-3));
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--dur-hover) ease;
+}
+.ui-row .t-heading { transition: color var(--dur-hover) ease; }
+.ui-row-link { cursor: pointer; }
+.ui-row-link:active, .ui-row.is-active { background: var(--surface); }
+.ui-row-link.is-hover .t-heading { color: var(--brand-text); }
+.ui-row.is-focus { outline: 2px solid var(--focus); outline-offset: 3px; }
+/* Sélection : fond bleu à 10 %, titre bleu texte, et un indice de forme en plus de la teinte : trait de 2 px à gauche,
+   en --brand-text (6,19:1 sur la teinte ; le bleu plein ferait 2,73:1, sous le 3:1 du critère 1.4.11) ; couleur système en forced-colors */
+.ui-row-selected { background: var(--brand-soft); }
+.ui-row-selected .t-heading { color: var(--brand-text); }
+.ui-row-selected::before { content: ""; position: absolute; left: 0; top: var(--space-2); bottom: var(--space-2); width: 2px; border-radius: var(--radius-cell); background: var(--brand-text); }
+@media (forced-colors: active) { .ui-row-selected::before { background: Highlight; } }
+.ui-row-leading { flex-shrink: 0; }
+.ui-row-body { display: flex; flex-direction: column; gap: var(--space-1); flex: 1; min-width: 0; }
+.ui-row-top { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
+.ui-row-meta { color: var(--text-2); font-size: var(--text-label); overflow-wrap: anywhere; }
+.ui-row-trailing { margin-left: auto; color: var(--text); font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+@media (hover: hover) and (pointer: fine) { .ui-row-link:hover .t-heading { color: var(--brand-text); } }
+/* Avatar : --surface-2 et les initiales ; jamais une couleur « au hasard du pseudo » */
+.ui-avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: var(--text-label);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.ui-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Logo ─────────────────────────────────────────────────────────────────── */
+/* Point de 7 × 7 px, rayon 2, --brand plat, puis le mot en Unbounded 700, 15 px, +0,18 em : un dessin, pas du texte */
+.ui-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  color: var(--text);
+  font: 700 15px/1 var(--font-display);
+  letter-spacing: .18em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.ui-logo-sm { font-size: 13px; }
+.ui-logo-dot { width: 7px; height: 7px; border-radius: var(--radius-cell); background: var(--brand); flex-shrink: 0; }
+
+/* ── Mouvement réduit : fondus de 150 ms au plus, aucune échelle ; le spinner (16 px) reste actif.
+   Portée volontairement limitée aux composants .ui-* : la règle globale de la DA §8 (`* { animation: none; transform: none }`)
+   figerait les spinners et casserait les transforms des pages non migrées ; elle sera posée en fin de migration.
+   Le sélecteur de l'appui est repris tel quel (spécificité 0,4,0) pour l'emporter sur la règle d'appui. ── */
+@media (prefers-reduced-motion: reduce) {
+  .ui-btn, .ui-card-interactive, .ui-row, .ui-input { transition-duration: 150ms; }
+  .ui-btn:not(.ui-btn-link):active:not(:disabled):not([aria-disabled="true"]), .ui-btn:not(.ui-btn-link).is-active, .ui-card-interactive:active, .ui-card-interactive.is-active { transform: none; }
+}

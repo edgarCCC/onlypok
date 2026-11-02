@@ -1,0 +1,133 @@
+/* OnlyPok — tokens de design v2 (tâche D9).
+   Source : .claude/finalisation/design/DIRECTION-ARTISTIQUE.md (§1.2 couleurs, §2 typographie, §3 espacement et rayons, §4.1 mouvement, §8 feuille de tokens).
+   Trois couleurs, chacune avec un métier : Charcoal #21232E porte tout, Royal Blue #105BFF agit, Tangerine #FE8500 alerte.
+   Tout le reste en dérive. Les anciens tokens (violet, cyan, ambre, vert) restent dans app/globals.css, couche `legacy`,
+   jusqu'à la fin de la migration des pages. */
+
+:root {
+  /* Surfaces : charcoal natif et trois paliers (+3,5 L* en LCH, chroma et teinte constants) */
+  --bg: #21232E;
+  --surface: #282A36;
+  --surface-2: #30323D;
+  --surface-3: #383A45;
+
+  /* Filets : le texte à 8 % (filets) et 14 % (contour des contrôles) ; 40 % réservé aux champs (variante C, décision 11 du 02/11) */
+  --border: rgb(232 235 245 / .08);
+  --border-strong: rgb(232 235 245 / .14);
+  --border-input: rgb(232 235 245 / .40);
+
+  /* Texte : blanc cassé bleuté, jamais le blanc pur ; secondaire 80 %, tertiaire 60 %, désactivé 38 % */
+  --text: #E8EBF5;
+  --text-2: rgb(232 235 245 / .80);
+  --text-3: rgb(232 235 245 / .60);
+  --text-disabled: rgb(232 235 245 / .38);
+  --on-brand: #F5F7FC;
+  --on-accent: var(--bg);
+
+  /* Bleu : la marque agit (remplissage du bouton principal, états, focus, liens par la variante texte). Jamais --brand en texte (2,95:1). */
+  --brand: #105BFF;
+  --brand-hover: #1C62FF;
+  --brand-soft: rgb(16 91 255 / .10);
+  --brand-text: #7DA9FF;
+  --focus: var(--brand-text);
+
+  /* Orange : l'accent alerte. Deux éléments par écran au plus ; les gains du tracker sont la seule exception déclarée. */
+  --accent: #FE8500;
+
+  /* Erreur : rouge désaturé, en texte et en contour, jamais en remplissage. Sert aussi aux cœurs et carreaux des cartes. */
+  --error: #E88F88;
+  --card-red: var(--error);
+
+  /* Grille de ranges, neutre : cellule dans la range, cellule à la frontière */
+  --range-in: rgb(232 235 245 / .55);
+  --range-border: rgb(232 235 245 / .22);
+
+  /* Profondeur : un voile derrière les modales (l'ombre unique est déclarée plus bas, avec les valeurs exposées à Tailwind) */
+  --scrim: rgb(0 0 0 / .6);
+
+  /* Espacement : base 4 px. Contrôle 8 × 12 ou 16 ; carte 16 ou 24 ; entre groupes 32, 48 ; entre sections 96 (64 sous 768). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Durées : retour à l'appui 100 ms, survol 150 ms, UI 200 ms, modale 200 / 150 ms, tiroir 300 ms */
+  --dur-press: 100ms;
+  --dur-hover: 150ms;
+  --dur-ui: 200ms;
+  --dur-modal-in: 200ms;
+  --dur-modal-out: 150ms;
+  --dur-drawer: 300ms;
+
+  color-scheme: dark;
+}
+
+/* color-scheme: dark rend opaque et blanc un iframe transparent (lecteurs vidéo YouTube / Vimeo, Daily) : les iframes gardent le schéma normal.
+   À vérifier sur VideoPlayer, VideoPreview et learn/page.tsx au premier passage sur le serveur de dev. */
+iframe { color-scheme: normal; }
+
+/* Rayons, familles, échelle, courbes et ombre : déclarés dans @theme static.
+   Tailwind v4 les émet tels quels sur :root (ce sont de vraies variables CSS, utilisables partout)
+   et en tire les utilitaires rounded-control, font-display, text-title, ease-out, shadow-float…
+   Ils ne peuvent pas être déclarés dans :root puis aliasés : les espaces de noms Tailwind portent les mêmes noms. */
+@theme static {
+  /* Deux valeurs, une exception déclarée : 2 px pour les cellules de la grille 13 × 13, le point du logo et la barre de progression. Les cercles (avatars, points d'état, pastille) sont en 50 %. */
+  --radius-control: 10px;
+  --radius-card: 16px;
+  --radius-cell: 2px;
+
+  /* Deux familles : Unbounded 600 / 700 pour les titres de 24 px et plus et le logotype, Space Grotesk 400 / 500 / 600 pour tout le reste et tous les chiffres.
+     --font-syne et --font-space sont posées par next/font dans app/layout.tsx (à renommer --font-unbounded / --font-space-grotesk en fin de migration). */
+  --font-display: var(--font-syne), system-ui, sans-serif;
+  --font-text: var(--font-space), system-ui, sans-serif;
+
+  /* Cinq niveaux : Display (une fois par page), Titre, Intertitre, Corps (15 px en liste dense), Libellé (capitales 11 px, 600, +0,06 em) */
+  --text-display: clamp(2rem, 1.2rem + 3.6vw, 3.5rem);
+  --text-title: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  --text-heading: 1.125rem;
+  --text-body: 1rem;
+  --text-body-dense: .9375rem;
+  --text-label: .8125rem;
+  --text-caps: .6875rem;
+
+  /* Mouvement : ease-out pour ce qui entre, ease-in-out pour ce qui bouge à l'écran, courbe iOS pour un tiroir. Ressorts Motion : bounce 0, duration .4. */
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --ease-in-out: cubic-bezier(.77, 0, .175, 1);
+  --ease-drawer: cubic-bezier(.32, .72, 0, 1);
+
+  /* La seule ombre du produit : neutre et faible, sur ce qui flotte (menu, popover, modale, toast). Jamais sur une carte. */
+  --shadow-float: 0 12px 32px -12px rgb(0 0 0 / .5);
+}
+
+/* Exposition des couleurs et de l'unité d'espacement aux utilitaires Tailwind (bg-brand, text-brand-text, border-border-strong, p-4 = 16 px…).
+   `inline` : l'utilitaire référence la variable de la DA, aucune valeur n'est dupliquée. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-border-input: var(--border-input);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-text-disabled: var(--text-disabled);
+  --color-on-brand: var(--on-brand);
+  --color-on-accent: var(--on-accent);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-text: var(--brand-text);
+  --color-focus: var(--focus);
+  --color-accent: var(--accent);
+  --color-error: var(--error);
+  --color-scrim: var(--scrim);
+  --spacing: var(--space-1);
+}

@@ -1,7 +1,15 @@
+/* D9 — socle de design v2 : tokens de la direction artistique et composants de base.
+   Importés en premier ; l'ancien bloc :root ci-dessous reste en couche basse (voir plus bas). */
+@import "../styles/tokens.css";
+@import "../styles/ui.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Anciens tokens (avant D9) : conservés pour les pages non migrées, dans la couche `legacy` pour que
+   styles/tokens.css prime quand un nom est partagé (--accent, --border). À supprimer en fin de migration. */
+@layer legacy {
 :root {
   /* OLED dark core */
   --bg-primary:   #050709;
@@ -36,6 +44,7 @@
   --dur-fast:      150ms;
   --dur-normal:    250ms;
   --dur-slow:      400ms;
+}
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

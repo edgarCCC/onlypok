@@ -1,0 +1,26 @@
+/* Page de kit (développement seulement) : mise en page des figures, reprise de la planche de composants. */
+.page { padding-bottom: var(--space-16); }
+/* Les tokens cités dans le texte restent en Space Grotesk : aucune troisième famille sur la page */
+.page code { font: 500 .75rem/1.5 var(--font-text); color: var(--text-3); }
+.head { padding: var(--space-12) 0 var(--space-4); }
+.head p { max-width: 44rem; margin-top: var(--space-4); color: var(--text-2); }
+.states { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(208px, 100%), 1fr)); gap: var(--space-6); }
+.wide { grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); }
+.figure { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; margin: 0; }
+.demo { display: flex; align-items: center; gap: var(--space-3); min-height: 88px; min-width: 0; padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.onSurface { background: var(--surface); }
+.col { flex-direction: column; align-items: stretch; }
+.caption { display: grid; gap: 2px; font-size: var(--text-label); color: var(--text-2); }
+.caption b { color: var(--text); font-weight: 600; }
+.caption code { font: 500 .75rem/1.5 var(--font-text); color: var(--text-3); }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-4); }
+.swatch { display: block; height: 56px; border: 1px solid var(--border); border-radius: var(--radius-control); }
+.stack { width: 100%; padding: var(--space-4); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.level { padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-control); }
+.levelLabel { display: flex; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); font-size: var(--text-label); color: var(--text-2); }
+.typo { display: grid; gap: var(--space-4); }
+.typo > div { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: var(--space-4); align-items: baseline; min-width: 0; padding-bottom: var(--space-4); border-bottom: 1px solid var(--border); }
+.typo > div > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 767px) { .typo > div { grid-template-columns: 1fr; } }
+.float { justify-content: center; min-height: 120px; box-shadow: var(--shadow-float); }
+.rules { display: grid; gap: var(--space-2); max-width: 44rem; padding-left: var(--space-6); color: var(--text-2); }
