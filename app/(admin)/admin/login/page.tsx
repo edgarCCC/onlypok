@@ -1,24 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { ShieldCheck, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const VIOLET = '#7c3aed'
-const CARD   = 'rgba(232,228,220,0.03)'
-const BORDER = 'rgba(232,228,220,0.08)'
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '12px 14px',
-  background: 'rgba(0,0,0,0.35)',
-  border: `1px solid ${BORDER}`,
-  borderRadius: 10,
-  color: CREAM,
-  fontSize: 14,
-  outline: 'none',
-}
+import AuthShell from '@/components/auth/AuthShell'
+import { FormError, PasswordField, TextField } from '@/components/auth/fields'
 
 export default function AdminLoginPage() {
   const supabase = createClient()
@@ -55,43 +39,16 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', background: '#04040a', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <form onSubmit={submit} style={{ width: '100%', maxWidth: 400, background: CARD, border: `1px solid ${BORDER}`, borderRadius: 18, padding: '36px 32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <ShieldCheck size={22} color={VIOLET} />
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: CREAM, letterSpacing: '-0.4px', margin: 0 }}>OnlyPok — Admin</h1>
-        </div>
-        <p style={{ fontSize: 13, color: SILVER, margin: '0 0 28px' }}>Accès réservé aux administrateurs de la plateforme.</p>
-
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: SILVER, marginBottom: 6, letterSpacing: '0.04em' }}>EMAIL</label>
-        <input
-          type="email" required autoComplete="email" value={email}
-          onChange={e => setEmail(e.target.value)}
-          style={{ ...inputStyle, marginBottom: 18 }}
-        />
-
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: SILVER, marginBottom: 6, letterSpacing: '0.04em' }}>MOT DE PASSE</label>
-        <input
-          type="password" required autoComplete="current-password" value={password}
-          onChange={e => setPassword(e.target.value)}
-          style={{ ...inputStyle, marginBottom: 24 }}
-        />
-
-        {err && (
-          <div style={{ marginBottom: 18, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 10, color: '#f87171', fontSize: 13 }}>
-            {err}
-          </div>
-        )}
-
-        <button
-          type="submit" disabled={loading}
-          style={{ width: '100%', padding: '13px 0', background: VIOLET, border: 'none', borderRadius: 10, color: '#fff', fontSize: 14, fontWeight: 700, cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-        >
-          {loading ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Connexion…</> : 'Se connecter'}
+    <AuthShell title="Administration" subtitle="Accès réservé aux administrateurs d’OnlyPok.">
+      <form className="au-form" onSubmit={submit}>
+        <TextField label="Adresse email" type="email" value={email} onChange={setEmail} autoComplete="email" required />
+        <PasswordField label="Mot de passe" value={password} onChange={setPassword} autoComplete="current-password" />
+        <FormError>{err}</FormError>
+        <button type="submit" className="ui-btn ui-btn-primary au-submit" disabled={loading} aria-busy={loading}>
+          {loading && <span className="ui-spinner" aria-hidden="true" />}
+          {loading ? 'Connexion…' : 'Se connecter'}
         </button>
-
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </form>
-    </main>
+    </AuthShell>
   )
 }

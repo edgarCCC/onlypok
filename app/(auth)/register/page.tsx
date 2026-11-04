@@ -4,28 +4,16 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { safeNext, withNext } from '@/lib/auth-redirect'
-import { Eye, EyeOff, ArrowRight, CheckCircle, BookOpen, Users, Brain, BarChart2, ChevronLeft, Mail } from 'lucide-react'
+import AuthShell from '@/components/auth/AuthShell'
+import { FormError, GoogleButton, PasswordField, TextField } from '@/components/auth/fields'
 
-const CREAM   = '#f0f4ff'
-const CYAN    = '#06b6d4'
-const VIOLET  = '#7c3aed'
-const SILVER  = 'rgba(240,244,255,0.45)'
-const DIM     = 'rgba(240,244,255,0.22)'
-
-const PERKS = [
-  { icon: BookOpen, label: 'Formations & vidéos',  sub: 'Contenu exclusif par des pros' },
-  { icon: Users,    label: 'Coaching 1-to-1',       sub: 'Sessions avec les meilleurs coachs' },
-  { icon: Brain,    label: 'Trainer interactif',    sub: 'Drills de ranges & quiz mains' },
-  { icon: BarChart2,label: 'Tracker de sessions',   sub: 'Analyse tes stats et ta progression' },
-]
-
-const Q_LEVELS   = ['Débutant', 'Intermédiaire', 'Avancé']
+const Q_LEVELS = ['Débutant', 'Intermédiaire', 'Avancé']
 const Q_VARIANTS = ['MTT', 'Cash', 'Expresso', 'Spin & Go', 'Autre']
-const Q_GOALS    = [
-  { key: 'stakes',     label: 'Monter de stakes',        sub: 'Progresser au niveau suivant' },
-  { key: 'technique',  label: 'Améliorer ma technique',  sub: 'GTO, solver, décisions' },
-  { key: 'pro',        label: 'Jouer en pro',            sub: 'En vivre ou générer des revenus' },
-  { key: 'fun',        label: 'Prendre du plaisir',      sub: 'Jouer mieux et apprécier le jeu' },
+const Q_GOALS = [
+  { key: 'stakes', label: 'Monter de stakes', sub: 'Progresser au niveau suivant' },
+  { key: 'technique', label: 'Améliorer ma technique', sub: 'GTO, solver, décisions' },
+  { key: 'pro', label: 'Jouer en pro', sub: 'En vivre ou générer des revenus' },
+  { key: 'fun', label: 'Prendre du plaisir', sub: 'Jouer mieux et apprécier le jeu' },
 ]
 
 /* /register est prérendue : useSearchParams exige une frontière Suspense (doc Next 16,
@@ -51,7 +39,6 @@ function RegisterForm({ next }: { next: string | null }) {
   const [username, setUsername] = useState('')
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
-  const [showPw,   setShowPw]   = useState(false)
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
   const [emailSent, setEmailSent] = useState(false)
@@ -110,349 +97,67 @@ function RegisterForm({ next }: { next: string | null }) {
     setQSaving(false)
   }
 
-  const inp: React.CSSProperties = {
-    width: '100%', padding: '13px 16px',
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.09)',
-    borderRadius: 12, fontSize: 15, color: CREAM,
-    fontFamily: 'inherit', outline: 'none',
-    boxSizing: 'border-box', transition: 'border-color 0.2s, background 0.2s',
-  }
-  const lbl: React.CSSProperties = {
-    fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
-    textTransform: 'uppercase', color: 'rgba(240,244,255,0.35)',
-    display: 'block', marginBottom: 8,
+  if (emailSent) {
+    return (
+      <AuthShell title="Vérifie tes emails" subtitle={<>Un lien de confirmation a été envoyé à <strong>{email}</strong>. Clique dessus pour activer ton compte.</>}>
+        <Link href={withNext('/login', next)} className="ui-btn ui-btn-primary au-submit">Retour à la connexion</Link>
+      </AuthShell>
+    )
   }
 
-  /* ── Email sent state ── */
-  if (emailSent) return (
-    <div style={{ minHeight: '100vh', background: '#04040a', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', top: '-10%', left: '20%', width: 600, height: 500, background: `radial-gradient(ellipse, rgba(6,182,212,0.12) 0%, transparent 65%)`, filter: 'blur(60px)' }} />
-        {['♠','♣','♦','♥'].map((s, i) => (
-          <span key={i} style={{ position: 'absolute', fontSize: 80, color: '#fff', userSelect: 'none', opacity: 0.025, top: `${[15,55,35,70][i]}%`, left: `${[8,75,45,20][i]}%`, transform: `rotate(${[-12,8,-6,15][i]}deg)` }}>{s}</span>
-        ))}
-      </div>
-      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 440 }}>
-        <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(6,182,212,0.12)', border: '2px solid rgba(6,182,212,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px' }}>
-          <Mail size={32} color={CYAN} />
-        </div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: CREAM, margin: '0 0 12px', fontFamily: 'var(--font-syne,sans-serif)', letterSpacing: '-0.5px' }}>
-          Vérifie tes emails
-        </h1>
-        <p style={{ color: SILVER, fontSize: 14, lineHeight: 1.7, margin: '0 0 10px' }}>
-          Un lien de confirmation a été envoyé à
-        </p>
-        <p style={{ color: CYAN, fontWeight: 700, fontSize: 15, margin: '0 0 28px', wordBreak: 'break-all' }}>{email}</p>
-        <p style={{ color: DIM, fontSize: 13, lineHeight: 1.6, margin: '0 0 28px' }}>
-          Clique dessus pour activer ton compte et accéder à l'espace élève.
-        </p>
-        <Link href={withNext('/login', next)} style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '13px 28px', borderRadius: 12, textDecoration: 'none',
-          background: `linear-gradient(135deg, #0891b2, ${CYAN})`,
-          color: '#fff', fontSize: 14, fontWeight: 700,
-          boxShadow: `0 4px 24px rgba(6,182,212,0.35)`,
-        }}>
-          Retour à la connexion <ArrowRight size={14} />
-        </Link>
-      </div>
-    </div>
-  )
-
-  /* ── Questionnaire step ── */
-  if (step === 'questionnaire') return (
-    <div style={{ minHeight: '100vh', background: '#04040a', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', top: '-10%', left: '20%', width: 600, height: 500, background: 'radial-gradient(ellipse, rgba(124,58,237,0.12) 0%, transparent 65%)', filter: 'blur(60px)' }} />
-        {['♠','♣','♦','♥'].map((s, i) => (
-          <span key={i} style={{ position: 'absolute', fontSize: 80, color: '#fff', userSelect: 'none', opacity: 0.025, top: `${[15,55,35,70][i]}%`, left: `${[8,75,45,20][i]}%`, transform: `rotate(${[-12,8,-6,15][i]}deg)` }}>{s}</span>
-        ))}
-      </div>
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 540 }}>
-        {/* Header */}
-        <div style={{ marginBottom: 36, textAlign: 'center' }}>
-          <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
-            <div style={{ width: 8, height: 8, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }} />
-            <span style={{ fontFamily: 'var(--font-syne,sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
-          </Link>
-          <h1 style={{ fontFamily: 'var(--font-syne,sans-serif)', fontSize: 26, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: '0 0 8px' }}>
-            Parle-nous de toi
-          </h1>
-          <p style={{ fontSize: 14, color: SILVER, margin: 0 }}>2 minutes pour personnaliser ton expérience.</p>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* Q1 — Niveau */}
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,255,0.35)', margin: '0 0 12px' }}>Ton niveau actuel</p>
-            <div style={{ display: 'flex', gap: 10 }}>
-              {Q_LEVELS.map(l => (
-                <button key={l} onClick={() => setQLevel(l)} style={{ flex: 1, padding: '14px 10px', borderRadius: 12, border: `1.5px solid ${qLevel === l ? VIOLET + '80' : 'rgba(255,255,255,0.08)'}`, background: qLevel === l ? VIOLET + '18' : 'rgba(255,255,255,0.03)', color: qLevel === l ? CREAM : SILVER, fontSize: 13, fontWeight: qLevel === l ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}>
-                  {l}
-                </button>
-              ))}
+  if (step === 'questionnaire') {
+    return (
+      <AuthShell wide title="Parle-nous de toi" subtitle="Trois questions pour mettre en avant ce qui te sert.">
+        <div className="au-form">
+          <fieldset className="au-group">
+            <legend className="t-caps">Ton niveau</legend>
+            <div className="au-chips">
+              {Q_LEVELS.map((level) => <button key={level} type="button" className="au-chip" aria-pressed={qLevel === level} onClick={() => setQLevel(level)}>{level}</button>)}
             </div>
-          </div>
-
-          {/* Q2 — Variante */}
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,255,0.35)', margin: '0 0 12px' }}>Ta variante principale</p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {Q_VARIANTS.map(v => (
-                <button key={v} onClick={() => setQVariant(v)} style={{ padding: '11px 20px', borderRadius: 10, border: `1.5px solid ${qVariant === v ? CYAN + '80' : 'rgba(255,255,255,0.08)'}`, background: qVariant === v ? CYAN + '18' : 'rgba(255,255,255,0.03)', color: qVariant === v ? CREAM : SILVER, fontSize: 13, fontWeight: qVariant === v ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}>
-                  {v}
-                </button>
-              ))}
+          </fieldset>
+          <fieldset className="au-group">
+            <legend className="t-caps">Ta variante</legend>
+            <div className="au-chips">
+              {Q_VARIANTS.map((variant) => <button key={variant} type="button" className="au-chip" aria-pressed={qVariant === variant} onClick={() => setQVariant(variant)}>{variant}</button>)}
             </div>
-          </div>
-
-          {/* Q3 — Objectif */}
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,255,0.35)', margin: '0 0 12px' }}>Ton objectif principal</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {Q_GOALS.map(g => (
-                <button key={g.key} onClick={() => setQGoal(g.key)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 12, border: `1.5px solid ${qGoal === g.key ? VIOLET + '80' : 'rgba(255,255,255,0.08)'}`, background: qGoal === g.key ? VIOLET + '14' : 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left', fontFamily: 'inherit' }}>
-                  <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${qGoal === g.key ? VIOLET : 'rgba(255,255,255,0.2)'}`, background: qGoal === g.key ? VIOLET : 'transparent', flexShrink: 0, transition: 'all 0.2s' }} />
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: CREAM, marginBottom: 2 }}>{g.label}</div>
-                    <div style={{ fontSize: 11, color: SILVER }}>{g.sub}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Submit */}
-          <div style={{ paddingTop: 8 }}>
-            <button onClick={handleQuestionnaire} disabled={qSaving}
-              style={{ width: '100%', padding: '15px', borderRadius: 13, border: 'none', background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: qSaving ? 'not-allowed' : 'pointer', opacity: qSaving ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 0 28px rgba(6,182,212,0.45)', transition: 'all 0.2s', fontFamily: 'inherit' }}>
-              {qSaving ? 'Enregistrement…' : <>Accéder à mon espace <ArrowRight size={15} /></>}
-            </button>
-            <button onClick={() => { if (hasSession) router.push(next ?? '/formations'); else setEmailSent(true) }}
-              style={{ width: '100%', marginTop: 10, padding: '11px', background: 'none', border: 'none', color: DIM, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-              Passer cette étape
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  /* ── Main split layout ── */
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#04040a' }}>
-
-      {/* ═══ LEFT PANEL ═══ */}
-      <div style={{
-        width: '42%', minWidth: 320, flexShrink: 0,
-        position: 'relative', overflow: 'hidden',
-        display: 'flex', flexDirection: 'column',
-        padding: '48px 48px 40px',
-        background: 'linear-gradient(160deg, #040a12 0%, #04040a 60%, #0a0612 100%)',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
-      }}>
-        {/* Ambient blobs */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: '-10%', left: '-20%', width: 480, height: 480, background: 'radial-gradient(ellipse, rgba(6,182,212,0.18) 0%, transparent 65%)', filter: 'blur(50px)' }} />
-          <div style={{ position: 'absolute', bottom: '10%', right: '-15%', width: 360, height: 360, background: 'radial-gradient(ellipse, rgba(124,58,237,0.10) 0%, transparent 65%)', filter: 'blur(60px)' }} />
-        </div>
-
-        {/* Ghost poker suits */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.025 }}>
-          {['♠','♥','♦','♣'].map((s, i) => (
-            <span key={i} style={{ position: 'absolute', fontSize: 80, color: '#fff', userSelect: 'none', top: `${[15,45,62,30][i]}%`, left: `${[10,55,20,72][i]}%`, transform: `rotate(${[-12,8,-6,15][i]}deg)` }}>{s}</span>
-          ))}
-        </div>
-
-        {/* Logo */}
-        <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1, marginBottom: 'auto' }}>
-          <div style={{ width: 8, height: 8, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--font-syne,sans-serif)', fontWeight: 700, fontSize: 16, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
-        </Link>
-
-        {/* Perks list */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(240,244,255,0.28)', margin: '0 0 16px' }}>
-            Ce que tu obtiens
-          </p>
-          {PERKS.map(({ icon: Icon, label, sub }) => (
-            <div key={label} style={{
-              display: 'flex', alignItems: 'flex-start', gap: 14,
-              padding: '14px 16px', borderRadius: 14,
-              background: 'rgba(6,182,212,0.05)',
-              border: '1px solid rgba(6,182,212,0.1)',
-            }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon size={16} color={CYAN} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginBottom: 2 }}>{label}</div>
-                <div style={{ fontSize: 11, color: 'rgba(240,244,255,0.35)' }}>{sub}</div>
-              </div>
-              <CheckCircle size={14} color="#4ade80" style={{ marginLeft: 'auto', flexShrink: 0, marginTop: 2 }} />
-            </div>
-          ))}
-        </div>
-
-        {/* Bottom tagline */}
-        <p style={{ fontSize: 12, color: 'rgba(240,244,255,0.18)', position: 'relative', zIndex: 1, margin: 0, lineHeight: 1.6 }}>
-          La plateforme poker <br />qui te fait progresser.
-        </p>
-      </div>
-
-      {/* ═══ RIGHT PANEL ═══ */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 40px', overflowY: 'auto' }}>
-        <div style={{ width: '100%', maxWidth: 540 }}>
-
-          {/* Heading */}
-          <div style={{ marginBottom: 36 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: CREAM, letterSpacing: '-0.6px', margin: '0 0 8px', lineHeight: 1.2, fontFamily: 'var(--font-syne,sans-serif)' }}>
-              Crée ton compte élève
-            </h1>
-            <p style={{ fontSize: 14, color: SILVER, margin: 0, lineHeight: 1.6 }}>
-              Gratuit et sans carte bancaire — commence maintenant.
-            </p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-            <div>
-              <label style={lbl}>Pseudo</label>
-              <input
-                type="text" value={username} onChange={e => setUsername(e.target.value)}
-                required placeholder="PokerPro69" autoComplete="username"
-                style={inp}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(6,182,212,0.5)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
-                onBlur={e =>  { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
-              />
-            </div>
-
-            <div>
-              <label style={lbl}>Adresse email</label>
-              <input
-                type="email" value={email} onChange={e => setEmail(e.target.value)}
-                required placeholder="toi@exemple.com" autoComplete="email"
-                style={inp}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(6,182,212,0.5)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
-                onBlur={e =>  { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
-              />
-            </div>
-
-            <div>
-              <label style={lbl}>Mot de passe</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showPw ? 'text' : 'password'} value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required placeholder="••••••••" minLength={6}
-                  autoComplete="new-password"
-                  style={{ ...inp, paddingRight: 48 }}
-                  onFocus={e => { e.currentTarget.style.borderColor = 'rgba(6,182,212,0.5)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
-                  onBlur={e =>  { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
-                />
-                <button type="button" onClick={() => setShowPw(v => !v)} aria-label={showPw ? 'Masquer' : 'Afficher'}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: DIM, padding: 4, display: 'flex', transition: 'color 0.15s' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(240,244,255,0.6)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = DIM)}>
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div role="alert" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '11px 16px', fontSize: 13, color: '#fca5a5' }}>
-                {error}
-              </div>
-            )}
-
-            <button type="submit" disabled={loading}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                padding: '15px', borderRadius: 13, border: 'none',
-                background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)',
-                color: '#fff', fontSize: 15, fontWeight: 700, letterSpacing: '-0.1px',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow: `0 0 28px rgba(6,182,212,0.45), 0 4px 12px rgba(0,0,0,0.4)`,
-                transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)',
-                opacity: loading ? 0.7 : 1,
-              }}
-              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px) scale(1.01)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = '' }}>
-              {loading
-                ? <><div style={{ width: 15, height: 15, border: '2px solid rgba(255,255,255,0.25)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Création…</>
-                : <>Créer mon compte élève <ArrowRight size={15} /></>
-              }
-            </button>
-          </form>
-
-          {/* Google */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '20px 0' }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-            <span style={{ fontSize: 12, color: DIM }}>ou</span>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-          </div>
-          <button type="button" onClick={handleGoogle}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              width: '100%', padding: '13px', borderRadius: 13,
-              border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.05)',
-              color: '#f0f4ff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              transition: 'background 0.2s, border-color 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)' }}>
-            <svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.96 10.96 0 0 0 12 1 11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
-            S&apos;inscrire avec Google
+          </fieldset>
+          <fieldset className="au-group">
+            <legend className="t-caps">Ton objectif</legend>
+            {Q_GOALS.map((goal) => (
+              <button key={goal.key} type="button" className="au-option" aria-pressed={qGoal === goal.key} onClick={() => setQGoal(goal.key)}>
+                <b>{goal.label}</b>
+                <span>{goal.sub}</span>
+              </button>
+            ))}
+          </fieldset>
+          <button type="button" className="ui-btn ui-btn-primary au-submit" disabled={qSaving} aria-busy={qSaving} onClick={handleQuestionnaire}>
+            {qSaving && <span className="ui-spinner" aria-hidden="true" />}
+            {qSaving ? 'Enregistrement…' : 'Accéder à mon espace'}
           </button>
-
-          {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '28px 0' }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-            <span style={{ fontSize: 12, color: DIM, whiteSpace: 'nowrap' }}>Déjà inscrit ?</span>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-          </div>
-
-          <Link href={withNext('/login', next)}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              padding: '14px', borderRadius: 13, textDecoration: 'none',
-              border: '1.5px solid rgba(6,182,212,0.28)',
-              background: 'rgba(6,182,212,0.06)',
-              color: '#67e8f9', fontSize: 14, fontWeight: 600,
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(6,182,212,0.13)'; e.currentTarget.style.borderColor = 'rgba(6,182,212,0.5)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(6,182,212,0.06)'; e.currentTarget.style.borderColor = 'rgba(6,182,212,0.28)' }}
-          >
-            Se connecter <ArrowRight size={14} />
-          </Link>
-
-          {/* Coach link + back */}
-          <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Link href="/"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: DIM, textDecoration: 'none', transition: 'color 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = SILVER)}
-              onMouseLeave={e => (e.currentTarget.style.color = DIM)}>
-              <ChevronLeft size={13} /> Retour à l'accueil
-            </Link>
-            <Link href="/become-coach"
-              style={{ fontSize: 12, color: 'rgba(167,139,250,0.6)', textDecoration: 'none', transition: 'color 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(167,139,250,0.6)')}>
-              Devenir coach →
-            </Link>
-          </div>
+          <button type="button" className="ui-btn ui-btn-secondary au-skip" onClick={() => { if (hasSession) router.push(next ?? '/formations'); else setEmailSent(true) }}>Passer cette étape</button>
         </div>
-      </div>
+      </AuthShell>
+    )
+  }
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-        @media (max-width: 720px) {
-          .register-left { display: none !important; }
-        }
-      `}</style>
-    </div>
+  return (
+    <AuthShell title="Crée ton compte" subtitle="Gratuit, sans carte bancaire.">
+      <form className="au-form" onSubmit={handleRegister}>
+        <TextField label="Pseudo" value={username} onChange={setUsername} autoComplete="username" required />
+        <TextField label="Adresse email" type="email" value={email} onChange={setEmail} placeholder="toi@exemple.com" autoComplete="email" required />
+        <PasswordField label="Mot de passe" value={password} onChange={setPassword} autoComplete="new-password" minLength={6} help="6 caractères au moins." />
+        <FormError>{error}</FormError>
+        <button type="submit" className="ui-btn ui-btn-primary au-submit" disabled={loading} aria-busy={loading}>
+          {loading && <span className="ui-spinner" aria-hidden="true" />}
+          {loading ? 'Création…' : 'Créer mon compte'}
+        </button>
+      </form>
+      <p className="au-divider">ou</p>
+      <GoogleButton label="Continuer avec Google" onClick={handleGoogle} />
+      <p className="au-switch">
+        <span>Déjà inscrit ? <Link href={withNext('/login', next)} className="au-link">Se connecter</Link></span>
+        <Link href="/become-coach" className="au-quiet">Devenir coach</Link>
+      </p>
+    </AuthShell>
   )
 }
