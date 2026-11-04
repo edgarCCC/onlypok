@@ -1,0 +1,64 @@
+/* Accueil coach : la liste des tâches, une rangée de chiffres, puis les contenus. Des rangées à filet, peu de cartes. */
+.ch { width: min(100%, 1176px); margin: 0 auto; padding: var(--space-8) clamp(16px, 2.5vw, 32px) var(--space-16); color: var(--text); font: 400 var(--text-body-dense)/1.5 var(--font-text); }
+.ch-head { display: grid; gap: var(--space-1); margin-bottom: var(--space-6); }
+.ch-error { margin-bottom: var(--space-4); }
+.ch-label { display: block; margin-bottom: var(--space-3); }
+.ch-todos { list-style: none; border-top: 1px solid var(--border); }
+.ch-todo { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: 60px; padding: var(--space-3) 0; border-bottom: 1px solid var(--border); }
+.ch-todo-text { min-width: 0; }
+.ch-todo-title { font-weight: 600; letter-spacing: -.006em; }
+.ch-todo-detail { font-size: var(--text-label); }
+.ch-clear { padding: var(--space-3) 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.ch-numbers { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-top: var(--space-8); }
+@media (min-width: 960px) { .ch-numbers { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+.ch-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.ch-kpi { display: flex; flex-direction: column; justify-content: center; gap: var(--space-1); padding: var(--space-4); background: var(--surface); color: inherit; text-decoration: none; transition: background-color var(--dur-hover) ease; }
+.ch-kpi:active { background: var(--surface-2); }
+.ch-kpi dt { color: var(--text-3); font: 600 var(--text-caps)/1.3 var(--font-text); letter-spacing: .07em; text-transform: uppercase; }
+.ch-kpi dd { font-size: var(--text-title); font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.ch-revenue { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.ch-section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); }
+.ch-more { color: var(--brand-text); font-size: var(--text-label); font-weight: 500; text-decoration: none; }
+.ch-norev { padding: var(--space-4) 0; }
+.ch-bars { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-2); }
+.ch-bar { display: grid; justify-items: center; gap: var(--space-1); }
+.ch-bar-val { min-height: 1.3em; color: var(--text-2); font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ch-bar-track { display: block; width: 100%; max-width: 44px; height: 72px; overflow: hidden; background: var(--surface-2); border-radius: 4px; }
+.ch-bar-track i { display: block; width: 100%; height: 100%; background: var(--brand); transform-origin: bottom; border-radius: 4px; }
+.ch-bar-month { color: var(--text-3); font-size: 11px; }
+.ch-content { margin-top: var(--space-8); scroll-margin-top: 80px; }
+.ch-filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin: var(--space-3) 0 var(--space-4); }
+.ch-count { font-variant-numeric: tabular-nums; }
+.ch-sort { display: inline-flex; align-items: center; gap: var(--space-2); margin-left: auto; color: var(--text-3); font-size: var(--text-label); }
+.ch-sort select { min-height: 32px; padding: 0 var(--space-2); background: var(--surface-2); border: 1px solid var(--border-input); border-radius: 8px; color: var(--text); font: 500 var(--text-label)/1 var(--font-text); }
+.ch-rows { list-style: none; border-top: 1px solid var(--border); }
+.ch-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--border); }
+.ch-thumb { flex-shrink: 0; width: 64px; aspect-ratio: 16 / 9; background: var(--surface-2) center / cover no-repeat; border-radius: 6px; }
+.ch-row-body { flex: 1 1 16rem; min-width: 0; }
+.ch-row-title { font-weight: 600; overflow-wrap: anywhere; }
+.ch-row-title a { color: inherit; text-decoration: none; }
+.ch-row-meta { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); color: var(--text-2); font-size: var(--text-label); }
+.ch-row-meta span + span::before { content: "·"; margin-right: var(--space-2); color: var(--text-3); }
+.ch-pub { color: var(--gain); font-weight: 500; }
+.ch-draft { color: var(--text-3); font-weight: 500; }
+.ch-row-nums { display: flex; gap: var(--space-6); text-align: right; }
+.ch-row-nums dt { color: var(--text-3); font-size: 11px; }
+.ch-row-nums dd { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ch-row-actions { display: flex; gap: var(--space-1); }
+.ch-icon { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--text-2); cursor: pointer; transition: transform 160ms var(--ease-out), background-color var(--dur-hover) ease, color var(--dur-hover) ease, border-color var(--dur-hover) ease; }
+.ch-icon:active { transform: scale(.94); transition-duration: var(--dur-press); }
+.ch-icon-danger { color: var(--error); }
+.ch-dialog { width: min(calc(100vw - 32px), 420px); margin: auto; padding: var(--space-6); background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: var(--radius-card); color: var(--text); box-shadow: var(--shadow-float); }
+.ch-dialog::backdrop { background: var(--scrim); }
+.ch-dialog[open] { animation: ch-dialog-in var(--dur-modal-in) var(--ease-out); }
+@keyframes ch-dialog-in { from { opacity: 0; transform: scale(.97); } }
+.ch-dialog > * + * { margin-top: var(--space-3); }
+.ch-dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-6); }
+.ch-danger { border-color: var(--error); color: var(--error); }
+@media (hover: hover) and (pointer: fine) {
+  .ch-kpi:hover { background: var(--surface-2); }
+  .ch-more:hover, .ch-row-title a:hover { text-decoration: underline; }
+  .ch-icon:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-strong); }
+  .ch-icon-danger:hover { color: var(--error); }
+}
+@media (prefers-reduced-motion: reduce) { .ch-icon:active { transform: none; } .ch-dialog[open] { animation: ui-fade 150ms ease; } }
