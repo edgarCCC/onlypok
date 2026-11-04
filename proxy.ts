@@ -55,6 +55,11 @@ export async function proxy(request: NextRequest) {
 
   const role = profile?.role
 
+  // Connecté sur la landing : vers son espace (D2 §2.1). ?preview=1 laisse voir la landing, pour la recette.
+  if (pathname === '/' && request.nextUrl.searchParams.get('preview') !== '1') {
+    return NextResponse.redirect(new URL(homeForRole(role), request.url))
+  }
+
   if (isCoachRoute(pathname) && role !== 'coach' && role !== 'admin') {
     return NextResponse.redirect(new URL('/formations', request.url))
   }

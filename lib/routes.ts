@@ -29,6 +29,29 @@ export const PUBLIC_ROUTES: readonly PublicRoute[] = [
   { path: '/legal/cookies',          changeFrequency: 'yearly',  priority: 0.1 },
 ]
 
+/* Destinations de la landing (D2 §1.2) : une constante par destination, pour ne pas rééditer la landing
+   quand N7 renommera /coachs, /videos et /devenir-coach. Les pages légales sont celles de PUBLIC_ROUTES. */
+export const LANDING_ROUTES = {
+  home: '/',
+  formations: '/formations',
+  videos: '/formations?tab=videos',
+  coaches: '/coaches',
+  coachProfile: (id: string) => `/coaches/${encodeURIComponent(id)}`,
+  formation: (id: string) => `/formations/${encodeURIComponent(id)}`,
+  trainer: '/trainer',
+  trainerRanges: '/trainer/ranges',
+  trainerEquity: '/trainer/equity',
+  trainerQuiz: '/trainer/quiz',
+  tracker: '/tracker',
+  register: '/register',
+  login: '/login',
+  becomeCoach: '/become-coach',
+  legalMentions: '/legal/mentions-legales',
+  legalCgu: '/legal/cgu',
+  legalPrivacy: '/legal/confidentialite',
+  legalCookies: '/legal/cookies',
+} as const
+
 // Espace élève : connecté, quel que soit le rôle
 export const STUDENT_ROUTES: readonly string[] = ['/dashboard', '/schedule', '/train', '/messages', '/coaching']
 // Lecteur de formation, /formations/[id]/learn : connecté (la garde d'achat reste dans la page)

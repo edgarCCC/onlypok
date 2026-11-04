@@ -10,6 +10,17 @@ export function createAdminSupabaseClient() {
   )
 }
 
+/* Client anonyme, sans cookie, pour les pages statiques (ISR) qui ne lisent que des données publiques :
+   la landing (D4, revalidate 300). Un appel à cookies() rendrait la route dynamique ; ici, rien ne dépend
+   du visiteur et la RLS fait le tri (profils, formations publiées, preuves approuvées). */
+export function createAnonSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
+
 export async function createServerSupabaseClient() {
   const cookieStore = await cookies()
   return createServerClient(
