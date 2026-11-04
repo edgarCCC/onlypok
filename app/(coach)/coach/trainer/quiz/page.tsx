@@ -1,6 +1,5 @@
-'use client'
-import QuizPage from '@/app/(public)/trainer/quiz/page'
+import HandQuiz from '@/components/trainer/HandQuiz'
 
-export default function CoachQuizPage() {
-  return <QuizPage backHref="/coach/trainer" />
+export default function Page() {
+  return <HandQuiz backHref="/coach/trainer" />
 }

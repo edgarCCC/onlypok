@@ -1,6 +1,5 @@
-'use client'
-import RangesPage from '@/app/(public)/trainer/ranges/page'
+import RangesTool from '@/components/trainer/RangesTool'
 
 export default function CoachRangesPage() {
-  return <RangesPage backHref="/coach/trainer" />
+  return <RangesTool backHref="/coach/trainer" />
 }

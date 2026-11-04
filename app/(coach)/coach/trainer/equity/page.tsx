@@ -1,6 +1,5 @@
-'use client'
-import EquityPage from '@/app/(public)/trainer/equity/page'
+import EquityTool from '@/components/trainer/EquityTool'
 
-export default function CoachEquityPage() {
-  return <EquityPage backHref="/coach/trainer" />
+export default function Page() {
+  return <EquityTool backHref="/coach/trainer" />
 }
