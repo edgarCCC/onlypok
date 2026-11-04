@@ -271,7 +271,7 @@ export default function TrackerDashboard() {
               ? 'Glisse tes fichiers Winamax ou Betclic dans l’import : résultats, ROI, ITM et stats préflop sont calculés automatiquement.'
               : 'Ton historique de tournois, tes courbes et tes stats t’attendent.'}
             cta={
-              <Link href={userId ? '/tracker/import' : '/login'} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 24px', borderRadius: 10, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>
+              <Link href={userId ? '/tracker/import' : '/login'} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 24px', borderRadius: 10, background: T.violet, color: 'var(--on-brand)', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>
                 <Upload size={14} /> {userId ? 'Importer mes résultats' : 'Se connecter'}
               </Link>
             }
@@ -295,7 +295,7 @@ export default function TrackerDashboard() {
             title="Aucun tournoi importé"
             sub="Glisse tes fichiers Winamax ou Betclic dans l’import : résultats, ROI, ITM et stats préflop sont calculés automatiquement."
             cta={
-              <Link href="/tracker/import" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 24px', borderRadius: 10, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>
+              <Link href="/tracker/import" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 24px', borderRadius: 10, background: T.violet, color: 'var(--on-brand)', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>
                 <Upload size={14} /> Importer mes résultats
               </Link>
             }
@@ -344,7 +344,7 @@ export default function TrackerDashboard() {
         {breakdown.map(group => (
           <div key={group.room}>
             {/* sous-total room */}
-            <div style={{ display: 'grid', gridTemplateColumns: GRID_BREAKDOWN, gap: 10, padding: '11px 20px', background: 'rgba(255,255,255,0.018)', borderBottom: `1px solid ${T.border}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: GRID_BREAKDOWN, gap: 10, padding: '11px 20px', background: 'color-mix(in srgb, var(--overlay) 2%, transparent)', borderBottom: `1px solid ${T.border}` }}>
               <Td><RoomDot room={group.room} /></Td>
               <Td color={T.dim}>Total</Td>
               <Td>{''}</Td>

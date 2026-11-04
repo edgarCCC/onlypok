@@ -1,5 +1,5 @@
 'use client'
-import { useId, useState } from 'react'
+import { useCallback, useId, useRef, useState } from 'react'
 import { T } from '@/components/tracker/ui'
 import type { BankrollPoint } from '@/lib/tracker-bankroll'
 
@@ -11,12 +11,23 @@ export default function BankrollChart({ points, color, height = 240 }: {
   height?: number
 }) {
   const [hover, setHover] = useState<number | null>(null)
+  const [W, setW] = useState(800)
+  const observer = useRef<ResizeObserver | null>(null)
+  // La courbe occupe toute la largeur de sa carte : le repère SVG suit la taille réelle, le trait et le texte gardent leur épaisseur.
+  const measure = useCallback((node: SVGSVGElement | null) => {
+    observer.current?.disconnect()
+    observer.current = null
+    if (!node) return
+    setW(node.clientWidth || 800)
+    observer.current = new ResizeObserver(([entry]) => setW(Math.max(240, entry.contentRect.width)))
+    observer.current.observe(node)
+  }, [])
   const gradientId = `bkg-${useId().replace(/:/g, '')}`
   if (points.length < 2) return null
   const min = Math.min(...points.map(p => p.value))
   const max = Math.max(...points.map(p => p.value))
   const range = max - min || 1
-  const W = 800; const H = height; const PAD = 36
+  const H = height; const PAD = 36
 
   const x = (i: number) => PAD + (i / (points.length - 1)) * (W - PAD * 2)
   const y = (v: number) => H - PAD - ((v - min) / range) * (H - PAD * 2)
@@ -27,6 +38,7 @@ export default function BankrollChart({ points, color, height = 240 }: {
 
   return (
     <svg
+      ref={measure}
       viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height, display: 'block' }}
       role="img" aria-label={`Courbe de bankroll, de ${Math.round(points[0].value)} € à ${Math.round(points[points.length - 1].value)} €`}
       onMouseLeave={() => setHover(null)}
@@ -44,13 +56,13 @@ export default function BankrollChart({ points, color, height = 240 }: {
         </linearGradient>
       </defs>
       {zeroInRange && (
-        <line x1={PAD} x2={W - PAD} y1={y(0)} y2={y(0)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4 4" />
+        <line x1={PAD} x2={W - PAD} y1={y(0)} y2={y(0)} stroke="color-mix(in srgb, var(--overlay) 10%, transparent)" strokeDasharray="4 4" />
       )}
       <path d={fill} fill={`url(#${gradientId})`} />
       <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       {hover !== null && (
         <g>
-          <line x1={x(hover)} x2={x(hover)} y1={PAD / 2} y2={H - PAD} stroke="rgba(255,255,255,0.14)" />
+          <line x1={x(hover)} x2={x(hover)} y1={PAD / 2} y2={H - PAD} stroke="color-mix(in srgb, var(--overlay) 14%, transparent)" />
           <circle cx={x(hover)} cy={y(points[hover].value)} r="4" fill={color} />
           <text
             x={Math.min(Math.max(x(hover), PAD + 44), W - PAD - 44)} y={PAD / 2 + 4}

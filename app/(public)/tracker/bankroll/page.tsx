@@ -14,7 +14,7 @@ type CashSession = { date: string; buy_in: number; cash_out: number }
 type Transaction = { id: string; date: string; type: 'deposit' | 'withdrawal'; amount: number; notes: string | null }
 
 const inp: React.CSSProperties = {
-  width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}`,
+  width: '100%', background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', border: `1px solid ${T.border}`,
   borderRadius: 8, padding: '9px 12px', color: T.cream, fontSize: 13, outline: 'none',
   boxSizing: 'border-box', fontFamily: 'inherit',
 }
@@ -116,7 +116,7 @@ export default function BankrollPage() {
       editingBr ? (
         <div style={{ display: 'flex', gap: 8 }}>
           <input type="number" value={brDraft} onChange={e => setBrDraft(e.target.value)} style={{ ...inp, width: 110 }} autoFocus />
-          <button onClick={saveInitialBr} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: T.violet, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>OK</button>
+          <button onClick={saveInitialBr} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: T.violet, color: 'var(--on-brand)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>OK</button>
         </div>
       ) : (
         <button onClick={() => setEditingBr(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 9, border: `1px solid ${T.border}`, background: T.surface, color: T.silver, fontSize: 12, cursor: 'pointer' }}>
@@ -127,7 +127,7 @@ export default function BankrollPage() {
     }>
 
       {needsMigration && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '11px 16px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 10, color: T.amber, fontSize: 12.5 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '11px 16px', background: 'color-mix(in srgb, var(--brand) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 22%, transparent)', borderRadius: 10, color: T.amber, fontSize: 12.5 }}>
           <AlertCircle size={14} />
           <span>Les tables dépôts/retraits n&apos;existent pas encore — lance la migration « Tracker v2 ». La courbe fonctionne déjà avec tes tournois.</span>
         </div>
@@ -147,11 +147,11 @@ export default function BankrollPage() {
         ) : !user ? (
           <Empty icon={<TrendingUp size={40} color={T.cream} />} title="Connecte-toi pour voir ta courbe"
             sub="Bankroll unifiée : tournois importés, sessions cash et dépôts/retraits."
-            cta={<Link href="/login" style={{ padding: '10px 22px', borderRadius: 9, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Se connecter</Link>} />
+            cta={<Link href="/login" style={{ padding: '10px 22px', borderRadius: 9, background: T.violet, color: 'var(--on-brand)', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Se connecter</Link>} />
         ) : points.length < 2 ? (
           <Empty icon={<TrendingUp size={40} color={T.cream} />} title="Pas encore de courbe"
             sub="Importe tes tournois ou enregistre une session pour voir ta bankroll évoluer."
-            cta={<Link href="/tracker/import" style={{ padding: '10px 22px', borderRadius: 9, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Importer mes tournois</Link>} />
+            cta={<Link href="/tracker/import" style={{ padding: '10px 22px', borderRadius: 9, background: T.violet, color: 'var(--on-brand)', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Importer mes tournois</Link>} />
         ) : (
           <BankrollChart points={points} color={chartColor} />
         )}
@@ -162,7 +162,7 @@ export default function BankrollPage() {
         <Card pad={false} style={{ marginBottom: 14 }}>
           <div style={{ padding: '16px 20px 0' }}>
             <SectionLabel right={
-              <button onClick={() => setShowTxForm(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: T.violet, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              <button onClick={() => setShowTxForm(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: T.violet, color: 'var(--on-brand)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                 <Plus size={12} /> Ajouter
               </button>
             }>
@@ -171,7 +171,7 @@ export default function BankrollPage() {
           </div>
 
           {showTxForm && (
-            <div style={{ margin: '0 20px 16px', background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.18)', borderRadius: 12, padding: 18 }}>
+            <div style={{ margin: '0 20px 16px', background: 'color-mix(in srgb, var(--brand) 5%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 18%, transparent)', borderRadius: 12, padding: 18 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 12 }}>
                 <div>
                   <label style={{ fontSize: 11, color: T.silver, display: 'block', marginBottom: 5 }}>Type</label>
@@ -180,7 +180,7 @@ export default function BankrollPage() {
                       <button key={t} onClick={() => setTxForm(f => ({ ...f, type: t }))} style={{
                         flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                         border: `1px solid ${txForm.type === t ? (t === 'deposit' ? T.blue : T.amber) : T.border}`,
-                        background: txForm.type === t ? (t === 'deposit' ? 'rgba(59,130,246,0.1)' : 'rgba(245,158,11,0.1)') : 'transparent',
+                        background: txForm.type === t ? (t === 'deposit' ? 'color-mix(in srgb, var(--brand) 10%, transparent)' : 'color-mix(in srgb, var(--brand) 10%, transparent)') : 'transparent',
                         color: txForm.type === t ? (t === 'deposit' ? T.blue : T.amber) : T.silver,
                       }}>
                         {t === 'deposit' ? 'Dépôt' : 'Retrait'}
@@ -203,7 +203,7 @@ export default function BankrollPage() {
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button onClick={() => setShowTxForm(false)} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${T.border}`, background: 'transparent', color: T.silver, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
-                <button onClick={saveTx} disabled={savingTx || !txForm.amount} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: T.violet, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: savingTx || !txForm.amount ? 0.6 : 1 }}>
+                <button onClick={saveTx} disabled={savingTx || !txForm.amount} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: T.violet, color: 'var(--on-brand)', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: savingTx || !txForm.amount ? 0.6 : 1 }}>
                   {savingTx ? '…' : 'Enregistrer'}
                 </button>
               </div>
@@ -248,8 +248,8 @@ export default function BankrollPage() {
             {ABI_LEVELS.map(([label, min]) => {
               const ok = current >= min
               return (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 12px', borderRadius: 9, background: ok ? 'rgba(34,197,94,0.05)' : 'rgba(255,255,255,0.02)', border: `1px solid ${ok ? 'rgba(34,197,94,0.18)' : T.border}` }}>
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: ok ? T.green : 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 12px', borderRadius: 9, background: ok ? 'color-mix(in srgb, var(--gain) 5%, transparent)' : 'color-mix(in srgb, var(--overlay) 2%, transparent)', border: `1px solid ${ok ? 'color-mix(in srgb, var(--gain) 18%, transparent)' : T.border}` }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: ok ? T.green : 'color-mix(in srgb, var(--overlay) 10%, transparent)', flexShrink: 0 }} />
                   <span style={{ fontSize: 12, color: ok ? T.cream : T.silver, fontWeight: ok ? 700 : 400, ...NUM }}>{label}</span>
                   <span style={{ fontSize: 10.5, color: T.dim, marginLeft: 'auto', ...NUM }}>{min} €</span>
                 </div>

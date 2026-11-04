@@ -36,7 +36,7 @@ function StatBar({ value, good, ok }: { value: number; good: [number, number]; o
   const max = good[1] === Infinity ? Math.max(value, 100000) : good[1] * 2
   const pct = Math.min((value / max) * 100, 100)
   return (
-    <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+    <div style={{ height: 3, borderRadius: 99, background: 'color-mix(in srgb, var(--overlay) 6%, transparent)', overflow: 'hidden' }}>
       <div style={{ height: '100%', width: `${pct}%`, background: ok ? T.green : T.red, borderRadius: 99, transition: 'width 0.5s ease' }} />
     </div>
   )
@@ -136,13 +136,13 @@ export default function StatsPage() {
         <Card>
           <Empty icon={<BarChart2 size={40} color={T.cream} />} title="Connecte-toi pour voir tes stats"
             sub="ROI, ITM, stats préflop pondérées : tout est calculé depuis tes imports."
-            cta={<Link href="/login" style={{ padding: '11px 24px', borderRadius: 10, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Se connecter</Link>} />
+            cta={<Link href="/login" style={{ padding: '11px 24px', borderRadius: 10, background: T.violet, color: 'var(--on-brand)', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Se connecter</Link>} />
         </Card>
       ) : !auto ? (
         <Card>
           <Empty icon={<Upload size={40} color={T.cream} />} title="Aucun tournoi importé"
             sub="Tes stats se calculeront automatiquement dès le premier import — plus rien à saisir."
-            cta={<Link href="/tracker/import" style={{ padding: '11px 24px', borderRadius: 10, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Importer mes tournois</Link>} />
+            cta={<Link href="/tracker/import" style={{ padding: '11px 24px', borderRadius: 10, background: T.violet, color: 'var(--on-brand)', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Importer mes tournois</Link>} />
         </Card>
       ) : (
         <>
@@ -172,7 +172,7 @@ export default function StatsPage() {
                 const inRange = value !== null && value >= good[0] && value <= good[1]
                 return (
                   <div key={label}>
-                    <div style={{ fontSize: 28, fontWeight: 800, ...NUM, color: value === null ? T.dim : inRange ? T.green : T.amber }}>{fmtPct(value)}</div>
+                    <div style={{ fontSize: 28, fontWeight: 600, ...NUM, color: value === null ? T.dim : inRange ? T.green : T.amber }}>{fmtPct(value)}</div>
                     <div style={{ fontSize: 11, color: T.silver, marginTop: 3 }}>{label} <span style={{ color: T.dim }}>· cible {good[0]}–{good[1]} %</span></div>
                   </div>
                 )
@@ -182,13 +182,13 @@ export default function StatsPage() {
 
           {/* HUD cash — saisie manuelle */}
           <SectionLabel right={
-            <button onClick={save} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 15px', borderRadius: 8, border: 'none', background: saved ? 'rgba(34,197,94,0.15)' : T.violet, color: saved ? T.green : '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+            <button onClick={save} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 15px', borderRadius: 8, border: 'none', background: saved ? 'color-mix(in srgb, var(--gain) 15%, transparent)' : T.violet, color: saved ? T.green : 'var(--on-brand)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
               <Save size={12} /> {saved ? 'Sauvegardé ✓' : 'Sauvegarder'}
             </button>
           }>
             HUD cash — saisie manuelle
           </SectionLabel>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', borderRadius: 9, background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.16)', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', borderRadius: 9, background: 'color-mix(in srgb, var(--brand) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 16%, transparent)', marginBottom: 14 }}>
             <Info size={13} color={T.blue} />
             <span style={{ fontSize: 12, color: T.silver }}>Pour le cash game : reporte tes stats HM3/PT4. Fourchettes cibles 6-max NL 100BB.</span>
           </div>
@@ -199,7 +199,7 @@ export default function StatsPage() {
               const inRange = val > 0 && val >= good[0] && (good[1] === Infinity ? true : val <= good[1])
               const outRange = val > 0 && !inRange
               return (
-                <Card key={key} style={{ borderColor: outRange ? 'rgba(248,113,113,0.3)' : undefined }}>
+                <Card key={key} style={outRange ? { borderColor: 'color-mix(in srgb, var(--error) 30%, transparent)' } : undefined}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 13.5, fontWeight: 700, color: T.cream, marginBottom: 3 }}>{label}</div>
@@ -210,7 +210,7 @@ export default function StatsPage() {
                       onChange={e => setStats(s => ({ ...s, [key]: e.target.value }))}
                       placeholder="—"
                       style={{
-                        width: 72, flexShrink: 0, background: 'rgba(255,255,255,0.04)',
+                        width: 72, flexShrink: 0, background: 'color-mix(in srgb, var(--overlay) 4%, transparent)',
                         border: `1px solid ${T.border}`, borderRadius: 7, padding: '6px 8px',
                         color: inRange ? T.green : outRange ? T.red : T.cream,
                         fontSize: 14, fontWeight: 700, outline: 'none', textAlign: 'right', ...NUM,

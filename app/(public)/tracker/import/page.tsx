@@ -172,7 +172,7 @@ export default function ImportPage() {
           border: `1px dashed ${dragging ? T.violet : T.borderStrong}`,
           borderRadius: 14, padding: '40px 32px', textAlign: 'center',
           cursor: 'pointer', transition: 'border-color 0.2s, background 0.2s',
-          background: dragging ? 'rgba(124,58,237,0.06)' : T.surface,
+          background: dragging ? 'color-mix(in srgb, var(--brand) 6%, transparent)' : T.surface,
           marginBottom: 14,
         }}
       >
@@ -197,7 +197,7 @@ export default function ImportPage() {
       </div>
 
       {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', borderRadius: 10, background: 'rgba(248,113,113,0.07)', border: '1px solid rgba(248,113,113,0.22)', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', borderRadius: 10, background: 'color-mix(in srgb, var(--error) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--error) 22%, transparent)', marginBottom: 14 }}>
           <AlertCircle size={15} color={T.red} />
           <span style={{ fontSize: 12.5, color: T.red }}>{error}</span>
         </div>
@@ -257,7 +257,7 @@ export default function ImportPage() {
 
           {/* Bouton d'import */}
           {saved ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '15px 22px', borderRadius: 12, background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.22)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '15px 22px', borderRadius: 12, background: 'color-mix(in srgb, var(--gain) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--gain) 22%, transparent)' }}>
               <Check size={17} color={T.green} />
               <span style={{ fontSize: 13.5, fontWeight: 700, color: T.green }}>{parsed.length} tournoi{parsed.length > 1 ? 's' : ''} sauvegardé{parsed.length > 1 ? 's' : ''}</span>
             </div>
@@ -265,7 +265,7 @@ export default function ImportPage() {
             <button
               onClick={save}
               disabled={saving}
-              style={{ width: '100%', padding: '15px 0', borderRadius: 12, border: 'none', background: saving ? 'rgba(124,58,237,0.35)' : T.violet, color: '#fff', fontSize: 14, fontWeight: 700, cursor: saving ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+              style={{ width: '100%', padding: '15px 0', borderRadius: 12, border: 'none', background: saving ? 'color-mix(in srgb, var(--brand) 35%, transparent)' : T.violet, color: 'var(--on-brand)', fontSize: 14, fontWeight: 700, cursor: saving ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
             >
               {saving ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Sauvegarde…</> : `Importer ${parsed.length} tournoi${parsed.length > 1 ? 's' : ''}`}
             </button>

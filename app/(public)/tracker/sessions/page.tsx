@@ -13,7 +13,7 @@ type Session = {
 }
 
 const inp: React.CSSProperties = {
-  width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}`,
+  width: '100%', background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', border: `1px solid ${T.border}`,
   borderRadius: 8, padding: '9px 12px', color: T.cream, fontSize: 13, outline: 'none',
   boxSizing: 'border-box', fontFamily: 'inherit',
 }
@@ -90,7 +90,7 @@ export default function SessionsPage() {
 
       {/* Formulaire */}
       {showForm && (
-        <Card style={{ marginBottom: 14, background: 'rgba(124,58,237,0.05)', borderColor: 'rgba(124,58,237,0.18)' }}>
+        <Card style={{ marginBottom: 14, background: 'color-mix(in srgb, var(--brand) 5%, transparent)', borderColor: 'color-mix(in srgb, var(--brand) 18%, transparent)' }}>
           <SectionLabel>Nouvelle session</SectionLabel>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12, marginBottom: 12 }}>
             <div><label style={{ fontSize: 11, color: T.silver, display: 'block', marginBottom: 5 }}>Date</label>
@@ -120,7 +120,7 @@ export default function SessionsPage() {
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
             <button onClick={() => setShowForm(false)} style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${T.border}`, background: 'transparent', color: T.silver, fontSize: 13, cursor: 'pointer' }}>Annuler</button>
-            <button onClick={save} disabled={saving || !form.buy_in || !form.cash_out} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: T.violet, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: saving || !form.buy_in || !form.cash_out ? 0.6 : 1 }}>
+            <button onClick={save} disabled={saving || !form.buy_in || !form.cash_out} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: T.violet, color: 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: saving || !form.buy_in || !form.cash_out ? 0.6 : 1 }}>
               {saving ? '…' : 'Enregistrer'}
             </button>
           </div>
@@ -134,13 +134,13 @@ export default function SessionsPage() {
         <Card>
           <Empty icon={<Clock size={40} color={T.cream} />} title="Connecte-toi pour ton journal de sessions"
             sub="Enregistre tes sessions cash : profit, win rate et €/h calculés automatiquement."
-            cta={<Link href="/login" style={{ padding: '11px 24px', borderRadius: 10, background: T.violet, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Se connecter</Link>} />
+            cta={<Link href="/login" style={{ padding: '11px 24px', borderRadius: 10, background: T.violet, color: 'var(--on-brand)', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Se connecter</Link>} />
         </Card>
       ) : sessions.length === 0 ? (
         <Card>
           <Empty icon={<Clock size={40} color={T.cream} />} title="Aucune session enregistrée"
             sub="Le journal de sessions couvre ton jeu cash (live ou en ligne) : ajoute ta première session pour démarrer le suivi."
-            cta={<button onClick={() => setShowForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '11px 24px', borderRadius: 10, border: 'none', background: T.violet, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}><Plus size={14} /> Ajouter une session</button>} />
+            cta={<button onClick={() => setShowForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '11px 24px', borderRadius: 10, border: 'none', background: T.violet, color: 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}><Plus size={14} /> Ajouter une session</button>} />
         </Card>
       ) : (
         <Card pad={false}>

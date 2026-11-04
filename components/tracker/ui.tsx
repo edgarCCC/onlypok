@@ -4,24 +4,24 @@ import { usePathname } from 'next/navigation'
 import { Upload } from 'lucide-react'
 
 /* ─── Design tokens du tracker — data-native, sobre, dense ────────────────────
-   L'accent violet est réservé aux actions et à l'état actif. Le vert/rouge ne
+   L'accent est réservé aux actions et à l'état actif. Feuille et argile ne
    servent qu'au P&L. Tout chiffre est en tabular-nums, aligné à droite. ────── */
 export const T = {
-  bg:      '#07090e',
-  surface: 'rgba(255,255,255,0.024)',
-  raised:  'rgba(255,255,255,0.04)',
-  border:  'rgba(240,244,255,0.07)',
-  borderStrong: 'rgba(240,244,255,0.14)',
-  cream:   '#f0f4ff',
-  silver:  'rgba(240,244,255,0.52)',
-  dim:     'rgba(240,244,255,0.26)',
-  faint:   'rgba(240,244,255,0.14)',
-  violet:  '#7c3aed',
-  green:   '#22c55e',
-  red:     '#f87171',
-  amber:   '#f59e0b',
-  gold:    '#fbbf24',
-  blue:    '#3b82f6',
+  bg:      'var(--bg)',
+  surface: 'var(--surface)',
+  raised:  'var(--surface-2)',
+  border:  'var(--border)',
+  borderStrong: 'var(--border-strong)',
+  cream:   'var(--text)',
+  silver:  'var(--text-2)',
+  dim:     'var(--text-3)',
+  faint:   'var(--text-3)',
+  violet:  'var(--brand)',
+  green:   'var(--gain)',
+  red:     'var(--error)',
+  amber:   'var(--text-2)',
+  gold:    'var(--text)',
+  blue:    'var(--text-2)',
 }
 
 export const NUM: React.CSSProperties = { fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }
@@ -50,56 +50,36 @@ export function TrackerShell({ children, actions, wide }: {
 }) {
   const pathname = usePathname()
   return (
-    <div style={{ minHeight: '100vh', background: T.bg, color: T.cream }}>
+    <div className="trk" style={{ minHeight: '100vh', background: T.bg, color: T.cream }}>
       <style>{`
-        .trk-nav a { transition: color 0.15s ease, background 0.15s ease; }
-        .trk-row:hover { background: rgba(255,255,255,0.022); }
+        .trk-row:hover { background: var(--surface-2); }
         .trk-link { transition: color 0.15s ease; }
-        .trk-link:hover, .trk-link:focus-visible { color: #f0f4ff !important; }
+        .trk-link:hover, .trk-link:focus-visible { color: var(--text) !important; }
         .trk-scroll::-webkit-scrollbar { width: 4px; height: 4px }
-        .trk-scroll::-webkit-scrollbar-thumb { background: rgba(240,244,255,0.12); border-radius: 99px }
+        .trk-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px }
+        .trk-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-6); }
+        .trk-head h1 { font-size: var(--text-heading); font-weight: 600; letter-spacing: -.012em; margin: 0; }
+        .trk-seg a { text-decoration: none; display: inline-flex; align-items: center; }
+        .trk-actions { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
         @media (max-width: 760px) {
-          .trk-head { flex-wrap: wrap; }
           .trk-kpis { grid-template-columns: repeat(2, 1fr) !important; }
           .trk-hide-sm { display: none; }
         }
         @keyframes spin { to { transform: rotate(360deg) } }
       `}</style>
 
-      <div style={{ maxWidth: wide ? 1240 : 1080, margin: '0 auto', padding: '92px 24px 96px' }}>
-        {/* Barre d'app : identité + navigation + actions */}
-        <div className="trk-head" style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 30 }}>
-          <Link href="/tracker/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'baseline', gap: 8, flexShrink: 0 }}>
-            <span style={{ fontSize: 15, fontWeight: 800, color: T.cream, letterSpacing: '-0.3px' }}>Tracker</span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: T.violet, letterSpacing: '0.14em', textTransform: 'uppercase' }}>OnlyPok</span>
-          </Link>
-
-          <nav className="trk-nav" style={{ display: 'flex', gap: 2, padding: 3, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10 }}>
-            {NAV.map(item => {
-              const active = pathname === item.href
-              return (
-                <Link key={item.href} href={item.href} style={{
-                  padding: '7px 15px', borderRadius: 8, textDecoration: 'none',
-                  fontSize: 12.5, fontWeight: active ? 700 : 500,
-                  color: active ? T.cream : T.silver,
-                  background: active ? 'rgba(124,58,237,0.22)' : 'transparent',
-                  boxShadow: active ? 'inset 0 0 0 1px rgba(124,58,237,0.35)' : 'none',
-                }}>
-                  {item.label}
-                </Link>
-              )
-            })}
+      <div style={{ maxWidth: wide ? 1240 : 1080, margin: '0 auto', padding: 'var(--space-6) clamp(16px, 2.5vw, 32px) var(--space-16)' }}>
+        <div className="trk-head">
+          <h1>Tracker</h1>
+          <nav className="ui-seg trk-seg" aria-label="Sections du tracker">
+            {NAV.map(item => (
+              <Link key={item.href} href={item.href} className="ui-seg-item" aria-current={pathname === item.href ? 'page' : undefined}>{item.label}</Link>
+            ))}
           </nav>
-
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="trk-actions">
             {actions}
-            <Link href="/tracker/import" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '8px 16px', borderRadius: 9,
-              background: T.violet, color: '#fff',
-              textDecoration: 'none', fontSize: 12.5, fontWeight: 700,
-            }}>
-              <Upload size={13} /> Importer
+            <Link href="/tracker/import" className="ui-btn ui-btn-secondary ui-btn-sm">
+              <Upload size={14} aria-hidden="true" /> Importer
             </Link>
           </div>
         </div>
@@ -115,7 +95,7 @@ export function TrackerShell({ children, actions, wide }: {
 export function Card({ children, style, pad = true }: { children: React.ReactNode; style?: React.CSSProperties; pad?: boolean }) {
   return (
     <div style={{
-      background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14,
+      background: T.surface, border: `1px solid ${T.border}`, borderRadius: 'var(--radius-card)',
       padding: pad ? '18px 20px' : 0, overflow: 'hidden', ...style,
     }}>
       {children}
@@ -165,18 +145,9 @@ export function Seg<K extends string>({ options, value, onChange }: {
   options: { key: K; label: string }[]; value: K; onChange: (k: K) => void
 }) {
   return (
-    <div style={{ display: 'flex', gap: 2, padding: 3, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 9 }}>
+    <div className="ui-seg">
       {options.map(o => (
-        <button key={o.key} onClick={() => onChange(o.key)} style={{
-          padding: '6px 13px', borderRadius: 7, border: 'none', cursor: 'pointer',
-          fontSize: 12, fontWeight: value === o.key ? 700 : 500,
-          background: value === o.key ? 'rgba(124,58,237,0.22)' : 'transparent',
-          boxShadow: value === o.key ? 'inset 0 0 0 1px rgba(124,58,237,0.35)' : 'none',
-          color: value === o.key ? T.cream : T.silver,
-          transition: 'color 0.15s ease',
-        }}>
-          {o.label}
-        </button>
+        <button key={o.key} type="button" className="ui-seg-item" aria-pressed={value === o.key} onClick={() => onChange(o.key)}>{o.label}</button>
       ))}
     </div>
   )
@@ -184,9 +155,9 @@ export function Seg<K extends string>({ options, value, onChange }: {
 
 /* Badge de format de tournoi */
 const FORMAT_STYLE: Record<string, { label: string; color: string }> = {
-  classic:    { label: 'Classique',   color: 'rgba(240,244,255,0.55)' },
+  classic:    { label: 'Classique',   color: 'var(--text-2)' },
   ko:         { label: 'KO',          color: T.red },
-  mystery_ko: { label: 'Mystery KO',  color: '#c084fc' },
+  mystery_ko: { label: 'Mystery KO',  color: 'var(--brand)' },
   space_ko:   { label: 'Space KO',    color: T.blue },
   spin_rush:  { label: 'Spin & Rush', color: T.amber },
 }
@@ -195,7 +166,7 @@ export function FormatBadge({ format }: { format: string }) {
   return (
     <span style={{
       fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5,
-      color: f.color, background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}`,
+      color: f.color, background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', border: `1px solid ${T.border}`,
       whiteSpace: 'nowrap',
     }}>
       {f.label}
@@ -238,14 +209,13 @@ export function Td({ children, align = 'left', color = T.silver, strong, style }
 }
 
 /* État vide standard */
-export function Empty({ icon, title, sub, cta }: {
-  icon: React.ReactNode; title: string; sub: string; cta?: React.ReactNode
+export function Empty({ title, sub, cta }: {
+  icon?: React.ReactNode; title: string; sub: string; cta?: React.ReactNode
 }) {
   return (
-    <div style={{ textAlign: 'center', padding: '72px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-      <div style={{ opacity: 0.2, marginBottom: 4 }}>{icon}</div>
-      <p style={{ fontSize: 15, fontWeight: 700, color: T.cream, margin: 0 }}>{title}</p>
-      <p style={{ fontSize: 12.5, color: T.silver, margin: 0, maxWidth: 380, lineHeight: 1.6 }}>{sub}</p>
+    <div style={{ padding: 'var(--space-8) var(--space-6)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
+      <p style={{ fontSize: 'var(--text-heading)', fontWeight: 600, letterSpacing: '-.012em', color: T.cream, margin: 0 }}>{title}</p>
+      <p style={{ fontSize: 'var(--text-body-dense)', color: T.silver, margin: 0, maxWidth: 480, lineHeight: 1.55 }}>{sub}</p>
       {cta && <div style={{ marginTop: 12 }}>{cta}</div>}
     </div>
   )
