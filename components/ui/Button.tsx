@@ -9,7 +9,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'strong' | 'link'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 interface ButtonBaseProps {
-  /** primary : le seul bouton bleu de l'écran. secondary : contour (défaut). strong : action secondaire forte, libellé orange, une par écran. link : lien d'action bleu texte. */
+  /** primary : le seul bouton plein de l'écran (clair, texte noir). secondary : contour (défaut). strong : action secondaire forte, fond forêt, une par écran. link : lien d'action bleu texte. */
   variant?: ButtonVariant
   /** sm 32 px (zone tactile étendue à 48 px), md 44 px (défaut), lg 48 px. */
   size?: ButtonSize

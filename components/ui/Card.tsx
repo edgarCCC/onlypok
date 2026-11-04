@@ -9,7 +9,7 @@ export interface CardProps {
   as?: 'div' | 'article' | 'section' | 'aside' | 'li'
   /** none : la carte compose son contenu (CardMedia + CardBody) ; sm : 16 px (dashboards, défaut) ; md : 24 px (landing). */
   padding?: CardPadding
-  /** Toute la carte devient un lien next/link : survol (fond --surface-2, filet --border-strong, titre .t-heading en bleu texte),
+  /** Toute la carte devient un lien next/link : survol (fond --surface-2, filet --border-strong, titre .t-heading en --brand-text),
    *  appui scale(.97) ; `as` est alors ignoré. Sans href, une carte n'est jamais cliquable (pas de div cliquable). */
   href?: string
   id?: string

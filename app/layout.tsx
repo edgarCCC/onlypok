@@ -1,26 +1,16 @@
 import type { Metadata } from 'next'
-import { DM_Mono, Unbounded, Space_Grotesk } from 'next/font/google'
+import { Unbounded } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 import Providers from './providers'
+import ThemeScript from '@/components/ui/ThemeScript'
 
-const dmMono = DM_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-dm-mono',
-})
-
+// Unbounded ne sert plus qu'au logotype : tout le reste est en police système (styles/tokens.css).
 const unbounded = Unbounded({
   subsets: ['latin'],
-  weight: ['400', '600', '700', '800', '900'],
-  variable: '--font-syne',
-})
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-space',
+  weight: ['700'],
+  variable: '--font-logo',
 })
 
 export const metadata: Metadata = {
@@ -46,7 +36,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${dmMono.variable} ${unbounded.variable} ${spaceGrotesk.variable}`}>
+    <html lang="fr" className={unbounded.variable} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body>
         <Providers>{children}</Providers>
         <Analytics />

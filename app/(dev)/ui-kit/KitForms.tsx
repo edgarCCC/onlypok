@@ -33,7 +33,7 @@ export default function KitForms() {
         </div>
       </Section>
 
-      <Section title="10 · Badge et point d'état" subtitle="Le badge « Nouveau » est un usage canonique de l'orange : un par liste, texte charcoal sur orange (6,4:1). Les états se lisent par le mot ; le point double l'information." divider>
+      <Section title="10 · Badge et point d'état" subtitle="Le badge « Nouveau » est un usage canonique de la mousse : un par liste, texte charcoal sur orange (6,4:1). Les états se lisent par le mot ; le point double l'information." divider>
         <div className={styles.states}>
           <Figure label="Neutre" tokens=".ui-badge · --border-strong · --text-2 · capitales 11 px"><Badge>Cash</Badge><Badge>MTT</Badge></Figure>
           <Figure label="Nouveau" tokens=".ui-badge-new · --accent · --on-accent"><Badge variant="new">Nouveau</Badge></Figure>

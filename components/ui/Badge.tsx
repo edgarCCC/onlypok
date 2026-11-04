@@ -4,7 +4,7 @@ import { cx } from '@/lib/cx'
 export type BadgeVariant = 'neutral' | 'new' | 'status'
 
 export interface BadgeProps {
-  /** neutral : capitales sur filet (type, format). new : orange, « Nouveau », un par liste. status : point d'état et libellé (« Planifiée »). */
+  /** neutral : capitales sur filet (type, format). new : mousse, « Nouveau », un par liste. status : point d'état et libellé (« Planifiée »). */
   variant?: BadgeVariant
   /** Couleur du point d'état : brand (en cours, planifié) ou neutral (--text-3, annulé). */
   tone?: 'brand' | 'neutral'

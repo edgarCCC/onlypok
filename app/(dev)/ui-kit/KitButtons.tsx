@@ -33,7 +33,7 @@ function ButtonStates({ variant, label }: { variant: Exclude<ButtonVariant, 'lin
 export default function KitButtons() {
   return (
     <>
-      <Section title="5 · Bouton primaire (bleu)" subtitle="Un seul par écran. Plat, texte --on-brand (4,9:1). Le survol est discret par construction : au-delà de #1C62FF, le texte perd AA. Le retour principal est l'appui." divider>
+      <Section title="5 · Bouton primaire (clair)" subtitle="Un seul par écran. Plat, texte noir --on-brand (15,7:1). Le survol est discret par construction : au-delà de #1C62FF, le texte perd AA. Le retour principal est l'appui." divider>
         <ButtonStates variant="primary" label="Créer mon compte" />
       </Section>
 
@@ -41,11 +41,11 @@ export default function KitButtons() {
         <ButtonStates variant="secondary" label="Devenir coach" />
       </Section>
 
-      <Section title="7 · Action secondaire forte (orange)" subtitle="Une par écran, quand elle est l'urgence du jour : « Accepter la demande » sur l'accueil coach. Contour neutre, libellé orange, jamais de remplissage orange." divider>
+      <Section title="7 · Action secondaire forte" subtitle="Une par écran, quand elle est l'urgence du jour : « Accepter la demande » sur l'accueil coach. Contour neutre, libellé orange, jamais de remplissage orange." divider>
         <ButtonStates variant="strong" label="Accepter la demande" />
       </Section>
 
-      <Section title="8 · Lien d'action, tailles, lien rendu comme bouton" subtitle="Le bleu texte dit « tu peux agir ici ». Survol : soulignement, sans transition. Les liens de navigation restent neutres : ce sont des repères, pas des actions." divider>
+      <Section title="8 · Lien d'action, tailles, lien rendu comme bouton" subtitle="Le pâle --brand-text dit « tu peux agir ici ». Survol : soulignement, sans transition. Les liens de navigation restent neutres : ce sont des repères, pas des actions." divider>
         <div className={styles.states}>
           <Figure label="Lien d'action, repos" tokens="--brand-text (6,7:1) · 16 px / 1,55 · zone de clic 48,8 px par padding (≥ 44)"><Button variant="link" href="/formations" arrow="right">Voir les formations</Button></Figure>
           <Figure label="Survol" tokens="soulignement, sans transition"><Button variant="link" href="/formations" arrow="right" className="is-hover">Voir les formations</Button></Figure>

@@ -1,3 +1,4 @@
+import ThemeToggle from '@/components/ui/ThemeToggle'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import KitButtons from './KitButtons'
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
  * Kit de composants du socle de design (D9) : chaque composant dans tous ses états, comme la planche
  * .claude/finalisation/design/planche-composants.html. Page de développement : introuvable en production,
  * comme les routes app/api/migrate. Elle sert aux portes de validation et au serveur de dev.
- * C'est un inventaire, pas un écran : elle montre volontairement plus de deux éléments orange.
+ * C'est un inventaire, pas un écran : elle montre volontairement tous les états à la fois.
  */
 export default function UiKitPage() {
   if (process.env.NODE_ENV === 'production') notFound()
@@ -27,7 +28,7 @@ export default function UiKitPage() {
           <p className="t-caps">OnlyPok · Direction artistique v2 · D9</p>
           <h1 className="t-title" style={{ marginTop: 'var(--space-2)' }}>Kit de composants</h1>
           <p>
-            Trois couleurs : Charcoal <code>#21232E</code>, Royal Blue <code>#105BFF</code>, Tangerine <code>#FE8500</code>.
+            Palette forêt : encre <code>#0F1F17</code>, forêt <code>#1E3A2E</code>, mousse <code>#3E5A3F</code>, sauge <code>#6B7F67</code>, pâle <code>#C7CBB8</code>, olive <code>#3D4337</code>. Thème : <ThemeToggle />
             Chaque composant est montré dans ses états, avec les tokens qu’il utilise. Les états survol, appui et focus sont forcés
             par les classes <code>is-hover</code>, <code>is-active</code> et <code>is-focus</code> ; les vrais états fonctionnent aussi.
           </p>

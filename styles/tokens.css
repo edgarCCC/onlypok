@@ -1,49 +1,69 @@
-/* OnlyPok — tokens de design v2 (tâche D9).
-   Source : .claude/finalisation/design/DIRECTION-ARTISTIQUE.md (§1.2 couleurs, §2 typographie, §3 espacement et rayons, §4.1 mouvement, §8 feuille de tokens).
-   Trois couleurs, chacune avec un métier : Charcoal #21232E porte tout, Royal Blue #105BFF agit, Tangerine #FE8500 alerte.
-   Tout le reste en dérive. Les anciens tokens (violet, cyan, ambre, vert) restent dans app/globals.css, couche `legacy`,
-   jusqu'à la fin de la migration des pages. */
+/* OnlyPok — tokens de design v4 (palette « forêt » choisie par Edgar le 04/11, inspiration GTO Wizard pour la densité, skill apple-design pour la matière).
+   Six couleurs : #0F1F17 encre · #1E3A2E forêt · #3E5A3F mousse · #6B7F67 sauge · #C7CBB8 pâle · #3D4337 olive.
+   Tout le reste en dérive, sans autre teinte, sauf deux sens qui en ont besoin : le gain (feuille) et la perte / l'erreur (argile).
+   Sombre par défaut ; thème clair sous html[data-theme="light"], posé avant le premier rendu (components/ui/ThemeScript.tsx). */
 
 :root {
-  /* Surfaces : charcoal natif et trois paliers (+3,5 L* en LCH, chroma et teinte constants) */
-  --bg: #21232E;
-  --surface: #282A36;
-  --surface-2: #30323D;
-  --surface-3: #383A45;
+  /* Les six couleurs de la palette, disponibles telles quelles */
+  --ink: #0F1F17;
+  --forest: #1E3A2E;
+  --moss: #3E5A3F;
+  --sage: #6B7F67;
+  --pale: #C7CBB8;
+  --olive: #3D4337;
 
-  /* Filets : le texte à 8 % (filets) et 14 % (contour des contrôles) ; 40 % réservé aux champs (variante C, décision 11 du 02/11) */
-  --border: rgb(232 235 245 / .08);
-  --border-strong: rgb(232 235 245 / .14);
-  --border-input: rgb(232 235 245 / .40);
+  /* Surfaces : l'encre, un palier, la forêt, un palier vers la mousse. La profondeur vient de cet empilement. */
+  --bg: #0F1F17;
+  --surface: #162B21;
+  --surface-2: #1E3A2E;
+  --surface-3: #2E4A36;
 
-  /* Texte : blanc cassé bleuté, jamais le blanc pur ; secondaire 80 %, tertiaire 60 %, désactivé 38 % */
-  --text: #E8EBF5;
-  --text-2: rgb(232 235 245 / .80);
-  --text-3: rgb(232 235 245 / .60);
-  --text-disabled: rgb(232 235 245 / .38);
-  --on-brand: #F5F7FC;
-  --on-accent: var(--bg);
+  /* Filets : le pâle à 12 % (filets), 22 % (contrôles), 44 % réservé aux champs */
+  --border: rgb(199 203 184 / .12);
+  --border-strong: rgb(199 203 184 / .22);
+  --border-input: rgb(199 203 184 / .44);
 
-  /* Bleu : la marque agit (remplissage du bouton principal, états, focus, liens par la variante texte). Jamais --brand en texte (2,95:1). */
-  --brand: #105BFF;
-  --brand-hover: #1C62FF;
-  --brand-soft: rgb(16 91 255 / .10);
-  --brand-text: #7DA9FF;
-  --focus: var(--brand-text);
+  /* Texte : pâle éclairci 14,2:1 · pâle 10,3:1 · sauge éclaircie 7,0:1 (5,0:1 sur la forêt) · désactivé */
+  --text: #EAEBE4;
+  --text-2: #C7CBB8;
+  --text-3: #9EA994;
+  --text-disabled: rgb(199 203 184 / .42);
 
-  /* Orange : l'accent alerte. Deux éléments par écran au plus ; les gains du tracker sont la seule exception déclarée. */
-  --accent: #FE8500;
+  /* Action : le pâle, comme le bouton clair à texte sombre de P3 (encre dessus : 10,3:1). Un seul bouton plein par écran. */
+  --brand: #C7CBB8;
+  --brand-hover: #D5D8CA;
+  --on-brand: #0F1F17;
+  --brand-soft: rgb(199 203 184 / .10);
+  --brand-text: #C7CBB8;
+  --focus: #C7CBB8;
 
-  /* Erreur : rouge désaturé, en texte et en contour, jamais en remplissage. Sert aussi aux cœurs et carreaux des cartes. */
-  --error: #E88F88;
+  /* Attention (notification, badge « Nouveau ») : la mousse, pâle dessus 4,6:1. Écrit en texte : le pâle. */
+  --accent: #3E5A3F;
+  --on-accent: #EAEBE4;
+  --accent-text: #C7CBB8;
+
+  /* Sens : gain en feuille 9,2:1 ; perte et erreur en argile 7,5:1, en texte et en contour seulement. */
+  --gain: #9CCB8E;
+  --error: #E39A87;
   --card-red: var(--error);
 
-  /* Grille de ranges, neutre : cellule dans la range, cellule à la frontière */
-  --range-in: rgb(232 235 245 / .55);
-  --range-border: rgb(232 235 245 / .22);
+  /* Matériau translucide de la barre de navigation (apple-design §12) : le contenu défile dessous */
+  --material: rgb(15 31 23 / .72);
+  --material-solid: #0F1F17;
 
-  /* Profondeur : un voile derrière les modales (l'ombre unique est déclarée plus bas, avec les valeurs exposées à Tailwind) */
+  /* Grille de ranges : le pâle = dans la range (encre 10,3:1), sauge éclaircie = à la frontière (encre 5,2:1), forêt = hors range */
+  --range-in: #C7CBB8;
+  --range-in-ink: #0F1F17;
+  --range-border: #82927B;
+  --range-border-ink: #0F1F17;
+  --range-out: #1E3A2E;
+  --range-pair: #233F31;
+  --range-suited: #1E3A2E;
+  --range-offsuit: #1A3429;
+
+  /* Voile derrière les modales et calque de contraste pour l'ancien code (blanc en sombre, encre en clair) */
   --scrim: rgb(0 0 0 / .6);
+  --overlay: #FFFFFF;
 
   /* Espacement : base 4 px. Contrôle 8 × 12 ou 16 ; carte 16 ou 24 ; entre groupes 32, 48 ; entre sections 96 (64 sous 768). */
   --space-1: 4px;
@@ -65,12 +85,59 @@
   --dur-modal-out: 150ms;
   --dur-drawer: 300ms;
 
+  /* Anciens noms de familles, utilisés par les pages pas encore refaites */
+  --font-syne: var(--font-display);
+  --font-space: var(--font-text);
+  --font-dm-mono: var(--font-text);
+
   color-scheme: dark;
 }
 
 /* color-scheme: dark rend opaque et blanc un iframe transparent (lecteurs vidéo YouTube / Vimeo, Daily) : les iframes gardent le schéma normal.
    À vérifier sur VideoPlayer, VideoPreview et learn/page.tsx au premier passage sur le serveur de dev. */
 iframe { color-scheme: normal; }
+
+/* Thème clair : la même palette inversée. Fond = pâle éclairci, bouton = forêt, texte = encre. Contrastes mesurés sur le fond et sur chaque surface. */
+html[data-theme="light"] {
+  --bg: #F3F4EF;
+  --surface: #F9FAF8;
+  --surface-2: #EAEBE4;
+  --surface-3: #DFE1D6;
+  --border: rgb(15 31 23 / .12);
+  --border-strong: rgb(15 31 23 / .22);
+  --border-input: rgb(15 31 23 / .44);
+  --text: #0F1F17;
+  --text-2: #3D4337;
+  --text-3: #506753;
+  --text-disabled: rgb(15 31 23 / .40);
+  --brand: #1E3A2E;
+  --brand-hover: #0F1F17;
+  --on-brand: #F3F4EF;
+  --brand-soft: rgb(30 58 46 / .08);
+  --brand-text: #3E5A3F;
+  --focus: #1E3A2E;
+  --accent: #3E5A3F;
+  --on-accent: #F3F4EF;
+  --accent-text: #3E5A3F;
+  --gain: #2A6236;
+  --error: #9A3522;
+  --material: rgb(243 244 239 / .78);
+  --material-solid: #F3F4EF;
+  --range-in: #1E3A2E;
+  --range-in-ink: #F3F4EF;
+  --range-border: #5F755E;
+  --range-border-ink: #F9FAF8;
+  --range-out: #EAEBE4;
+  --range-pair: #DFE1D6;
+  --range-suited: #E6E8DE;
+  --range-offsuit: #EFF0E9;
+  --scrim: rgb(15 31 23 / .4);
+  --overlay: #0F1F17;
+  color-scheme: light;
+}
+
+/* Transition douce à la bascule de thème : pas de saut de luminosité brutal (apple-design §14) */
+html.theme-changing, html.theme-changing * { transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease !important; }
 
 /* Rayons, familles, échelle, courbes et ombre : déclarés dans @theme static.
    Tailwind v4 les émet tels quels sur :root (ce sont de vraies variables CSS, utilisables partout)
@@ -82,10 +149,10 @@ iframe { color-scheme: normal; }
   --radius-card: 16px;
   --radius-cell: 2px;
 
-  /* Deux familles : Unbounded 600 / 700 pour les titres de 24 px et plus et le logotype, Space Grotesk 400 / 500 / 600 pour tout le reste et tous les chiffres.
-     --font-syne et --font-space sont posées par next/font dans app/layout.tsx (à renommer --font-unbounded / --font-space-grotesk en fin de migration). */
-  --font-display: var(--font-syne), system-ui, sans-serif;
-  --font-text: var(--font-space), system-ui, sans-serif;
+  /* Police système (apple-design §15) : elle porte déjà l'optique variable, les tables d'approche et les chiffres tabulaires.
+     Unbounded ne sert plus qu'au logotype. Les anciens noms --font-syne, --font-space et --font-dm-mono pointent ici : tout le site suit. */
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI Variable Display", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 
   /* Cinq niveaux : Display (une fois par page), Titre, Intertitre, Corps (15 px en liste dense), Libellé (capitales 11 px, 600, +0,06 em) */
   --text-display: clamp(2rem, 1.2rem + 3.6vw, 3.5rem);
@@ -102,12 +169,18 @@ iframe { color-scheme: normal; }
   --ease-drawer: cubic-bezier(.32, .72, 0, 1);
 
   /* La seule ombre du produit : neutre et faible, sur ce qui flotte (menu, popover, modale, toast). Jamais sur une carte. */
-  --shadow-float: 0 12px 32px -12px rgb(0 0 0 / .5);
+  --shadow-float: 0 16px 40px -16px rgb(0 0 0 / .55);
 }
 
 /* Exposition des couleurs et de l'unité d'espacement aux utilitaires Tailwind (bg-brand, text-brand-text, border-border-strong, p-4 = 16 px…).
    `inline` : l'utilitaire référence la variable de la DA, aucune valeur n'est dupliquée. */
 @theme inline {
+  --color-ink: var(--ink);
+  --color-forest: var(--forest);
+  --color-moss: var(--moss);
+  --color-sage: var(--sage);
+  --color-pale: var(--pale);
+  --color-olive: var(--olive);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -127,6 +200,8 @@ iframe { color-scheme: normal; }
   --color-brand-text: var(--brand-text);
   --color-focus: var(--focus);
   --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-gain: var(--gain);
   --color-error: var(--error);
   --color-scrim: var(--scrim);
   --spacing: var(--space-1);

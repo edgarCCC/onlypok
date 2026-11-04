@@ -5,7 +5,7 @@ import { cx } from '@/lib/cx'
 export interface ListRowProps {
   /** Titre de la ligne (niveau 3, deux lignes au plus) : nom du coach, titre du contenu. */
   title: ReactNode
-  /** Toute la ligne devient un lien ; le titre passe en bleu texte au survol. */
+  /** Toute la ligne devient un lien ; le titre passe en --brand-text au survol. */
   href?: string
   /** Ligne du dessus : type en capitales et, au plus une fois par liste, le badge « Nouveau ». */
   eyebrow?: ReactNode
@@ -15,7 +15,7 @@ export interface ListRowProps {
   leading?: ReactNode
   /** Prix, tarif, flèche : à droite, chiffres en .num. */
   trailing?: ReactNode
-  /** Sélection : fond --brand-soft, titre bleu texte et trait de 2 px --brand à gauche (indice de forme en plus de la teinte). */
+  /** Sélection : fond --brand-soft, titre --brand-text et trait de 2 px --brand-text à gauche (indice de forme en plus de la teinte). */
   selected?: boolean
   /** li dans une List (défaut) ou div hors liste. */
   as?: 'li' | 'div'
