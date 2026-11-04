@@ -3,7 +3,7 @@ import { useState, useRef } from 'react'
 import FormationCard from '@/components/formations/FormationCard'
 import EdgeScrollZones from './EdgeScrollZones'
 
-const CREAM = '#f0f4ff', SILVER = 'rgba(240,244,255,0.45)'
+const CREAM = 'var(--text)', SILVER = 'var(--text-2)'
 
 /* ─── Rangée scrollable façon Netflix (formations / vidéos) ─────────────────── */
 export default function NetflixRow({ title, subtitle, formations, accentColor, isTop10, onPlayVideo, eligibleCoachIds }: {
@@ -19,7 +19,7 @@ export default function NetflixRow({ title, subtitle, formations, accentColor, i
       <div className="sform-row-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           {/* Tick accent — relie la rangée à la couleur de l'onglet */}
-          <div style={{ width: 3, alignSelf: 'stretch', borderRadius: 2, background: `linear-gradient(to bottom, ${accentColor}, ${accentColor}20)`, flexShrink: 0, marginTop: 4 }} />
+          <div style={{ width: 3, alignSelf: 'stretch', borderRadius: 2, background: 'var(--brand)', flexShrink: 0, marginTop: 4 }} />
           <div>
             <h2 style={{ fontFamily: 'var(--font-syne, sans-serif)', fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', marginBottom: 4 }}>
               {title}
@@ -41,7 +41,7 @@ export default function NetflixRow({ title, subtitle, formations, accentColor, i
             /* overflow hidden seulement pour contenir le numéro géant du Top 10 — sinon il clippe le lift hover */
             <div key={f.id} style={{ position: 'relative', overflow: isTop10 ? 'hidden' : 'visible', height: '100%' }}>
               {isTop10 && (
-                <div style={{ position: 'absolute', left: -10, bottom: 10, fontSize: 110, fontWeight: 900, color: 'rgba(232,228,220,0.05)', zIndex: 0, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{i + 1}</div>
+                <div style={{ position: 'absolute', left: -10, bottom: 10, fontSize: 110, fontWeight: 700, color: 'var(--text-3)', zIndex: 0, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{i + 1}</div>
               )}
               <div
                 style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)', height: '100%' }}

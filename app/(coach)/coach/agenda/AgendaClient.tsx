@@ -67,7 +67,7 @@ export default function AgendaClient() {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ booking_id: id }),
     })
     const json = await res.json().catch(() => ({}))
-    if (!res.ok) throw new Error(json.error ?? 'Échec, réessayez.')
+    if (!res.ok) throw new Error(json.error ?? 'Échec, réessaie.')
     return json as { meeting_url?: string }
   }
 
@@ -111,8 +111,8 @@ export default function AgendaClient() {
           <h1 className="agenda-title">Agenda</h1>
           <p style={{ fontSize: 13, color: SILVER, margin: '6px 0 0' }}>
             {pending.length > 0
-              ? `${pending.length} demande${pending.length > 1 ? 's' : ''} attend${pending.length > 1 ? 'ent' : ''} votre réponse.`
-              : 'Vos séances, demandes et disponibilités au même endroit.'}
+              ? `${pending.length} demande${pending.length > 1 ? 's' : ''} attend${pending.length > 1 ? 'ent' : ''} ta réponse.`
+              : 'Tes séances, demandes et disponibilités au même endroit.'}
           </p>
         </header>
 
@@ -142,7 +142,7 @@ export default function AgendaClient() {
 
           {!loading && !error && tab === 'validate' && (
             pending.length === 0
-              ? <EmptyState icon={Inbox} color={AMBER} title="Aucune demande en attente" sub="Quand un élève propose un créneau, vous l'acceptez ou le refusez ici." />
+              ? <EmptyState icon={Inbox} color={AMBER} title="Aucune demande en attente" sub="Quand un élève propose un créneau, tu l'acceptes ou le refuses ici." />
               : <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {pending.map(b => (
                     <BookingCard key={b.id} booking={b} onAccept={handleAccept} onDecline={setDeclineTarget}

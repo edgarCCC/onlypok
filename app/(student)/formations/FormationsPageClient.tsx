@@ -4,14 +4,15 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { Search, HelpCircle, Menu, X, Check } from 'lucide-react'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 import Link from 'next/link'
 import Image from 'next/image'
 import NetflixRow from '@/components/marketplace/NetflixRow'
 import VideoStudio from '@/components/marketplace/VideoStudio'
 import CoachDirectory from '@/components/marketplace/CoachDirectory'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
 
 const VARIANT_OPTIONS = [
   { id: 'MTT',      label: 'MTT',        desc: 'Tournois multi-tables' },
@@ -40,9 +41,9 @@ const FIELDS: Record<string, { key: string, label: string, placeholder: string, 
 }
 
 const TAB_COLORS: Record<string, string> = {
-  formations: '#7c3aed',
-  videos:     '#3b82f6',
-  coaching:   '#f59e0b',
+  formations: 'var(--brand)',
+  videos:     'var(--brand)',
+  coaching:   'var(--brand)',
 }
 
 /* ─── Hero contextuel par onglet — hiérarchie de page ───────────────────────── */
@@ -74,10 +75,10 @@ function TabHero({ tab, accentColor, count }: {
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 14,
         padding: '5px 14px', borderRadius: 99,
-        background: `${accentColor}12`, border: `1px solid ${accentColor}30`,
+        background: `color-mix(in srgb, ${accentColor} 7%, transparent)`, border: `1px solid color-mix(in srgb, ${accentColor} 19%, transparent)`,
         transition: 'all 0.4s ease',
       }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: accentColor, boxShadow: `0 0 8px ${accentColor}80` }} />
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: accentColor, boxShadow: 'none' }} />
         <span style={{ fontSize: 10, fontWeight: 700, color: accentColor, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           {copy.eyebrow}
         </span>
@@ -89,7 +90,7 @@ function TabHero({ tab, accentColor, count }: {
       }}>
         {copy.title}
       </h1>
-      <p style={{ fontSize: 13, color: 'rgba(232,228,220,0.45)', margin: 0 }}>{copy.sub}</p>
+      <p style={{ fontSize: 13, color: 'var(--text-2)', margin: 0 }}>{copy.sub}</p>
     </div>
   )
 }
@@ -233,7 +234,7 @@ export default function FormationsPageClient({
   })()
 
   return (
-    <div className="sform-root" style={{ minHeight: '100vh', background: '#07090e', color: '#fff', overflowX: 'hidden' }}>
+    <div className="sform-root" style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', overflowX: 'hidden' }}>
       <style>{`
         @media (max-width: 700px) {
           .sform-header-row { flex-wrap: wrap !important; height: auto !important; padding: 10px 16px !important; row-gap: 10px !important; }
@@ -244,7 +245,7 @@ export default function FormationsPageClient({
           .sform-q-cell { padding: 12px 14px !important; }
         }
         .sform-root :is(button, a, input):focus-visible {
-          outline: 2px solid #7c3aed;
+          outline: 2px solid var(--brand);
           outline-offset: 2px;
           border-radius: 8px;
         }
@@ -252,68 +253,16 @@ export default function FormationsPageClient({
         .sform-login-row { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1); }
         .sform-login-menu { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease; }
         @media (hover: hover) and (pointer: fine) {
-          .sform-login-row:hover, .sform-login-menu:hover { color: ${CREAM}; background-color: rgba(232,228,220,0.05); }
+          .sform-login-row:hover, .sform-login-menu:hover { color: ${CREAM}; background-color: color-mix(in srgb, var(--brand) 5%, transparent); }
         }
         .sform-login-row:active { transform: scale(0.97); }
         @media (prefers-reduced-motion: reduce) { .sform-login-row:active { transform: none; } }
         @media (max-width: 959px) { .sform-login-row { display: none !important; } }
         @media (min-width: 960px) { .sform-login-menu { display: none !important; } }
-        .sform-q-input::placeholder { color: rgba(138,138,138,0.5); }
-        /* Micro-interaction CTA — lift léger, flèche qui glisse, clic enfoncé */
-        .op-cta {
-          transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), filter 0.2s ease, opacity 0.2s ease, box-shadow 0.22s ease;
-        }
-        .op-cta:hover { transform: translateY(-1px); filter: brightness(1.07); }
-        .op-cta:active { transform: translateY(0) scale(0.98); filter: brightness(0.98); }
-        .op-cta-arrow { transition: transform 0.22s cubic-bezier(0.16,1,0.3,1); }
-        .op-cta:hover .op-cta-arrow { transform: translateX(3px); }
-        /* Lampe à lave — deux nappes organiques (une claire, une sombre) qui
-           flottent lentement dans la barre, sur des cycles désynchronisés */
-        .op-cta { position: relative; overflow: hidden; isolation: isolate; }
-        .op-cta::before, .op-cta::after {
-          content: '';
-          position: absolute;
-          width: 75%;
-          aspect-ratio: 1;
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: -1;
-        }
-        .op-cta::before {
-          background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.33) 45%, transparent 70%);
-          mix-blend-mode: overlay;
-          top: -85%; left: -18%;
-          animation: opLavaA 4.7s ease-in-out infinite alternate;
-        }
-        .op-cta::after {
-          background: radial-gradient(circle, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.27) 45%, transparent 72%);
-          mix-blend-mode: soft-light;
-          bottom: -90%; right: -12%;
-          animation: opLavaB 6.3s ease-in-out infinite alternate;
-        }
-        @keyframes opLavaA {
-          0%   { transform: translate(0%, 0%) scale(1); }
-          50%  { transform: translate(70%, 30%) scale(1.3); }
-          100% { transform: translate(140%, -8%) scale(0.85); }
-        }
-        @keyframes opLavaB {
-          0%   { transform: translate(0%, 0%) scale(1.15); }
-          50%  { transform: translate(-75%, -25%) scale(0.8); }
-          100% { transform: translate(-150%, 12%) scale(1.25); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .op-cta, .op-cta-arrow, .op-cta::before, .op-cta::after { transition: none; animation: none; }
-          .op-cta:hover, .op-cta:active { transform: none; }
-          .op-cta:hover .op-cta-arrow { transform: none; }
-        }
+        .sform-q-input::placeholder { color: var(--text-3); }
       `}</style>
 
       {/* Lumière centrale forte */}
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        background: `radial-gradient(ellipse 70% 40% at 50% 0%, ${accentColor}35 0%, ${accentColor}10 50%, transparent 80%)`,
-        transition: 'background 0.6s ease',
-      }} />
 
       {/* Overlay sombre quand overlay ouvert */}
       {isScrolled && isSearchOverlayOpen && (
@@ -325,28 +274,28 @@ export default function FormationsPageClient({
       ══════════════════════ */}
       <header style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        background: isScrolled ? 'rgba(7,9,14,0.97)' : 'transparent',
+        background: isScrolled ? 'var(--bg)' : 'transparent',
         backdropFilter: isScrolled ? 'blur(20px)' : 'none',
-        borderBottom: isScrolled ? `1px solid rgba(232,228,220,0.07)` : 'none',
+        borderBottom: isScrolled ? `1px solid color-mix(in srgb, var(--brand) 7%, transparent)` : 'none',
         transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
       }}>
         <div className="sform-header-row" style={{ display: 'flex', alignItems: 'center', height: 80, padding: '0 40px', gap: 24 }}>
 
           {/* Logo */}
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-            <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0 }} />
-            <span style={{ fontFamily: 'var(--font-syne, sans-serif)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
+            <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--brand)', flexShrink: 0 }} />
+            <span style={{ fontFamily: 'var(--font-logo)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
           </Link>
 
           {/* Centre */}
           <div ref={centerRef} className="sform-header-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
             {/* Tabs */}
-            <div style={{ position: 'absolute', display: 'inline-flex', background: 'rgba(232,228,220,0.04)', border: `1px solid rgba(232,228,220,0.08)`, borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
+            <div style={{ position: 'absolute', display: 'inline-flex', background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
               {(['formations','videos','coaching'] as const).map(t => {
                 const active = tab === t
                 const labels: Record<string,string> = { formations: 'Formations', videos: 'Vidéos', coaching: 'Coachs' }
                 return (
-                  <button key={t} onClick={() => { setTab(t); setFilters({}); setIsSearchOverlayOpen(false); window.history.replaceState(null, '', t === 'formations' ? '/formations' : `/formations?tab=${t}`) }} style={{ padding: '8px 24px', borderRadius: 10, border: 'none', background: active ? `${TAB_COLORS[t]}28` : 'transparent', color: active ? CREAM : SILVER, fontSize: 13, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.25s' }}
+                  <button key={t} onClick={() => { setTab(t); setFilters({}); setIsSearchOverlayOpen(false); window.history.replaceState(null, '', t === 'formations' ? '/formations' : `/formations?tab=${t}`) }} style={{ padding: '8px 24px', borderRadius: 10, border: 'none', background: active ? `color-mix(in srgb, ${TAB_COLORS[t]} 16%, transparent)` : 'transparent', color: active ? CREAM : SILVER, fontSize: 13, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.25s' }}
                     onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
                     onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
                     {labels[t]}
@@ -357,12 +306,12 @@ export default function FormationsPageClient({
 
             {/* Pilule compacte */}
             <div style={{ position: 'absolute', transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: !showBigSearch ? 1 : 0, pointerEvents: !showBigSearch ? 'auto' : 'none', transform: !showBigSearch ? 'translateY(0) scale(1)' : 'translateY(-16px) scale(0.92)' }}>
-              <button onClick={e => { e.stopPropagation(); setIsSearchOverlayOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(240,244,255,0.05)', border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+              <button onClick={e => { e.stopPropagation(); setIsSearchOverlayOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'color-mix(in srgb, var(--brand) 5%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 12%, transparent)`, borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: 'var(--shadow-float)' }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: CREAM, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pillLabel}</span>
-                <div style={{ width: 1, height: 16, background: `rgba(240,244,255,0.12)` }} />
+                <div style={{ width: 1, height: 16, background: `color-mix(in srgb, var(--brand) 12%, transparent)` }} />
                 <span style={{ fontSize: 13, color: SILVER }}>Rechercher…</span>
-                <div style={{ width: 34, height: 34, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 12px ${accentColor}60` }}>
-                  <Search size={15} color="#fff" />
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }}>
+                  <Search size={15} color="var(--on-brand)" />
                 </div>
               </button>
             </div>
@@ -373,13 +322,13 @@ export default function FormationsPageClient({
             {isLoggedIn ? (
               <Link
                 href={userRole === 'coach' ? '/coach/dashboard' : '/dashboard'}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', padding: '6px 12px 6px 6px', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 40, transition: 'all 0.2s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.25)` }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.1)` }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', padding: '6px 12px 6px 6px', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`, borderRadius: 40, transition: 'all 0.2s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = `color-mix(in srgb, var(--brand) 25%, transparent)` }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = `color-mix(in srgb, var(--brand) 10%, transparent)` }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                   {authAvatar
                     ? <Image src={authAvatar} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
-                    : <span style={{ fontSize: 11, fontWeight: 800, color: '#fff' }}>{(authUsername ?? 'U')[0].toUpperCase()}</span>
+                    : <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text)' }}>{(authUsername ?? 'U')[0].toUpperCase()}</span>
                   }
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 600, color: CREAM, whiteSpace: 'nowrap' }}>
@@ -394,37 +343,38 @@ export default function FormationsPageClient({
                 </Link>
                 <Link
                   href="/become-coach"
-                  style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none', padding: '8px 16px', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.25)` }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = `rgba(232,228,220,0.1)` }}>
+                  style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none', padding: '8px 16px', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`, borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = `color-mix(in srgb, var(--brand) 25%, transparent)` }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = `color-mix(in srgb, var(--brand) 10%, transparent)` }}>
                   Devenir coach
                 </Link>
               </>
             ) : null}
-            <button style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(232,228,220,0.03)', border: `1px solid rgba(232,228,220,0.08)`, color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
+            <ThemeToggle />
+            <button style={{ width: 38, height: 38, borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
               <HelpCircle size={16} />
             </button>
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setShowMenu(!showMenu)} aria-label="Menu" aria-expanded={showMenu} style={{ width: 38, height: 38, borderRadius: 10, background: showMenu ? 'rgba(232,228,220,0.08)' : 'rgba(232,228,220,0.03)', border: `1px solid rgba(232,228,220,0.08)`, color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
+              <button onClick={() => setShowMenu(!showMenu)} aria-label="Menu" aria-expanded={showMenu} style={{ width: 38, height: 38, borderRadius: 10, background: showMenu ? 'color-mix(in srgb, var(--brand) 8%, transparent)' : 'color-mix(in srgb, var(--brand) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
                 <Menu size={16} />
               </button>
               {showMenu && (
-                <div style={{ position: 'absolute', top: 46, right: 0, background: '#07070f', border: `1px solid rgba(240,244,255,0.08)`, borderRadius: 14, padding: 6, minWidth: 200, zIndex: 200, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
-                  <div style={{ padding: '8px 14px 12px', borderBottom: `1px solid rgba(240,244,255,0.05)`, marginBottom: 6 }}>
+                <div style={{ position: 'absolute', top: 46, right: 0, background: 'var(--bg)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, borderRadius: 14, padding: 6, minWidth: 200, zIndex: 200, boxShadow: 'var(--shadow-float)' }}>
+                  <div style={{ padding: '8px 14px 12px', borderBottom: `1px solid color-mix(in srgb, var(--brand) 5%, transparent)`, marginBottom: 6 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: CREAM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Menu</span>
                   </div>
                   {[['Mes formations', '/formations'], ['Coaches', '/formations?tab=coaching'], ['Tracker', '/tracker']].map(([label, href]) => (
                     <Link key={label} href={href} style={{ display: 'block', padding: '9px 14px', fontSize: 13, color: SILVER, textDecoration: 'none', borderRadius: 8, transition: 'all 0.15s' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(232,228,220,0.05)'; (e.currentTarget as HTMLAnchorElement).style.color = CREAM }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'color-mix(in srgb, var(--brand) 5%, transparent)'; (e.currentTarget as HTMLAnchorElement).style.color = CREAM }}
                       onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; (e.currentTarget as HTMLAnchorElement).style.color = SILVER }}>
                       {label}
                     </Link>
                   ))}
                   {isLoggedIn ? (
                     <button onClick={() => signOut()} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13, color: SILVER, background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.05)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 5%, transparent)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
                       Déconnexion
                     </button>
@@ -443,7 +393,7 @@ export default function FormationsPageClient({
         {/* Barre de recherche */}
         <div ref={searchRef} style={{ height: showBigSearch ? 110 : 0, opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transition: 'all 0.4s cubic-bezier(0.2,0.8,0.2,1)', display: 'flex', justifyContent: 'center', paddingBottom: 20, transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(-24px) scale(0.97)' }}>
           <div className="sform-search-inner" style={{ width: '100%', maxWidth: 860, position: 'relative', padding: '0 40px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(20,23,30,0.9)', backdropFilter: 'blur(25px)', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 50, padding: 8, boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg)', backdropFilter: 'blur(25px)', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`, borderRadius: 50, padding: 8, boxShadow: 'var(--shadow-float)' }}>
               {fields.map((field, idx) => {
                 const isActive = activeField === field.key
                 const isLast   = idx === fields.length - 1
@@ -469,7 +419,7 @@ export default function FormationsPageClient({
                         </div>
                       </div>
                       {!isLast && activeField !== fields[idx+1]?.key && (
-                        <div style={{ width: 1, height: 22, background: `rgba(232,228,220,0.1)`, position: 'absolute', right: 0 }} />
+                        <div style={{ width: 1, height: 22, background: `color-mix(in srgb, var(--brand) 10%, transparent)`, position: 'absolute', right: 0 }} />
                       )}
                     </div>
                   )
@@ -477,9 +427,9 @@ export default function FormationsPageClient({
 
                 return (
                   <div key={field.key} style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <button onClick={() => setActiveField(isActive ? null : field.key)} style={{ flex: 1, textAlign: 'left', border: 'none', padding: '12px 26px', cursor: 'pointer', background: isActive ? 'rgba(232,228,220,0.08)' : 'transparent', borderRadius: 40, transition: 'all 0.2s', width: '100%' }}>
+                    <button onClick={() => setActiveField(isActive ? null : field.key)} style={{ flex: 1, textAlign: 'left', border: 'none', padding: '12px 26px', cursor: 'pointer', background: isActive ? 'color-mix(in srgb, var(--brand) 8%, transparent)' : 'transparent', borderRadius: 40, transition: 'all 0.2s', width: '100%' }}>
                       <div style={{ fontSize: 10, fontWeight: 800, color: isActive ? CREAM : SILVER, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>{field.label}</div>
-                      <div style={{ fontSize: 13, color: filters[field.key] ? CREAM : 'rgba(138,138,138,0.5)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ fontSize: 13, color: filters[field.key] ? CREAM : 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
                         {filters[field.key] || field.placeholder}
                         {filters[field.key] && (
                           <span onClick={e => { e.stopPropagation(); setFilter(field.key, filters[field.key]) }} style={{ color: SILVER, cursor: 'pointer' }}><X size={12} /></span>
@@ -488,7 +438,7 @@ export default function FormationsPageClient({
                     </button>
 
                     {!isLast && !isActive && activeField !== fields[idx+1]?.key && (
-                      <div style={{ width: 1, height: 22, background: `rgba(232,228,220,0.1)`, position: 'absolute', right: 0 }} />
+                      <div style={{ width: 1, height: 22, background: `color-mix(in srgb, var(--brand) 10%, transparent)`, position: 'absolute', right: 0 }} />
                     )}
 
                     {/* Dropdown — prend exactement la largeur du champ parent */}
@@ -498,15 +448,15 @@ export default function FormationsPageClient({
                         top: 'calc(100% + 14px)',
                         left: 0,
                         right: 0,
-                        background: '#07070f',
-                        border: `1px solid rgba(240,244,255,0.08)`,
+                        background: 'var(--bg)',
+                        border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`,
                         borderRadius: 20,
                         padding: 14,
                         zIndex: 110,
-                        boxShadow: '0 30px 60px rgba(0,0,0,0.8)',
+                        boxShadow: 'var(--shadow-float)',
                         animation: 'airbnbPop 0.25s ease',
                       }}>
-                        <div style={{ padding: '4px 8px 12px', borderBottom: `1px solid rgba(240,244,255,0.05)`, marginBottom: 10 }}>
+                        <div style={{ padding: '4px 8px 12px', borderBottom: `1px solid color-mix(in srgb, var(--brand) 5%, transparent)`, marginBottom: 10 }}>
                           <span style={{ fontSize: 11, fontWeight: 700, color: CREAM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{field.label}</span>
                         </div>
 
@@ -515,10 +465,10 @@ export default function FormationsPageClient({
                             {VARIANT_OPTIONS.map(v => {
                               const selected = filters.variant === v.id
                               return (
-                                <button key={v.id} onClick={() => setFilter('variant', v.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: `1px solid ${selected ? accentColor + '50' : 'rgba(232,228,220,0.05)'}`, background: selected ? `${accentColor}14` : 'rgba(232,228,220,0.02)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', width: '100%' }}
-                                  onMouseEnter={e => { if(!selected) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.05)' }}
-                                  onMouseLeave={e => { if(!selected) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.02)' }}>
-                                  <div style={{ width: 36, height: 36, borderRadius: 9, background: 'rgba(232,228,220,0.05)', border: `1px solid ${selected ? accentColor + '50' : 'rgba(232,228,220,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0, color: selected ? accentColor : SILVER, transition: 'all 0.2s' }}>
+                                <button key={v.id} onClick={() => setFilter('variant', v.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: `1px solid ${selected ? `color-mix(in srgb, ${accentColor} 31%, transparent)` : 'color-mix(in srgb, var(--brand) 5%, transparent)'}`, background: selected ? `color-mix(in srgb, ${accentColor} 8%, transparent)` : 'color-mix(in srgb, var(--brand) 2%, transparent)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', width: '100%' }}
+                                  onMouseEnter={e => { if(!selected) (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 5%, transparent)' }}
+                                  onMouseLeave={e => { if(!selected) (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 2%, transparent)' }}>
+                                  <div style={{ width: 36, height: 36, borderRadius: 9, background: 'color-mix(in srgb, var(--brand) 5%, transparent)', border: `1px solid ${selected ? `color-mix(in srgb, ${accentColor} 31%, transparent)` : 'color-mix(in srgb, var(--brand) 10%, transparent)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0, color: selected ? accentColor : SILVER, transition: 'all 0.2s' }}>
                                     {v.id === 'MTT' ? '♠' : v.id === 'Cash' ? '♣' : v.id === 'Expresso' ? '♥' : v.id === 'Live' ? '♦' : v.id === 'PLO' ? '♠' : '♣'}
                                   </div>
                                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -535,8 +485,8 @@ export default function FormationsPageClient({
                             {fields.find(f => f.key === activeField)?.options.map(o => {
                               const selected = filters[activeField] === o
                               return (
-                                <button key={o} onClick={() => setFilter(activeField, o)} style={{ padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: selected ? 600 : 400, border: 'none', background: selected ? `${accentColor}20` : 'transparent', color: selected ? CREAM : SILVER, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s', width: '100%' }}
-                                  onMouseEnter={e => { if(!selected) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.05)' }}
+                                <button key={o} onClick={() => setFilter(activeField, o)} style={{ padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: selected ? 600 : 400, border: 'none', background: selected ? `color-mix(in srgb, ${accentColor} 13%, transparent)` : 'transparent', color: selected ? CREAM : SILVER, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s', width: '100%' }}
+                                  onMouseEnter={e => { if(!selected) (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 5%, transparent)' }}
                                   onMouseLeave={e => { if(!selected) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}>
                                   {o}
                                   {selected && <Check size={14} color={accentColor} />}
@@ -551,8 +501,8 @@ export default function FormationsPageClient({
                 )
               })}
               <div style={{ paddingLeft: 8 }}>
-                <button aria-label="Lancer la recherche" className="op-cta" onClick={runSearch} style={{ width: 52, height: 52, borderRadius: '50%', background: accentColor, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 6px 20px ${accentColor}55`, flexShrink: 0 }}>
-                  <Search size={20} color="#fff" />
+                <button aria-label="Lancer la recherche" className="op-cta" onClick={runSearch} style={{ width: 52, height: 52, borderRadius: '50%', background: accentColor, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: 'none', flexShrink: 0 }}>
+                  <Search size={20} color="var(--on-brand)" />
                 </button>
               </div>
             </div>
@@ -583,25 +533,24 @@ export default function FormationsPageClient({
         ) : filtered.length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '90px 24px', maxWidth: 560, margin: '0 auto',
-            background: 'rgba(255,255,255,0.028)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 20,
+            background: 'color-mix(in srgb, var(--overlay) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 20,
           }}>
-            <div style={{ fontSize: 44, opacity: 0.14, marginBottom: 14, color: accentColor }}>♠</div>
             <p style={{ color: CREAM, fontSize: 15, fontWeight: 600, marginBottom: 6 }}>
               {tab === 'videos' ? 'Aucune vidéo disponible' : 'Aucune formation disponible'}
             </p>
-            <p style={{ color: 'rgba(232,228,220,0.4)', fontSize: 13, margin: 0 }}>
-              {hasContentFilters ? 'Essayez de modifier vos filtres' : 'Revenez bientôt, le catalogue s’agrandit chaque semaine'}
+            <p style={{ color: 'var(--text-2)', fontSize: 13, margin: 0 }}>
+              {hasContentFilters ? 'Essaie de modifier tes filtres' : 'Reviens bientôt, le catalogue s’agrandit chaque semaine'}
             </p>
             {hasContentFilters && (
               <button
                 onClick={() => setFilters({})}
                 style={{
                   marginTop: 20, padding: '9px 20px', borderRadius: 10, cursor: 'pointer',
-                  background: `${accentColor}14`, border: `1px solid ${accentColor}30`,
+                  background: `color-mix(in srgb, ${accentColor} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${accentColor} 19%, transparent)`,
                   color: CREAM, fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = `${accentColor}24` }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = `${accentColor}14` }}>
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = `color-mix(in srgb, ${accentColor} 14%, transparent)` }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = `color-mix(in srgb, ${accentColor} 8%, transparent)` }}>
                 Réinitialiser les filtres
               </button>
             )}

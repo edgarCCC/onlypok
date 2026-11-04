@@ -179,7 +179,7 @@ export default function FormationDetailClient({
 
   /* ─── submit review ────────────────────────────────────────────────────── */
   const submitReview = async () => {
-    if (!user) { setReviewError('Vous devez être connecté pour laisser un avis.'); return }
+    if (!user) { setReviewError('Connecte-toi pour laisser un avis.'); return }
     if (!formation?.coach?.id) { setReviewError('Coach introuvable.'); return }
     const rated = Object.values(reviewRatings)
     if (rated.length < REVIEW_CATEGORIES.length) return
@@ -220,14 +220,14 @@ export default function FormationDetailClient({
   /* ─── guards ───────────────────────────────────────────────────────────── */
   if (loading) return <FourAcesLoader />
   if (!formation) return (
-    <div style={{ minHeight: '100vh', background: '#07090e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: SILVER }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: SILVER }}>
       Formation introuvable
     </div>
   )
 
   /* ─── computed values ──────────────────────────────────────────────────── */
   const contentType  = formation.content_type ?? 'formation'
-  const typeColor    = TYPE_COLORS[contentType] ?? '#7c3aed'
+  const typeColor    = TYPE_COLORS[contentType] ?? 'var(--brand)'
   const variantColor = VARIANT_COLORS[formation.variant ?? ''] ?? typeColor
   const allLessons   = chapters.flatMap(c => c.formation_lessons ?? [])
   const freeLessons  = allLessons.filter((l: any) => l.is_free).length
@@ -362,12 +362,12 @@ export default function FormationDetailClient({
   const canWatchFull = hasPurchased || effectivePrice === 0
 
   return (
-    <div style={{ minHeight: '100vh', background: '#05070a', color: CREAM,
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM,
       paddingTop: showBigSearch ? 200 : 80, transition: 'padding-top 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
 
       {/* Atmospheric glow + grain */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        background: `radial-gradient(ellipse 80% 40% at 50% 0%, ${typeColor}22 0%, transparent 60%), radial-gradient(ellipse 40% 25% at 80% 60%, ${typeColor}08 0%, transparent 55%)` }} />
+        background: `transparent, transparent` }} />
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', opacity: 0.035,
         backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")',
         backgroundRepeat: 'repeat', backgroundSize: '200px' }} />
@@ -472,20 +472,20 @@ export default function FormationDetailClient({
                   ? HIGHLIGHTS.filter(h => ['hd','lifetime','refund'].includes(h.id))
                   : HIGHLIGHTS.filter(h => ['structured','lifetime','refund'].includes(h.id))
             return (
-              <div style={{ padding: '36px 0', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+              <div style={{ padding: '36px 0', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(chosen.length, 3)}, 1fr)`, gap: 2 }}>
                   {chosen.map((h, i) => (
                     <div key={h.id} style={{
                       display: 'flex', flexDirection: 'column', gap: 14,
                       padding: '24px 22px',
-                      background: i === 0 ? `${typeColor}08` : 'transparent',
+                      background: i === 0 ? `color-mix(in srgb, ${typeColor} 3%, transparent)` : 'transparent',
                       borderRadius: i === 0 ? 14 : 0,
-                      border: i === 0 ? `1px solid ${typeColor}18` : 'none',
+                      border: i === 0 ? `1px solid color-mix(in srgb, ${typeColor} 9%, transparent)` : 'none',
                     }}>
                       <div style={{
                         width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                        background: i === 0 ? `${typeColor}20` : 'rgba(232,228,220,0.06)',
-                        border: `1px solid ${i === 0 ? typeColor + '35' : 'rgba(232,228,220,0.08)'}`,
+                        background: i === 0 ? `color-mix(in srgb, ${typeColor} 13%, transparent)` : 'color-mix(in srgb, var(--brand) 6%, transparent)',
+                        border: `1px solid ${i === 0 ? `color-mix(in srgb, ${typeColor} 21%, transparent)` : 'color-mix(in srgb, var(--brand) 8%, transparent)'}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         color: i === 0 ? typeColor : SILVER,
                       }}>
@@ -493,7 +493,7 @@ export default function FormationDetailClient({
                       </div>
                       <div>
                         <p style={{ fontSize: 14, fontWeight: 700, color: CREAM, margin: '0 0 4px', letterSpacing: '-0.2px' }}>{h.label}</p>
-                        <p style={{ fontSize: 12, color: 'rgba(232,228,220,0.45)', margin: 0, lineHeight: 1.55 }}>{h.desc}</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-2)', margin: 0, lineHeight: 1.55 }}>{h.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -504,35 +504,35 @@ export default function FormationDetailClient({
 
           {/* ── 3. DESCRIPTION ── */}
           {formation.description && (
-            <div style={{ padding: '40px 0', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+            <div style={{ padding: '40px 0', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
               <h2 style={{ fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', marginBottom: 18 }}>
                 {contentType === 'coaching' ? 'À propos de ce coaching' : 'À propos de cette formation'}
               </h2>
               <p style={{
-                fontSize: 15, color: 'rgba(232,228,220,0.65)', lineHeight: 1.8, whiteSpace: 'pre-line',
+                fontSize: 15, color: 'var(--text-2)', lineHeight: 1.8, whiteSpace: 'pre-line',
                 display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical',
                 overflow: 'hidden', margin: '0 0 4px',
               } as React.CSSProperties}>
                 {formation.description}
               </p>
-              <p style={{ fontSize: 15, color: 'rgba(232,228,220,0.3)', margin: '0 0 22px' }}>…</p>
+              <p style={{ fontSize: 15, color: 'var(--text-3)', margin: '0 0 22px' }}>…</p>
               <button onClick={() => setShowDescModal(true)}
-                style={{ background: 'transparent', border: '1px solid rgba(232,228,220,0.25)', borderRadius: 10, padding: '10px 22px', fontSize: 14, fontWeight: 600, color: CREAM, cursor: 'pointer', transition: 'all 0.15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.06)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.45)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.25)' }}>
+                style={{ background: 'transparent', border: '1px solid color-mix(in srgb, var(--brand) 25%, transparent)', borderRadius: 10, padding: '10px 22px', fontSize: 14, fontWeight: 600, color: CREAM, cursor: 'pointer', transition: 'all 0.15s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 6%, transparent)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'color-mix(in srgb, var(--brand) 45%, transparent)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'color-mix(in srgb, var(--brand) 25%, transparent)' }}>
                 Lire la suite
               </button>
               {showDescModal && (
                 <div onClick={() => setShowDescModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
-                  <div onClick={e => e.stopPropagation()} style={{ background: '#161920', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '60vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.7)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 22px', borderBottom: '1px solid rgba(232,228,220,0.07)' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '60vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-float)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 22px', borderBottom: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)' }}>
                       <h3 style={{ fontSize: 16, fontWeight: 700, color: CREAM, margin: 0 }}>
                         {contentType === 'coaching' ? 'À propos de ce coaching' : 'À propos de cette formation'}
                       </h3>
-                      <button onClick={() => setShowDescModal(false)} style={{ background: 'rgba(232,228,220,0.07)', border: 'none', borderRadius: '50%', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: CREAM, fontSize: 16 }}>×</button>
+                      <button onClick={() => setShowDescModal(false)} style={{ background: 'color-mix(in srgb, var(--brand) 7%, transparent)', border: 'none', borderRadius: '50%', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: CREAM, fontSize: 16 }}>×</button>
                     </div>
                     <div style={{ overflowY: 'auto', padding: '20px 22px' }}>
-                      <p style={{ fontSize: 14, color: 'rgba(232,228,220,0.7)', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0 }}>
+                      <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0 }}>
                         {formation.description}
                       </p>
                     </div>
@@ -544,15 +544,15 @@ export default function FormationDetailClient({
 
           {/* ── COACH ROW — après description, Airbnb host style ── */}
           {coach && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '40px 0', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '40px 0', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
               <div>
-                <h2 style={{ fontSize: 24, fontWeight: 800, color: CREAM, margin: '0 0 8px', letterSpacing: '-0.5px' }}>
+                <h2 style={{ fontSize: 24, fontWeight: 600, color: CREAM, margin: '0 0 8px', letterSpacing: '-0.5px' }}>
                   Par {coach.username}
                 </h2>
                 <p style={{ fontSize: 13, color: SILVER, margin: 0, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                   {avgRating !== null && (
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Star size={12} color="#a855f7" fill="#a855f7" />
+                      <Star size={12} color="var(--brand)" fill="var(--brand)" />
                       <span style={{ fontWeight: 600, color: CREAM }}>{avgRating.toFixed(2)}</span>
                       <span>·</span>
                     </span>
@@ -563,7 +563,7 @@ export default function FormationDetailClient({
                 </p>
               </div>
               <Link href={`/coaches/${coach.id}`} style={{ textDecoration: 'none' }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: 'var(--text)', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
                   {coach.avatar_url
                     ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="56px" style={{ objectFit: 'cover' }} />
                     : (coach.username ?? 'C')[0].toUpperCase()}
@@ -586,7 +586,7 @@ export default function FormationDetailClient({
 
           {/* ── 4b. PACKS (coaching) ── */}
           {contentType === 'coaching' && packs.length > 0 && (
-            <div style={{ padding: '40px 0', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+            <div style={{ padding: '40px 0', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
                 <h2 style={{ fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: 0 }}>Packs disponibles</h2>
               </div>
@@ -595,7 +595,7 @@ export default function FormationDetailClient({
                   const displayPrice = pack.price
                   return (
                     <div key={i} onClick={() => setSelectedPack(i)}
-                      style={{ background: selectedPack === i ? `${typeColor}12` : 'rgba(232,228,220,0.03)', border: `1px solid ${selectedPack === i ? typeColor + '50' : 'rgba(232,228,220,0.08)'}`, borderRadius: 14, padding: '20px', cursor: 'pointer', transition: 'all 0.2s' }}>
+                      style={{ background: selectedPack === i ? `color-mix(in srgb, ${typeColor} 7%, transparent)` : 'color-mix(in srgb, var(--brand) 3%, transparent)', border: `1px solid ${selectedPack === i ? `color-mix(in srgb, ${typeColor} 31%, transparent)` : 'color-mix(in srgb, var(--brand) 8%, transparent)'}`, borderRadius: 14, padding: '20px', cursor: 'pointer', transition: 'all 0.2s' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                         <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{pack.label}</span>
                         {selectedPack === i && <Check size={14} color={typeColor} />}
@@ -670,7 +670,7 @@ export default function FormationDetailClient({
         formation={formation}
       />
 
-      {/* ══ COACH PRESENTATION — Faites connaissance ══ */}
+      {/* ══ COACH PRESENTATION : fais connaissance ══ */}
       {coach && (
         <CoachPresentation
           coach={coach}

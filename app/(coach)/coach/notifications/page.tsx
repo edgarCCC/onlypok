@@ -8,11 +8,11 @@ import {
   ShieldX, Zap, Users, Clock, CheckCheck, Trash2,
 } from 'lucide-react'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const BORDER = 'rgba(232,228,220,0.08)'
-const CARD   = 'rgba(232,228,220,0.03)'
-const VIOLET = '#7c3aed'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const BORDER = 'color-mix(in srgb, var(--brand) 8%, transparent)'
+const CARD   = 'color-mix(in srgb, var(--brand) 3%, transparent)'
+const VIOLET = 'var(--brand)'
 
 type Notif = {
   id: string
@@ -25,15 +25,15 @@ type Notif = {
 }
 
 const TYPE_META: Record<string, { icon: React.ElementType; color: string }> = {
-  new_message:       { icon: MessageSquare, color: '#06b6d4' },
-  new_review:        { icon: Star,          color: '#f59e0b' },
-  new_purchase:      { icon: DollarSign,    color: '#4ade80' },
-  payment_received:  { icon: DollarSign,    color: '#4ade80' },
-  proof_validated:   { icon: ShieldCheck,   color: '#4ade80' },
-  proof_rejected:    { icon: ShieldX,       color: '#ef4444' },
+  new_message:       { icon: MessageSquare, color: 'var(--brand)' },
+  new_review:        { icon: Star,          color: 'var(--brand)' },
+  new_purchase:      { icon: DollarSign,    color: 'var(--gain)' },
+  payment_received:  { icon: DollarSign,    color: 'var(--gain)' },
+  proof_validated:   { icon: ShieldCheck,   color: 'var(--gain)' },
+  proof_rejected:    { icon: ShieldX,       color: 'var(--error)' },
   new_request:       { icon: Zap,           color: VIOLET },
-  new_student:       { icon: Users,         color: '#a78bfa' },
-  session_reminder:  { icon: Clock,         color: '#f59e0b' },
+  new_student:       { icon: Users,         color: 'var(--brand)' },
+  session_reminder:  { icon: Clock,         color: 'var(--brand)' },
 }
 
 function timeAgo(date: string) {
@@ -96,14 +96,14 @@ export default function NotificationsPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM, padding: '40px clamp(16px,4vw,48px) 80px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM, padding: '40px clamp(16px,4vw,48px) 80px' }}>
       <div style={{ maxWidth: 720, margin: '0 auto' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 32 }}>
           <div>
             <p style={{ fontSize: 11, color: SILVER, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 6px' }}>Espace coach</p>
-            <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 6px', fontFamily: 'var(--font-syne, sans-serif)', color: CREAM }}>
+            <h1 style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-0.5px', margin: '0 0 6px', fontFamily: 'var(--font-syne, sans-serif)', color: CREAM }}>
               Notifications
             </h1>
             <p style={{ fontSize: 14, color: SILVER, margin: 0 }}>
@@ -123,7 +123,7 @@ export default function NotificationsPage() {
             <button key={f} onClick={() => setFilter(f)} style={{
               padding: '7px 16px', borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none',
               background: filter === f ? VIOLET : CARD,
-              color: filter === f ? '#fff' : SILVER,
+              color: filter === f ? 'var(--on-brand)' : SILVER,
               outline: filter === f ? 'none' : `1px solid ${BORDER}`,
             }}>
               {f === 'all' ? 'Toutes' : `Non lues${unreadCount > 0 ? ` (${unreadCount})` : ''}`}
@@ -150,13 +150,13 @@ export default function NotificationsPage() {
                   onClick={() => !n.read && markOne(n.id)}
                   style={{
                     display: 'grid', gridTemplateColumns: '40px 1fr auto', gap: 14, padding: '14px 18px', borderRadius: 12, cursor: n.read ? 'default' : 'pointer',
-                    background: n.read ? 'transparent' : 'rgba(124,58,237,0.05)',
-                    border: `1px solid ${n.read ? BORDER : 'rgba(124,58,237,0.15)'}`,
+                    background: n.read ? 'transparent' : 'color-mix(in srgb, var(--brand) 5%, transparent)',
+                    border: `1px solid ${n.read ? BORDER : 'color-mix(in srgb, var(--brand) 15%, transparent)'}`,
                     transition: 'all 0.15s',
                   }}
                 >
                   {/* Icon */}
-                  <div style={{ width: 40, height: 40, borderRadius: 12, background: `${meta.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12, background: `color-mix(in srgb, ${meta.color} 8%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Icon size={16} color={meta.color} />
                   </div>
 
@@ -167,15 +167,15 @@ export default function NotificationsPage() {
                       {!n.read && <div style={{ width: 6, height: 6, borderRadius: '50%', background: VIOLET, flexShrink: 0 }} />}
                     </div>
                     {n.body && <p style={{ fontSize: 12, color: SILVER, margin: 0, lineHeight: 1.5 }}>{n.body}</p>}
-                    <span style={{ fontSize: 11, color: 'rgba(240,244,255,0.25)', marginTop: 4, display: 'block' }}>{timeAgo(n.created_at)}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4, display: 'block' }}>{timeAgo(n.created_at)}</span>
                   </div>
 
                   {/* Delete */}
                   <button
                     onClick={e => { e.stopPropagation(); deleteOne(n.id) }}
-                    style={{ width: 28, height: 28, borderRadius: 8, border: 'none', background: 'transparent', color: 'rgba(240,244,255,0.15)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(240,244,255,0.15)' }}
+                    style={{ width: 28, height: 28, borderRadius: 8, border: 'none', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'color-mix(in srgb, var(--error) 10%, transparent)'; e.currentTarget.style.color = 'var(--error)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-3)' }}
                   >
                     <Trash2 size={12} />
                   </button>

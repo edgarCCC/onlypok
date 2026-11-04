@@ -55,22 +55,22 @@ export default function EdgeScrollZones({ scrollRef }: { scrollRef: RefObject<HT
         display: 'flex', alignItems: 'center',
         justifyContent: dir === 1 ? 'flex-end' : 'flex-start',
         padding: dir === 1 ? '0 8px 0 0' : '0 0 0 8px',
-        background: `linear-gradient(to ${dir === 1 ? 'left' : 'right'}, rgba(7,9,14,0.92) 0%, rgba(7,9,14,0.5) 45%, transparent 100%)`,
+        background: `linear-gradient(to ${dir === 1 ? 'left' : 'right'}, var(--bg) 0%, color-mix(in srgb, var(--bg) 50%, transparent) 45%, transparent 100%)`,
       }}
     >
       <div
         style={{
           width: 38, height: 38, borderRadius: '50%',
-          background: 'rgba(240,244,255,0.07)',
-          border: '1px solid rgba(232,228,220,0.14)',
+          background: 'color-mix(in srgb, var(--brand) 7%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--brand) 14%, transparent)',
           backdropFilter: 'blur(6px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'rgba(240,244,255,0.55)',
+          color: 'var(--text-2)',
           opacity: 0.75,
           transition: 'opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease',
         }}
-        onMouseEnter={e => { const s = (e.currentTarget as HTMLDivElement).style; s.opacity = '1'; s.color = '#f0f4ff'; s.borderColor = 'rgba(232,228,220,0.3)' }}
-        onMouseLeave={e => { const s = (e.currentTarget as HTMLDivElement).style; s.opacity = '0.75'; s.color = 'rgba(240,244,255,0.55)'; s.borderColor = 'rgba(232,228,220,0.14)' }}
+        onMouseEnter={e => { const s = (e.currentTarget as HTMLDivElement).style; s.opacity = '1'; s.color = 'var(--brand)'; s.borderColor = 'color-mix(in srgb, var(--brand) 30%, transparent)' }}
+        onMouseLeave={e => { const s = (e.currentTarget as HTMLDivElement).style; s.opacity = '0.75'; s.color = 'var(--text-2)'; s.borderColor = 'color-mix(in srgb, var(--brand) 14%, transparent)' }}
       >
         {dir === 1 ? <ChevronRight size={17} /> : <ChevronLeft size={17} />}
       </div>

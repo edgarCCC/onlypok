@@ -18,9 +18,9 @@ import { videoLinkColumns, writeLessonVideo, syncFormationVideo, isVideoLinkRefu
 
 type Pack = { label: string; hours: number; price: number; desc: string }
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const DIM    = 'rgba(240,244,255,0.12)'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const DIM    = 'color-mix(in srgb, var(--brand) 12%, transparent)'
 
 const VARIANTS = ['MTT', 'Cash', 'Expresso', 'Autre']
 const LEVELS_BY_VARIANT: Record<string, { value: string; label: string }[]> = {
@@ -31,16 +31,16 @@ const LEVELS_BY_VARIANT: Record<string, { value: string; label: string }[]> = {
 }
 
 const CONTENT_TYPES = [
-  { id: 'formation', label: 'Formation', color: '#7c3aed', desc: 'Chapitres & leçons structurés' },
-  { id: 'video',     label: 'Vidéo',     color: '#06b6d4', desc: 'Vidéo standalone' },
-  { id: 'coaching',  label: 'Coaching',  color: '#f59e0b', desc: 'Session coaching live' },
+  { id: 'formation', label: 'Formation', color: 'var(--brand)', desc: 'Chapitres & leçons structurés' },
+  { id: 'video',     label: 'Vidéo',     color: 'var(--brand)', desc: 'Vidéo standalone' },
+  { id: 'coaching',  label: 'Coaching',  color: 'var(--brand)', desc: 'Session coaching live' },
 ] as const
 
 type ContentType = 'formation' | 'video' | 'coaching'
 
-const field  = (extra?: React.CSSProperties): React.CSSProperties => ({ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 14px', color: CREAM, fontSize: 13, outline: 'none', fontFamily: 'inherit', ...extra })
+const field  = (extra?: React.CSSProperties): React.CSSProperties => ({ width: '100%', background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--overlay) 8%, transparent)', borderRadius: 10, padding: '10px 14px', color: CREAM, fontSize: 13, outline: 'none', fontFamily: 'inherit', ...extra })
 const label  = (): React.CSSProperties => ({ fontSize: 9, fontWeight: 700, color: SILVER, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 6 })
-const card   = (extra?: React.CSSProperties): React.CSSProperties => ({ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 16, padding: 24, ...extra })
+const card   = (extra?: React.CSSProperties): React.CSSProperties => ({ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 16, padding: 24, ...extra })
 
 export default function EditFormationPage() {
   const { id }   = useParams()
@@ -324,11 +324,10 @@ export default function EditFormationPage() {
   const activeType = CONTENT_TYPES.find(t => t.id === contentType)!
 
   return (
-    <div style={{ minHeight: '100vh', background: '#04040a', color: CREAM }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM }}>
       {/* Ambient glow */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 70% 45% at 50% -5%, ${activeType.color}0e 0%, transparent 65%)`, transition: 'background 0.5s' }} />
       {/* Top accent line */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, height: 2, background: `linear-gradient(90deg, transparent 0%, ${activeType.color}80 40%, ${activeType.color}80 60%, transparent 100%)`, transition: 'background 0.4s' }} />
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, height: 2, background: `linear-gradient(90deg, transparent 0%, color-mix(in srgb, ${activeType.color} 50%, transparent) 40%, color-mix(in srgb, ${activeType.color} 50%, transparent) 60%, transparent 100%)`, transition: 'background 0.4s' }} />
 
       <style>{`
         @media (max-width: 900px) {
@@ -349,9 +348,9 @@ export default function EditFormationPage() {
         {/* ── Topbar ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 36 }}>
           <Link href="/coach/dashboard"
-            style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid rgba(232,228,220,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: SILVER, transition: 'all 0.15s', flexShrink: 0 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,228,220,0.22)'; (e.currentTarget as HTMLElement).style.color = CREAM }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,228,220,0.08)'; (e.currentTarget as HTMLElement).style.color = SILVER }}>
+            style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: SILVER, transition: 'all 0.15s', flexShrink: 0 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'color-mix(in srgb, var(--brand) 22%, transparent)'; (e.currentTarget as HTMLElement).style.color = CREAM }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'color-mix(in srgb, var(--brand) 8%, transparent)'; (e.currentTarget as HTMLElement).style.color = SILVER }}>
             <ArrowLeft size={16} />
           </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -359,12 +358,12 @@ export default function EditFormationPage() {
               {formation.title || 'Sans titre'}
             </h1>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 11, padding: '2px 9px', borderRadius: 99, background: `${activeType.color}18`, color: activeType.color, fontWeight: 700 }}>{activeType.label}</span>
-              <span style={{ fontSize: 11, padding: '2px 9px', borderRadius: 99, background: formation.published ? 'rgba(34,197,94,0.1)' : 'rgba(240,244,255,0.05)', color: formation.published ? '#22c55e' : SILVER, border: `1px solid ${formation.published ? 'rgba(34,197,94,0.22)' : 'rgba(240,244,255,0.08)'}` }}>
+              <span style={{ fontSize: 11, padding: '2px 9px', borderRadius: 99, background: `color-mix(in srgb, ${activeType.color} 9%, transparent)`, color: activeType.color, fontWeight: 700 }}>{activeType.label}</span>
+              <span style={{ fontSize: 11, padding: '2px 9px', borderRadius: 99, background: formation.published ? 'color-mix(in srgb, var(--gain) 10%, transparent)' : 'color-mix(in srgb, var(--brand) 5%, transparent)', color: formation.published ? 'var(--gain)' : SILVER, border: `1px solid ${formation.published ? 'color-mix(in srgb, var(--gain) 22%, transparent)' : 'color-mix(in srgb, var(--brand) 8%, transparent)'}` }}>
                 {formation.published ? '● En ligne' : '○ Brouillon'}
               </span>
               {saving && <span style={{ fontSize: 11, color: SILVER, opacity: 0.6 }}>Sauvegarde…</span>}
-              {saved && !saving && <span style={{ fontSize: 11, color: '#22c55e' }}>✓ Sauvegardé</span>}
+              {saved && !saving && <span style={{ fontSize: 11, color: 'var(--gain)' }}>✓ Sauvegardé</span>}
             </div>
           </div>
         </div>
@@ -378,14 +377,14 @@ export default function EditFormationPage() {
             {/* Type selector — pill tabs */}
             <div style={card()}>
               <p style={label()}>Type de contenu</p>
-              <div style={{ display: 'flex', gap: 3, marginTop: 10, background: 'rgba(255,255,255,0.025)', borderRadius: 12, padding: 4 }}>
+              <div style={{ display: 'flex', gap: 3, marginTop: 10, background: 'color-mix(in srgb, var(--overlay) 2%, transparent)', borderRadius: 12, padding: 4 }}>
                 {CONTENT_TYPES.map(t => {
                   const active = contentType === t.id
                   return (
                     <button key={t.id} onClick={() => changeType(t.id)}
-                      style={{ flex: 1, padding: '10px 12px', borderRadius: 9, border: `1px solid ${active ? t.color + '35' : 'transparent'}`, background: active ? `${t.color}14` : 'transparent', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' }}>
+                      style={{ flex: 1, padding: '10px 12px', borderRadius: 9, border: `1px solid ${active ? `color-mix(in srgb, ${t.color} 21%, transparent)` : 'transparent'}`, background: active ? `color-mix(in srgb, ${t.color} 8%, transparent)` : 'transparent', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: active ? t.color : SILVER, transition: 'color 0.2s', marginBottom: 2 }}>{t.label}</div>
-                      <div style={{ fontSize: 10, color: active ? SILVER : 'rgba(240,244,255,0.18)', transition: 'color 0.2s', lineHeight: 1.3 }}>{t.desc}</div>
+                      <div style={{ fontSize: 10, color: active ? SILVER : 'var(--text-3)', transition: 'color 0.2s', lineHeight: 1.3 }}>{t.desc}</div>
                     </button>
                   )
                 })}
@@ -394,20 +393,20 @@ export default function EditFormationPage() {
 
             {/* Informations générales */}
             <div style={card()}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22, paddingBottom: 16, borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
                 <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Informations</h2>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
                 {contentType === 'coaching' ? (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '13px 15px', borderRadius: 11, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.18)' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '13px 15px', borderRadius: 11, background: 'color-mix(in srgb, var(--brand) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 18%, transparent)' }}>
                     <span style={{ fontSize: 18, flexShrink: 0 }}>📸</span>
                     <div>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: '#f59e0b', margin: '0 0 4px' }}>Photo de profil utilisée</p>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--brand)', margin: '0 0 4px' }}>Photo de profil utilisée</p>
                       <p style={{ fontSize: 11, color: SILVER, margin: 0, lineHeight: 1.6 }}>
-                        Sur la marketplace, la carte coaching affiche votre photo de profil — pas une miniature. Pour la changer, rendez-vous dans{' '}
-                        <a href="/coach/profile" style={{ color: '#f59e0b', textDecoration: 'underline' }}>votre profil</a>.
+                        Sur la marketplace, la carte coaching affiche ta photo de profil, pas une miniature. Pour la changer, va dans{' '}
+                        <a href="/coach/profile" style={{ color: 'var(--brand)', textDecoration: 'underline' }}>ton profil</a>.
                       </p>
                     </div>
                   </div>
@@ -415,9 +414,9 @@ export default function EditFormationPage() {
                   <div>
                     <p style={label()}>Miniature</p>
                     {uploadError && (
-                      <div style={{ marginBottom: 10, padding: '9px 12px', borderRadius: 9, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#fca5a5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ marginBottom: 10, padding: '9px 12px', borderRadius: 9, background: 'color-mix(in srgb, var(--error) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--error) 20%, transparent)', fontSize: 11, color: 'var(--error)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         {uploadError}
-                        <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: '#fca5a5', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 4px' }}>×</button>
+                        <button onClick={() => setUploadError(null)} style={{ background: 'none', border: 'none', color: 'var(--error)', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 4px' }}>×</button>
                       </div>
                     )}
                     <MiniatureEditor
@@ -481,7 +480,7 @@ export default function EditFormationPage() {
             {/* ── Chapitres (formation uniquement) ── */}
             {contentType === 'formation' && (
               <div style={card()}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
                     <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Chapitres & leçons</h2>
@@ -489,20 +488,20 @@ export default function EditFormationPage() {
                   <span style={{ fontSize: 11, color: SILVER, opacity: 0.7 }}>{chapters.length} chapitre{chapters.length !== 1 ? 's' : ''}</span>
                 </div>
 
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 14px', marginBottom: 14, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 10 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 14px', marginBottom: 14, background: 'color-mix(in srgb, var(--brand) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 22%, transparent)', borderRadius: 10 }}>
                   <span style={{ fontSize: 13, lineHeight: '18px' }} aria-hidden>⚠️</span>
-                  <p style={{ fontSize: 12, color: 'rgba(240,244,255,0.55)', margin: 0, lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-2)', margin: 0, lineHeight: 1.6 }}>
                     Tes vidéos sont hébergées sur YouTube/Vimeo : utilise impérativement le mode{' '}
-                    <strong style={{ color: '#fbbf24' }}>« Non répertoriée »</strong> (YouTube) ou{' '}
-                    <strong style={{ color: '#fbbf24' }}>« Privée avec lien »</strong> (Vimeo), sinon
+                    <strong style={{ color: 'var(--brand)' }}>« Non répertoriée »</strong> (YouTube) ou{' '}
+                    <strong style={{ color: 'var(--brand)' }}>« Privée avec lien »</strong> (Vimeo), sinon
                     n&apos;importe qui possédant le lien peut voir ton contenu payant gratuitement.
                   </p>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {chapters.map((ch, ci) => (
-                    <div key={ch.id} style={{ border: '1px solid rgba(232,228,220,0.07)', borderRadius: 12, overflow: 'hidden' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'rgba(232,228,220,0.02)' }}>
+                    <div key={ch.id} style={{ border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 12, overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'color-mix(in srgb, var(--brand) 2%, transparent)' }}>
                         <GripVertical size={13} color={SILVER} style={{ opacity: 0.3, flexShrink: 0 }} />
                         {editingChapterId === ch.id ? (
                           <input
@@ -511,7 +510,7 @@ export default function EditFormationPage() {
                             onChange={e => setEditingChapterTitle(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') renameChapter(ch.id); if (e.key === 'Escape') setEditingChapterId(null) }}
                             onBlur={() => renameChapter(ch.id)}
-                            style={{ flex: 1, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.4)', borderRadius: 6, padding: '4px 10px', color: CREAM, fontSize: 13, fontWeight: 700, outline: 'none' }}
+                            style={{ flex: 1, background: 'color-mix(in srgb, var(--brand) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 40%, transparent)', borderRadius: 6, padding: '4px 10px', color: CREAM, fontSize: 13, fontWeight: 700, outline: 'none' }}
                           />
                         ) : (
                           <span
@@ -523,7 +522,7 @@ export default function EditFormationPage() {
                         )}
                         <button
                           onClick={() => { setEditingChapterId(ch.id); setEditingChapterTitle(ch.title) }}
-                          style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(232,228,220,0.08)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
+                          style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
                           onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
                           onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
                           <Pencil size={11} />
@@ -532,19 +531,19 @@ export default function EditFormationPage() {
                         {confirmDeleteId === ch.id ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                             <button onClick={() => deleteChapter(ch.id)}
-                              style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer' }}>
+                              style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, border: 'none', background: 'var(--error)', color: 'var(--on-brand)', cursor: 'pointer' }}>
                               Supprimer
                             </button>
                             <button onClick={() => setConfirmDeleteId(null)}
-                              style={{ fontSize: 10, padding: '3px 8px', borderRadius: 6, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, cursor: 'pointer' }}>
+                              style={{ fontSize: 10, padding: '3px 8px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'transparent', color: SILVER, cursor: 'pointer' }}>
                               Annuler
                             </button>
                           </div>
                         ) : (
                           <button onClick={() => deleteChapter(ch.id)}
-                            style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.15)', background: 'transparent', color: 'rgba(239,68,68,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
-                            onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'}
-                            onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = 'rgba(239,68,68,0.4)'}>
+                            style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid color-mix(in srgb, var(--error) 15%, transparent)', background: 'transparent', color: 'color-mix(in srgb, var(--error) 40%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
+                            onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = 'var(--error)'}
+                            onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = 'color-mix(in srgb, var(--error) 40%, transparent)'}>
                             <Trash2 size={11} />
                           </button>
                         )}
@@ -552,7 +551,7 @@ export default function EditFormationPage() {
 
                       <div>
                         {(ch.formation_lessons ?? []).map((lesson: any) => (
-                          <div key={lesson.id} style={{ borderTop: '1px solid rgba(232,228,220,0.04)' }}>
+                          <div key={lesson.id} style={{ borderTop: '1px solid color-mix(in srgb, var(--brand) 4%, transparent)' }}>
                             {editingLessonId === lesson.id ? (
                               <div style={{ padding: '13px 16px', display: 'flex', flexDirection: 'column', gap: 9 }}>
                                 <input
@@ -576,8 +575,8 @@ export default function EditFormationPage() {
                                     Leçon gratuite
                                   </label>
                                   <div style={{ flex: 1 }} />
-                                  <button onClick={() => setEditingLessonId(null)} style={{ padding: '6px 13px', borderRadius: 7, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, fontSize: 11, cursor: 'pointer' }}>Annuler</button>
-                                  <button onClick={() => updateLesson(ch.id, lesson.id)} style={{ padding: '6px 15px', borderRadius: 7, border: 'none', background: CREAM, color: '#07090e', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                  <button onClick={() => setEditingLessonId(null)} style={{ padding: '6px 13px', borderRadius: 7, border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'transparent', color: SILVER, fontSize: 11, cursor: 'pointer' }}>Annuler</button>
+                                  <button onClick={() => updateLesson(ch.id, lesson.id)} style={{ padding: '6px 15px', borderRadius: 7, border: 'none', background: CREAM, color: 'var(--bg)', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
                                     <Check size={11} /> Sauvegarder
                                   </button>
                                 </div>
@@ -591,17 +590,17 @@ export default function EditFormationPage() {
                                 <span style={{ flex: 1, fontSize: 12, color: CREAM }}>{lesson.title}</span>
                                 {lesson.video_url && <span style={{ fontSize: 10, color: SILVER, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.55 }}>{lesson.video_url}</span>}
                                 <button className="lesson-edit-btn" onClick={() => startEditLesson(lesson)}
-                                  style={{ width: 24, height: 24, borderRadius: 5, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: 0, transition: 'opacity 0.15s' }}>
+                                  style={{ width: 24, height: 24, borderRadius: 5, border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: 0, transition: 'opacity 0.15s' }}>
                                   <Pencil size={10} />
                                 </button>
                                 <button onClick={() => toggleLessonFree(ch.id, lesson)}
-                                  style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, border: `1px solid ${lesson.is_free ? 'rgba(6,182,212,0.4)' : 'rgba(232,228,220,0.1)'}`, background: lesson.is_free ? 'rgba(6,182,212,0.1)' : 'transparent', color: lesson.is_free ? '#06b6d4' : SILVER, cursor: 'pointer', transition: 'all 0.15s', letterSpacing: '0.06em' }}>
+                                  style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, border: `1px solid ${lesson.is_free ? 'color-mix(in srgb, var(--brand) 40%, transparent)' : 'color-mix(in srgb, var(--brand) 10%, transparent)'}`, background: lesson.is_free ? 'color-mix(in srgb, var(--brand) 10%, transparent)' : 'transparent', color: lesson.is_free ? 'var(--brand)' : SILVER, cursor: 'pointer', transition: 'all 0.15s', letterSpacing: '0.06em' }}>
                                   {lesson.is_free ? 'GRATUIT' : 'PREMIUM'}
                                 </button>
                                 <button onClick={() => deleteLesson(ch.id, lesson.id)}
-                                  style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'transparent', color: 'rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
-                                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'}
-                                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = 'rgba(239,68,68,0.3)'}>
+                                  style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'transparent', color: 'color-mix(in srgb, var(--error) 30%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.15s' }}
+                                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = 'var(--error)'}
+                                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = 'color-mix(in srgb, var(--error) 30%, transparent)'}>
                                   <Trash2 size={10} />
                                 </button>
                               </div>
@@ -610,7 +609,7 @@ export default function EditFormationPage() {
                         ))}
 
                         {addingLesson === ch.id ? (
-                          <div style={{ padding: '13px 16px', display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid rgba(232,228,220,0.05)' }}>
+                          <div style={{ padding: '13px 16px', display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid color-mix(in srgb, var(--brand) 5%, transparent)' }}>
                             <input value={newLesson.title} onChange={e => setNewLesson(p => ({ ...p, title: e.target.value }))} placeholder="Titre de la leçon" style={field()} autoFocus />
                             <div style={{ display: 'flex', gap: 8 }}>
                               <input value={newLesson.video_url} onChange={e => setNewLesson(p => ({ ...p, video_url: e.target.value }))} placeholder="URL YouTube ou Vimeo" style={field({ flex: 1 })} />
@@ -622,13 +621,13 @@ export default function EditFormationPage() {
                                 Leçon gratuite
                               </label>
                               <div style={{ flex: 1 }} />
-                              <button onClick={() => setAddingLesson(null)} style={{ padding: '7px 13px', borderRadius: 8, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
-                              <button onClick={() => addLesson(ch.id)} style={{ padding: '7px 18px', borderRadius: 8, border: 'none', background: CREAM, color: '#07090e', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Ajouter</button>
+                              <button onClick={() => setAddingLesson(null)} style={{ padding: '7px 13px', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
+                              <button onClick={() => addLesson(ch.id)} style={{ padding: '7px 18px', borderRadius: 8, border: 'none', background: CREAM, color: 'var(--bg)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Ajouter</button>
                             </div>
                           </div>
                         ) : (
                           <button onClick={() => { setAddingLesson(ch.id); setNewLesson({ title: '', video_url: '', is_free: false }) }}
-                            style={{ width: '100%', padding: '10px 16px', border: 'none', borderTop: '1px solid rgba(232,228,220,0.04)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.15s' }}
+                            style={{ width: '100%', padding: '10px 16px', border: 'none', borderTop: '1px solid color-mix(in srgb, var(--brand) 4%, transparent)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.15s' }}
                             onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
                             onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
                             <Plus size={13} /> Ajouter une leçon
@@ -641,7 +640,7 @@ export default function EditFormationPage() {
                   <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
                     <input value={newChapterTitle} onChange={e => setNewChapterTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addChapter()} placeholder="Nom du nouveau chapitre…" style={field({ flex: 1 })} />
                     <button onClick={addChapter} disabled={!newChapterTitle.trim()}
-                      style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: newChapterTitle.trim() ? CREAM : 'rgba(240,244,255,0.07)', color: newChapterTitle.trim() ? '#07090e' : SILVER, fontSize: 13, fontWeight: 800, cursor: newChapterTitle.trim() ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+                      style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: newChapterTitle.trim() ? CREAM : 'color-mix(in srgb, var(--brand) 7%, transparent)', color: newChapterTitle.trim() ? 'var(--bg)' : SILVER, fontSize: 13, fontWeight: 800, cursor: newChapterTitle.trim() ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
                       <Plus size={14} /> Chapitre
                     </button>
                   </div>
@@ -654,7 +653,7 @@ export default function EditFormationPage() {
               <>
                 {/* Photos */}
                 <div style={card()}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, paddingBottom: 16, borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
                     <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
                     <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Photos complémentaires</h2>
                   </div>
@@ -669,29 +668,29 @@ export default function EditFormationPage() {
                     }} />
                   <div className="cedit-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: galleryNew.length > 0 ? 14 : 0 }}>
                     {galleryUrls.map(url => (
-                      <div key={url} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117' }}>
+                      <div key={url} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: 'var(--bg)' }}>
                         <Image src={url} alt="" fill sizes="150px" style={{ objectFit: 'cover' }} />
                         <button type="button" onClick={() => removeGalleryUrl(url)}
-                          style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, lineHeight: 1 }}>
+                          style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--on-scrim)', fontSize: 14, lineHeight: 1 }}>
                           ×
                         </button>
                       </div>
                     ))}
                     {galleryNew.map((g, i) => (
-                      <div key={i} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117', opacity: 0.7 }}>
+                      <div key={i} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: 'var(--bg)', opacity: 0.7 }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={g.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <button type="button" onClick={() => setGalleryNew(prev => prev.filter((_, j) => j !== i))}
-                          style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, lineHeight: 1 }}>
+                          style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--on-scrim)', fontSize: 14, lineHeight: 1 }}>
                           ×
                         </button>
                       </div>
                     ))}
                     {(galleryUrls.length + galleryNew.length) < 4 && (
                       <button type="button" onClick={() => galleryInputRef.current?.click()}
-                        style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed rgba(240,244,255,0.08)', background: 'rgba(240,244,255,0.02)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: SILVER, transition: 'border-color 0.2s, color 0.2s' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.25)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.08)'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
+                        style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed color-mix(in srgb, var(--brand) 8%, transparent)', background: 'color-mix(in srgb, var(--brand) 2%, transparent)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: SILVER, transition: 'border-color 0.2s, color 0.2s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'color-mix(in srgb, var(--brand) 25%, transparent)'; (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'color-mix(in srgb, var(--brand) 8%, transparent)'; (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
                         <Upload size={18} />
                         <span style={{ fontSize: 11 }}>Ajouter</span>
                       </button>
@@ -699,7 +698,7 @@ export default function EditFormationPage() {
                   </div>
                   {galleryNew.length > 0 && (
                     <button type="button" onClick={() => uploadAndSaveGallery(galleryNew)} disabled={galleryUploading}
-                      style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#000', fontSize: 13, fontWeight: 700, cursor: galleryUploading ? 'wait' : 'pointer', opacity: galleryUploading ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'var(--brand)', color: 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: galleryUploading ? 'wait' : 'pointer', opacity: galleryUploading ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Save size={14} /> {galleryUploading ? 'Upload…' : `Sauvegarder (${galleryNew.length} photo${galleryNew.length > 1 ? 's' : ''})`}
                     </button>
                   )}
@@ -707,20 +706,20 @@ export default function EditFormationPage() {
 
                 {/* Packs & tarifs */}
                 <div style={card()}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
                     <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
                     <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Packs & tarifs</h2>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {packs.map((pack, i) => (
-                      <div key={i} style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.12)', borderRadius: 14, padding: '18px 20px' }}>
+                      <div key={i} style={{ background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 12%, transparent)', borderRadius: 14, padding: '18px 20px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.28)', color: '#f59e0b', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</div>
+                            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'color-mix(in srgb, var(--brand) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 28%, transparent)', color: 'var(--brand)', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</div>
                             <input value={pack.label} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, label: e.target.value } : p))} style={field({ width: 200, padding: '6px 12px', fontSize: 13, fontWeight: 700 })} />
                           </div>
                           {packs.length > 1 && (
-                            <button onClick={() => savePacks(packs.filter((_, idx) => idx !== i))} style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <button onClick={() => savePacks(packs.filter((_, idx) => idx !== i))} style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid color-mix(in srgb, var(--error) 20%, transparent)', background: 'transparent', color: 'color-mix(in srgb, var(--error) 45%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                               <Trash2 size={12} />
                             </button>
                           )}
@@ -730,11 +729,11 @@ export default function EditFormationPage() {
                           <div><p style={label()}>Prix (€)</p><NumberStepper value={pack.price} onChange={v => savePacks(packs.map((p, idx) => idx === i ? { ...p, price: v } : p))} min={0} max={9999} step={5} suffix="€" /></div>
                           <div><p style={label()}>Description</p><input value={pack.desc} onChange={e => savePacks(packs.map((p, idx) => idx === i ? { ...p, desc: e.target.value } : p))} placeholder="Ce que comprend ce pack" style={field()} /></div>
                         </div>
-                        {pack.hours > 0 && pack.price > 0 && <p style={{ fontSize: 11, color: '#f59e0b', opacity: 0.65, marginTop: 10, marginBottom: 0 }}>{Math.round(pack.price / pack.hours)}€/h</p>}
+                        {pack.hours > 0 && pack.price > 0 && <p style={{ fontSize: 11, color: 'var(--brand)', opacity: 0.65, marginTop: 10, marginBottom: 0 }}>{Math.round(pack.price / pack.hours)}€/h</p>}
                       </div>
                     ))}
                     <button onClick={() => savePacks([...packs, { label: 'Nouveau pack', hours: 1, price: 0, desc: '' }])}
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, border: '1px dashed rgba(240,244,255,0.07)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer', transition: 'color 0.15s' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, border: '1px dashed color-mix(in srgb, var(--brand) 7%, transparent)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer', transition: 'color 0.15s' }}
                       onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
                       onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
                       <Plus size={14} /> Ajouter un pack
@@ -743,12 +742,12 @@ export default function EditFormationPage() {
                 </div>
 
                 {/* Calendrier */}
-                <div style={{ ...card(), background: 'rgba(124,58,237,0.04)', borderColor: 'rgba(124,58,237,0.18)' }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 }}>Calendrier intégré OnlyPok</p>
+                <div style={{ ...card(), background: 'color-mix(in srgb, var(--brand) 4%, transparent)', borderColor: 'color-mix(in srgb, var(--brand) 18%, transparent)' }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--brand)', marginBottom: 6 }}>Calendrier intégré OnlyPok</p>
                   <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.65, margin: 0 }}>
                     Les élèves choisissent leur créneau directement sur ta page coaching.
                     Configure tes disponibilités dans ton{' '}
-                    <a href="/coach/agenda?tab=availability" style={{ color: '#a855f7', textDecoration: 'underline' }}>calendrier coach</a>.
+                    <a href="/coach/agenda?tab=availability" style={{ color: 'var(--brand)', textDecoration: 'underline' }}>calendrier coach</a>.
                   </p>
                 </div>
               </>
@@ -756,15 +755,15 @@ export default function EditFormationPage() {
 
             {/* Atouts */}
             <div style={card()}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, paddingBottom: 16, borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, paddingBottom: 16, borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
                 <div style={{ width: 3, height: 18, borderRadius: 2, background: activeType.color, flexShrink: 0 }} />
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Atouts mis en avant</h2>
               </div>
-              <p style={{ fontSize: 12, color: SILVER, marginBottom: 20 }}>Choisissez 1 à 5 atouts affichés sur la page de vente.</p>
+              <p style={{ fontSize: 12, color: SILVER, marginBottom: 20 }}>Choisis 1 à 5 atouts affichés sur la page de vente.</p>
               <HighlightsPicker
                 selected={highlights}
                 onChange={saveHighlights}
-                color={contentType === 'coaching' ? '#f59e0b' : contentType === 'video' ? '#06b6d4' : '#7c3aed'}
+                color={contentType === 'coaching' ? 'var(--brand)' : contentType === 'video' ? 'var(--brand)' : 'var(--brand)'}
                 options={contentType === 'coaching' ? HIGHLIGHTS_COACHING : contentType === 'video' ? HIGHLIGHTS_VIDEO : HIGHLIGHTS_FORMATION}
               />
             </div>
@@ -777,7 +776,7 @@ export default function EditFormationPage() {
             <div style={card({ padding: 20 })}>
               <p style={label()}>Publication</p>
               <button onClick={togglePublish}
-                style={{ width: '100%', marginTop: 12, padding: '13px', borderRadius: 11, border: formation.published ? '1px solid rgba(239,68,68,0.3)' : 'none', background: formation.published ? 'rgba(239,68,68,0.1)' : `linear-gradient(135deg, ${activeType.color} 0%, ${activeType.color}cc 100%)`, color: formation.published ? '#f87171' : '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s', boxShadow: formation.published ? 'none' : `0 4px 24px ${activeType.color}28` }}
+                style={{ width: '100%', marginTop: 12, padding: '13px', borderRadius: 11, border: formation.published ? '1px solid color-mix(in srgb, var(--error) 30%, transparent)' : 'none', background: formation.published ? 'color-mix(in srgb, var(--error) 10%, transparent)' : `transparent`, color: formation.published ? 'var(--error)' : 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s', boxShadow: formation.published ? 'none' : 'none' }}
                 onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.opacity = '0.82'}
                 onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.opacity = '1'}>
                 {formation.published ? <><EyeOff size={14} /> Dépublier</> : <><Eye size={14} /> Publier</>}
@@ -786,9 +785,9 @@ export default function EditFormationPage() {
                 {formation.published ? 'Visible sur la marketplace' : 'Non visible — brouillon'}
               </p>
               {publishError && (
-                <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 9, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)' }}>
-                  <p style={{ fontSize: 11, color: '#fca5a5', lineHeight: 1.55, margin: '0 0 7px' }}>⚠ {publishError}</p>
-                  <Link href="/coach/profile" style={{ fontSize: 11, color: '#ef4444', fontWeight: 700, textDecoration: 'none' }}>→ Compléter mon profil</Link>
+                <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 9, background: 'color-mix(in srgb, var(--error) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--error) 18%, transparent)' }}>
+                  <p style={{ fontSize: 11, color: 'var(--error)', lineHeight: 1.55, margin: '0 0 7px' }}>⚠ {publishError}</p>
+                  <Link href="/coach/profile" style={{ fontSize: 11, color: 'var(--error)', fontWeight: 700, textDecoration: 'none' }}>→ Compléter mon profil</Link>
                 </div>
               )}
             </div>
@@ -797,12 +796,12 @@ export default function EditFormationPage() {
             <div style={card({ padding: 20 })}>
               <p style={label()}>Statistiques</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
-                <div style={{ padding: '14px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                <div style={{ padding: '14px 12px', borderRadius: 10, background: 'color-mix(in srgb, var(--overlay) 2%, transparent)', border: '1px solid color-mix(in srgb, var(--overlay) 6%, transparent)', textAlign: 'center' }}>
                   <Users size={14} color={SILVER} style={{ margin: '0 auto 7px', display: 'block' }} />
                   <div style={{ fontSize: 22, fontWeight: 800, color: CREAM, lineHeight: 1 }}>{students}</div>
                   <div style={{ fontSize: 10, color: SILVER, marginTop: 4, opacity: 0.65 }}>Élèves</div>
                 </div>
-                <div style={{ padding: '14px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                <div style={{ padding: '14px 12px', borderRadius: 10, background: 'color-mix(in srgb, var(--overlay) 2%, transparent)', border: '1px solid color-mix(in srgb, var(--overlay) 6%, transparent)', textAlign: 'center' }}>
                   <DollarSign size={14} color={SILVER} style={{ margin: '0 auto 7px', display: 'block' }} />
                   <div style={{ fontSize: 22, fontWeight: 800, color: CREAM, lineHeight: 1 }}>{revenue}€</div>
                   <div style={{ fontSize: 10, color: SILVER, marginTop: 4, opacity: 0.65 }}>Revenus</div>
@@ -814,15 +813,14 @@ export default function EditFormationPage() {
             {formation.thumbnail_url && (
               <div style={card({ padding: 16 })}>
                 <p style={label()}>Aperçu carte</p>
-                <div style={{ marginTop: 12, borderRadius: 11, overflow: 'hidden', border: '1px solid rgba(232,228,220,0.07)' }}>
+                <div style={{ marginTop: 12, borderRadius: 11, overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)' }}>
                   <div style={{ height: 130, backgroundImage: `url(${formation.thumbnail_url})`, backgroundSize: `${zoom * 100}%`, backgroundPosition: `${position.x}% ${position.y}%`, backgroundRepeat: 'no-repeat', position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(to right, ${activeType.color}, ${activeType.color}88)` }} />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 44, background: 'linear-gradient(to top, rgba(4,4,10,0.82), transparent)' }} />
-                    <div style={{ position: 'absolute', top: 10, right: 10, fontSize: 10, fontWeight: 800, background: 'rgba(7,9,14,0.72)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', padding: '2px 8px', borderRadius: 99, color: '#fff' }}>
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 44, background: 'linear-gradient(to top, color-mix(in srgb, var(--bg) 82%, transparent), transparent)' }} />
+                    <div style={{ position: 'absolute', top: 10, right: 10, fontSize: 10, fontWeight: 800, background: 'color-mix(in srgb, var(--bg) 72%, transparent)', backdropFilter: 'blur(8px)', border: '1px solid color-mix(in srgb, var(--overlay) 15%, transparent)', padding: '2px 8px', borderRadius: 99, color: 'var(--on-brand)' }}>
                       {formation.price === 0 ? 'Gratuit' : `${formation.price}€`}
                     </div>
                   </div>
-                  <div style={{ padding: '10px 12px', background: 'rgba(232,228,220,0.02)' }}>
+                  <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--brand) 2%, transparent)' }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: CREAM, marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{formation.title || 'Sans titre'}</div>
                     <div style={{ fontSize: 10, color: SILVER, opacity: 0.65 }}>{formation.level ?? 'Tous niveaux'} · {formation.variant ?? ''}</div>
                   </div>
@@ -831,9 +829,9 @@ export default function EditFormationPage() {
             )}
 
             {/* Autosave dot */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '11px 14px', borderRadius: 10, background: 'rgba(232,228,220,0.02)', border: '1px solid rgba(232,228,220,0.06)' }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: saving ? '#f59e0b' : saved ? '#22c55e' : 'rgba(240,244,255,0.18)', transition: 'background 0.3s', flexShrink: 0, animation: saving ? 'pulse 1s ease-in-out infinite' : 'none' }} />
-              <span style={{ fontSize: 11, color: saving ? '#f59e0b' : saved ? '#22c55e' : SILVER, transition: 'color 0.3s' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '11px 14px', borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 2%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: saving ? 'var(--brand)' : saved ? 'var(--gain)' : 'color-mix(in srgb, var(--brand) 18%, transparent)', transition: 'background 0.3s', flexShrink: 0, animation: saving ? 'pulse 1s ease-in-out infinite' : 'none' }} />
+              <span style={{ fontSize: 11, color: saving ? 'var(--brand)' : saved ? 'var(--gain)' : SILVER, transition: 'color 0.3s' }}>
                 {saving ? 'Sauvegarde en cours…' : saved ? 'Sauvegardé' : 'Sauvegarde automatique'}
               </span>
             </div>
@@ -867,12 +865,12 @@ function MiniatureEditor({ preview, zoom, position, dragging, enhancing, onFile,
   if (!preview) {
     return (
       <label style={{ display: 'block', cursor: 'pointer' }}>
-        <div style={{ width: '100%', height: 200, borderRadius: 14, border: '2px dashed rgba(232,228,220,0.1)', background: 'rgba(232,228,220,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'border-color 0.2s' }}
-          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.3)'}
-          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.1)'}>
-          <Upload size={22} color="rgba(240,244,255,0.45)" />
-          <span style={{ fontSize: 13, color: 'rgba(240,244,255,0.45)' }}>Cliquer pour uploader</span>
-          <span style={{ fontSize: 11, color: 'rgba(138,138,138,0.4)' }}>PNG, JPG, WEBP</span>
+        <div style={{ width: '100%', height: 200, borderRadius: 14, border: '2px dashed color-mix(in srgb, var(--brand) 10%, transparent)', background: 'color-mix(in srgb, var(--brand) 2%, transparent)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'border-color 0.2s' }}
+          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--brand) 30%, transparent)'}
+          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--brand) 10%, transparent)'}>
+          <Upload size={22} color="var(--text-2)" />
+          <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Cliquer pour uploader</span>
+          <span style={{ fontSize: 11, color: 'var(--text-3)' }}>PNG, JPG, WEBP</span>
         </div>
         <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f) }} />
       </label>
@@ -882,7 +880,7 @@ function MiniatureEditor({ preview, zoom, position, dragging, enhancing, onFile,
     <div>
       {/* Zone drag-to-crop */}
       <div
-        style={{ position: 'relative', width: '100%', height: 200, borderRadius: 12, overflow: 'hidden', cursor: 'grab', userSelect: 'none', background: '#111' }}
+        style={{ position: 'relative', width: '100%', height: 200, borderRadius: 12, overflow: 'hidden', cursor: 'grab', userSelect: 'none', background: 'var(--bg)' }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
@@ -891,30 +889,30 @@ function MiniatureEditor({ preview, zoom, position, dragging, enhancing, onFile,
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${preview})`, backgroundSize: `${zoom * 100}%`, backgroundPosition: `${position.x}% ${position.y}%`, backgroundRepeat: 'no-repeat' }} />
         {/* Masque assombri + cadre zone visible */}
         <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 0 9999px rgba(0,0,0,0.3)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '75%', aspectRatio: '16/9', border: '1.5px dashed rgba(232,228,220,0.5)', borderRadius: 4, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 10, color: 'rgba(232,228,220,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(0,0,0,0.4)', padding: '3px 10px', borderRadius: 99 }}>Zone visible</span>
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '75%', aspectRatio: '16/9', border: '1.5px dashed color-mix(in srgb, var(--brand) 50%, transparent)', borderRadius: 4, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-2)', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(0,0,0,0.4)', padding: '3px 10px', borderRadius: 99 }}>Zone visible</span>
         </div>
         {/* Badge IA */}
         {enhancing && (
-          <div style={{ position: 'absolute', top: 10, left: 10, background: 'rgba(7,9,14,0.88)', backdropFilter: 'blur(8px)', border: '1px solid rgba(124,58,237,0.5)', borderRadius: 8, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7c3aed', animation: 'pulse 1s ease-in-out infinite', display: 'inline-block' }} />
-            <span style={{ fontSize: 11, color: '#f0f4ff', fontWeight: 600 }}>Amélioration IA…</span>
+          <div style={{ position: 'absolute', top: 10, left: 10, background: 'var(--bg)', backdropFilter: 'blur(8px)', border: '1px solid color-mix(in srgb, var(--brand) 50%, transparent)', borderRadius: 8, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--brand)', animation: 'pulse 1s ease-in-out infinite', display: 'inline-block' }} />
+            <span style={{ fontSize: 11, color: 'var(--brand)', fontWeight: 600 }}>Amélioration IA…</span>
           </div>
         )}
       </div>
       {/* Contrôles */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, padding: '9px 14px', background: 'rgba(232,228,220,0.04)', borderRadius: 10, border: '1px solid rgba(232,228,220,0.08)' }}>
-        <ZoomOut size={13} color="rgba(240,244,255,0.45)" style={{ flexShrink: 0 }} />
-        <input type="range" min={0.3} max={2} step={0.02} value={zoom} onChange={e => onZoom(Number(e.target.value))} style={{ flex: 1, accentColor: '#f0f4ff', height: 3 }} />
-        <ZoomIn size={13} color="rgba(240,244,255,0.45)" style={{ flexShrink: 0 }} />
-        <span style={{ fontSize: 11, color: 'rgba(240,244,255,0.45)', minWidth: 36, textAlign: 'right' }}>{Math.round(zoom * 100)}%</span>
-        <div style={{ width: 1, height: 14, background: 'rgba(232,228,220,0.1)', flexShrink: 0 }} />
-        <label style={{ fontSize: 11, color: 'rgba(240,244,255,0.45)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, padding: '9px 14px', background: 'color-mix(in srgb, var(--brand) 4%, transparent)', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)' }}>
+        <ZoomOut size={13} color="var(--text-2)" style={{ flexShrink: 0 }} />
+        <input type="range" min={0.3} max={2} step={0.02} value={zoom} onChange={e => onZoom(Number(e.target.value))} style={{ flex: 1, accentColor: 'var(--brand)', height: 3 }} />
+        <ZoomIn size={13} color="var(--text-2)" style={{ flexShrink: 0 }} />
+        <span style={{ fontSize: 11, color: 'var(--text-2)', minWidth: 36, textAlign: 'right' }}>{Math.round(zoom * 100)}%</span>
+        <div style={{ width: 1, height: 14, background: 'color-mix(in srgb, var(--brand) 10%, transparent)', flexShrink: 0 }} />
+        <label style={{ fontSize: 11, color: 'var(--text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
           <Upload size={11} /> Changer
           <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f) }} />
         </label>
       </div>
-      <p style={{ fontSize: 10, color: 'rgba(138,138,138,0.4)', marginTop: 5 }}>Glissez pour repositionner · zoom avec le slider</p>
+      <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 5 }}>Glissez pour repositionner · zoom avec le slider</p>
     </div>
   )
 }
@@ -926,12 +924,12 @@ function HighlightsPicker({
     if (selected.includes(id)) onChange(selected.filter(s => s !== id))
     else if (selected.length < 5) onChange([...selected, id])
   }
-  const SILVER = 'rgba(240,244,255,0.45)'
-  const CREAM  = '#f0f4ff'
+  const SILVER = 'var(--text-2)'
+  const CREAM  = 'var(--text)'
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: selected.length > 0 ? `${color}18` : 'rgba(232,228,220,0.05)', color: selected.length > 0 ? color : SILVER, border: `1px solid ${selected.length > 0 ? color + '40' : 'rgba(232,228,220,0.1)'}` }}>
+        <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: selected.length > 0 ? `color-mix(in srgb, ${color} 9%, transparent)` : 'color-mix(in srgb, var(--brand) 5%, transparent)', color: selected.length > 0 ? color : SILVER, border: `1px solid ${selected.length > 0 ? `color-mix(in srgb, ${color} 25%, transparent)` : 'color-mix(in srgb, var(--brand) 10%, transparent)'}` }}>
           {selected.length}/5
         </span>
       </div>
@@ -941,7 +939,7 @@ function HighlightsPicker({
           const disabled = !active && selected.length >= 5
           return (
             <button key={h.id} type="button" onClick={() => toggle(h.id)}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, textAlign: 'left', border: `1px solid ${active ? color + '55' : 'rgba(232,228,220,0.08)'}`, background: active ? `${color}12` : 'rgba(232,228,220,0.02)', color: active ? CREAM : disabled ? 'rgba(232,228,220,0.2)' : SILVER, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.45 : 1, transition: 'all 0.15s' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, textAlign: 'left', border: `1px solid ${active ? `color-mix(in srgb, ${color} 33%, transparent)` : 'color-mix(in srgb, var(--brand) 8%, transparent)'}`, background: active ? `color-mix(in srgb, ${color} 7%, transparent)` : 'color-mix(in srgb, var(--brand) 2%, transparent)', color: active ? CREAM : disabled ? 'var(--text-3)' : SILVER, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.45 : 1, transition: 'all 0.15s' }}>
               <h.Icon size={14} style={{ flexShrink: 0 }} />
               <span style={{ fontSize: 12, fontWeight: active ? 600 : 400, lineHeight: 1.3, flex: 1 }}>{h.label}</span>
               {active && <Check size={12} color={color} style={{ flexShrink: 0 }} />}

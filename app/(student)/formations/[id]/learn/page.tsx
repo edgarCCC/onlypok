@@ -14,13 +14,13 @@ import FourAcesLoader from '@/components/FourAcesLoader'
 import VideoStudio from '@/components/VideoStudio'
 import { parseVideoUrl, withEmbedParams } from '@/lib/video-url'
 
-const BG     = '#050709'
-const SURF   = 'rgba(255,255,255,0.028)'
-const BORDER = 'rgba(255,255,255,0.07)'
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const DIM    = 'rgba(240,244,255,0.22)'
-const EMER   = '#10b981'
+const BG     = 'var(--bg)'
+const SURF   = 'color-mix(in srgb, var(--overlay) 3%, transparent)'
+const BORDER = 'color-mix(in srgb, var(--overlay) 7%, transparent)'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const DIM    = 'color-mix(in srgb, var(--brand) 22%, transparent)'
+const EMER   = 'var(--gain)'
 
 type ProgressRow = { lesson_id: string }
 
@@ -41,16 +41,16 @@ function VideoPlayer({ url, thumbnailUrl, typeColor, onFullscreen }: {
 }) {
   if (!url) return (
     <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden',
-      background: '#0a0c12', marginBottom: 20, border: `1px solid ${BORDER}` }}>
+      background: 'var(--bg)', marginBottom: 20, border: `1px solid ${BORDER}` }}>
       {thumbnailUrl && (
         <Image src={thumbnailUrl} alt="" fill sizes="100vw" style={{ objectFit: 'cover', opacity: 0.35 }} />
       )}
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 10,
-        background: thumbnailUrl ? 'rgba(5,7,9,0.55)' : 'transparent' }}>
-        <div style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.2)',
+        background: thumbnailUrl ? 'color-mix(in srgb, var(--bg) 55%, transparent)' : 'transparent' }}>
+        <div style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid color-mix(in srgb, var(--overlay) 20%, transparent)',
           background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <PlayCircle size={22} color={DIM} />
+          <PlayCircle size={22} color="var(--text-3)" />
         </div>
         <p style={{ fontSize: 12, color: SILVER }}>Vidéo en cours de configuration</p>
       </div>
@@ -64,11 +64,11 @@ function VideoPlayer({ url, thumbnailUrl, typeColor, onFullscreen }: {
       {isNative ? (
         <video src={src} controls poster={thumbnailUrl ?? undefined} style={{
           width: '100%', borderRadius: 12, display: 'block',
-          background: '#0a0c12', aspectRatio: '16/9',
+          background: 'var(--bg)', aspectRatio: '16/9',
         }} />
       ) : (
         <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0,
-          borderRadius: 12, overflow: 'hidden', background: '#0a0c12' }}>
+          borderRadius: 12, overflow: 'hidden', background: 'var(--bg)' }}>
           <iframe src={src} allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} />
         </div>
@@ -77,7 +77,7 @@ function VideoPlayer({ url, thumbnailUrl, typeColor, onFullscreen }: {
         style={{ position: 'absolute', bottom: 10, right: 10,
           display: 'flex', alignItems: 'center', gap: 5,
           padding: '5px 10px', borderRadius: 7,
-          background: 'rgba(4,4,10,0.8)', backdropFilter: 'blur(8px)',
+          background: 'color-mix(in srgb, var(--bg) 80%, transparent)', backdropFilter: 'blur(8px)',
           border: `1px solid ${BORDER}`, color: SILVER,
           fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'color 0.15s' }}
         onMouseEnter={e => (e.currentTarget.style.color = CREAM)}
@@ -124,9 +124,9 @@ function VideoNotes({ formationId, currentLesson, typeColor, collapsed, setColla
         <button onClick={() => setCollapsed(false)} title="Afficher les notes"
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
             padding: '10px 6px', borderRadius: 8, background: SURF, border: `1px solid ${BORDER}`,
-            cursor: 'pointer', color: DIM, transition: 'color 0.15s, border-color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = CREAM; e.currentTarget.style.borderColor = `${typeColor}40` }}
-          onMouseLeave={e => { e.currentTarget.style.color = DIM; e.currentTarget.style.borderColor = BORDER }}>
+            cursor: 'pointer', color: 'var(--text-3)', transition: 'color 0.15s, border-color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = CREAM; e.currentTarget.style.borderColor = `color-mix(in srgb, ${typeColor} 25%, transparent)` }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.borderColor = BORDER }}>
           <StickyNote size={13} color={typeColor} />
           <ChevronDown size={11} style={{ transform: 'rotate(90deg)' }} />
         </button>
@@ -143,15 +143,15 @@ function VideoNotes({ formationId, currentLesson, typeColor, collapsed, setColla
             <span style={{ fontSize: 12, fontWeight: 700, color: CREAM }}>Mes notes</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 10, color: saved ? EMER : DIM, transition: 'color 0.3s' }}>
+            <span style={{ fontSize: 10, color: saved ? EMER : 'var(--text-3)', transition: 'color 0.3s' }}>
               {saved ? '✓' : '…'}
             </span>
             <button onClick={() => setCollapsed(true)} title="Masquer"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: DIM,
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)',
                 padding: '3px 5px', display: 'flex', borderRadius: 5,
                 transition: 'color 0.15s, background 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.color = CREAM; e.currentTarget.style.background = SURF }}
-              onMouseLeave={e => { e.currentTarget.style.color = DIM; e.currentTarget.style.background = 'none' }}>
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.background = 'none' }}>
               <ChevronDown size={13} style={{ transform: 'rotate(-90deg)' }} />
             </button>
           </div>
@@ -159,7 +159,7 @@ function VideoNotes({ formationId, currentLesson, typeColor, collapsed, setColla
       </div>
 
       <div style={{ flex: 1, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto' }}>
-        <p style={{ fontSize: 11, color: DIM, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.5 }}>
           {currentLesson
             ? <>Notes · <span style={{ color: SILVER, fontWeight: 600 }}>"{currentLesson.title}"</span></>
             : 'Notes générales'}
@@ -174,10 +174,10 @@ function VideoNotes({ formationId, currentLesson, typeColor, collapsed, setColla
             lineHeight: 1.75, resize: 'none', outline: 'none', fontFamily: 'inherit',
             boxSizing: 'border-box', transition: 'border-color 0.2s',
           }}
-          onFocus={e => (e.currentTarget.style.borderColor = `${typeColor}45`)}
+          onFocus={e => (e.currentTarget.style.borderColor = `color-mix(in srgb, ${typeColor} 27%, transparent)`)}
           onBlur={e => (e.currentTarget.style.borderColor = BORDER)}
         />
-        <p style={{ fontSize: 10, color: DIM }}>Sauvegardées localement dans ton navigateur.</p>
+        <p style={{ fontSize: 10, color: 'var(--text-3)' }}>Sauvegardées localement dans ton navigateur.</p>
       </div>
     </div>
   )
@@ -368,7 +368,7 @@ function LearnInner() {
   if (loading || !formation) return <FourAcesLoader />
 
   const isVideoType = formation.content_type === 'video'
-  const typeColor   = isVideoType ? '#3b82f6' : '#7c3aed'
+  const typeColor   = isVideoType ? 'var(--brand)' : 'var(--brand)'
   const lessonDone  = currentLesson ? completedIds.includes(currentLesson.id) : false
 
   const rightColWidth = notesCollapsed ? '52px' : '300px'
@@ -383,18 +383,16 @@ function LearnInner() {
       )}
 
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: BG, color: CREAM, overflow: 'hidden' }}>
-        <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-          background: `radial-gradient(ellipse 70% 35% at 25% -5%, ${typeColor}10 0%, transparent 65%)` }} />
 
         {/* ── Top bar ── */}
         <div style={{ position: 'sticky', top: 0, zIndex: 50, height: 52,
-          borderBottom: `1px solid ${BORDER}`, background: 'rgba(5,7,9,0.9)',
+          borderBottom: `1px solid ${BORDER}`, background: 'var(--bg)',
           backdropFilter: 'blur(20px)', display: 'flex', alignItems: 'center', gap: 14, padding: '0 24px' }}>
           <div style={{ position: 'absolute', bottom: 0, left: 0, height: 2,
             width: !isVideoType && progressPct > 0 ? `${progressPct}%` : '0%',
-            background: `linear-gradient(to right, ${typeColor}, ${typeColor}80)`,
+            background: 'var(--brand)',
             transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)',
-            boxShadow: `0 0 8px ${typeColor}80`, borderRadius: '0 2px 2px 0' }} />
+            boxShadow: 'none', borderRadius: '0 2px 2px 0' }} />
           <Link href={`/formations/${id}`}
             style={{ display: 'flex', alignItems: 'center', gap: 5, color: SILVER,
               textDecoration: 'none', fontSize: 12, fontWeight: 500, flexShrink: 0 }}
@@ -409,12 +407,12 @@ function LearnInner() {
           </span>
           {!isVideoType && totalLessons > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <span style={{ fontSize: 11, color: DIM }}>{doneLessons}/{totalLessons}</span>
-              <div style={{ width: 72, height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+              <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{doneLessons}/{totalLessons}</span>
+              <div style={{ width: 72, height: 3, background: 'color-mix(in srgb, var(--overlay) 6%, transparent)', borderRadius: 99, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${progressPct}%`, borderRadius: 99,
                   background: progressPct === 100 ? EMER : typeColor,
                   transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)',
-                  boxShadow: progressPct > 0 ? `0 0 6px ${typeColor}80` : 'none' }} />
+                  boxShadow: progressPct > 0 ? 'none' : 'none' }} />
               </div>
               <span style={{ fontSize: 11, fontWeight: 700, minWidth: 28,
                 color: progressPct === 100 ? EMER : typeColor }}>{progressPct}%</span>
@@ -443,7 +441,7 @@ function LearnInner() {
 
             {showBanner && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20,
-                background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)',
+                background: 'color-mix(in srgb, var(--gain) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--gain) 20%, transparent)',
                 borderRadius: 10, padding: '10px 14px' }}>
                 <CheckCircle size={14} color={EMER} style={{ flexShrink: 0 }} />
                 <span style={{ fontSize: 12, color: SILVER }}>
@@ -466,25 +464,24 @@ function LearnInner() {
             {/* ── Lesson card (formation type only) ── */}
             {!isVideoType && currentLesson && (
               <div style={{ marginBottom: 20, background: SURF, borderRadius: 14,
-                border: `1px solid ${typeColor}22`, overflow: 'hidden' }}>
-                <div style={{ height: 2, background: `linear-gradient(90deg, ${typeColor}, ${typeColor}50, transparent)` }} />
+                border: `1px solid color-mix(in srgb, ${typeColor} 13%, transparent)`, overflow: 'hidden' }}>
                 {(currentLesson.thumbnail_url || formation.thumbnail_url) && (
-                  <div style={{ position: 'relative', height: 160, overflow: 'hidden', background: '#0a0c12' }}>
+                  <div style={{ position: 'relative', height: 160, overflow: 'hidden', background: 'var(--bg)' }}>
                     <Image src={currentLesson.thumbnail_url ?? formation.thumbnail_url} alt="" fill sizes="100vw"
                       style={{ objectFit: 'cover', opacity: 0.5 }} />
                     <div style={{ position: 'absolute', inset: 0,
-                      background: `linear-gradient(to right, ${typeColor}20 0%, transparent 40%, rgba(5,7,9,0.7) 100%)` }} />
+                      background: `linear-gradient(to right, color-mix(in srgb, ${typeColor} 13%, transparent) 0%, transparent 40%, color-mix(in srgb, var(--bg) 70%, transparent) 100%)` }} />
                     {currentLesson.video_url && (
                       <button onClick={() => setStudioOpen(true)}
                         style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
                           justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}>
-                        <div style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.8)',
+                        <div style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid color-mix(in srgb, var(--overlay) 80%, transparent)',
                           background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           transition: 'transform 0.2s, background 0.2s' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.1)'; (e.currentTarget as HTMLDivElement).style.background = `${typeColor}90` }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.1)'; (e.currentTarget as HTMLDivElement).style.background = `color-mix(in srgb, ${typeColor} 56%, transparent)` }}
                           onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.background = 'rgba(0,0,0,0.5)' }}>
-                          <PlayCircle size={22} color="#fff" fill="rgba(255,255,255,0.9)" />
+                          <PlayCircle size={22} color="#fff" fill="var(--text)" />
                         </div>
                       </button>
                     )}
@@ -499,9 +496,9 @@ function LearnInner() {
                     {currentLesson.video_url && (
                       <button onClick={() => setStudioOpen(true)}
                         style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                          borderRadius: 8, border: 'none', background: typeColor, color: '#fff',
+                          borderRadius: 8, border: 'none', background: typeColor, color: 'var(--on-brand)',
                           fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                          boxShadow: `0 4px 16px ${typeColor}40`, transition: 'transform 0.15s' }}
+                          boxShadow: 'none', transition: 'transform 0.15s' }}
                         onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
                         onMouseLeave={e => (e.currentTarget.style.transform = '')}>
                         <PlayCircle size={13} /> Regarder
@@ -518,8 +515,8 @@ function LearnInner() {
                     <button onClick={() => handleComplete(currentLesson.id)} disabled={marking}
                       style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px',
                         borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, marginLeft: 'auto',
-                        border: `1px solid ${lessonDone ? 'rgba(16,185,129,0.3)' : BORDER}`,
-                        background: lessonDone ? 'rgba(16,185,129,0.08)' : 'transparent',
+                        border: `1px solid ${lessonDone ? 'color-mix(in srgb, var(--gain) 30%, transparent)' : BORDER}`,
+                        background: lessonDone ? 'color-mix(in srgb, var(--gain) 8%, transparent)' : 'transparent',
                         color: lessonDone ? EMER : SILVER, transition: 'all 0.2s', opacity: marking ? 0.5 : 1 }}>
                       <CheckCircle size={12} />
                       {lessonDone ? 'Vu ✓' : 'Noté comme vu'}
@@ -532,26 +529,26 @@ function LearnInner() {
             {/* ── Placeholder (formation type, no lesson selected) ── */}
             {!isVideoType && !currentLesson && (
               <div style={{ aspectRatio: '16/9', borderRadius: 14, overflow: 'hidden',
-                position: 'relative', marginBottom: 20, background: '#0a0c12' }}>
+                position: 'relative', marginBottom: 20, background: 'var(--bg)' }}>
                 {formation.thumbnail_url && (
                   <Image src={formation.thumbnail_url} alt="" fill sizes="100vw"
                     style={{ objectFit: 'cover', opacity: 0.3 }} />
                 )}
                 <div style={{ position: 'absolute', inset: 0,
-                  background: `linear-gradient(135deg, ${typeColor}15 0%, transparent 55%, rgba(5,7,9,0.5) 100%)` }} />
+                  background: `linear-gradient(135deg, color-mix(in srgb, ${typeColor} 8%, transparent) 0%, transparent 55%, color-mix(in srgb, var(--bg) 50%, transparent) 100%)` }} />
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                  <div style={{ width: 56, height: 56, borderRadius: 16, border: `1px solid ${typeColor}45`,
-                    background: `${typeColor}12`, backdropFilter: 'blur(12px)',
+                  <div style={{ width: 56, height: 56, borderRadius: 16, border: `1px solid color-mix(in srgb, ${typeColor} 27%, transparent)`,
+                    background: `color-mix(in srgb, ${typeColor} 7%, transparent)`, backdropFilter: 'blur(12px)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: `0 0 28px ${typeColor}20` }}>
+                    boxShadow: 'none' }}>
                     <PlayCircle size={24} color={typeColor} />
                   </div>
                   <p style={{ fontSize: 13, fontWeight: 600, color: SILVER }}>
                     {totalLessons === 0 ? 'Contenu en cours de préparation' : 'Sélectionne une leçon'}
                   </p>
                   {totalLessons === 0 && (
-                    <p style={{ fontSize: 11, color: DIM, textAlign: 'center', maxWidth: 220 }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-3)', textAlign: 'center', maxWidth: 220 }}>
                       Les leçons seront disponibles prochainement.
                     </p>
                   )}
@@ -563,8 +560,8 @@ function LearnInner() {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
               {formation.variant && (
                 <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase',
-                  padding: '3px 8px', borderRadius: 5, background: `${typeColor}14`, color: typeColor,
-                  border: `1px solid ${typeColor}28`, flexShrink: 0, marginTop: 4 }}>
+                  padding: '3px 8px', borderRadius: 5, background: `color-mix(in srgb, ${typeColor} 8%, transparent)`, color: typeColor,
+                  border: `1px solid color-mix(in srgb, ${typeColor} 16%, transparent)`, flexShrink: 0, marginTop: 4 }}>
                   {formation.variant}
                 </span>
               )}
@@ -573,7 +570,7 @@ function LearnInner() {
                 {formation.title}
               </h1>
             </div>
-            <p style={{ fontSize: 12, color: DIM, marginBottom: 20 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 20 }}>
               {formation.coach?.username && <>Par <span style={{ color: SILVER }}>{formation.coach.username}</span></>}
               {!isVideoType && <> · {totalLessons} leçons · {chapters.length} chapitres</>}
             </p>
@@ -589,10 +586,10 @@ function LearnInner() {
                     style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
                       background: 'none', border: 'none',
                       borderBottom: `2px solid ${active ? typeColor : 'transparent'}`,
-                      color: active ? typeColor : DIM, fontSize: 13,
+                      color: active ? typeColor : 'var(--text-3)', fontSize: 13,
                       fontWeight: active ? 700 : 500, cursor: 'pointer',
                       marginBottom: -1, transition: 'color 0.15s',
-                      boxShadow: active ? `0 2px 8px ${typeColor}60` : 'none' }}>
+                      boxShadow: active ? 'none' : 'none' }}>
                     <Icon size={13} /> {label}
                   </button>
                 )
@@ -607,18 +604,18 @@ function LearnInner() {
                     padding: '16px 20px', marginBottom: 16,
                     display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '0 20px', alignItems: 'center' }}>
                     <div style={{ textAlign: 'center' }}>
-                      <p style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1px', lineHeight: 1,
+                      <p style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-1px', lineHeight: 1,
                         color: progressPct === 100 ? EMER : typeColor }}>{progressPct}%</p>
-                      <p style={{ fontSize: 10, color: DIM, marginTop: 2 }}>complété</p>
+                      <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 2 }}>complété</p>
                     </div>
                     <div>
-                      <div style={{ height: 5, background: 'rgba(255,255,255,0.05)', borderRadius: 99, overflow: 'hidden', marginBottom: 6 }}>
+                      <div style={{ height: 5, background: 'color-mix(in srgb, var(--overlay) 5%, transparent)', borderRadius: 99, overflow: 'hidden', marginBottom: 6 }}>
                         <div style={{ height: '100%', width: `${progressPct}%`, borderRadius: 99,
-                          background: progressPct === 100 ? EMER : `linear-gradient(90deg, ${typeColor}, ${typeColor}bb)`,
+                          background: progressPct === 100 ? EMER : `transparent`,
                           transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)',
-                          boxShadow: progressPct > 0 ? `0 0 8px ${typeColor}55` : 'none' }} />
+                          boxShadow: progressPct > 0 ? 'none' : 'none' }} />
                       </div>
-                      <p style={{ fontSize: 11, color: DIM }}>
+                      <p style={{ fontSize: 11, color: 'var(--text-3)' }}>
                         {doneLessons} / {totalLessons} leçons
                         {doneLessons === totalLessons && totalLessons > 0 ? ' — Formation terminée !' : ''}
                       </p>
@@ -627,7 +624,7 @@ function LearnInner() {
                       <p style={{ fontSize: 18, fontWeight: 800, color: SILVER, lineHeight: 1 }}>
                         {totalLessons - doneLessons}
                       </p>
-                      <p style={{ fontSize: 10, color: DIM, marginTop: 2 }}>restantes</p>
+                      <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 2 }}>restantes</p>
                     </div>
                   </div>
                 )}
@@ -635,7 +632,7 @@ function LearnInner() {
                 {!isVideoType && recentlyDone.length > 0 && (
                   <div style={{ marginBottom: 16 }}>
                     <p style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
-                      color: DIM, fontWeight: 700, marginBottom: 10,
+                      color: 'var(--text-3)', fontWeight: 700, marginBottom: 10,
                       display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Clock size={11} /> Dernières leçons vues
                     </p>
@@ -646,10 +643,10 @@ function LearnInner() {
                           style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
                             borderRadius: 9, background: SURF, border: `1px solid ${BORDER}`,
                             cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s, transform 0.15s cubic-bezier(0.16,1,0.3,1)' }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = `${typeColor}30`; e.currentTarget.style.transform = 'translateX(4px)' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = `color-mix(in srgb, ${typeColor} 19%, transparent)`; e.currentTarget.style.transform = 'translateX(4px)' }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.transform = '' }}>
                           <div style={{ width: 22, height: 22, borderRadius: 6,
-                            background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.22)',
+                            background: 'color-mix(in srgb, var(--gain) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--gain) 22%, transparent)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <CheckCircle size={11} color={EMER} />
                           </div>
@@ -658,7 +655,7 @@ function LearnInner() {
                               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {r.title}
                             </p>
-                            <p style={{ fontSize: 10, color: DIM }}>{r.chapterTitle}</p>
+                            <p style={{ fontSize: 10, color: 'var(--text-3)' }}>{r.chapterTitle}</p>
                           </div>
                         </button>
                       ))}
@@ -670,7 +667,7 @@ function LearnInner() {
                   <div style={{ padding: '14px 16px', borderRadius: 10,
                     background: SURF, border: `1px solid ${BORDER}` }}>
                     <p style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
-                      color: DIM, fontWeight: 700, marginBottom: 8 }}>À propos</p>
+                      color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>À propos</p>
                     <p style={{ fontSize: 13, color: SILVER, lineHeight: 1.75,
                       ...(descExpanded ? {} : {
                         display: '-webkit-box', WebkitLineClamp: 3,
@@ -696,12 +693,12 @@ function LearnInner() {
             {!isVideoType && tab === 'notes' && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <p style={{ fontSize: 12, color: DIM }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-3)' }}>
                     {currentLesson
                       ? <>Notes · <span style={{ color: SILVER, fontWeight: 600 }}>{currentLesson.title}</span></>
                       : 'Notes générales'}
                   </p>
-                  <span style={{ fontSize: 10, color: notesSaved ? EMER : DIM, transition: 'color 0.3s' }}>
+                  <span style={{ fontSize: 10, color: notesSaved ? EMER : 'var(--text-3)', transition: 'color 0.3s' }}>
                     {notesSaved ? '✓ Sauvegardé' : 'Sauvegarde…'}
                   </span>
                 </div>
@@ -713,10 +710,10 @@ function LearnInner() {
                     borderRadius: 12, padding: '14px 16px', color: CREAM, fontSize: 13, lineHeight: 1.7,
                     resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
                     transition: 'border-color 0.2s' }}
-                  onFocus={e => (e.currentTarget.style.borderColor = `${typeColor}45`)}
+                  onFocus={e => (e.currentTarget.style.borderColor = `color-mix(in srgb, ${typeColor} 27%, transparent)`)}
                   onBlur={e => (e.currentTarget.style.borderColor = BORDER)}
                 />
-                <p style={{ fontSize: 11, color: DIM, marginTop: 8 }}>
+                <p style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 8 }}>
                   Sauvegardées localement. Change de leçon pour des notes séparées par leçon.
                 </p>
               </div>
@@ -735,8 +732,8 @@ function LearnInner() {
             : totalLessons === 0
               ? <div style={{ display: 'flex', flexDirection: 'column', borderLeft: `1px solid ${BORDER}`,
                   alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20 }}>
-                  <BookOpen size={18} color={DIM} />
-                  <p style={{ fontSize: 11, color: DIM, textAlign: 'center' }}>Aucun contenu<br/>disponible</p>
+                  <BookOpen size={18} color="var(--text-3)" />
+                  <p style={{ fontSize: 11, color: 'var(--text-3)', textAlign: 'center' }}>Aucun contenu<br/>disponible</p>
                 </div>
             : <div style={{ display: 'flex', flexDirection: 'column' }}>
 
@@ -747,7 +744,7 @@ function LearnInner() {
                       <BookOpen size={13} color={typeColor} />
                       <span style={{ fontSize: 12, fontWeight: 700, color: CREAM }}>Sommaire</span>
                     </div>
-                    <span style={{ fontSize: 10, color: DIM }}>{chapters.length} ch. · {totalLessons} leçons</span>
+                    <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{chapters.length} ch. · {totalLessons} leçons</span>
                   </div>
                 </div>
 
@@ -767,8 +764,8 @@ function LearnInner() {
                           onMouseEnter={e => (e.currentTarget.style.background = SURF)}
                           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                           <div style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-                            background: allDone ? 'rgba(16,185,129,0.1)' : `${typeColor}10`,
-                            border: `1px solid ${allDone ? 'rgba(16,185,129,0.25)' : `${typeColor}22`}`,
+                            background: allDone ? 'color-mix(in srgb, var(--gain) 10%, transparent)' : `color-mix(in srgb, ${typeColor} 6%, transparent)`,
+                            border: `1px solid ${allDone ? 'color-mix(in srgb, var(--gain) 25%, transparent)' : `color-mix(in srgb, ${typeColor} 13%, transparent)`}`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 9, fontWeight: 800, color: allDone ? EMER : typeColor }}>
                             {allDone ? <CheckCircle size={11} /> : ci + 1}
@@ -779,11 +776,11 @@ function LearnInner() {
                               {chapter.title}
                             </p>
                             <p style={{ fontSize: 10, marginTop: 1,
-                              color: allDone ? EMER : done > 0 ? typeColor : DIM }}>
+                              color: allDone ? EMER : done > 0 ? typeColor : 'var(--text-3)' }}>
                               {done}/{lessons.length} vues
                             </p>
                           </div>
-                          <ChevronRight size={12} color={DIM} style={{
+                          <ChevronRight size={12} color="var(--text-3)" style={{
                             transform: isOpen ? 'rotate(90deg)' : 'none',
                             transition: 'transform 0.2s', flexShrink: 0 }} />
                         </button>
@@ -798,7 +795,7 @@ function LearnInner() {
                             <button key={lesson.id} onClick={() => selectLesson(lesson)} disabled={locked}
                               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                                 padding: '8px 18px 8px 14px',
-                                background: active ? `${typeColor}0e` : 'transparent',
+                                background: active ? `color-mix(in srgb, ${typeColor} 5%, transparent)` : 'transparent',
                                 border: 'none', borderLeft: `2px solid ${active ? typeColor : 'transparent'}`,
                                 cursor: locked ? 'not-allowed' : 'pointer', textAlign: 'left',
                                 opacity: locked ? 0.35 : 1, transition: 'background 0.15s' }}
@@ -806,7 +803,7 @@ function LearnInner() {
                               onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}>
 
                               <div style={{ width: 52, height: 30, borderRadius: 5, flexShrink: 0, overflow: 'hidden',
-                                background: '#0d0f15', border: `1px solid ${active ? `${typeColor}40` : BORDER}`,
+                                background: 'var(--bg)', border: `1px solid ${active ? `color-mix(in srgb, ${typeColor} 25%, transparent)` : BORDER}`,
                                 position: 'relative', transition: 'border-color 0.15s' }}>
                                 {thumb && (
                                   <Image src={thumb} alt="" fill sizes="52px"
@@ -817,27 +814,27 @@ function LearnInner() {
                                   alignItems: 'center', justifyContent: 'center' }}>
                                   {done ? (
                                     <div style={{ width: 16, height: 16, borderRadius: '50%',
-                                      background: 'rgba(16,185,129,0.9)', display: 'flex',
+                                      background: 'color-mix(in srgb, var(--gain) 90%, transparent)', display: 'flex',
                                       alignItems: 'center', justifyContent: 'center' }}>
-                                      <CheckCircle size={9} color="#fff" />
+                                      <CheckCircle size={9} color="var(--on-brand)" />
                                     </div>
                                   ) : locked ? (
                                     <Lock size={10} color={SILVER} />
                                   ) : active ? (
                                     <div style={{ width: 16, height: 16, borderRadius: '50%',
-                                      background: `${typeColor}cc`, display: 'flex',
+                                      background: `color-mix(in srgb, ${typeColor} 80%, transparent)`, display: 'flex',
                                       alignItems: 'center', justifyContent: 'center' }}>
-                                      <PlayCircle size={9} color="#fff" fill="white" />
+                                      <PlayCircle size={9} color="var(--on-brand)" fill="var(--on-brand)" />
                                     </div>
                                   ) : (
-                                    <PlayCircle size={12} color="rgba(255,255,255,0.5)" />
+                                    <PlayCircle size={12} color="var(--text-3)" />
                                   )}
                                 </div>
                               </div>
 
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <p style={{ fontSize: 11, lineHeight: 1.35,
-                                  color: active ? typeColor : done ? DIM : CREAM,
+                                  color: active ? typeColor : done ? 'var(--text-3)' : CREAM,
                                   fontWeight: active ? 600 : 400,
                                   overflow: 'hidden', textOverflow: 'ellipsis',
                                   display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
@@ -845,7 +842,7 @@ function LearnInner() {
                                 </p>
                                 {lesson.is_free && !hasPurchased && (
                                   <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.1em',
-                                    color: '#06b6d4', border: '1px solid rgba(6,182,212,0.28)',
+                                    color: 'var(--brand)', border: '1px solid color-mix(in srgb, var(--brand) 28%, transparent)',
                                     padding: '1px 5px', borderRadius: 3, marginTop: 3, display: 'inline-block' }}>
                                     FREE
                                   </span>
@@ -865,17 +862,17 @@ function LearnInner() {
                     {formation.coach.avatar_url ? (
                       <Image src={formation.coach.avatar_url} alt="" width={28} height={28}
                         style={{ borderRadius: '50%', objectFit: 'cover',
-                          border: `1px solid ${typeColor}35` }} />
+                          border: `1px solid color-mix(in srgb, ${typeColor} 21%, transparent)` }} />
                     ) : (
                       <div style={{ width: 28, height: 28, borderRadius: '50%',
-                        background: `${typeColor}14`, border: `1px solid ${typeColor}28`,
+                        background: `color-mix(in srgb, ${typeColor} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${typeColor} 16%, transparent)`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 11, fontWeight: 700, color: typeColor, flexShrink: 0 }}>
                         {formation.coach.username[0].toUpperCase()}
                       </div>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 9, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Formateur</p>
+                      <p style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Formateur</p>
                       <p style={{ fontSize: 11, fontWeight: 600, color: CREAM,
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {formation.coach.username}

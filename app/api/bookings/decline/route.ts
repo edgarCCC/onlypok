@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   const payment = await releaseDeclinedBookingPayment(admin, stripe, booking)
   if (!payment.ok) {
     console.error('[bookings/decline]', payment.error)
-    return NextResponse.json({ error: 'Le remboursement a échoué, réessayez ou contactez le support.' }, { status: 500 })
+    return NextResponse.json({ error: 'Le remboursement a échoué, réessaie ou contacte le support.' }, { status: 500 })
   }
 
   // Écriture service-role (propriété + statut vérifiés ci-dessus ; aucune écriture client sur bookings — RLS)
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   if (error) {
     // Stripe a déjà libéré/remboursé : la réservation doit être corrigée à la main.
     console.error('[RECONCILE] paiement libéré mais statut non mis à jour', { booking_id, mode: payment.mode, error: error.message })
-    return NextResponse.json({ error: 'Le refus a été enregistré côté paiement mais pas sur la réservation. Réessayez.' }, { status: 500 })
+    return NextResponse.json({ error: 'Le refus a été enregistré côté paiement mais pas sur la réservation. Réessaie.' }, { status: 500 })
   }
   // Requête concurrente (double clic) : déjà traitée, pas de seconde notification
   if (!updated?.length) return NextResponse.json({ success: true, already: true })
@@ -64,17 +64,17 @@ export async function POST(req: NextRequest) {
     type:    'booking_declined',
     title:   'Coaching refusé',
     body:    payment.mode === 'cancelled' && payment.voidedSiblingIds.length
-      ? `Votre coaching "${formation?.title ?? 'coaching'}" a été refusé : le pack entier est annulé, aucun montant ne sera débité.`
+      ? `Ton coaching "${formation?.title ?? 'coaching'}" a été refusé : le pack entier est annulé, aucun montant ne sera débité.`
       : payment.mode === 'refunded'
-        ? `Votre session "${formation?.title ?? 'coaching'}" a été refusée. Cette session vous est remboursée sous 5-10 jours ouvrés.`
-        : `Votre demande de coaching "${formation?.title ?? 'coaching'}" a été refusée. Aucun montant ne sera débité.`,
+        ? `Ta session "${formation?.title ?? 'coaching'}" a été refusée. Cette session t’est remboursée sous 5-10 jours ouvrés.`
+        : `Ta demande de coaching "${formation?.title ?? 'coaching'}" a été refusée. Aucun montant ne sera débité.`,
     data:    { booking_id, voided_booking_ids: payment.voidedSiblingIds },
   })
 
   sendStudentBookingDeclinedEmail({
     studentId:      booking.student_id,
-    coachUsername:  coach?.username ?? 'Votre coach',
-    formationTitle: formation?.title ?? 'votre coaching',
+    coachUsername:  coach?.username ?? 'Ton coach',
+    formationTitle: formation?.title ?? 'ton coaching',
   }).catch(err => console.error('[bookings/decline] email error:', err.message))
 
   return NextResponse.json({ success: true })

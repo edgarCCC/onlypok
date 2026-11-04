@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         }
       } else {
         console.error('[bookings/accept] stripe capture failed:', err.message)
-        return NextResponse.json({ error: 'Le paiement n\u2019a pas pu être encaissé (autorisation expirée ?). Contactez le support.' }, { status: 500 })
+        return NextResponse.json({ error: 'Le paiement n\u2019a pas pu être encaissé (autorisation expirée ?). Contacte le support.' }, { status: 500 })
       }
     }
   }
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   if (error) {
     // Paiement déjà capturé côté Stripe : à rapprocher à la main (détail dans les logs seulement).
     console.error('[RECONCILE] paiement capturé mais statut non mis à jour', { booking_id, error: error.message })
-    return NextResponse.json({ error: 'Paiement encaissé mais confirmation non enregistrée : réessayez ou contactez le support.' }, { status: 500 })
+    return NextResponse.json({ error: 'Paiement encaissé mais confirmation non enregistrée : réessaie ou contacte le support.' }, { status: 500 })
   }
 
   const { data: formation } = await supabase
@@ -74,14 +74,14 @@ export async function POST(req: NextRequest) {
     user_id: booking.student_id,
     type:    'booking_accepted',
     title:   'Coaching confirmé !',
-    body:    `Votre session "${formation?.title ?? 'coaching'}" est confirmée.${booking.scheduled_at ? ' Retrouvez le lien de visio dans votre planning.' : ''}`,
+    body:    `Ta session "${formation?.title ?? 'coaching'}" est confirmée.${booking.scheduled_at ? ' Retrouve le lien de visio dans ton planning.' : ''}`,
     data:    { booking_id, meeting_url: meetingUrl },
   })
 
   sendStudentBookingAcceptedEmail({
     studentId:      booking.student_id,
-    coachUsername:  coach?.username ?? 'Votre coach',
-    formationTitle: formation?.title ?? 'votre coaching',
+    coachUsername:  coach?.username ?? 'Ton coach',
+    formationTitle: formation?.title ?? 'ton coaching',
     bookingId:      booking_id,
     scheduledAt:    booking.scheduled_at ?? null,
   }).catch(err => console.error('[bookings/accept] email error:', err.message))

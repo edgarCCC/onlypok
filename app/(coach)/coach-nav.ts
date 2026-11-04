@@ -5,15 +5,15 @@ import {
 
 /* ── Design tokens partagés par la navigation coach ──────────────────────── */
 export const NAV = {
-  bg:      'rgba(4,4,10,0.95)',
-  panel:   'rgba(9,10,16,0.98)',
-  border:  'rgba(255,255,255,0.07)',
-  cream:   '#e8eaf0',
-  dim:     'rgba(232,234,240,0.42)',
-  faint:   'rgba(232,234,240,0.25)',
-  violet:  '#7c3aed',
-  amber:   '#f59e0b',
-  red:     '#ef4444',
+  bg:      'var(--bg)',
+  panel:   'var(--bg)',
+  border:  'color-mix(in srgb, var(--overlay) 7%, transparent)',
+  cream:   'var(--text)',
+  dim:     'var(--text-2)',
+  faint:   'var(--text-3)',
+  violet:  'var(--brand)',
+  amber:   'var(--brand)',
+  red:     'var(--error)',
 } as const
 
 export type BadgeKey = 'agenda' | 'messages'

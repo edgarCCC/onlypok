@@ -27,7 +27,7 @@ export default function ScheduleCalendar({ typeColor, calSlots, calLoading, calY
   const tzNotice = useSyncExternalStore(noopSubscribe, getTzNotice, getServerTzNotice)
 
   return (
-    <div id="slot-picker" style={{ padding: '40px 0', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+    <div id="slot-picker" style={{ padding: '40px 0', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <Calendar size={18} color={typeColor} />
         <h2 style={{ fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: 0 }}>Choisis ton créneau</h2>
@@ -45,16 +45,16 @@ export default function ScheduleCalendar({ typeColor, calSlots, calLoading, calY
           <span style={{ fontSize: 13 }}>Chargement des créneaux…</span>
         </div>
       ) : calSlots.length === 0 ? (
-        <div style={{ padding: '24px', borderRadius: 16, background: 'rgba(240,244,255,0.03)', border: '1px solid rgba(240,244,255,0.08)', textAlign: 'center' }}>
+        <div style={{ padding: '24px', borderRadius: 16, background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', textAlign: 'center' }}>
           <Clock size={28} color={SILVER} style={{ opacity: 0.4, marginBottom: 12 }} />
           <p style={{ fontSize: 14, color: SILVER, margin: 0 }}>Aucun créneau disponible pour le moment.</p>
-          <p style={{ fontSize: 12, color: SILVER, opacity: 0.6, marginTop: 6 }}>Revenez bientôt ou contactez le coach directement.</p>
+          <p style={{ fontSize: 12, color: SILVER, opacity: 0.6, marginTop: 6 }}>Reviens bientôt ou contacte le coach directement.</p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
 
           {/* Calendar */}
-          <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 18, padding: 20 }}>
+          <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 18, padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <button onClick={() => { if (calMonth === 0) { setCalYear(y => y-1); setCalMonth(11) } else setCalMonth(m => m-1); setCalSelDay(null); setCalSelSlot(null) }}
                 style={{ background: 'none', border: 'none', color: SILVER, cursor: 'pointer', padding: 4, borderRadius: 6, display: 'flex' }}>
@@ -87,7 +87,7 @@ export default function ScheduleCalendar({ typeColor, calSlots, calLoading, calY
                     const isTd = calIsSameDay(date, todayDate)
                     return (
                       <button key={day} disabled={!has || past} onClick={() => { setCalSelDay(date); setCalSelSlot(null) }}
-                        style={{ aspectRatio: '1', borderRadius: 7, border: 'none', fontSize: 12, fontWeight: sel ? 800 : 400, cursor: has && !past ? 'pointer' : 'default', background: sel ? `linear-gradient(135deg,${typeColor},#06b6d4)` : has && !past ? `${typeColor}18` : 'transparent', color: sel ? '#fff' : has && !past ? '#c4b5fd' : past ? 'rgba(138,138,138,0.25)' : SILVER, outline: isTd && !sel ? `2px solid ${typeColor}40` : 'none', outlineOffset: -2, transition: 'all 0.15s' }}>
+                        style={{ aspectRatio: '1', borderRadius: 7, border: 'none', fontSize: 12, fontWeight: sel ? 800 : 400, cursor: has && !past ? 'pointer' : 'default', background: sel ? `${typeColor}` : has && !past ? `color-mix(in srgb, ${typeColor} 9%, transparent)` : 'transparent', color: sel ? 'var(--on-brand)' : has && !past ? 'var(--brand)' : past ? 'var(--text-3)' : SILVER, outline: isTd && !sel ? `2px solid color-mix(in srgb, ${typeColor} 25%, transparent)` : 'none', outlineOffset: -2, transition: 'all 0.15s' }}>
                         {day}
                       </button>
                     )
@@ -98,7 +98,7 @@ export default function ScheduleCalendar({ typeColor, calSlots, calLoading, calY
           </div>
 
           {/* Time slots */}
-          <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 18, padding: 20, minHeight: 180 }}>
+          <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 18, padding: 20, minHeight: 180 }}>
             {!calSelDay ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 180, gap: 10 }}>
                 <Calendar size={28} color={SILVER} style={{ opacity: 0.35 }} />
@@ -121,7 +121,7 @@ export default function ScheduleCalendar({ typeColor, calSlots, calLoading, calY
                       const isSel = calSelSlot ? calSelSlot.getTime() === slot.getTime() : false
                       return (
                         <button key={i} onClick={() => setCalSelSlot(isSel ? null : slot)}
-                          style={{ padding: '9px 0', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', background: isSel ? `linear-gradient(135deg,${typeColor},#06b6d4)` : 'rgba(232,228,220,0.05)', border: isSel ? 'none' : '1px solid rgba(232,228,220,0.1)', color: isSel ? '#fff' : CREAM, boxShadow: isSel ? `0 4px 16px ${typeColor}40` : 'none' }}>
+                          style={{ padding: '9px 0', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', background: isSel ? `${typeColor}` : 'color-mix(in srgb, var(--brand) 5%, transparent)', border: isSel ? 'none' : '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', color: isSel ? 'var(--on-brand)' : CREAM, boxShadow: isSel ? 'none' : 'none' }}>
                           {slot.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                         </button>
                       )
@@ -135,7 +135,7 @@ export default function ScheduleCalendar({ typeColor, calSlots, calLoading, calY
       )}
 
       {calSelSlot && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, padding: '11px 16px', borderRadius: 12, background: `${typeColor}10`, border: `1px solid ${typeColor}30` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, padding: '11px 16px', borderRadius: 12, background: `color-mix(in srgb, ${typeColor} 6%, transparent)`, border: `1px solid color-mix(in srgb, ${typeColor} 19%, transparent)` }}>
           <CheckCircle size={15} color={typeColor} />
           <span style={{ fontSize: 13, color: CREAM, fontWeight: 600 }}>
             Créneau sélectionné : {calSelSlot.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à {calSelSlot.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}

@@ -3,11 +3,11 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { Users, Search, ExternalLink, ChevronDown, ChevronUp, Clock, ShieldCheck, AlertCircle, Eye, Loader2, BadgeCheck } from 'lucide-react'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const VIOLET = '#7c3aed'
-const CARD   = 'rgba(232,228,220,0.03)'
-const BORDER = 'rgba(232,228,220,0.08)'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const VIOLET = 'var(--brand)'
+const CARD   = 'color-mix(in srgb, var(--brand) 3%, transparent)'
+const BORDER = 'color-mix(in srgb, var(--brand) 8%, transparent)'
 
 type CoachRow = {
   id: string
@@ -45,7 +45,7 @@ function InfoLine({ label, value }: { label: string; value: string | number | nu
   return (
     <div style={{ display: 'flex', gap: 8, fontSize: 12, lineHeight: 1.7 }}>
       <span style={{ color: SILVER, minWidth: 150 }}>{label}</span>
-      <span style={{ color: value ? CREAM : 'rgba(240,244,255,0.25)', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+      <span style={{ color: value ? CREAM : 'var(--text-3)', fontFamily: 'monospace', wordBreak: 'break-all' }}>
         {value !== null && value !== undefined && value !== '' ? String(value) : '—'}
       </span>
     </div>
@@ -83,21 +83,21 @@ function CoachCard({ coach }: { coach: CoachRow }) {
       <button onClick={toggle} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', padding: '14px 18px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
         {coach.avatar_url
           ? <Image src={coach.avatar_url} alt="" width={38} height={38} style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-          : <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#7c3aed22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: VIOLET, flexShrink: 0 }}>
+          : <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'color-mix(in srgb, var(--brand) 13%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: VIOLET, flexShrink: 0 }}>
               {(coach.username ?? '?').slice(0, 2).toUpperCase()}
             </div>}
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: CREAM }}>{coach.username ?? 'Sans pseudo'}</span>
-            {coach.is_pro && <BadgeCheck size={14} color="#06b6d4" />}
+            {coach.is_pro && <BadgeCheck size={14} color="var(--brand)" />}
             <span style={{ fontSize: 11, color: SILVER }}>{coach.email ?? '—'}</span>
           </div>
           <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 11, color: SILVER, flexWrap: 'wrap' }}>
             <span>{coach.formations_count} formation{coach.formations_count > 1 ? 's' : ''}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={10} color="#f59e0b" /> {coach.proofs.pending}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><ShieldCheck size={10} color="#4ade80" /> {coach.proofs.approved}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><AlertCircle size={10} color="#ef4444" /> {coach.proofs.rejected}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={10} color="var(--brand)" /> {coach.proofs.pending}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><ShieldCheck size={10} color="var(--gain)" /> {coach.proofs.approved}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><AlertCircle size={10} color="var(--error)" /> {coach.proofs.rejected}</span>
             <span>inscrit le {new Date(coach.created_at).toLocaleDateString('fr-FR')}</span>
           </div>
         </div>
@@ -118,7 +118,7 @@ function CoachCard({ coach }: { coach: CoachRow }) {
               <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Chargement du profil…
             </div>
           )}
-          {detailErr && <div style={{ color: '#ef4444', fontSize: 12 }}>{detailErr}</div>}
+          {detailErr && <div style={{ color: 'var(--error)', fontSize: 12 }}>{detailErr}</div>}
           {detail && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
               <div>
@@ -151,7 +151,7 @@ function CoachCard({ coach }: { coach: CoachRow }) {
                   </>
                 ) : (
                   <button onClick={() => setShowPayment(true)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, padding: '7px 14px', background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, color: VIOLET, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, padding: '7px 14px', background: 'color-mix(in srgb, var(--brand) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)', borderRadius: 8, color: VIOLET, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                     <Eye size={12} /> Afficher les coordonnées
                   </button>
                 )}
@@ -196,13 +196,13 @@ export default function AdminCoachsPage() {
   }, [coaches, query])
 
   return (
-    <div style={{ minHeight: '100vh', background: '#04040a', color: CREAM, padding: 'clamp(32px,5vw,64px) clamp(20px,5vw,64px)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM, padding: 'clamp(32px,5vw,64px) clamp(20px,5vw,64px)' }}>
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <Users size={20} color={VIOLET} />
-            <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px', margin: 0 }}>Coachs</h1>
+            <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.5px', margin: 0 }}>Coachs</h1>
             {!loading && <span style={{ fontSize: 13, color: SILVER }}>({filtered.length})</span>}
           </div>
           <p style={{ fontSize: 14, color: SILVER, margin: 0 }}>
@@ -220,7 +220,7 @@ export default function AdminCoachsPage() {
         </div>
 
         {loading && <div style={{ color: SILVER, fontSize: 13, padding: '40px 0', textAlign: 'center' }}>Chargement…</div>}
-        {err && <div style={{ color: '#ef4444', fontSize: 13 }}>{err}</div>}
+        {err && <div style={{ color: 'var(--error)', fontSize: 13 }}>{err}</div>}
         {!loading && !err && filtered.length === 0 && (
           <div style={{ color: SILVER, fontSize: 13, padding: '40px 0', textAlign: 'center' }}>Aucun coach trouvé.</div>
         )}

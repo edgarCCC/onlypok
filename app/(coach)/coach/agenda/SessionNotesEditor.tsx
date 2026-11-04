@@ -52,8 +52,8 @@ export default function SessionNotesEditor({ bookingId, coachId, studentId, init
       console.error('[agenda] notes save failed:', res.error?.code, res.error?.message)
       // 23505 : une fiche existe déjà pour cette réservation (index unique booking_id)
       setErrorMsg(res.error?.code === '23505'
-        ? 'Des notes existent déjà pour cette séance : rechargez la page.'
-        : 'Échec de l\u2019enregistrement, réessayez.')
+        ? 'Des notes existent déjà pour cette séance : recharge la page.'
+        : 'Échec de l\u2019enregistrement, réessaie.')
       setStatus('error')
       return
     }
@@ -67,7 +67,7 @@ export default function SessionNotesEditor({ bookingId, coachId, studentId, init
   }
 
   return (
-    <div style={{ padding: '4px 20px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ padding: '4px 20px 20px', borderTop: '1px solid color-mix(in srgb, var(--overlay) 6%, transparent)' }}>
       <div style={{ marginTop: 16 }}>
         <label style={label} htmlFor={`notes-${bookingId}`}><FileText size={11} /> Notes de séance</label>
         <textarea
@@ -76,7 +76,7 @@ export default function SessionNotesEditor({ bookingId, coachId, studentId, init
           onChange={e => setNotes(e.target.value)}
           placeholder="Ce qu'on a travaillé, points d'amélioration, main remarquable…"
           rows={4}
-          style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '12px 14px', color: CREAM, fontSize: 13, lineHeight: 1.65, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          style={{ width: '100%', background: 'color-mix(in srgb, var(--overlay) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--overlay) 8%, transparent)', borderRadius: 10, padding: '12px 14px', color: CREAM, fontSize: 13, lineHeight: 1.65, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
         />
       </div>
 
@@ -97,7 +97,7 @@ export default function SessionNotesEditor({ bookingId, coachId, studentId, init
             const active = tags.includes(tag)
             return (
               <button key={tag} onClick={() => toggleTag(tag)} aria-pressed={active}
-                style={{ padding: '5px 11px', borderRadius: 99, fontSize: 11, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s', border: `1px solid ${active ? AMBER + '60' : 'rgba(255,255,255,0.1)'}`, background: active ? `${AMBER}18` : 'transparent', color: active ? AMBER : SILVER }}>
+                style={{ padding: '5px 11px', borderRadius: 99, fontSize: 11, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s', border: `1px solid ${active ? `color-mix(in srgb, ${AMBER} 38%, transparent)` : 'color-mix(in srgb, var(--overlay) 10%, transparent)'}`, background: active ? `color-mix(in srgb, ${AMBER} 9%, transparent)` : 'transparent', color: active ? AMBER : SILVER }}>
                 {tag}
               </button>
             )
@@ -109,7 +109,7 @@ export default function SessionNotesEditor({ bookingId, coachId, studentId, init
         {status === 'saved' && <span role="status" style={{ fontSize: 12, color: GREEN }}>Notes enregistrées</span>}
         {status === 'error' && <span role="alert" style={{ fontSize: 12, color: RED }}>{errorMsg}</span>}
         <button onClick={save} disabled={saving}
-          style={{ padding: '9px 22px', borderRadius: 10, background: `linear-gradient(135deg,${VIOLET},${CYAN})`, border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}>
+          style={{ padding: '9px 22px', borderRadius: 10, background: `${VIOLET}`, border: 'none', color: 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}>
           {saving ? 'Enregistrement…' : 'Enregistrer les notes'}
         </button>
       </div>

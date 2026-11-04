@@ -2,24 +2,20 @@
 import { Star } from 'lucide-react'
 
 /* ─── Design tokens de l'annuaire coachs ──────────────────────────────────────
-   Palette volontairement restreinte : neutres teintés + 3 accents de marque.
-   Violet/cyan = action principale, ambre = note & prix (sémantique coaching).
-   Pas de couleur par coach : les cartes restent neutres, l'accent est réservé
-   aux actions et aux états. */
-export const BG       = '#07090e'
-export const CREAM    = '#f0f4ff'
-export const MUTED    = 'rgba(232,228,220,0.45)'
-export const SILVER   = 'rgba(232,228,220,0.28)'
-export const DIM      = 'rgba(232,228,220,0.07)'
-export const CARD     = 'rgba(255,255,255,0.028)'
-export const CARD_HOV = 'rgba(255,255,255,0.048)'
-export const BORDER_HOV = 'rgba(232,228,220,0.16)'
-export const VIO      = '#7c3aed'
-export const CYAN     = '#06b6d4'
-export const AMBER    = '#f59e0b'
-/* CTA de l'univers coach — dégradé 3 teintes : la classe .op-cta l'étire et
-   le fait dériver lentement (background-position animé) pour un effet vivant */
-export const AMBER_GRAD = 'linear-gradient(110deg, #ea580c, #f59e0b, #fbbf24)'
+   Tout passe par les tokens de la palette : aucune couleur par coach, l'accent est réservé aux actions et aux états. */
+export const BG       = 'var(--bg)'
+export const CREAM    = 'var(--text)'
+export const MUTED    = 'var(--text-2)'
+export const SILVER   = 'var(--text-3)'
+export const DIM      = 'color-mix(in srgb, var(--brand) 7%, transparent)'
+export const CARD     = 'color-mix(in srgb, var(--overlay) 3%, transparent)'
+export const CARD_HOV = 'color-mix(in srgb, var(--overlay) 5%, transparent)'
+export const BORDER_HOV = 'color-mix(in srgb, var(--brand) 16%, transparent)'
+export const VIO      = 'var(--brand)'
+export const CYAN     = 'var(--brand)'
+export const AMBER    = 'var(--brand)'
+/* CTA de l'univers coach : la couleur d'action, à plat ; le retour à l'appui vient de .op-cta (styles/ui.css) */
+export const AMBER_GRAD = 'var(--brand)'
 
 export const VARIANTS_LIST = ['NLH', 'PLO', 'MTT', 'Cash', 'Expresso', 'SNG', 'PKO', 'Heads-Up']
 
@@ -36,7 +32,7 @@ export function Stars({ rating, size = 11 }: { rating: number; size?: number }) 
       {[1, 2, 3, 4, 5].map(s => (
         <Star key={s} size={size}
           fill={s <= Math.round(rating) ? AMBER : 'none'}
-          color={s <= Math.round(rating) ? AMBER : 'rgba(232,228,220,0.18)'}
+          color={s <= Math.round(rating) ? AMBER : 'var(--text-3)'}
         />
       ))}
     </div>

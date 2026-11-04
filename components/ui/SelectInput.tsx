@@ -41,11 +41,11 @@ export default function SelectInput({
         onBlur={() => setFocused(false)}
         style={{
           width: '100%',
-          background: 'rgba(255,255,255,0.04)',
-          border: `1px solid ${focused ? 'rgba(124,58,237,0.5)' : 'rgba(232,228,220,0.08)'}`,
+          background: 'var(--surface-2)',
+          border: `1px solid ${focused ? 'var(--focus)' : 'var(--border-input)'}`,
           borderRadius: 10,
           padding: '11px 40px 11px 14px',
-          color: value ? '#f0f4ff' : 'rgba(240,244,255,0.35)',
+          color: value ? 'var(--text)' : 'var(--text-3)',
           fontSize: 14,
           outline: 'none',
           fontFamily: 'inherit',
@@ -59,7 +59,7 @@ export default function SelectInput({
         }}
       >
         {placeholder && (
-          <option value="" disabled hidden style={{ color: 'rgba(240,244,255,0.35)' }}>
+          <option value="" disabled hidden style={{ color: 'var(--text-3)' }}>
             {placeholder}
           </option>
         )}
@@ -67,7 +67,7 @@ export default function SelectInput({
           <option
             key={opt.value}
             value={opt.value}
-            style={{ background: '#0d0f18', color: '#f0f4ff' }}
+            style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
           >
             {opt.label}
           </option>
@@ -81,7 +81,7 @@ export default function SelectInput({
           right: 12,
           top: '50%',
           transform: 'translateY(-50%)',
-          color: 'rgba(240,244,255,0.4)',
+          color: 'var(--text-3)',
           pointerEvents: 'none',
           transition: 'color 150ms',
         }}

@@ -27,21 +27,14 @@ type Formation = {
 
 /* Palette restreinte : neutres + accents de marque. Aucune couleur par
    variante ni par coach — l'accent vient de l'onglet, en touche discrète. */
-const CREAM  = '#f0f4ff'
-const AMBER  = '#f59e0b'
-const BLUE   = '#3b82f6'
-const BORDER     = 'rgba(255,255,255,0.07)'
-const BORDER_HOV = 'rgba(232,228,220,0.18)'
+const CREAM  = 'var(--text)'
+const AMBER  = 'var(--brand)'
+const BLUE   = 'var(--brand)'
+const BORDER     = 'color-mix(in srgb, var(--overlay) 7%, transparent)'
+const BORDER_HOV = 'color-mix(in srgb, var(--brand) 18%, transparent)'
 
-/* CTA en dégradé 3 teintes de la couleur de l'onglet — la classe .op-cta
-   l'étire et le fait dériver lentement (background-position animé) */
-const CTA_GRADS: Record<string, string> = {
-  '#7c3aed': 'linear-gradient(110deg, #6d28d9, #8b5cf6, #a78bfa)',   // Formations
-  '#3b82f6': 'linear-gradient(110deg, #2563eb, #3b82f6, #60a5fa)',   // Vidéos
-  '#f59e0b': 'linear-gradient(110deg, #ea580c, #f59e0b, #fbbf24)',   // Coaching
-}
-const ctaGradient = (accent?: string) =>
-  CTA_GRADS[accent ?? ''] ?? CTA_GRADS['#7c3aed']
+/* CTA plein : la couleur d'action, à plat. */
+const ctaGradient = () => 'var(--brand)'
 
 /* CTA visuel — la carte entière est déjà cliquable (Link/onClick), ce bloc
    n'est qu'une affordance, pas un élément interactif imbriqué. */
@@ -50,7 +43,7 @@ function CardCta({ label, gradient, hovered }: { label: string; gradient: string
     <div className="op-cta" style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
       width: '100%', padding: '9px', borderRadius: 10, marginTop: 12,
-      background: gradient, color: '#fff',
+      background: gradient, color: 'var(--on-brand)',
       fontSize: 12.5, fontWeight: 700,
       opacity: hovered ? 1 : 0.92,
     }}>
@@ -82,7 +75,7 @@ export default function FormationCard({
   const heroImage   = f.thumbnail_url ?? (isCoaching ? coachAvatar : null)
 
   const cardStyle: React.CSSProperties = {
-    background: hovered ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.028)',
+    background: hovered ? 'color-mix(in srgb, var(--overlay) 4%, transparent)' : 'color-mix(in srgb, var(--overlay) 3%, transparent)',
     border: `1px solid ${hovered ? BORDER_HOV : BORDER}`,
     borderRadius: 14,
     overflow: 'hidden',
@@ -90,8 +83,8 @@ export default function FormationCard({
     transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
     transition: 'border-color 0.22s, transform 0.22s, background 0.22s, box-shadow 0.22s',
     boxShadow: hovered
-      ? '0 16px 40px rgba(0,0,0,0.6)'
-      : '0 2px 8px rgba(0,0,0,0.3)',
+      ? 'var(--shadow-float)'
+      : 'none',
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
@@ -100,18 +93,17 @@ export default function FormationCard({
   const thumbnail = (
     <div style={{
       height: 152,
-      background: heroImage ? undefined : 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(5,7,9,0.6) 100%)',
+      background: heroImage ? undefined : 'linear-gradient(145deg, color-mix(in srgb, var(--overlay) 4%, transparent) 0%, color-mix(in srgb, var(--bg) 60%, transparent) 100%)',
       backgroundImage: heroImage ? `url(${heroImage})` : undefined,
       backgroundSize: heroImage === coachAvatar ? 'cover' : (heroImage ? bgSize : undefined),
       backgroundPosition: heroImage === coachAvatar ? 'center top' : (heroImage ? bgPos : undefined),
       backgroundRepeat: 'no-repeat',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       position: 'relative',
-      borderBottom: '1px solid rgba(255,255,255,0.05)',
+      borderBottom: '1px solid color-mix(in srgb, var(--overlay) 5%, transparent)',
     }}>
       {!heroImage && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 36, opacity: 0.12, color: CREAM }}>♠</span>
           {f.variant && (
             <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', color: CREAM, opacity: 0.25, textTransform: 'uppercase' }}>
               {f.variant}
@@ -124,20 +116,20 @@ export default function FormationCard({
       <div style={{ position: 'absolute', top: 10, left: 10, right: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {f.variant
           ? <span style={{
-              fontSize: 9, fontWeight: 700, color: 'rgba(240,244,255,0.85)',
-              background: 'rgba(5,7,9,0.78)',
+              fontSize: 9, fontWeight: 700, color: 'var(--text)',
+              background: 'color-mix(in srgb, var(--bg) 78%, transparent)',
               backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,0.16)',
+              border: '1px solid color-mix(in srgb, var(--overlay) 16%, transparent)',
               padding: '2px 8px', borderRadius: 99,
               letterSpacing: '0.07em',
             }}>{f.variant}</span>
           : <span />}
         <span style={{
           fontSize: 11, fontWeight: 700,
-          color: isFree ? BLUE : '#e8eaf0',
-          background: 'rgba(5,7,9,0.78)',
+          color: isFree ? BLUE : 'var(--brand)',
+          background: 'color-mix(in srgb, var(--bg) 78%, transparent)',
           backdropFilter: 'blur(8px)',
-          border: `1px solid ${isFree ? 'rgba(59,130,246,0.45)' : 'rgba(255,255,255,0.18)'}`,
+          border: `1px solid ${isFree ? 'color-mix(in srgb, var(--brand) 45%, transparent)' : 'color-mix(in srgb, var(--overlay) 18%, transparent)'}`,
           padding: '2px 8px', borderRadius: 99,
         }}>
           {isFree ? 'Gratuit' : `${f.price}€`}
@@ -154,15 +146,15 @@ export default function FormationCard({
         }}>
           <div style={{
             width: 46, height: 46, borderRadius: '50%',
-            background: hovered ? '#fff' : 'rgba(255,255,255,0)',
+            background: hovered ? 'var(--brand)' : 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transform: hovered ? 'scale(1)' : 'scale(0.5)',
             opacity: hovered ? 1 : 0,
             transition: 'all 0.22s cubic-bezier(0.34,1.56,0.64,1)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+            boxShadow: 'var(--shadow-float)',
           }}>
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <path d="M5 3l11 6-11 6V3z" fill="#07090e" />
+              <path d="M5 3l11 6-11 6V3z" fill="var(--on-brand)" />
             </svg>
           </div>
         </div>
@@ -174,7 +166,7 @@ export default function FormationCard({
     <div style={{ padding: '14px 14px 13px', flex: 1, display: 'flex', flexDirection: 'column' }}>
       <h3 style={{
         fontSize: 13, fontWeight: 700,
-        color: '#e8eaf0',
+        color: 'var(--brand)',
         marginBottom: 5, lineHeight: 1.45,
         letterSpacing: '-0.25px',
         display: '-webkit-box', WebkitLineClamp: 2,
@@ -183,7 +175,7 @@ export default function FormationCard({
 
       {f.short_desc && (
         <p style={{
-          fontSize: 11.5, color: 'rgba(232,234,240,0.45)',
+          fontSize: 11.5, color: 'var(--text-2)',
           marginBottom: 12, lineHeight: 1.55,
           display: '-webkit-box', WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -193,18 +185,18 @@ export default function FormationCard({
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         paddingTop: 10,
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        borderTop: '1px solid color-mix(in srgb, var(--overlay) 6%, transparent)',
         marginTop: 'auto',
       }}>
         <span style={{
-          fontSize: 10.5, color: 'rgba(232,234,240,0.36)',
+          fontSize: 10.5, color: 'var(--text-3)',
           letterSpacing: '-0.05px', fontWeight: 400,
         }}>
           {f.coach?.username ?? '—'}
-          {f.level ? <span style={{ color: 'rgba(232,234,240,0.22)' }}> · {f.level}</span> : null}
+          {f.level ? <span style={{ color: 'var(--text-3)' }}> · {f.level}</span> : null}
         </span>
         <span style={{
-          fontSize: 10, color: 'rgba(232,234,240,0.28)',
+          fontSize: 10, color: 'var(--text-3)',
           fontVariantNumeric: 'tabular-nums',
         }}>
           {f.content_type === 'video' ? 'Vidéo' : `${f.modules_count} module${f.modules_count !== 1 ? 's' : ''}`}
@@ -213,7 +205,7 @@ export default function FormationCard({
 
       <CardCta
         label={f.content_type === 'video' ? (isPlayable ? 'Regarder' : 'Voir la vidéo') : 'Voir la formation'}
-        gradient={ctaGradient(accentColor)}
+        gradient={ctaGradient()}
         hovered={hovered}
       />
     </div>
@@ -263,14 +255,14 @@ function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: bo
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background: hovered ? 'rgba(255,255,255,0.048)' : 'rgba(255,255,255,0.028)',
-          border: `1px solid ${hovered ? BORDER_HOV : 'rgba(232,228,220,0.07)'}`,
+          background: hovered ? 'color-mix(in srgb, var(--overlay) 5%, transparent)' : 'color-mix(in srgb, var(--overlay) 3%, transparent)',
+          border: `1px solid ${hovered ? BORDER_HOV : 'color-mix(in srgb, var(--brand) 7%, transparent)'}`,
           borderRadius: 18,
           overflow: 'hidden',
           cursor: 'pointer',
           transition: 'border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
           transform: hovered ? 'translateY(-4px)' : 'none',
-          boxShadow: hovered ? '0 20px 48px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.3)',
+          boxShadow: hovered ? 'var(--shadow-float)' : 'none',
           display: 'flex', flexDirection: 'column', height: '100%',
           padding: '18px 18px 16px',
         }}>
@@ -279,8 +271,8 @@ function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: bo
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{
             width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
-            border: `1px solid ${hovered ? BORDER_HOV : 'rgba(232,228,220,0.12)'}`,
-            background: 'rgba(255,255,255,0.04)',
+            border: `1px solid ${hovered ? BORDER_HOV : 'color-mix(in srgb, var(--brand) 12%, transparent)'}`,
+            background: 'color-mix(in srgb, var(--overlay) 4%, transparent)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             overflow: 'hidden', fontSize: 15, fontWeight: 700, color: CREAM,
             position: 'relative', transition: 'border-color 0.2s ease',
@@ -291,27 +283,27 @@ function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: bo
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 15, fontWeight: 800, color: AMBER, lineHeight: 1, letterSpacing: '-0.5px' }}>{f.price}€</div>
-            <div style={{ fontSize: 9, color: 'rgba(232,228,220,0.28)', marginTop: 2 }}>coaching</div>
+            <div style={{ fontSize: 9, color: 'var(--text-3)', marginTop: 2 }}>coaching</div>
           </div>
         </div>
 
         {/* Nom + badge */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6, minWidth: 0 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, color: '#E8E4DC', margin: 0, letterSpacing: '-0.3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--brand)', margin: 0, letterSpacing: '-0.3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {username}
           </h3>
           {isPro && !unverified && (
             <span style={{
               fontSize: 9, fontWeight: 800, color: AMBER, letterSpacing: '0.1em',
               padding: '2px 7px', borderRadius: 99, flexShrink: 0,
-              background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
+              background: 'color-mix(in srgb, var(--brand) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)',
             }}>PRO</span>
           )}
           {unverified && (
             <span style={{
-              fontSize: 9, fontWeight: 600, color: 'rgba(232,228,220,0.4)', letterSpacing: '0.06em',
+              fontSize: 9, fontWeight: 600, color: 'var(--text-2)', letterSpacing: '0.06em',
               padding: '2px 7px', borderRadius: 99, flexShrink: 0,
-              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(232,228,220,0.1)',
+              background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)',
             }}>Non vérifié</span>
           )}
         </div>
@@ -319,7 +311,7 @@ function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: bo
         {/* Desc */}
         {f.short_desc && (
           <p style={{
-            fontSize: 11.5, color: 'rgba(232,228,220,0.45)', lineHeight: 1.55, margin: '0 0 10px',
+            fontSize: 11.5, color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 10px',
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1,
           }}>{f.short_desc}</p>
         )}
@@ -330,8 +322,8 @@ function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: bo
             {variants.slice(0, 3).map((v: string) => (
               <span key={v} style={{
                 fontSize: 9.5, fontWeight: 600, padding: '3px 9px', borderRadius: 99,
-                background: 'rgba(255,255,255,0.04)', color: 'rgba(232,228,220,0.45)',
-                border: '1px solid rgba(232,228,220,0.08)', letterSpacing: '0.03em',
+                background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', color: 'var(--text-2)',
+                border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', letterSpacing: '0.03em',
               }}>{v}</span>
             ))}
           </div>
@@ -340,19 +332,19 @@ function CoachingCard({ f, unverified = false }: { f: Formation; unverified?: bo
         {/* Stats */}
         <div style={{
           display: 'flex', padding: '9px 0 0', marginTop: 'auto',
-          borderTop: '1px solid rgba(232,228,220,0.07)',
+          borderTop: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)',
           justifyContent: 'space-between', alignItems: 'center',
         }}>
-          <span style={{ fontSize: 10.5, color: 'rgba(232,228,220,0.36)' }}>
+          <span style={{ fontSize: 10.5, color: 'var(--text-3)' }}>
             {f.variant ?? 'Coaching'}
-            {f.level ? <span style={{ color: 'rgba(232,228,220,0.22)' }}> · {f.level}</span> : null}
+            {f.level ? <span style={{ color: 'var(--text-3)' }}> · {f.level}</span> : null}
           </span>
           {yearsExp > 0 && (
-            <span style={{ fontSize: 10, color: 'rgba(232,228,220,0.28)' }}>{yearsExp} ans exp.</span>
+            <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{yearsExp} ans exp.</span>
           )}
         </div>
 
-        <CardCta label="Réserver" gradient={ctaGradient(AMBER)} hovered={hovered} />
+        <CardCta label="Réserver" gradient={ctaGradient()} hovered={hovered} />
       </div>
     </Link>
   )

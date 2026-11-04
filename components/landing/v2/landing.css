@@ -5,31 +5,6 @@
 .lp-skip { position: absolute; left: var(--space-4); top: -60px; z-index: 100; padding: var(--space-3); background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: var(--radius-control); color: var(--text); font-weight: 500; text-decoration: none; }
 .lp-skip:focus { top: var(--space-3); }
 
-/* ── Navigation : transparente en haut, matériau translucide dès qu'on défile ── */
-.lp-nav { position: sticky; top: 0; z-index: 40; height: 64px; }
-.lp-nav::before { content: ""; position: absolute; inset: 0; background: var(--material); -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 1px 0 var(--border); opacity: 0; transition: opacity var(--dur-ui) ease; pointer-events: none; }
-.lp-nav.is-scrolled::before { opacity: 1; }
-.lp-nav-bar { position: relative; display: flex; align-items: center; gap: var(--space-6); height: 100%; }
-.lp-nav-links { display: flex; gap: var(--space-6); margin-left: var(--space-4); }
-.lp-nav-links a, .lp-nav-login { padding: var(--space-3) 0; color: var(--text-2); font-size: var(--text-body-dense); font-weight: 500; letter-spacing: -.006em; text-decoration: none; white-space: nowrap; transition: color var(--dur-hover) ease; }
-.lp-nav-right { display: flex; align-items: center; gap: var(--space-4); margin-left: auto; }
-.lp-nav-cta { white-space: nowrap; transition: background-color var(--dur-ui) ease, border-color var(--dur-ui) ease, color var(--dur-ui) ease, transform 160ms var(--ease-out); }
-.lp-menu-btn { display: none; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; background: none; border: 1px solid var(--border-strong); border-radius: var(--radius-control); color: var(--text); cursor: pointer; transition: transform 160ms var(--ease-out); }
-.lp-menu-btn svg { width: 20px; height: 20px; }
-.lp-menu-btn:active { transform: scale(.97); transition-duration: var(--dur-press); }
-/* Menu mobile : depuis son déclencheur (transform-origin en haut à droite), fermé = hors tabulation (visibility) */
-.lp-nav .menu-panel { position: absolute; left: var(--space-4); right: var(--space-4); top: 68px; display: grid; gap: var(--space-1); padding: var(--space-2); background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: var(--radius-card); box-shadow: var(--shadow-float); transform-origin: top right; opacity: 0; visibility: hidden; transform: scale(.98); pointer-events: none; transition: opacity 120ms ease, transform 120ms var(--ease-out), visibility 0s linear 120ms; }
-.lp-nav .menu-panel.is-open { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition: opacity 180ms ease, transform 180ms var(--ease-out), visibility 0s; }
-.lp-nav .menu-panel a { display: flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); border-radius: var(--radius-control); color: var(--text); font-weight: 500; text-decoration: none; }
-.lp-nav .menu-panel a:active { background: var(--surface-3); }
-@media (hover: hover) and (pointer: fine) {
-  .lp-nav-links a:hover, .lp-nav-login:hover { color: var(--text); }
-  .lp-nav .menu-panel a:hover { background: var(--surface-3); }
-}
-@media (max-width: 1023px) { .lp-nav-coach { display: none; } }
-@media (max-width: 859px) { .lp-nav-links, .lp-nav-cta { display: none; } .lp-menu-btn { display: inline-flex; } }
-@media (max-width: 399px) { .lp-nav-bar { gap: var(--space-3); } .lp-nav-right { gap: var(--space-2); } }
-@media (min-width: 860px) { .lp-nav .menu-panel { display: none; } }
 
 /* ── Hero : la phrase à gauche, l'outil à droite ─────────────────────────── */
 .lp-hero { padding: var(--space-8) 0 var(--space-12); }
@@ -283,11 +258,9 @@
 
 /* ── Mouvement réduit : fondus courts, aucune translation ni échelle, la matrice change d'un coup ─ */
 @media (prefers-reduced-motion: reduce) {
-  .lp-nav::before, .lp-nav .menu-panel, .lp-nav .menu-panel.is-open, .lp-verdict, .lp-choice, .lp-menu-btn, .lp-split-bar, .lp-split-legend { transition-duration: 150ms; transition-delay: 0s; }
-  .lp-nav .menu-panel, .lp-nav .menu-panel.is-open { transform: none; }
-  .lp-choice:active:not(:disabled), .lp-menu-btn:active { transform: none; }
+  .lp-verdict, .lp-choice, .lp-split-bar, .lp-split-legend { transition-duration: 150ms; transition-delay: 0s; }
+  .lp-choice:active:not(:disabled) { transform: none; }
   .lp-hand-in { animation: none; }
   .lp-rg .c { transition: none; }
   .lp-faq-item summary svg { transition: none; }
 }
-@media (prefers-reduced-transparency: reduce) { .lp-nav::before { -webkit-backdrop-filter: none; backdrop-filter: none; } }

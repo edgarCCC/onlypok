@@ -7,13 +7,13 @@ import { Check, Loader2, Calendar, Plus, X, TrendingUp } from 'lucide-react'
 import SelectInput from '@/components/ui/SelectInput'
 import { DEFAULT_COACH_TIMEZONE } from '@/lib/timezone'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const DIM    = 'rgba(240,244,255,0.18)'
-const VIOLET = '#7c3aed'
-const CYAN   = '#06b6d4'
-const GREEN  = '#10b981'
-const AMBER  = '#f59e0b'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const DIM    = 'color-mix(in srgb, var(--brand) 18%, transparent)'
+const VIOLET = 'var(--brand)'
+const CYAN   = 'var(--brand)'
+const GREEN  = 'var(--gain)'
+const AMBER  = 'var(--brand)'
 
 const DAYS_LABEL = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
 
@@ -198,7 +198,7 @@ export default function AvailabilityPanel() {
             { label: 'Heures disponibles', value: availableSlots, color: VIOLET },
             { label: 'Jours actifs',         value: activeDays,     color: GREEN  },
           ].map(s => (
-            <div key={s.label} style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 12, padding: '14px 16px', textAlign: 'center' }}>
+            <div key={s.label} style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 12, padding: '14px 16px', textAlign: 'center' }}>
               <p style={{ fontSize: 22, fontWeight: 800, color: s.color, margin: 0 }}>{s.value}</p>
               <p style={{ fontSize: 11, color: SILVER, margin: '3px 0 0' }}>{s.label}</p>
             </div>
@@ -215,18 +215,18 @@ export default function AvailabilityPanel() {
             return (
               <div key={day} style={{
                 background: cfg.enabled
-                  ? 'rgba(124,58,237,0.05)'
-                  : 'rgba(232,228,220,0.02)',
+                  ? 'color-mix(in srgb, var(--brand) 5%, transparent)'
+                  : 'color-mix(in srgb, var(--brand) 2%, transparent)',
                 border: `1px solid ${cfg.enabled
-                  ? 'rgba(124,58,237,0.25)'
-                  : 'rgba(232,228,220,0.07)'}`,
+                  ? 'color-mix(in srgb, var(--brand) 25%, transparent)'
+                  : 'color-mix(in srgb, var(--brand) 7%, transparent)'}`,
                 borderRadius: 14, padding: '16px 20px', transition: 'all 0.2s',
               }}>
                 <div className="cal-day-row" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
 
                   {/* Toggle */}
-                  <button onClick={() => toggleDay(day)} style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: cfg.enabled ? (VIOLET) : 'rgba(232,228,220,0.12)', transition: 'background 0.2s', position: 'relative', padding: 0 }}>
-                    <span style={{ position: 'absolute', top: 3, left: cfg.enabled ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />
+                  <button onClick={() => toggleDay(day)} style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: cfg.enabled ? (VIOLET) : 'color-mix(in srgb, var(--brand) 12%, transparent)', transition: 'background 0.2s', position: 'relative', padding: 0 }}>
+                    <span style={{ position: 'absolute', top: 3, left: cfg.enabled ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: cfg.enabled ? 'var(--on-brand)' : 'var(--text-2)', transition: 'left 0.2s', boxShadow: 'none' }} />
                   </button>
 
                   {/* Day name */}
@@ -243,12 +243,12 @@ export default function AvailabilityPanel() {
                           <SelectInput value={range.from} onChange={v => setRange(day, ri, 'from', v)}
                             options={TIME_OPTIONS.filter(t => parseInt(t) < parseInt(range.to)).map(t => ({ value: t, label: t }))}
                             style={{ width: 'auto' }}
-                            selectStyle={{ background: 'rgba(232,228,220,0.07)', border: '1px solid rgba(232,228,220,0.12)', borderRadius: 8, fontSize: 13, fontWeight: 600, padding: '6px 32px 6px 10px' }} />
+                            selectStyle={{ background: 'color-mix(in srgb, var(--brand) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 12%, transparent)', borderRadius: 8, fontSize: 13, fontWeight: 600, padding: '6px 32px 6px 10px' }} />
                           <span style={{ fontSize: 12, color: SILVER, flexShrink: 0 }}>à</span>
                           <SelectInput value={range.to} onChange={v => setRange(day, ri, 'to', v)}
                             options={TIME_OPTIONS.filter(t => parseInt(t) > parseInt(range.from)).map(t => ({ value: t, label: t }))}
                             style={{ width: 'auto' }}
-                            selectStyle={{ background: 'rgba(232,228,220,0.07)', border: '1px solid rgba(232,228,220,0.12)', borderRadius: 8, fontSize: 13, fontWeight: 600, padding: '6px 32px 6px 10px' }} />
+                            selectStyle={{ background: 'color-mix(in srgb, var(--brand) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 12%, transparent)', borderRadius: 8, fontSize: 13, fontWeight: 600, padding: '6px 32px 6px 10px' }} />
                           <span style={{ fontSize: 12, color: SILVER, minWidth: 80, fontWeight: 400 }}>
                             {rangeHours(range)}h
                           </span>
@@ -260,18 +260,18 @@ export default function AvailabilityPanel() {
                         </div>
                       ))}
                       {cfg.ranges.length < 3 && parseInt(cfg.ranges[cfg.ranges.length - 1].to) <= 21 && (
-                        <button onClick={() => addRange(day)} style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: `1px dashed ${'rgba(124,58,237,0.35)'}`, borderRadius: 7, padding: '4px 10px', color: '#c4b5fd', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+                        <button onClick={() => addRange(day)} style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: `1px dashed ${'color-mix(in srgb, var(--brand) 35%, transparent)'}`, borderRadius: 7, padding: '4px 10px', color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
                           <Plus size={11} /> Ajouter une plage
                         </button>
                       )}
                     </div>
                   ) : (
-                    <span style={{ fontSize: 13, color: DIM, flex: 1 }}>Non disponible</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-3)', flex: 1 }}>Non disponible</span>
                   )}
 
                   {/* Booked badge */}
                   {bookedToday > 0 && (
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 99, background: `${CYAN}15`, color: CYAN, border: `1px solid ${CYAN}30`, flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 99, background: `color-mix(in srgb, ${CYAN} 8%, transparent)`, color: CYAN, border: `1px solid color-mix(in srgb, ${CYAN} 19%, transparent)`, flexShrink: 0 }}>
                       {bookedToday} réservé{bookedToday > 1 ? 's' : ''}
                     </span>
                   )}
@@ -283,11 +283,11 @@ export default function AvailabilityPanel() {
 
         {/* ─── Revenue simulator ────────────────────────────────────────────── */}
         {simStats.totalHours > 0 && (
-          <div style={{ background: 'rgba(124,58,237,0.04)', border: '1px solid rgba(124,58,237,0.18)', borderRadius: 18, padding: '24px', marginBottom: 24 }}>
+          <div style={{ background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 18%, transparent)', borderRadius: 18, padding: '24px', marginBottom: 24 }}>
 
             {/* Title */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 20 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: `${VIOLET}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 32, height: 32, borderRadius: 9, background: `color-mix(in srgb, ${VIOLET} 13%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <TrendingUp size={16} color={VIOLET} />
               </div>
               <div>
@@ -300,7 +300,7 @@ export default function AvailabilityPanel() {
             <div style={{ marginBottom: 22 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <span style={{ fontSize: 13, color: SILVER, fontWeight: 600 }}>Taux de remplissage</span>
-                <span style={{ fontSize: 20, fontWeight: 800, color: fillRate >= 70 ? GREEN : fillRate >= 40 ? AMBER : '#ef4444' }}>{fillRate}%</span>
+                <span style={{ fontSize: 20, fontWeight: 800, color: fillRate >= 70 ? GREEN : fillRate >= 40 ? AMBER : 'var(--error)' }}>{fillRate}%</span>
               </div>
               <input
                 type="range" min={0} max={100} step={5} value={fillRate}
@@ -315,10 +315,10 @@ export default function AvailabilityPanel() {
                 { label: 'Revenus / semaine', value: `${fmt(simStats.filledWeekly)}€`, sub: `${simStats.filledHours}h sur ${simStats.totalHours}h remplies`, color: VIOLET },
                 { label: 'Revenus / mois', value: `${fmt(simStats.filledWeekly * 4.3)}€`, sub: `≈ ${Math.round(simStats.filledHours * 4.3)}h de coaching`, color: CYAN },
               ].map(c => (
-                <div key={c.label} style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 12, padding: '14px 18px' }}>
+                <div key={c.label} style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 12, padding: '14px 18px' }}>
                   <p style={{ fontSize: 11, color: SILVER, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>{c.label}</p>
-                  <p style={{ fontSize: 26, fontWeight: 800, color: c.color, margin: '0 0 4px', letterSpacing: '-0.5px' }}>{c.value}</p>
-                  <p style={{ fontSize: 11, color: DIM, margin: 0 }}>{c.sub}</p>
+                  <p style={{ fontSize: 26, fontWeight: 600, color: c.color, margin: '0 0 4px', letterSpacing: '-0.5px' }}>{c.value}</p>
+                  <p style={{ fontSize: 11, color: 'var(--text-3)', margin: 0 }}>{c.sub}</p>
                 </div>
               ))}
             </div>
@@ -327,7 +327,7 @@ export default function AvailabilityPanel() {
         )}
 
         {/* Tip */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '14px 18px', borderRadius: 12, background: 'rgba(6,182,212,0.04)', border: '1px solid rgba(6,182,212,0.12)', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '14px 18px', borderRadius: 12, background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 12%, transparent)', marginBottom: 24 }}>
           <Calendar size={15} color={CYAN} style={{ flexShrink: 0, marginTop: 1 }} />
           <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.6, margin: 0 }}>
             Les créneaux déjà réservés sont protégés. Tu peux ajouter plusieurs plages par jour (ex : 9h–12h + 14h–18h).
@@ -337,8 +337,8 @@ export default function AvailabilityPanel() {
 
         {/* Save error */}
         {saveError && (
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.25)', marginBottom: 12 }}>
-            <span style={{ fontSize: 13, color: '#f87171', lineHeight: 1.5 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 16px', borderRadius: 10, background: 'color-mix(in srgb, var(--error) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--error) 25%, transparent)', marginBottom: 12 }}>
+            <span style={{ fontSize: 13, color: 'var(--error)', lineHeight: 1.5 }}>
               <strong>Erreur de sauvegarde :</strong> {saveError}
             </span>
           </div>
@@ -346,7 +346,7 @@ export default function AvailabilityPanel() {
 
         {/* Save */}
         <button onClick={save} disabled={saving}
-          style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: saved ? 'rgba(16,185,129,0.2)' : saving ? 'rgba(124,58,237,0.4)' : `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, color: saved ? GREEN : '#fff', fontSize: 15, fontWeight: 800, cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: saved || saving ? 'none' : '0 4px 24px rgba(124,58,237,0.4)', transition: 'all 0.2s' }}>
+          style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: saved ? 'color-mix(in srgb, var(--gain) 20%, transparent)' : saving ? 'color-mix(in srgb, var(--brand) 40%, transparent)' : `${VIOLET}`, color: saved ? GREEN : 'var(--on-brand)', fontSize: 15, fontWeight: 800, cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: saved || saving ? 'none' : 'none', transition: 'all 0.2s' }}>
           {saving ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} /> Enregistrement…</>
             : saved ? <><Check size={17} /> Disponibilités enregistrées</>
             : 'Enregistrer mes disponibilités'}

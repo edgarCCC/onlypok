@@ -10,7 +10,7 @@ export default async function AdminPanelLayout({ children }: { children: React.R
   if (!user) redirect('/admin/login')
 
   return (
-    <div style={{ minHeight: '100vh', background: '#04040a' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <AdminTopbar email={user.email ?? ''} />
       {children}
     </div>

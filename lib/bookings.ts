@@ -210,12 +210,12 @@ export async function ensureCoachingBookings(
   if (startIdx === 0) {
     const { data: student } = await admin.from('profiles').select('username').eq('id', userId).single()
     const studentName  = student?.username ?? 'Un élève'
-    const formTitle    = formation?.title ?? 'votre coaching'
+    const formTitle    = formation?.title ?? 'ton coaching'
 
     if (coachId) {
       const coachBody =
         firstStatus === 'scheduled'
-          ? `${studentName} a réservé "${formTitle}" — créneau confirmé automatiquement, retrouvez le lien visio dans votre espace.`
+          ? `${studentName} a réservé "${formTitle}" — créneau confirmé automatiquement, retrouve le lien visio dans ton espace.`
           : firstStatus === 'pending_coach_approval'
             ? `${studentName} a réservé "${formTitle}" et propose un créneau. Acceptez ou refusez dans 48h.`
             : `${studentName} a réservé "${formTitle}". Acceptez ou refusez dans 48h.`
@@ -240,12 +240,12 @@ export async function ensureCoachingBookings(
         user_id: userId,
         type:    'booking_accepted',
         title:   'Coaching confirmé !',
-        body:    `Votre session "${formTitle}" est confirmée. Retrouvez le lien de visio dans votre planning.`,
+        body:    `Ta session "${formTitle}" est confirmée. Retrouve le lien de visio dans ton planning.`,
         data:    { booking_id: anchorId, meeting_url: finalMeetingUrl },
       })
       sendStudentBookingAcceptedEmail({
         studentId:      userId,
-        coachUsername:  coachProfile?.username ?? 'Votre coach',
+        coachUsername:  coachProfile?.username ?? 'Ton coach',
         formationTitle: formTitle,
         bookingId:      anchorId,
         scheduledAt:    firstScheduledAt,

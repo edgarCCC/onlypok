@@ -7,15 +7,15 @@ import {
 } from 'lucide-react'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const BG       = '#07090e'
-const CREAM    = '#f0f4ff'
-const MUTED    = 'rgba(232,228,220,0.45)'
-const SILVER   = 'rgba(232,228,220,0.28)'
-const DIM      = 'rgba(232,228,220,0.07)'
-const CARD     = 'rgba(255,255,255,0.028)'
-const CARD_HOV = 'rgba(255,255,255,0.048)'
-const VIO      = '#7c3aed'
-const CYAN     = '#06b6d4'
+const BG       = 'var(--bg)'
+const CREAM    = 'var(--text)'
+const MUTED    = 'var(--text-2)'
+const SILVER   = 'var(--text-3)'
+const DIM      = 'color-mix(in srgb, var(--brand) 7%, transparent)'
+const CARD     = 'color-mix(in srgb, var(--overlay) 3%, transparent)'
+const CARD_HOV = 'color-mix(in srgb, var(--overlay) 5%, transparent)'
+const VIO      = 'var(--brand)'
+const CYAN     = 'var(--brand)'
 const SIDEBAR  = 240
 
 const VARIANTS_LIST = ['NLH', 'PLO', 'MTT', 'Cash', 'Expresso', 'SNG', 'PKO', 'Heads-Up']
@@ -25,7 +25,7 @@ const PRICE_OPTS    = [
   { label: '€100–150',  min: 101, max: 150 },
   { label: '€150+',     min: 151, max: 99999 },
 ]
-const PALETTE = [VIO, CYAN, '#a855f7', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#10b981']
+const PALETTE = [VIO, CYAN, 'var(--brand)', 'var(--error)', 'var(--brand)', 'var(--brand)', 'var(--brand)', 'var(--gain)']
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getColor(s: string): string {
@@ -39,8 +39,8 @@ function Stars({ rating, size = 11 }: { rating: number; size?: number }) {
     <div style={{ display: 'flex', gap: 2 }}>
       {[1, 2, 3, 4, 5].map(s => (
         <Star key={s} size={size}
-          fill={s <= Math.round(rating) ? '#f59e0b' : 'none'}
-          color={s <= Math.round(rating) ? '#f59e0b' : 'rgba(232,228,220,0.18)'}
+          fill={s <= Math.round(rating) ? 'var(--brand)' : 'none'}
+          color={s <= Math.round(rating) ? 'var(--brand)' : 'var(--text-3)'}
         />
       ))}
     </div>
@@ -67,13 +67,13 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         background: hovered ? CARD_HOV : CARD,
-        border: `1px solid ${hovered ? `${color}45` : DIM}`,
+        border: `1px solid ${hovered ? `color-mix(in srgb, ${color} 27%, transparent)` : DIM}`,
         borderRadius: 20,
         overflow: 'hidden',
         cursor: 'pointer',
         transition: 'all 0.22s cubic-bezier(0.34,1.56,0.64,1)',
         transform: hovered ? 'translateY(-5px)' : 'none',
-        boxShadow: hovered ? `0 20px 56px ${color}1a, 0 4px 16px rgba(0,0,0,0.4)` : '0 2px 8px rgba(0,0,0,0.3)',
+        boxShadow: hovered ? `0 20px 56px color-mix(in srgb, ${color} 10%, transparent), 0 4px 16px rgba(0,0,0,0.4)` : 'none',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -82,14 +82,10 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
       {/* ── Colour band ── */}
       <div style={{
         height: 60,
-        background: `linear-gradient(135deg, ${color}30 0%, ${color}0c 65%, transparent 100%)`,
+        background: `linear-gradient(135deg, color-mix(in srgb, ${color} 19%, transparent) 0%, color-mix(in srgb, ${color} 5%, transparent) 65%, transparent 100%)`,
         position: 'relative',
         flexShrink: 0,
       }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `radial-gradient(ellipse 55% 140% at 8% 50%, ${color}1c, transparent)`,
-        }} />
         {/* Subtle dot pattern */}
         <svg style={{ position: 'absolute', right: 14, top: 8, opacity: 0.07 }} width="48" height="44" viewBox="0 0 48 44">
           {[0, 1, 2].map(row => [0, 1, 2, 3].map(col => (
@@ -101,11 +97,11 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
             position: 'absolute', top: 10, left: 14,
             display: 'flex', alignItems: 'center', gap: 4,
             padding: '3px 10px', borderRadius: 99,
-            background: 'rgba(245,158,11,0.14)',
-            border: '1px solid rgba(245,158,11,0.38)',
+            background: 'color-mix(in srgb, var(--brand) 14%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--brand) 38%, transparent)',
           }}>
-            <Flame size={9} color="#f59e0b" fill="#f59e0b" />
-            <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.1em' }}>PRO</span>
+            <Flame size={9} color="var(--brand)" fill="var(--brand)" />
+            <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--brand)', letterSpacing: '0.1em' }}>PRO</span>
           </div>
         )}
         {coach.unverified && (
@@ -113,10 +109,10 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
             position: 'absolute', top: 10, left: 14,
             display: 'flex', alignItems: 'center', gap: 4,
             padding: '3px 8px', borderRadius: 99,
-            background: 'rgba(100,116,139,0.2)',
-            border: '1px solid rgba(100,116,139,0.38)',
+            background: 'color-mix(in srgb, var(--text) 20%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--text) 38%, transparent)',
           }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.08em' }}>Non vérifié</span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.08em' }}>Non vérifié</span>
           </div>
         )}
       </div>
@@ -127,12 +123,12 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
         <div style={{ marginTop: -32, marginBottom: 12, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%', padding: 2.5, flexShrink: 0,
-            background: `conic-gradient(from 135deg, ${color}, ${color}55, ${color})`,
+            background: `conic-gradient(from 135deg, ${color}, color-mix(in srgb, ${color} 33%, transparent), ${color})`,
           }}>
             <div style={{
               width: '100%', height: '100%', borderRadius: '50%', background: BG,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              overflow: 'hidden', fontSize: 18, fontWeight: 800, color: '#fff',
+              overflow: 'hidden', fontSize: 18, fontWeight: 800, color: 'var(--text)',
               position: 'relative',
             }}>
               {coach.avatar_url
@@ -143,7 +139,7 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
           {hourlyRate && (
             <div style={{
               padding: '6px 11px', borderRadius: 10,
-              background: `${color}12`, border: `1px solid ${color}30`,
+              background: `color-mix(in srgb, ${color} 7%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 19%, transparent)`,
               textAlign: 'right',
             }}>
               <div style={{ fontSize: 16, fontWeight: 800, color, lineHeight: 1, letterSpacing: '-0.5px' }}>€{hourlyRate}</div>
@@ -164,7 +160,7 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
         {avgRating !== null ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 9 }}>
             <Stars rating={avgRating} size={10} />
-            <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 700 }}>{avgRating.toFixed(1)}</span>
+            <span style={{ fontSize: 11, color: 'var(--brand)', fontWeight: 700 }}>{avgRating.toFixed(1)}</span>
             <span style={{ fontSize: 10, color: SILVER }}>({reviewCount})</span>
           </div>
         ) : (
@@ -188,7 +184,7 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
             {variants.slice(0, 3).map(v => (
               <span key={v} style={{
                 fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 99,
-                background: `${color}12`, color, border: `1px solid ${color}28`,
+                background: `color-mix(in srgb, ${color} 7%, transparent)`, color, border: `1px solid color-mix(in srgb, ${color} 16%, transparent)`,
                 letterSpacing: '0.04em',
               }}>{v}</span>
             ))}
@@ -235,8 +231,8 @@ function CoachCard({ coach, onOpen }: { coach: any; onOpen: () => void }) {
           <span style={{
             display: 'flex', alignItems: 'center', gap: 5,
             fontSize: 12, fontWeight: 700, color,
-            padding: '7px 14px', background: `${color}14`,
-            borderRadius: 9, border: `1px solid ${color}30`,
+            padding: '7px 14px', background: `color-mix(in srgb, ${color} 8%, transparent)`,
+            borderRadius: 9, border: `1px solid color-mix(in srgb, ${color} 19%, transparent)`,
           }}>
             Voir l&apos;offre <ChevronRight size={12} />
           </span>
@@ -275,18 +271,13 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
       {/* Panel */}
       <div style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 100,
-        width: 480, background: '#0c0e14',
+        width: 480, background: 'var(--bg)',
         borderLeft: `1px solid ${DIM}`,
         display: 'flex', flexDirection: 'column',
         overflowY: 'auto',
         scrollbarWidth: 'none',
       }}>
         {/* Glow top */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: 200, pointerEvents: 'none',
-          background: `radial-gradient(ellipse 80% 100% at 50% -10%, ${color}1a, transparent)`,
-          zIndex: 0,
-        }} />
 
         {/* ── Header ── */}
         <div style={{ position: 'relative', zIndex: 1, padding: '28px 28px 0' }}>
@@ -295,12 +286,12 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
               {/* Avatar */}
               <div style={{
                 width: 72, height: 72, borderRadius: '50%', padding: 2.5, flexShrink: 0,
-                background: `conic-gradient(from 135deg, ${color}, ${color}55, ${color})`,
+                background: `conic-gradient(from 135deg, ${color}, color-mix(in srgb, ${color} 33%, transparent), ${color})`,
               }}>
                 <div style={{
                   width: '100%', height: '100%', borderRadius: '50%', background: BG,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  overflow: 'hidden', fontSize: 22, fontWeight: 800, color: '#fff',
+                  overflow: 'hidden', fontSize: 22, fontWeight: 800, color: 'var(--text)',
                   position: 'relative',
                 }}>
                   {coach.avatar_url
@@ -317,26 +308,26 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 4,
                       padding: '3px 9px', borderRadius: 99,
-                      background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.38)',
+                      background: 'color-mix(in srgb, var(--brand) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 38%, transparent)',
                     }}>
-                      <Flame size={9} color="#f59e0b" fill="#f59e0b" />
-                      <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.1em' }}>PRO</span>
+                      <Flame size={9} color="var(--brand)" fill="var(--brand)" />
+                      <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--brand)', letterSpacing: '0.1em' }}>PRO</span>
                     </div>
                   )}
                   {coach.unverified && (
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 4,
                       padding: '3px 8px', borderRadius: 99,
-                      background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.38)',
+                      background: 'color-mix(in srgb, var(--text) 20%, transparent)', border: '1px solid color-mix(in srgb, var(--text) 38%, transparent)',
                     }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.08em' }}>Non vérifié</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.08em' }}>Non vérifié</span>
                     </div>
                   )}
                 </div>
                 {avgRating !== null && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Stars rating={avgRating} size={11} />
-                    <span style={{ fontSize: 12, color: '#f59e0b', fontWeight: 700 }}>{avgRating.toFixed(1)}</span>
+                    <span style={{ fontSize: 12, color: 'var(--brand)', fontWeight: 700 }}>{avgRating.toFixed(1)}</span>
                     <span style={{ fontSize: 11, color: SILVER }}>({reviewCount} avis)</span>
                   </div>
                 )}
@@ -347,19 +338,18 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
               onClick={onClose}
               style={{
                 width: 36, height: 36, borderRadius: '50%', border: `1px solid ${DIM}`,
-                background: 'rgba(255,255,255,0.04)', cursor: 'pointer',
+                background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: MUTED, flexShrink: 0, transition: 'all 0.15s',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.09)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--overlay) 9%, transparent)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--overlay) 4%, transparent)' }}
             >
               <X size={15} />
             </button>
           </div>
 
           {/* Divider */}
-          <div style={{ height: 1, background: `linear-gradient(90deg, ${color}40, transparent)`, marginBottom: 24 }} />
         </div>
 
         {/* ── Content ── */}
@@ -382,7 +372,7 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
                 {variants.map(v => (
                   <span key={v} style={{
                     fontSize: 11, fontWeight: 700, padding: '5px 13px', borderRadius: 99,
-                    background: `${color}12`, color, border: `1px solid ${color}30`,
+                    background: `color-mix(in srgb, ${color} 7%, transparent)`, color, border: `1px solid color-mix(in srgb, ${color} 19%, transparent)`,
                   }}>{v}</span>
                 ))}
               </div>
@@ -403,7 +393,7 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
               ].map(({ icon, val, label }) => (
                 <div key={label} style={{
                   padding: '14px 16px', borderRadius: 14,
-                  background: 'rgba(255,255,255,0.025)', border: `1px solid ${DIM}`,
+                  background: 'color-mix(in srgb, var(--overlay) 2%, transparent)', border: `1px solid ${DIM}`,
                   display: 'flex', flexDirection: 'column', gap: 6,
                 }}>
                   {icon}
@@ -431,7 +421,7 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
                 {packages.map((pkg: any, i: number) => (
                   <div key={i} style={{
                     padding: '16px 18px', borderRadius: 14,
-                    background: `${color}08`, border: `1px solid ${color}28`,
+                    background: `color-mix(in srgb, ${color} 3%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 16%, transparent)`,
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                       <span style={{ fontSize: 14, fontWeight: 700, color: CREAM }}>{pkg.name ?? pkg.label ?? `Pack ${i + 1}`}</span>
@@ -455,20 +445,20 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
             ) : hourlyRate ? (
               <div style={{
                 padding: '18px', borderRadius: 14,
-                background: `${color}08`, border: `1px solid ${color}28`,
+                background: `color-mix(in srgb, ${color} 3%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 16%, transparent)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: CREAM, marginBottom: 4 }}>Tarif horaire</div>
-                  <div style={{ fontSize: 12, color: MUTED }}>Contactez le coach pour réserver</div>
+                  <div style={{ fontSize: 12, color: MUTED }}>Contacte le coach pour réserver</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 24, fontWeight: 800, color, letterSpacing: '-0.8px' }}>€{hourlyRate}</div>
+                  <div style={{ fontSize: 24, fontWeight: 600, color, letterSpacing: '-0.8px' }}>€{hourlyRate}</div>
                   <div style={{ fontSize: 10, color: SILVER }}>/&nbsp;heure</div>
                 </div>
               </div>
             ) : (
-              <p style={{ fontSize: 13, color: MUTED }}>Tarifs sur demande — contactez le coach.</p>
+              <p style={{ fontSize: 13, color: MUTED }}>Tarifs sur demande : contacte le coach.</p>
             )}
           </section>
         </div>
@@ -477,7 +467,7 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
         <div style={{
           position: 'sticky', bottom: 0, left: 0, right: 0,
           padding: '16px 28px 24px',
-          background: 'linear-gradient(to top, #0c0e14 70%, transparent)',
+          background: 'linear-gradient(to top, var(--bg) 70%, transparent)',
           zIndex: 2,
         }}>
           <a
@@ -485,9 +475,9 @@ function SlidePanel({ coach, onClose }: { coach: any; onClose: () => void }) {
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
               width: '100%', padding: '15px', borderRadius: 14, border: 'none',
-              background: `linear-gradient(135deg, ${VIO}, ${CYAN})`, color: '#fff', fontSize: 14, fontWeight: 800,
+              background: `${VIO}`, color: 'var(--on-brand)', fontSize: 14, fontWeight: 800,
               textDecoration: 'none', letterSpacing: '-0.2px',
-              boxShadow: `0 4px 24px ${VIO}40`,
+              boxShadow: 'none',
               transition: 'opacity 0.15s',
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.88' }}
@@ -537,9 +527,9 @@ function FilterSidebar({
       style={{
         padding: '6px 13px', borderRadius: 99, fontSize: 11, fontWeight: 600,
         cursor: 'pointer', transition: 'all 0.14s',
-        background: active ? 'rgba(124,58,237,0.22)' : 'rgba(255,255,255,0.03)',
-        border: active ? '1px solid rgba(124,58,237,0.5)' : `1px solid ${DIM}`,
-        color: active ? '#c4b5fd' : MUTED,
+        background: active ? 'color-mix(in srgb, var(--brand) 22%, transparent)' : 'color-mix(in srgb, var(--overlay) 3%, transparent)',
+        border: active ? '1px solid color-mix(in srgb, var(--brand) 50%, transparent)' : `1px solid ${DIM}`,
+        color: active ? 'var(--brand)' : MUTED,
       }}
     >
       {label}
@@ -637,9 +627,6 @@ export default function CoachesClient({ initialCoaches }: { initialCoaches: any[
 
       {/* ── Ambient glows ── */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', top: '-5%', left: '15%', width: 700, height: 400, background: `radial-gradient(ellipse, ${VIO}12 0%, transparent 65%)`, filter: 'blur(70px)' }} />
-        <div style={{ position: 'absolute', top: '40%', right: '5%', width: 500, height: 500, background: `radial-gradient(ellipse, ${CYAN}07 0%, transparent 65%)`, filter: 'blur(80px)' }} />
-        <div style={{ position: 'absolute', bottom: '10%', left: '30%', width: 400, height: 300, background: `radial-gradient(ellipse, ${VIO}08 0%, transparent 65%)`, filter: 'blur(60px)' }} />
       </div>
 
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1280, margin: '0 auto', padding: '44px 32px 100px' }}>
@@ -650,10 +637,10 @@ export default function CoachesClient({ initialCoaches }: { initialCoaches: any[
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 14,
             padding: '5px 14px', borderRadius: 99,
-            background: `${VIO}12`, border: `1px solid ${VIO}30`,
+            background: `color-mix(in srgb, ${VIO} 7%, transparent)`, border: `1px solid color-mix(in srgb, ${VIO} 19%, transparent)`,
           }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: VIO }} />
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               Coachs
             </span>
           </div>
@@ -689,7 +676,7 @@ export default function CoachesClient({ initialCoaches }: { initialCoaches: any[
                   outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit',
                   transition: 'border-color 0.15s',
                 }}
-                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = `${VIO}50` }}
+                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = `color-mix(in srgb, ${VIO} 31%, transparent)` }}
                 onBlur={e => { (e.target as HTMLInputElement).style.borderColor = DIM }}
               />
             </div>
@@ -728,13 +715,13 @@ export default function CoachesClient({ initialCoaches }: { initialCoaches: any[
                   <Search size={40} color={CREAM} />
                 </div>
                 <p style={{ color: CREAM, fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Aucun coach trouvé</p>
-                <p style={{ color: MUTED, fontSize: 13 }}>Essayez de modifier vos filtres</p>
+                <p style={{ color: MUTED, fontSize: 13 }}>Essaie de modifier tes filtres</p>
                 <button
                   onClick={resetFilters}
                   style={{
                     marginTop: 20, padding: '9px 20px', borderRadius: 10, cursor: 'pointer',
-                    background: `${VIO}14`, border: `1px solid ${VIO}30`,
-                    color: '#c4b5fd', fontSize: 12, fontWeight: 600,
+                    background: `color-mix(in srgb, ${VIO} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${VIO} 19%, transparent)`,
+                    color: 'var(--brand)', fontSize: 12, fontWeight: 600,
                   }}
                 >
                   Réinitialiser les filtres

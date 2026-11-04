@@ -51,7 +51,7 @@ export default function HistoryPanel({ bookings, notes, notesError, coachId, onN
       )}
 
       {list.length === 0 && (
-        <EmptyState icon={History} color={VIOLET} title="Rien dans l'historique" sub="Vos séances terminées et leurs notes apparaîtront ici." />
+        <EmptyState icon={History} color={VIOLET} title="Rien dans l'historique" sub="Tes séances terminées et leurs notes apparaîtront ici." />
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -60,7 +60,7 @@ export default function HistoryPanel({ bookings, notes, notesError, coachId, onN
           const open    = expanded === b.id
           const n       = notes[b.id]
           return (
-            <div key={b.id} style={{ background: 'rgba(232,228,220,0.025)', border: `1px solid ${open ? 'rgba(124,58,237,0.3)' : 'rgba(232,228,220,0.07)'}`, borderRadius: 14, overflow: 'hidden' }}>
+            <div key={b.id} style={{ background: 'color-mix(in srgb, var(--brand) 2%, transparent)', border: `1px solid ${open ? 'color-mix(in srgb, var(--brand) 30%, transparent)' : 'color-mix(in srgb, var(--brand) 7%, transparent)'}`, borderRadius: 14, overflow: 'hidden' }}>
               <button
                 onClick={() => canNote && setExpanded(open ? null : b.id)}
                 aria-expanded={canNote ? open : undefined}

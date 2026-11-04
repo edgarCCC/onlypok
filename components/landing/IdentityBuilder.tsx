@@ -30,7 +30,7 @@ export default function IdentityBuilder() {
 
   return (
     <section style={{
-      background: '#07080b',
+      background: 'var(--bg)',
       padding: '110px 48px',
       position: 'relative',
       overflow: 'hidden',
@@ -39,16 +39,16 @@ export default function IdentityBuilder() {
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: `
-          radial-gradient(circle at 18% 30%, oklch(0.4 0.18 280 / 0.2), transparent 50%),
-          radial-gradient(circle at 82% 70%, oklch(0.55 0.16 75 / 0.15), transparent 55%)
+          transparent,
+          transparent
         `,
       }} />
       {/* Grid */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         backgroundImage: `
-          linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px)
+          transparent,
+          transparent
         `,
         backgroundSize: '64px 64px',
       }} />
@@ -58,19 +58,19 @@ export default function IdentityBuilder() {
         <div style={{ textAlign: 'center', marginBottom: 64 }}>
           <div style={{
             fontSize: 10, letterSpacing: '0.22em',
-            color: 'rgba(255,255,255,0.25)', marginBottom: 14,
+            color: 'var(--text-3)', marginBottom: 14,
             fontFamily: 'var(--font-dm-mono, monospace)',
           }}>
             VOTRE IDENTITÉ
           </div>
           <h2 style={{
             fontSize: 'clamp(32px, 4vw, 52px)',
-            fontWeight: 700, color: '#fff', letterSpacing: '-0.03em',
+            fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.03em',
             lineHeight: 1.1, marginBottom: 16,
           }}>
             Build Your Card
           </h2>
-          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.35)', lineHeight: 1.7, maxWidth: 460, margin: '0 auto' }}>
+          <p style={{ fontSize: 15, color: 'var(--text-3)', lineHeight: 1.7, maxWidth: 460, margin: '0 auto' }}>
             Personnalise ta carte de joueur — rang, stats, effets. Chaque détail compte.
           </p>
         </div>
@@ -88,7 +88,7 @@ export default function IdentityBuilder() {
             <PlayerCard data={data} fx={fx} />
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              color: 'rgba(232,233,238,0.4)',
+              color: 'var(--text-3)',
               fontSize: 11, letterSpacing: '0.14em',
             }}>
               <span style={{ width: 6, height: 6, borderRadius: 999, background: 'oklch(0.78 0.15 75)', boxShadow: '0 0 12px oklch(0.78 0.15 75)', display: 'inline-block' }} />

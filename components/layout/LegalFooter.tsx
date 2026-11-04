@@ -13,17 +13,17 @@ const LINKS = [
 export default function LegalFooter() {
   return (
     <footer style={{
-      borderTop: '1px solid rgba(255,255,255,0.05)',
+      borderTop: '1px solid color-mix(in srgb, var(--overlay) 5%, transparent)',
       padding: '20px 24px',
       display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center',
       gap: '8px 22px',
     }}>
-      <span style={{ fontSize: 11.5, color: 'rgba(240,244,255,0.18)' }}>© 2026 OnlyPok</span>
+      <span style={{ fontSize: 11.5, color: 'var(--text-3)' }}>© 2026 OnlyPok</span>
       {LINKS.map(({ label, href }) => (
         <Link key={href} href={href}
-          style={{ fontSize: 11.5, color: 'rgba(240,244,255,0.25)', textDecoration: 'none', transition: 'color 0.15s' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(240,244,255,0.6)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,244,255,0.25)')}>
+          style={{ fontSize: 11.5, color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.15s' }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-2)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}>
           {label}
         </Link>
       ))}

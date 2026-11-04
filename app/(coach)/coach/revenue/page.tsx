@@ -8,20 +8,20 @@ import {
   BookOpen, Video, Users, ArrowLeft, ArrowUpRight,
 } from 'lucide-react'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const MUTED  = 'rgba(240,244,255,0.22)'
-const VIOLET = '#7c3aed'
-const CYAN   = '#06b6d4'
-const AMBER  = '#f59e0b'
-const BG     = '#04040a'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const MUTED  = 'var(--text-3)'
+const VIOLET = 'var(--brand)'
+const CYAN   = 'var(--brand)'
+const AMBER  = 'var(--brand)'
+const BG     = 'var(--bg)'
 
 const TYPE_COLOR: Record<string, string> = { formation: VIOLET, video: CYAN, coaching: AMBER }
 const TYPE_LABEL: Record<string, string> = { formation: 'Formation', video: 'Vidéo', coaching: 'Coaching' }
 
 const card = (extra?: React.CSSProperties): React.CSSProperties => ({
-  background: 'rgba(232,228,220,0.03)',
-  border: '1px solid rgba(232,228,220,0.07)',
+  background: 'color-mix(in srgb, var(--brand) 3%, transparent)',
+  border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)',
   borderRadius: 16, padding: 24, ...extra,
 })
 
@@ -34,7 +34,7 @@ function RevenueChart({ data }: { data: { month: string; rev: number }[] }) {
           <span style={{ fontSize: 9, color: VIOLET, fontWeight: 700 }}>{d.rev > 0 ? `${d.rev}€` : ''}</span>
           <div style={{
             width: '100%', borderRadius: '4px 4px 0 0',
-            background: `linear-gradient(to top, ${VIOLET}, ${VIOLET}55)`,
+            background: 'var(--brand)',
             height: `${Math.max((d.rev / max) * 90, d.rev > 0 ? 4 : 2)}px`,
             opacity: d.rev > 0 ? 1 : 0.1, transition: 'height 0.5s ease',
           }} />
@@ -142,7 +142,6 @@ export default function RevenuePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: CREAM }}>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 60% 35% at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%)` }} />
       <style>{`
         @media (max-width: 860px) {
           .rev-container { padding: 24px 16px !important; }
@@ -177,12 +176,11 @@ export default function RevenuePage() {
             { label: 'Net coach',      value: `${totalRevenue}€`,                              sub: 'après commission',       color: VIOLET },
             { label: 'Ce mois-ci',     value: `${revenueMonth}€`,                              sub: now.toLocaleDateString('fr-FR', { month: 'long' }), color: CYAN },
             { label: 'Ventes totales', value: totalSales,                                       sub: 'transactions',           color: AMBER },
-            { label: 'Panier moyen',   value: totalSales > 0 ? `${avgPerSale}€` : '—',         sub: 'net par vente',          color: '#a855f7' },
+            { label: 'Panier moyen',   value: totalSales > 0 ? `${avgPerSale}€` : '—',         sub: 'net par vente',          color: 'var(--brand)' },
           ].map(k => (
             <div key={k.label} style={card({ position: 'relative', overflow: 'hidden' })}>
-              <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 100% 0%, ${k.color}10 0%, transparent 60%)`, pointerEvents: 'none' }} />
               <div style={{ fontSize: 9, fontWeight: 700, color: SILVER, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12 }}>{k.label}</div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: CREAM, letterSpacing: '-1px', lineHeight: 1, marginBottom: 4 }}>{k.value}</div>
+              <div style={{ fontSize: 32, fontWeight: 600, color: CREAM, letterSpacing: '-1px', lineHeight: 1, marginBottom: 4 }}>{k.value}</div>
               <div style={{ fontSize: 11, color: SILVER }}>{k.sub}</div>
             </div>
           ))}
@@ -190,13 +188,13 @@ export default function RevenuePage() {
 
         {/* Récap brut / commission / net */}
         {totalGross > 0 && (
-          <div className="rev-recap" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, marginBottom: 24, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="rev-recap" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, marginBottom: 24, borderRadius: 12, overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--overlay) 6%, transparent)' }}>
             {[
               { label: 'Encaissé (brut Stripe)', value: `${totalGross}€`, color: SILVER, sub: 'payé par les élèves' },
-              { label: 'Commission OnlyPok',      value: `-${totalFees}€`, color: '#ef4444', sub: 'frais de plateforme' },
-              { label: 'Net coach',               value: `${totalRevenue}€`, color: VIOLET, sub: 'votre revenu réel' },
+              { label: 'Commission OnlyPok',      value: `-${totalFees}€`, color: 'var(--error)', sub: 'frais de plateforme' },
+              { label: 'Net coach',               value: `${totalRevenue}€`, color: VIOLET, sub: 'ton revenu réel' },
             ].map(k => (
-              <div key={k.label} style={{ background: 'rgba(255,255,255,0.025)', padding: '14px 20px', textAlign: 'center' }}>
+              <div key={k.label} style={{ background: 'color-mix(in srgb, var(--overlay) 2%, transparent)', padding: '14px 20px', textAlign: 'center' }}>
                 <div style={{ fontSize: 9, fontWeight: 700, color: MUTED, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>{k.label}</div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: k.color, letterSpacing: '-0.5px', marginBottom: 3 }}>{k.value}</div>
                 <div style={{ fontSize: 10, color: MUTED }}>{k.sub}</div>
@@ -226,14 +224,13 @@ export default function RevenuePage() {
             const c = TYPE_COLOR[type]; const Icon = icons[type]
             return (
               <div key={type} style={card({ position: 'relative', overflow: 'hidden' })}>
-                <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 100% 0%, ${c}08 0%, transparent 60%)`, pointerEvents: 'none' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 9, background: `${c}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 9, background: `color-mix(in srgb, ${c} 9%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon size={15} color={c} />
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 700, color: CREAM }}>{TYPE_LABEL[type]}</span>
                 </div>
-                <div style={{ fontSize: 28, fontWeight: 800, color: c, letterSpacing: '-0.5px', marginBottom: 6 }}>{rev}€</div>
+                <div style={{ fontSize: 28, fontWeight: 600, color: c, letterSpacing: '-0.5px', marginBottom: 6 }}>{rev}€</div>
                 <div style={{ fontSize: 11, color: SILVER }}>{sales} vente{sales !== 1 ? 's' : ''}</div>
               </div>
             )
@@ -257,8 +254,8 @@ export default function RevenuePage() {
                   onClick={() => setFilter(t)}
                   style={{
                     fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 7, cursor: 'pointer',
-                    border: `1px solid ${filter === t ? (t === 'all' ? VIOLET : TYPE_COLOR[t]) : 'rgba(255,255,255,0.08)'}`,
-                    background: filter === t ? (t === 'all' ? `${VIOLET}18` : `${TYPE_COLOR[t]}18`) : 'transparent',
+                    border: `1px solid ${filter === t ? (t === 'all' ? VIOLET : TYPE_COLOR[t]) : 'color-mix(in srgb, var(--overlay) 8%, transparent)'}`,
+                    background: filter === t ? (t === 'all' ? `color-mix(in srgb, ${VIOLET} 9%, transparent)` : `color-mix(in srgb, ${TYPE_COLOR[t]} 9%, transparent)`) : 'transparent',
                     color: filter === t ? (t === 'all' ? VIOLET : TYPE_COLOR[t]) : SILVER,
                     transition: 'all 0.12s',
                   }}
@@ -273,14 +270,14 @@ export default function RevenuePage() {
                 placeholder="Élève ou formation…"
                 style={{
                   fontSize: 11, padding: '5px 10px', borderRadius: 8,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'color-mix(in srgb, var(--overlay) 4%, transparent)',
+                  border: '1px solid color-mix(in srgb, var(--overlay) 8%, transparent)',
                   color: CREAM, outline: 'none', width: 160,
                 }}
               />
               <button
                 onClick={exportCSV}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: SILVER, cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--overlay) 10%, transparent)', background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', color: SILVER, cursor: 'pointer' }}
               >
                 <Download size={12} /> CSV
               </button>
@@ -315,13 +312,13 @@ export default function RevenuePage() {
                       style={{
                         display: 'grid', gridTemplateColumns: '120px 1fr 1fr 80px 100px 90px 80px',
                         gap: 10, padding: '11px 12px', borderRadius: 10,
-                        background: 'rgba(255,255,255,0.018)',
-                        border: '1px solid rgba(255,255,255,0.04)',
+                        background: 'color-mix(in srgb, var(--overlay) 2%, transparent)',
+                        border: '1px solid color-mix(in srgb, var(--overlay) 4%, transparent)',
                         alignItems: 'center',
                         transition: 'background 0.1s',
                       }}
-                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.032)'}
-                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.018)'}
+                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'color-mix(in srgb, var(--overlay) 3%, transparent)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'color-mix(in srgb, var(--overlay) 2%, transparent)'}
                     >
                       {/* Date */}
                       <div>
@@ -331,7 +328,7 @@ export default function RevenuePage() {
 
                       {/* Élève */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${c}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: c, flexShrink: 0 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: `color-mix(in srgb, ${c} 9%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: c, flexShrink: 0 }}>
                           {(p.student?.username ?? '?')[0].toUpperCase()}
                         </div>
                         <Link
@@ -350,7 +347,7 @@ export default function RevenuePage() {
                       {/* Type badge */}
                       <span style={{
                         fontSize: 9, fontWeight: 800, padding: '3px 8px', borderRadius: 99,
-                        background: `${c}18`, color: c,
+                        background: `color-mix(in srgb, ${c} 9%, transparent)`, color: c,
                         letterSpacing: '0.07em', textTransform: 'uppercase',
                         width: 'fit-content',
                       }}>
@@ -363,7 +360,7 @@ export default function RevenuePage() {
                           {p.gross > 0 ? `${p.gross}€` : 'Gratuit'}
                         </span>
                         {p.fee > 0 && (
-                          <div style={{ fontSize: 10, color: '#ef444488' }}>-{p.fee}€ frais</div>
+                          <div style={{ fontSize: 10, color: 'var(--error)' }}>-{p.fee}€ frais</div>
                         )}
                       </div>
 
@@ -376,14 +373,14 @@ export default function RevenuePage() {
                       {type === 'coaching' ? (
                         <Link
                           href="/coach/agenda"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: AMBER, textDecoration: 'none', padding: '4px 8px', borderRadius: 6, border: `1px solid ${AMBER}30`, background: `${AMBER}0a`, whiteSpace: 'nowrap' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: AMBER, textDecoration: 'none', padding: '4px 8px', borderRadius: 6, border: `1px solid color-mix(in srgb, ${AMBER} 19%, transparent)`, background: `color-mix(in srgb, ${AMBER} 4%, transparent)`, whiteSpace: 'nowrap' }}
                         >
                           Planifier <ArrowUpRight size={10} />
                         </Link>
                       ) : (
                         <Link
                           href={`/coach/messages?student_id=${p.student?.id ?? ''}`}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: VIOLET, textDecoration: 'none', padding: '4px 8px', borderRadius: 6, border: `1px solid ${VIOLET}30`, background: `${VIOLET}0a`, whiteSpace: 'nowrap' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: VIOLET, textDecoration: 'none', padding: '4px 8px', borderRadius: 6, border: `1px solid color-mix(in srgb, ${VIOLET} 19%, transparent)`, background: `color-mix(in srgb, ${VIOLET} 4%, transparent)`, whiteSpace: 'nowrap' }}
                         >
                           Message <ArrowUpRight size={10} />
                         </Link>
@@ -397,26 +394,26 @@ export default function RevenuePage() {
         </div>
 
         {/* Seuil micro-entrepreneur */}
-        <div style={{ height: 1, background: 'rgba(232,228,220,0.07)', marginBottom: 24 }} />
+        <div style={{ height: 1, background: 'color-mix(in srgb, var(--brand) 7%, transparent)', marginBottom: 24 }} />
         <p style={{ fontSize: 9, fontWeight: 700, color: MUTED, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>Paperasse officielle</p>
 
-        <div style={{ ...card({ marginBottom: 16 }), borderColor: pct > 80 ? 'rgba(245,158,11,0.25)' : 'rgba(232,228,220,0.07)' }}>
+        <div style={{ ...card({ marginBottom: 16 }), borderColor: pct > 80 ? 'color-mix(in srgb, var(--brand) 25%, transparent)' : 'color-mix(in srgb, var(--brand) 7%, transparent)' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
               <h3 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: '0 0 4px' }}>Seuil micro-entrepreneur</h3>
               <p style={{ fontSize: 12, color: SILVER, margin: 0 }}>Plafond BNC 2024 pour les prestations de services</p>
             </div>
-            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 99, background: pct > 80 ? 'rgba(245,158,11,0.15)' : 'rgba(232,228,220,0.06)', color: pct > 80 ? AMBER : SILVER }}>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 99, background: pct > 80 ? 'color-mix(in srgb, var(--brand) 15%, transparent)' : 'color-mix(in srgb, var(--brand) 6%, transparent)', color: pct > 80 ? AMBER : SILVER }}>
               {pct > 80 ? 'Attention' : 'OK'}
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
-            <div style={{ flex: 1, height: 6, background: 'rgba(232,228,220,0.07)', borderRadius: 99, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${pct}%`, background: pct > 80 ? `linear-gradient(90deg, ${VIOLET}, ${AMBER})` : `linear-gradient(90deg, ${VIOLET}, ${CYAN})`, borderRadius: 99, transition: 'width 0.6s ease' }} />
+            <div style={{ flex: 1, height: 6, background: 'color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: pct > 80 ? `${VIOLET}` : `${VIOLET}`, borderRadius: 99, transition: 'width 0.6s ease' }} />
             </div>
             <span style={{ fontSize: 12, fontWeight: 700, color: pct > 80 ? AMBER : CREAM, flexShrink: 0 }}>{totalRevenue}€ / {MICRO_THRESHOLD.toLocaleString('fr-FR')}€</span>
           </div>
-          <p style={{ fontSize: 11, color: SILVER }}>Au-delà de 77 700€, vous passez au régime réel. Consultez un comptable.</p>
+          <p style={{ fontSize: 11, color: SILVER }}>Au-delà de 77 700€, tu passes au régime réel. Consulte un comptable.</p>
         </div>
 
         <div className="rev-admin" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -426,10 +423,10 @@ export default function RevenuePage() {
               <h3 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>Déclaration URSSAF</h3>
             </div>
             <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.7, marginBottom: 14 }}>
-              En tant qu'auto-entrepreneur, vous devez déclarer votre chiffre d'affaires mensuellement ou trimestriellement sur autoentrepreneur.urssaf.fr.
+              En tant qu'auto-entrepreneur, tu dois déclarer ton chiffre d'affaires mensuellement ou trimestriellement sur autoentrepreneur.urssaf.fr.
             </p>
             <a href="https://www.autoentrepreneur.urssaf.fr" target="_blank" rel="noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: CYAN, textDecoration: 'none', padding: '7px 14px', border: '1px solid rgba(6,182,212,0.3)', borderRadius: 8 }}>
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: CYAN, textDecoration: 'none', padding: '7px 14px', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)', borderRadius: 8 }}>
               Accéder <ExternalLink size={11} />
             </a>
           </div>
@@ -439,10 +436,10 @@ export default function RevenuePage() {
               <h3 style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>TVA</h3>
             </div>
             <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.7, marginBottom: 14 }}>
-              Sous le seuil de franchise en base (36 800€), vous n'êtes pas assujetti à la TVA. Vos prix sont TTC.
+              Sous le seuil de franchise en base (36 800€), tu n'es pas assujetti à la TVA. Tes prix sont TTC.
             </p>
             <a href="https://www.impots.gouv.fr" target="_blank" rel="noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: VIOLET, textDecoration: 'none', padding: '7px 14px', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8 }}>
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: VIOLET, textDecoration: 'none', padding: '7px 14px', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)', borderRadius: 8 }}>
               impots.gouv.fr <ExternalLink size={11} />
             </a>
           </div>
@@ -450,7 +447,7 @@ export default function RevenuePage() {
 
         <p style={{ fontSize: 10, color: MUTED, textAlign: 'center', marginTop: 40, lineHeight: 1.8 }}>
           Ces informations sont indicatives et ne constituent pas un conseil fiscal.
-          Consultez un expert-comptable pour votre situation personnelle.
+          Consulte un expert-comptable pour ta situation personnelle.
         </p>
       </div>
     </div>

@@ -1,14 +1,8 @@
 export default function Loading() {
-  const DIM = 'rgba(232,228,220,0.06)'
-  const shimmer = {
-    background: `linear-gradient(90deg, ${DIM} 25%, rgba(232,228,220,0.09) 50%, ${DIM} 75%)`,
-    backgroundSize: '200% 100%',
-    animation: 'shimmer 1.4s infinite',
-    borderRadius: 8,
-  } as const
+  const shimmer = { background: 'var(--surface-2)', borderRadius: 8 } as const
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090e' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <style>{`@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }`}</style>
       {/* Header skeleton */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 80, background: 'transparent' }}>
@@ -35,7 +29,7 @@ export default function Loading() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} style={{ width: 290, flexShrink: 0 }}>
                   <div style={{ ...shimmer, height: 148, borderRadius: '16px 16px 0 0', marginBottom: 0 }} />
-                  <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderTop: 'none', borderRadius: '0 0 16px 16px', padding: 16 }}>
+                  <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderTop: 'none', borderRadius: '0 0 16px 16px', padding: 16 }}>
                     <div style={{ ...shimmer, width: '80%', height: 16, marginBottom: 8 }} />
                     <div style={{ ...shimmer, width: '60%', height: 12 }} />
                   </div>

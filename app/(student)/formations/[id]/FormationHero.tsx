@@ -24,24 +24,24 @@ export default function FormationHero({ formation, contentType, typeColor, varia
 
       {/* Badges */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
-        <span style={{ fontSize: 10, fontWeight: 800, color: '#fff',
-          background: `${typeColor}22`, backdropFilter: 'blur(8px)',
-          border: `1px solid ${typeColor}70`, padding: '3px 9px', borderRadius: 99,
-          letterSpacing: '0.05em', textShadow: `0 0 8px ${typeColor}` }}>
+        <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text)',
+          background: 'var(--surface-2)',
+          border: '1px solid var(--border-strong)', padding: '3px 9px', borderRadius: 99,
+          letterSpacing: '0.05em', textShadow: 'none' }}>
           {TYPE_LABELS[contentType]}
         </span>
         {formation.variant && (
-          <span style={{ fontSize: 10, fontWeight: 800, color: '#fff',
-            background: `${variantColor}22`, backdropFilter: 'blur(8px)',
-            border: `1px solid ${variantColor}70`, padding: '3px 9px', borderRadius: 99,
-            letterSpacing: '0.05em', textShadow: `0 0 8px ${variantColor}` }}>
+          <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text)',
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border-strong)', padding: '3px 9px', borderRadius: 99,
+            letterSpacing: '0.05em', textShadow: 'none' }}>
             {formation.variant}
           </span>
         )}
         {formation.level && (
-          <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.65)',
-            background: 'rgba(232,228,220,0.06)', backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.18)', padding: '3px 9px', borderRadius: 99,
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-2)',
+            background: 'color-mix(in srgb, var(--brand) 6%, transparent)', backdropFilter: 'blur(8px)',
+            border: '1px solid color-mix(in srgb, var(--overlay) 18%, transparent)', padding: '3px 9px', borderRadius: 99,
             letterSpacing: '0.05em' }}>
             {formation.level}
           </span>
@@ -58,28 +58,26 @@ export default function FormationHero({ formation, contentType, typeColor, varia
           <div style={{
             position: 'relative', overflow: 'hidden', aspectRatio: '16/9',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16,
-            background: `linear-gradient(160deg, ${typeColor}30 0%, ${typeColor}10 50%, rgba(7,9,14,0.9) 100%)`,
+            background: `linear-gradient(160deg, color-mix(in srgb, ${typeColor} 19%, transparent) 0%, color-mix(in srgb, ${typeColor} 6%, transparent) 50%, var(--bg) 100%)`,
           }}>
-            <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 80% 120% at 50% 60%, ${typeColor}18, transparent 70%)` }} />
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(to right, ${typeColor}, ${typeColor}60)` }} />
             {/* Avatar coach */}
             <div style={{
               width: 96, height: 96, borderRadius: '50%', flexShrink: 0,
               padding: 3,
-              background: `conic-gradient(from 135deg, ${typeColor}, ${typeColor}44, ${typeColor}cc, ${typeColor})`,
-              boxShadow: `0 8px 40px ${typeColor}40, 0 0 0 4px #07090e`,
+              background: `conic-gradient(from 135deg, ${typeColor}, color-mix(in srgb, ${typeColor} 27%, transparent), color-mix(in srgb, ${typeColor} 80%, transparent), ${typeColor})`,
+              boxShadow: 'none',
               position: 'relative', zIndex: 1,
             }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#0d1117', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 {coach?.avatar_url
                   ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="96px" style={{ objectFit: 'cover' }} />
-                  : <span style={{ fontSize: 32, fontWeight: 900, color: '#fff' }}>{(coach?.username ?? 'C').slice(0, 2).toUpperCase()}</span>
+                  : <span style={{ fontSize: 32, fontWeight: 600, color: 'var(--text)' }}>{(coach?.username ?? 'C').slice(0, 2).toUpperCase()}</span>
                 }
               </div>
             </div>
             <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-              <p style={{ fontSize: 16, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.3px', fontFamily: 'var(--font-syne,sans-serif)' }}>{coach?.username ?? 'Coach'}</p>
-              <p style={{ fontSize: 11, color: `${typeColor}cc`, margin: '4px 0 0', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Coaching personnalisé</p>
+              <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', margin: 0, letterSpacing: '-0.3px', fontFamily: 'var(--font-syne,sans-serif)' }}>{coach?.username ?? 'Coach'}</p>
+              <p style={{ fontSize: 11, color: `color-mix(in srgb, ${typeColor} 80%, transparent)`, margin: '4px 0 0', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Coaching personnalisé</p>
             </div>
           </div>
         ) : (() => {
@@ -96,14 +94,9 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                 backgroundPosition: bgPos,
                 backgroundRepeat: 'no-repeat',
               } : {
-                background: `linear-gradient(135deg, ${typeColor}22 0%, ${typeColor}06 100%)`,
+                background: 'var(--surface-2)',
               }),
             }}>
-              {!formation.thumbnail_url && (
-                <span style={{ fontSize: 72, opacity: 0.1, userSelect: 'none' }}>♠</span>
-              )}
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, zIndex: 1,
-                background: `linear-gradient(to right, ${typeColor}, ${typeColor}60)` }} />
             </div>
           )
         })()}
@@ -118,19 +111,18 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                 if (useGallery) {
                   const url = galleryUrls[i]
                   return url ? (
-                    <div key={i} style={{ position: 'relative', overflow: 'hidden', background: '#0f1218' }}>
+                    <div key={i} style={{ position: 'relative', overflow: 'hidden', background: 'var(--bg)' }}>
                       <Image src={url} alt="" fill sizes="(max-width: 768px) 25vw, 200px" style={{ objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
                         onMouseEnter={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.04)'}
                         onMouseLeave={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)'} />
                       {i === 3 && galleryUrls.length > 4 && (
                         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>+{galleryUrls.length - 4} photos</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--on-scrim)' }}>+{galleryUrls.length - 4} photos</span>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div key={i} style={{ background: 'rgba(232,228,220,0.02)', border: '1px dashed rgba(232,228,220,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 22, opacity: 0.06 }}>♠</span>
+                    <div key={i} style={{ background: 'color-mix(in srgb, var(--brand) 2%, transparent)', border: '1px dashed color-mix(in srgb, var(--brand) 8%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     </div>
                   )
                 }
@@ -138,7 +130,7 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                 return proof ? (
                   <div key={proof.id}
                     onClick={onOpenProofModal}
-                    style={{ position: 'relative', overflow: 'hidden', cursor: 'pointer', background: '#0f1218' }}>
+                    style={{ position: 'relative', overflow: 'hidden', cursor: 'pointer', background: 'var(--bg)' }}>
                     <Image src={proof.url} alt={proof.caption ?? ''} fill sizes="(max-width: 768px) 25vw, 200px"
                       style={{ objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
                       onMouseEnter={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.04)'}
@@ -146,7 +138,7 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                     <div style={{ position: 'absolute', bottom: 7, left: 7 }}>
                       <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 99,
                         background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
-                        color: 'rgba(232,228,220,0.75)', letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>
+                        color: 'var(--on-scrim)', letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>
                         {proof.category === 'stats'      ? 'Stats officielles'
                           : proof.category === 'longterme'  ? 'Long terme'
                           : proof.category === 'perf'       ? 'Top perfs'
@@ -159,19 +151,18 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                     </div>
                     {i === 3 && proofs.length > 4 && (
                       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>+{proofs.length - 4} photos</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--on-scrim)' }}>+{proofs.length - 4} photos</span>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div key={i} style={{
-                    background: 'rgba(232,228,220,0.02)',
-                    border: '1px dashed rgba(232,228,220,0.08)',
+                    background: 'color-mix(in srgb, var(--brand) 2%, transparent)',
+                    border: '1px dashed color-mix(in srgb, var(--brand) 8%, transparent)',
                     display: 'flex', flexDirection: 'column',
                     alignItems: 'center', justifyContent: 'center', gap: 8,
                   }}>
-                    <span style={{ fontSize: 22, opacity: 0.06 }}>♠</span>
-                    <span style={{ fontSize: 9, color: 'rgba(232,228,220,0.15)',
+                    <span style={{ fontSize: 9, color: 'var(--text-3)',
                       letterSpacing: '0.08em', textTransform: 'uppercase' as const, fontWeight: 600 }}>
                       {(['SharkScope','Classement','Tournoi','Résultats'] as const)[i]}
                     </span>
@@ -184,14 +175,14 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                   style={{
                     position: 'absolute', bottom: 14, right: 14, zIndex: 5,
                     display: 'flex', alignItems: 'center', gap: 7,
-                    background: 'rgba(232,228,220,0.92)', backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(232,228,220,0.3)', borderRadius: 8,
-                    padding: '7px 14px', fontSize: 12, fontWeight: 700, color: '#07090e',
+                    background: 'color-mix(in srgb, var(--brand) 92%, transparent)', backdropFilter: 'blur(8px)',
+                    border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)', borderRadius: 8,
+                    padding: '7px 14px', fontSize: 12, fontWeight: 700, color: 'var(--on-brand)',
                     cursor: 'pointer', transition: 'all 0.15s',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                    boxShadow: 'none',
                   }}
-                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = '#fff'}
-                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.92)'}>
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = 'var(--brand-hover)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 92%, transparent)'}>
                   <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                     <rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor"/>
                     <rect x="10" y="1" width="5" height="5" rx="1" fill="currentColor"/>
@@ -210,7 +201,7 @@ export default function FormationHero({ formation, contentType, typeColor, varia
       <div style={{ marginTop: 32, marginBottom: 48 }}>
         {/* Séparateur accent */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-          <div style={{ height: 2, width: 32, background: typeColor, borderRadius: 99, boxShadow: `0 0 8px ${typeColor}` }} />
+          <div style={{ height: 2, width: 32, background: typeColor, borderRadius: 99, boxShadow: 'none' }} />
           <span style={{ fontSize: 10, letterSpacing: '0.2em', fontWeight: 700, color: typeColor, textTransform: 'uppercase' as const }}>
             {TYPE_LABELS[contentType]}
             {formation.variant ? ` · ${formation.variant}` : ''}
@@ -223,20 +214,20 @@ export default function FormationHero({ formation, contentType, typeColor, varia
           {formation.title}
         </h1>
         {formation.short_desc && (
-          <p style={{ fontSize: 16, color: 'rgba(232,228,220,0.55)', lineHeight: 1.7, marginBottom: 24, maxWidth: 640, fontWeight: 400 }}>
+          <p style={{ fontSize: 16, color: 'var(--text-2)', lineHeight: 1.7, marginBottom: 24, maxWidth: 640, fontWeight: 400 }}>
             {formation.short_desc}
           </p>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap' }}>
           {avgRating !== null && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingRight: 20 }}>
-              <Star size={14} color="#a855f7" fill="#a855f7" />
+              <Star size={14} color="var(--brand)" fill="var(--brand)" />
               <span style={{ fontSize: 14, fontWeight: 800, color: CREAM }}>{avgRating.toFixed(2)}</span>
               <span style={{ fontSize: 13, color: SILVER }}>({reviews.length} avis)</span>
             </div>
           )}
           {avgRating !== null && coach?.username && (
-            <div style={{ width: 1, height: 16, background: 'rgba(232,228,220,0.12)', marginRight: 20 }} />
+            <div style={{ width: 1, height: 16, background: 'color-mix(in srgb, var(--brand) 12%, transparent)', marginRight: 20 }} />
           )}
           {coach?.username && (
             <Link href={`/coaches/${coach.id}`}
@@ -245,10 +236,10 @@ export default function FormationHero({ formation, contentType, typeColor, varia
               onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = SILVER}>
               <div style={{
                 width: 24, height: 24, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-                background: `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`,
+                background: 'var(--surface-2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 10, fontWeight: 800, color: '#fff',
-                boxShadow: `0 0 0 2px ${typeColor}30`,
+                fontSize: 10, fontWeight: 800, color: 'var(--text)',
+                boxShadow: 'none',
                 position: 'relative',
               }}>
                 {coach.avatar_url
@@ -260,7 +251,7 @@ export default function FormationHero({ formation, contentType, typeColor, varia
           )}
           {contentType === 'formation' && allLessonsCount > 0 && (
             <>
-              <div style={{ width: 1, height: 16, background: 'rgba(232,228,220,0.12)', marginRight: 20 }} />
+              <div style={{ width: 1, height: 16, background: 'color-mix(in srgb, var(--brand) 12%, transparent)', marginRight: 20 }} />
               <span style={{ fontSize: 13, color: SILVER, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <BookOpen size={13} />
                 <span>{allLessonsCount} leçons</span>
@@ -275,21 +266,21 @@ export default function FormationHero({ formation, contentType, typeColor, varia
         {reviews.length > 0 && reviews[0]?.comment && (
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 22,
             padding: '12px 16px', borderRadius: 12,
-            background: `${typeColor}06`, border: `1px solid ${typeColor}18`, maxWidth: 580 }}>
+            background: `color-mix(in srgb, ${typeColor} 2%, transparent)`, border: `1px solid color-mix(in srgb, ${typeColor} 9%, transparent)`, maxWidth: 580 }}>
             <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-              background: reviews[0].student?.avatar_url ? 'transparent' : `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`,
+              background: reviews[0].student?.avatar_url ? 'transparent' : `transparent`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700, color: '#fff', position: 'relative' }}>
+              fontSize: 11, fontWeight: 700, color: 'var(--text)', position: 'relative' }}>
               {reviews[0].student?.avatar_url
                 ? <Image src={reviews[0].student.avatar_url} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
                 : (reviews[0].student?.username ?? 'E')[0].toUpperCase()}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 13, color: 'rgba(240,244,255,0.65)', fontStyle: 'italic', lineHeight: 1.55, margin: '0 0 5px' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-2)', fontStyle: 'italic', lineHeight: 1.55, margin: '0 0 5px' }}>
                 &ldquo;{reviews[0].comment.length > 130 ? reviews[0].comment.slice(0, 130) + '…' : reviews[0].comment}&rdquo;
               </p>
               <p style={{ fontSize: 11, color: SILVER, margin: 0, fontWeight: 600 }}>
-                {reviews[0].student?.username ?? 'Élève'} · <span style={{ color: '#f59e0b' }}>{'★'.repeat(Math.round(reviews[0].rating))}</span>
+                {reviews[0].student?.username ?? 'Élève'} · <span style={{ color: 'var(--brand)' }}>{'★'.repeat(Math.round(reviews[0].rating))}</span>
               </p>
             </div>
           </div>

@@ -33,7 +33,7 @@ export function useAgendaData(coachId: string | undefined) {
       if (!alive) return
       if (bErr) {
         console.error('[agenda] bookings query error:', bErr.message)
-        setError('Impossible de charger vos réservations. Rechargez la page.')
+        setError('Impossible de charger tes réservations. Recharge la page.')
         setLoading(false)
         return
       }
@@ -67,7 +67,7 @@ export function useAgendaData(coachId: string | undefined) {
       const nErr = (nRes as { error?: { code?: string; message: string } | null }).error
       if (nErr) {
         console.error('[agenda] session notes query error:', nErr.code, nErr.message)
-        setNotesError('Impossible de charger vos notes de séance. Rechargez la page avant de les modifier.')
+        setNotesError('Impossible de charger tes notes de séance. Recharge la page avant de les modifier.')
       } else {
         setNotesError(null)
       }

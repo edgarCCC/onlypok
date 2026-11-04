@@ -51,12 +51,12 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
           .coach-slide-panel { width: 100% !important; }
         }
         .coach-offer-row:hover {
-          background: rgba(255,255,255,0.05) !important;
-          border-color: rgba(232,228,220,0.2) !important;
+          background: color-mix(in srgb, var(--overlay) 5%, transparent) !important;
+          border-color: color-mix(in srgb, var(--brand) 20%, transparent) !important;
         }
         .coach-offer-row:hover .coach-offer-chevron {
           transform: translateX(3px);
-          color: #f0f4ff;
+          color: var(--brand);
         }
       `}</style>
 
@@ -74,7 +74,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
       {/* Panel */}
       <div className="coach-slide-panel" style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 200,
-        width: 480, background: '#0c0e14',
+        width: 480, background: 'var(--bg)',
         borderLeft: `1px solid ${DIM}`,
         display: 'flex', flexDirection: 'column',
         overflowY: 'auto',
@@ -87,8 +87,8 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
               {/* Avatar */}
               <div style={{
                 width: 68, height: 68, borderRadius: '50%', flexShrink: 0,
-                border: '1px solid rgba(232,228,220,0.14)',
-                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid color-mix(in srgb, var(--brand) 14%, transparent)',
+                background: 'color-mix(in srgb, var(--overlay) 4%, transparent)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 overflow: 'hidden', fontSize: 21, fontWeight: 700, color: CREAM,
                 position: 'relative',
@@ -106,14 +106,14 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
                     <span style={{
                       fontSize: 9, fontWeight: 800, color: AMBER, letterSpacing: '0.1em',
                       padding: '3px 9px', borderRadius: 99,
-                      background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
+                      background: 'color-mix(in srgb, var(--brand) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)',
                     }}>PRO</span>
                   )}
                   {coach.unverified && (
                     <span style={{
                       fontSize: 9, fontWeight: 600, color: SILVER, letterSpacing: '0.06em',
                       padding: '3px 8px', borderRadius: 99,
-                      background: 'rgba(255,255,255,0.04)', border: `1px solid ${DIM}`,
+                      background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', border: `1px solid ${DIM}`,
                     }}>Non vérifié</span>
                   )}
                 </div>
@@ -131,12 +131,12 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
               onClick={onClose}
               style={{
                 width: 36, height: 36, borderRadius: '50%', border: `1px solid ${DIM}`,
-                background: 'rgba(255,255,255,0.04)', cursor: 'pointer',
+                background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: MUTED, flexShrink: 0, transition: 'background 0.15s',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.09)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--overlay) 9%, transparent)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--overlay) 4%, transparent)' }}
             >
               <X size={15} />
             </button>
@@ -166,7 +166,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
                 {variants.map(v => (
                   <span key={v} style={{
                     fontSize: 11, fontWeight: 600, padding: '5px 13px', borderRadius: 99,
-                    background: 'rgba(255,255,255,0.04)', color: MUTED, border: `1px solid ${DIM}`,
+                    background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', color: MUTED, border: `1px solid ${DIM}`,
                   }}>{v}</span>
                 ))}
               </div>
@@ -187,7 +187,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
               ].map(({ icon, val, label }) => (
                 <div key={label} style={{
                   padding: '14px 16px', borderRadius: 14,
-                  background: 'rgba(255,255,255,0.025)', border: `1px solid ${DIM}`,
+                  background: 'color-mix(in srgb, var(--overlay) 2%, transparent)', border: `1px solid ${DIM}`,
                   display: 'flex', flexDirection: 'column', gap: 6,
                 }}>
                   {icon}
@@ -222,7 +222,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
                     style={{
                       display: 'flex', alignItems: 'center', gap: 14,
                       padding: '16px 18px', borderRadius: 14, textDecoration: 'none',
-                      background: 'rgba(255,255,255,0.028)', border: `1px solid rgba(232,228,220,0.1)`,
+                      background: 'color-mix(in srgb, var(--overlay) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`,
                       transition: 'background 0.15s ease, border-color 0.15s ease',
                     }}
                   >
@@ -260,7 +260,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
                 style={{
                   display: 'flex', alignItems: 'center', gap: 14,
                   padding: '18px', borderRadius: 14, textDecoration: 'none',
-                  background: 'rgba(255,255,255,0.028)', border: `1px solid rgba(232,228,220,0.1)`,
+                  background: 'color-mix(in srgb, var(--overlay) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`,
                   transition: 'background 0.15s ease, border-color 0.15s ease',
                 }}
               >
@@ -277,7 +277,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
                 <ChevronRight size={15} color={SILVER} className="coach-offer-chevron" style={{ flexShrink: 0, transition: 'transform 0.15s ease, color 0.15s ease' }} />
               </Link>
             ) : (
-              <p style={{ fontSize: 13, color: MUTED }}>Tarifs sur demande — contactez le coach.</p>
+              <p style={{ fontSize: 13, color: MUTED }}>Tarifs sur demande : contacte le coach.</p>
             )}
           </section>
         </div>
@@ -286,7 +286,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
         <div style={{
           position: 'sticky', bottom: 0, left: 0, right: 0,
           padding: '16px 28px 18px', marginTop: 'auto',
-          background: 'linear-gradient(to top, #0c0e14 75%, transparent)',
+          background: 'linear-gradient(to top, var(--bg) 75%, transparent)',
           zIndex: 2,
         }}>
           <Link
@@ -295,9 +295,9 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               width: '100%', padding: '15px', borderRadius: 14,
-              background: AMBER_GRAD, color: '#fff', fontSize: 14, fontWeight: 800,
+              background: AMBER_GRAD, color: 'var(--on-brand)', fontSize: 14, fontWeight: 800,
               textDecoration: 'none', letterSpacing: '-0.2px',
-              boxShadow: `0 4px 24px ${AMBER}40`,
+              boxShadow: 'none',
             }}
           >
             Réserver une session <ChevronRight size={15} className="op-cta-arrow" />

@@ -18,16 +18,16 @@ import { NOTE_MAX_LENGTH } from '@/lib/constants'
 import { Send, Search, MessageSquare, Inbox, Check, CheckCheck, NotebookPen, ChevronDown, ChevronUp, Paperclip, FileText } from 'lucide-react'
 
 /* ── Theme tokens ───────────────────────────────────────── */
-const BG       = '#04040a'
-const PANEL    = '#0a0a14'
-const PANEL_HI = 'rgba(232,228,220,0.04)'
-const CREAM    = '#f0f4ff'
-const SILVER   = 'rgba(240,244,255,0.45)'
-const MUTED    = 'rgba(240,244,255,0.22)'
-const VIOLET   = '#7c3aed'
-const CYAN     = '#06b6d4'
-const BORDER   = 'rgba(255,255,255,0.06)'
-const BORDER_S = 'rgba(255,255,255,0.10)'
+const BG       = 'var(--bg)'
+const PANEL    = 'var(--bg)'
+const PANEL_HI = 'color-mix(in srgb, var(--brand) 4%, transparent)'
+const CREAM    = 'var(--text)'
+const SILVER   = 'var(--text-2)'
+const MUTED    = 'var(--text-3)'
+const VIOLET   = 'var(--brand)'
+const CYAN     = 'var(--brand)'
+const BORDER   = 'color-mix(in srgb, var(--overlay) 6%, transparent)'
+const BORDER_S = 'color-mix(in srgb, var(--overlay) 10%, transparent)'
 
 /* ── SQL référence (à exécuter une fois sur Supabase) ───── */
 export const SQL_SCHEMA = /* sql */ `
@@ -131,18 +131,18 @@ function encodeAttachment(a: AttachmentData): string {
   return ATT_PREFIX + JSON.stringify(a)
 }
 
-const CREAM_C  = '#f0f4ff'
-const SILVER_C = 'rgba(240,244,255,0.45)'
+const CREAM_C  = 'var(--brand)'
+const SILVER_C = 'var(--text-2)'
 function AttachmentBubble({ att, mine }: { att: AttachmentData; mine: boolean }) {
   const isImage = att.mime.startsWith('image/')
   return isImage ? (
     <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textDecoration: 'none' }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={att.url} alt={att.name} style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 12, display: 'block', objectFit: 'cover' }} />
-      <span style={{ fontSize: 10, color: mine ? 'rgba(255,255,255,0.6)' : SILVER_C, marginTop: 4, display: 'block' }}>{att.name}</span>
+      <span style={{ fontSize: 10, color: mine ? 'var(--text-2)' : SILVER_C, marginTop: 4, display: 'block' }}>{att.name}</span>
     </a>
   ) : (
-    <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: mine ? '#fff' : CREAM_C }}>
+    <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: mine ? 'var(--text)' : CREAM_C }}>
       <FileText size={18} />
       <span style={{ fontSize: 13, fontWeight: 600 }}>{att.name}</span>
     </a>
@@ -156,11 +156,11 @@ function Avatar({
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
-      background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
+      background: `${VIOLET}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: '#fff', fontWeight: 700, fontSize: Math.round(size * 0.42),
+      color: 'var(--on-brand)', fontWeight: 700, fontSize: Math.round(size * 0.42),
       flexShrink: 0, overflow: 'hidden', position: 'relative',
-      boxShadow: ring ? `0 0 0 2px ${VIOLET}40, 0 0 0 4px ${BG}` : undefined,
+      boxShadow: ring ? 'none' : undefined,
     }}>
       {src
         ? <Image src={src} alt="" fill sizes={`${size}px`} style={{ objectFit: 'cover' }} />
@@ -566,19 +566,14 @@ function CoachMessagesInner() {
       <style>{`
         @media (max-width: 760px) {
           .cmsg-layout { flex-direction: column !important; }
-          .cmsg-sidebar { width: 100% !important; flex: 0 0 36% !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08); min-height: 0; overflow: hidden; }
+          .cmsg-sidebar { width: 100% !important; flex: 0 0 36% !important; border-right: none !important; border-bottom: 1px solid color-mix(in srgb, var(--overlay) 8%, transparent); min-height: 0; overflow: hidden; }
         }
         @keyframes op-shimmer {
           0%   { background-position: -240px 0; }
           100% { background-position:  240px 0; }
         }
         .op-shimmer {
-          background-image: linear-gradient(
-            90deg,
-            rgba(232,228,220,0.03) 0%,
-            rgba(232,228,220,0.08) 50%,
-            rgba(232,228,220,0.03) 100%
-          );
+          background-image: transparent;
           background-size: 480px 100%;
           animation: op-shimmer 1.4s linear infinite;
         }
@@ -595,12 +590,12 @@ function CoachMessagesInner() {
         .op-pulse { animation: op-pulse 1.4s ease-in-out infinite; }
 
         .op-thread::-webkit-scrollbar { width: 8px; }
-        .op-thread::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+        .op-thread::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--overlay) 6%, transparent); border-radius: 4px; }
         .op-list::-webkit-scrollbar { width: 6px; }
-        .op-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 4px; }
+        .op-list::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--overlay) 5%, transparent); border-radius: 4px; }
 
         .op-conv-row { transition: background 0.12s ease, border-color 0.12s ease; }
-        .op-conv-row:hover { background: rgba(255,255,255,0.025); }
+        .op-conv-row:hover { background: color-mix(in srgb, var(--overlay) 2%, transparent); }
         @keyframes op-spin { to { transform: rotate(360deg); } }
       `}</style>
 
@@ -632,7 +627,7 @@ function CoachMessagesInner() {
           {/* Recherche */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            background: 'rgba(255,255,255,0.03)',
+            background: 'color-mix(in srgb, var(--overlay) 3%, transparent)',
             border: `1px solid ${BORDER}`,
             borderRadius: 10,
             padding: '8px 11px',
@@ -678,7 +673,7 @@ function CoachMessagesInner() {
                     width: '100%',
                     display: 'flex', alignItems: 'center', gap: 12,
                     padding: '12px 16px',
-                    background: active ? 'rgba(124,58,237,0.10)' : 'transparent',
+                    background: active ? 'color-mix(in srgb, var(--brand) 10%, transparent)' : 'transparent',
                     border: 'none',
                     borderLeft: `2px solid ${active ? VIOLET : 'transparent'}`,
                     cursor: 'pointer',
@@ -721,11 +716,11 @@ function CoachMessagesInner() {
                         <p style={{
                           flex: 1, minWidth: 0, margin: 0,
                           fontSize: 12,
-                          color: conv.unread > 0 ? 'rgba(240,244,255,0.78)' : SILVER,
+                          color: conv.unread > 0 ? 'var(--text)' : SILVER,
                           fontWeight: conv.unread > 0 ? 500 : 400,
                           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                         }}>
-                          {isMine && <span style={{ color: MUTED, marginRight: 4 }}>Vous :</span>}
+                          {isMine && <span style={{ color: MUTED, marginRight: 4 }}>Toi :</span>}
                           {conv.lastMessage!.content}
                         </p>
                       ) : (
@@ -741,7 +736,7 @@ function CoachMessagesInner() {
                         <span style={{
                           minWidth: 18, height: 18, padding: '0 6px',
                           borderRadius: 10,
-                          background: VIOLET, color: '#fff',
+                          background: VIOLET, color: 'var(--on-brand)',
                           fontSize: 10, fontWeight: 800,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontVariantNumeric: 'tabular-nums',
@@ -763,7 +758,7 @@ function CoachMessagesInner() {
         {/* Décor ambient */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse 70% 40% at 50% 0%, rgba(124,58,237,0.06) 0%, transparent 70%)',
+          background: 'transparent',
         }} />
 
         {!activeConv ? (
@@ -776,7 +771,7 @@ function CoachMessagesInner() {
           }}>
             <div style={{
               width: 64, height: 64, borderRadius: 18,
-              background: `linear-gradient(135deg, ${VIOLET}22, ${CYAN}22)`,
+              background: 'var(--surface-2)',
               border: `1px solid ${BORDER_S}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               marginBottom: 22,
@@ -787,12 +782,12 @@ function CoachMessagesInner() {
               fontSize: 22, fontWeight: 700, color: CREAM, letterSpacing: '-0.5px',
               margin: '0 0 8px', fontFamily: 'var(--font-syne, sans-serif)',
             }}>
-              Vos échanges, au calme.
+              Tes échanges, au calme.
             </h2>
             <p style={{ fontSize: 13, color: SILVER, maxWidth: 360, lineHeight: 1.6, margin: 0 }}>
               {fullList.length === 0
                 ? 'Pas encore d\'élève. Dès qu\'un élève achètera une formation ou une session, il apparaîtra dans la liste.'
-                : 'Sélectionnez un élève à gauche pour démarrer ou reprendre l\'échange.'}
+                : 'Sélectionne un élève à gauche pour démarrer ou reprendre l\'échange.'}
             </p>
           </div>
         ) : (
@@ -803,7 +798,7 @@ function CoachMessagesInner() {
               height: 68, padding: '0 24px',
               borderBottom: `1px solid ${BORDER}`,
               display: 'flex', alignItems: 'center', gap: 14,
-              background: 'rgba(10,10,20,0.6)',
+              background: 'color-mix(in srgb, var(--bg) 60%, transparent)',
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
               flexShrink: 0,
@@ -827,8 +822,8 @@ function CoachMessagesInner() {
             {/* ─── Notes élève ─── */}
             <div style={{
               position: 'relative', zIndex: 1, flexShrink: 0,
-              borderBottom: `1px solid rgba(124,58,237,0.22)`,
-              background: 'linear-gradient(90deg, rgba(124,58,237,0.10) 0%, rgba(6,182,212,0.04) 100%)',
+              borderBottom: `1px solid color-mix(in srgb, var(--brand) 22%, transparent)`,
+              background: 'linear-gradient(90deg, color-mix(in srgb, var(--brand) 10%, transparent) 0%, color-mix(in srgb, var(--brand) 4%, transparent) 100%)',
             }}>
               <button
                 onClick={() => setNoteOpen(o => !o)}
@@ -851,7 +846,7 @@ function CoachMessagesInner() {
                 {noteSaved === 'error' && (
                   <span
                     title={noteError}
-                    style={{ fontSize: 10, color: '#ef4444', fontWeight: 500, maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                    style={{ fontSize: 10, color: 'var(--error)', fontWeight: 500, maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                   >
                     {noteError || 'non enregistré'}
                   </span>
@@ -879,7 +874,7 @@ function CoachMessagesInner() {
                     style={{
                       width: '100%', boxSizing: 'border-box',
                       background: 'rgba(0,0,0,0.3)',
-                      border: `1px solid rgba(124,58,237,0.28)`,
+                      border: `1px solid color-mix(in srgb, var(--brand) 28%, transparent)`,
                       borderRadius: 10,
                       color: CREAM, fontSize: 13, lineHeight: 1.6,
                       padding: '11px 14px',
@@ -967,16 +962,16 @@ function CoachMessagesInner() {
                                   borderBottomRightRadius: mine && isLastInRun ? 5 : 18,
                                   borderBottomLeftRadius:  !mine && isLastInRun ? 5 : 18,
                                   background: mine
-                                    ? `linear-gradient(135deg, ${VIOLET}, #6d28d9)`
-                                    : 'rgba(255,255,255,0.06)',
-                                  color: mine ? '#fff' : CREAM,
+                                    ? `${VIOLET}`
+                                    : 'color-mix(in srgb, var(--overlay) 6%, transparent)',
+                                  color: mine ? 'var(--text)' : CREAM,
                                   fontSize: 14,
                                   lineHeight: 1.45,
                                   wordBreak: 'break-word',
                                   whiteSpace: 'pre-wrap',
                                   opacity: m.pending ? 0.65 : 1,
                                   boxShadow: mine
-                                    ? '0 1px 0 rgba(0,0,0,0.2), 0 8px 24px -12px rgba(124,58,237,0.5)'
+                                    ? '0 1px 0 rgba(0,0,0,0.2), 0 8px 24px -12px color-mix(in srgb, var(--brand) 50%, transparent)'
                                     : 'none',
                                   border: mine ? 'none' : `1px solid ${BORDER_S}`,
                                 }}>
@@ -988,7 +983,7 @@ function CoachMessagesInner() {
                             {isLastInRun && (
                               <div style={{
                                 display: 'flex', alignItems: 'center', gap: 4,
-                                fontSize: 10, color: m.failed ? '#ef4444' : SILVER,
+                                fontSize: 10, color: m.failed ? 'var(--error)' : SILVER,
                                 padding: '0 6px',
                               }}>
                                 <span>
@@ -1021,20 +1016,20 @@ function CoachMessagesInner() {
               position: 'relative', zIndex: 1,
               padding: '14px 20px 18px',
               borderTop: `1px solid ${BORDER}`,
-              background: 'rgba(10,10,20,0.7)',
+              background: 'color-mix(in srgb, var(--bg) 70%, transparent)',
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
               flexShrink: 0,
             }}>
               <div style={{
                 display: 'flex', alignItems: 'flex-end', gap: 10,
-                background: 'rgba(255,255,255,0.04)',
+                background: 'color-mix(in srgb, var(--overlay) 4%, transparent)',
                 border: `1px solid ${BORDER_S}`,
                 borderRadius: 16,
                 padding: '8px 8px 8px 14px',
                 transition: 'border-color 0.15s',
               }}
-                onFocus={e => (e.currentTarget.style.borderColor = `${VIOLET}55`)}
+                onFocus={e => (e.currentTarget.style.borderColor = `color-mix(in srgb, ${VIOLET} 33%, transparent)`)}
                 onBlur={e => (e.currentTarget.style.borderColor = BORDER_S)}
               >
                 <button type="button" onClick={() => attachFileRef.current?.click()} disabled={uploading}
@@ -1081,15 +1076,15 @@ function CoachMessagesInner() {
                     width: 38, height: 38, flexShrink: 0,
                     borderRadius: 12, border: 'none',
                     background: !draft.trim() || sending
-                      ? 'rgba(255,255,255,0.05)'
-                      : `linear-gradient(135deg, ${VIOLET}, #6d28d9)`,
-                    color: !draft.trim() || sending ? MUTED : '#fff',
+                      ? 'color-mix(in srgb, var(--overlay) 5%, transparent)'
+                      : `${VIOLET}`,
+                    color: !draft.trim() || sending ? MUTED : 'var(--text)',
                     cursor: !draft.trim() || sending ? 'not-allowed' : 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'transform 0.12s, background 0.15s',
                     boxShadow: !draft.trim() || sending
                       ? 'none'
-                      : '0 4px 16px -4px rgba(124,58,237,0.5)',
+                      : '0 4px 16px -4px color-mix(in srgb, var(--brand) 50%, transparent)',
                   }}
                   onMouseDown={e => { if (!sending && draft.trim()) e.currentTarget.style.transform = 'scale(0.94)' }}
                   onMouseUp={e   => { e.currentTarget.style.transform = 'scale(1)' }}
@@ -1104,14 +1099,14 @@ function CoachMessagesInner() {
               }}>
                 <kbd style={{
                   fontSize: 9, padding: '1px 5px', borderRadius: 3,
-                  background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`,
+                  background: 'color-mix(in srgb, var(--overlay) 5%, transparent)', border: `1px solid ${BORDER}`,
                   fontFamily: 'inherit', color: SILVER,
                 }}>Entrée</kbd>
                 pour envoyer
                 <span style={{ opacity: 0.5 }}>·</span>
                 <kbd style={{
                   fontSize: 9, padding: '1px 5px', borderRadius: 3,
-                  background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`,
+                  background: 'color-mix(in srgb, var(--overlay) 5%, transparent)', border: `1px solid ${BORDER}`,
                   fontFamily: 'inherit', color: SILVER,
                 }}>Maj+Entrée</kbd>
                 pour un saut de ligne

@@ -5,11 +5,11 @@ import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import FourAcesLoader from '@/components/FourAcesLoader'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.38)'
-const DIM    = 'rgba(240,244,255,0.22)'
-const VIOLET = '#7c3aed'
-const GOLD   = '#f59e0b'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-3)'
+const DIM    = 'color-mix(in srgb, var(--brand) 22%, transparent)'
+const VIOLET = 'var(--brand)'
+const GOLD   = 'var(--brand)'
 
 const INITIAL_COUNT = 6
 const TRUNCATE_CHARS = 220
@@ -42,7 +42,7 @@ function Stars({ rating, size = 12 }: { rating: number; size?: number }) {
     <span style={{ display: 'inline-flex', gap: 2 }}>
       {Array.from({ length: 5 }).map((_, i) => (
         <svg key={i} width={size} height={size} viewBox="0 0 14 14"
-          fill={i < Math.round(rating) ? GOLD : 'rgba(240,244,255,0.12)'}>
+          fill={i < Math.round(rating) ? GOLD : 'color-mix(in srgb, var(--brand) 12%, transparent)'}>
           <polygon points="7,1 8.8,5.5 13.5,5.5 9.8,8.5 11.2,13 7,10.2 2.8,13 4.2,8.5 0.5,5.5 5.2,5.5" />
         </svg>
       ))}
@@ -66,16 +66,16 @@ function ReviewCard({ r }: { r: any }) {
   const needsTruncate = text.length > TRUNCATE_CHARS
 
   return (
-    <div style={{ padding: '0 0 28px', borderBottom: '1px solid rgba(240,244,255,0.07)' }}>
+    <div style={{ padding: '0 0 28px', borderBottom: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)' }}>
 
       {/* Avatar + identity */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
         <div style={{
           width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-          background: avatarUrl ? 'transparent' : `linear-gradient(135deg,${VIOLET},#06b6d4)`,
+          background: avatarUrl ? 'transparent' : `${VIOLET}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16, fontWeight: 700, color: '#fff', overflow: 'hidden',
-          border: '1.5px solid rgba(240,244,255,0.1)', position: 'relative',
+          fontSize: 16, fontWeight: 700, color: 'var(--on-brand)', overflow: 'hidden',
+          border: '1.5px solid color-mix(in srgb, var(--brand) 10%, transparent)', position: 'relative',
         }}>
           {avatarUrl
             ? <Image src={avatarUrl} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />
@@ -97,7 +97,7 @@ function ReviewCard({ r }: { r: any }) {
       {/* Rating + date */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
         {rating != null && <Stars rating={rating} />}
-        <span style={{ fontSize: 12, color: DIM }}>·</span>
+        <span style={{ fontSize: 12, color: 'var(--text-3)' }}>·</span>
         <span style={{ fontSize: 12, color: SILVER }}>{date}</span>
       </div>
 
@@ -105,7 +105,7 @@ function ReviewCard({ r }: { r: any }) {
       {text ? (
         <div>
           <p style={{
-            fontSize: 14, color: 'rgba(240,244,255,0.75)', lineHeight: 1.6, margin: 0,
+            fontSize: 14, color: 'var(--text)', lineHeight: 1.6, margin: 0,
             display: '-webkit-box', WebkitBoxOrient: 'vertical',
             WebkitLineClamp: expanded ? 'unset' : 3,
             overflow: expanded ? 'visible' : 'hidden',
@@ -126,7 +126,7 @@ function ReviewCard({ r }: { r: any }) {
           )}
         </div>
       ) : (
-        <p style={{ fontSize: 13, color: DIM, fontStyle: 'italic', margin: 0 }}>Aucun commentaire.</p>
+        <p style={{ fontSize: 13, color: 'var(--text-3)', fontStyle: 'italic', margin: 0 }}>Aucun commentaire.</p>
       )}
     </div>
   )
@@ -179,7 +179,7 @@ export default function ReviewsPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM }}>
       <style>{`
         @media (max-width: 760px) {
           .crev-container { padding: 24px 16px 60px !important; }
@@ -190,8 +190,8 @@ export default function ReviewsPage() {
 
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,255,0.28)', margin: '0 0 10px' }}>Espace coach</p>
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: '0 0 8px', fontFamily: 'var(--font-syne,sans-serif)' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', margin: '0 0 10px' }}>Espace coach</p>
+          <h1 style={{ fontSize: 32, fontWeight: 600, color: CREAM, letterSpacing: '-0.5px', margin: '0 0 8px', fontFamily: 'var(--font-syne,sans-serif)' }}>
             Avis
           </h1>
           {avgRating != null && (
@@ -209,11 +209,11 @@ export default function ReviewsPage() {
         {/* Empty state */}
         {all.length === 0 && (
           <div style={{
-            background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)',
+            background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)',
             borderRadius: 16, padding: '60px', textAlign: 'center',
           }}>
             <p style={{ color: CREAM, fontSize: 14, fontWeight: 600, margin: '0 0 6px' }}>Aucun avis pour le moment</p>
-            <p style={{ color: SILVER, fontSize: 13, margin: 0 }}>Les avis de vos élèves apparaîtront ici</p>
+            <p style={{ color: SILVER, fontSize: 13, margin: 0 }}>Les avis de tes élèves apparaîtront ici</p>
           </div>
         )}
 
@@ -237,12 +237,12 @@ export default function ReviewsPage() {
                   onClick={() => setShowAll(s => !s)}
                   style={{
                     padding: '14px 24px', borderRadius: 10,
-                    border: '1px solid rgba(240,244,255,0.2)',
+                    border: '1px solid color-mix(in srgb, var(--brand) 20%, transparent)',
                     background: 'transparent', color: CREAM,
                     fontSize: 14, fontWeight: 600, cursor: 'pointer',
                     transition: 'all 0.15s',
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(240,244,255,0.05)' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 5%, transparent)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
                 >
                   {showAll

@@ -5,15 +5,15 @@ interface OPLogoProps {
 
 export default function OPLogo({ size = 32, variant = 'dark' }: OPLogoProps) {
   const bg: Record<string, string> = {
-    light:  '#f0f4ff',
-    dark:   '#0d0d18',
-    violet: '#7c3aed',
+    light:  'var(--brand)',
+    dark:   'var(--bg)',
+    violet: 'var(--brand)',
     naked:  'transparent',
   }
 
-  const textColor  = variant === 'light' ? '#04040a' : '#f0f4ff'
-  const curveColor = variant === 'light' ? '#04040a' : '#f0f4ff'
-  const border     = variant === 'dark'  ? '1px solid rgba(255,255,255,0.08)' : 'none'
+  const textColor  = variant === 'light' ? 'var(--bg)' : 'var(--brand)'
+  const curveColor = variant === 'light' ? 'var(--bg)' : 'var(--brand)'
+  const border     = variant === 'dark'  ? '1px solid color-mix(in srgb, var(--overlay) 8%, transparent)' : 'none'
 
   return (
     <div style={{

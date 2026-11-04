@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { X } from 'lucide-react'
 
-const CREAM  = '#E8E4DC'
-const SILVER = '#8A8A8A'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-3)'
 
 const CATEGORIES: { value: string; label: string; desc: string }[] = [
   { value: 'longterme', label: 'Graphiques Long Terme', desc: 'Volume · Constance · Winrate sur PT4 ou Holdem Manager' },
@@ -59,7 +59,7 @@ export default function ProofGalleryModal({
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 2000,
-      background: '#07090e', display: 'flex', flexDirection: 'column',
+      background: 'var(--bg)', display: 'flex', flexDirection: 'column',
       animation: 'galleryIn 0.2s cubic-bezier(0.4,0,0.2,1)',
     }}>
 
@@ -68,8 +68,8 @@ export default function ProofGalleryModal({
         position: 'fixed', top: 24, left: 40, zIndex: 2100,
         display: 'flex', alignItems: 'center', gap: 7,
         padding: '7px 16px 7px 12px', borderRadius: 99,
-        background: 'rgba(232,228,220,0.06)',
-        border: '1px solid rgba(232,228,220,0.1)',
+        background: 'color-mix(in srgb, var(--brand) 6%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)',
         color: CREAM, fontSize: 12, fontWeight: 600, cursor: 'pointer',
         backdropFilter: 'blur(16px)',
         transition: 'background 0.15s, border-color 0.15s, transform 0.15s',
@@ -77,14 +77,14 @@ export default function ProofGalleryModal({
       }}
         onMouseEnter={e => {
           const b = e.currentTarget as HTMLButtonElement
-          b.style.background = 'rgba(232,228,220,0.12)'
-          b.style.borderColor = 'rgba(232,228,220,0.22)'
+          b.style.background = 'color-mix(in srgb, var(--brand) 12%, transparent)'
+          b.style.borderColor = 'color-mix(in srgb, var(--brand) 22%, transparent)'
           b.style.transform = 'translateY(-1px)'
         }}
         onMouseLeave={e => {
           const b = e.currentTarget as HTMLButtonElement
-          b.style.background = 'rgba(232,228,220,0.06)'
-          b.style.borderColor = 'rgba(232,228,220,0.1)'
+          b.style.background = 'color-mix(in srgb, var(--brand) 6%, transparent)'
+          b.style.borderColor = 'color-mix(in srgb, var(--brand) 10%, transparent)'
           b.style.transform = 'translateY(0)'
         }}>
         <X size={13} /> Fermer
@@ -95,7 +95,7 @@ export default function ProofGalleryModal({
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 40px 100px' }}>
 
           {/* Titre */}
-          <h2 style={{ fontSize: 28, fontWeight: 800, color: CREAM, letterSpacing: '-0.6px', marginBottom: 8 }}>
+          <h2 style={{ fontSize: 28, fontWeight: 600, color: CREAM, letterSpacing: '-0.6px', marginBottom: 8 }}>
             Visite des preuves
           </h2>
           <p style={{ fontSize: 14, color: SILVER, margin: '0 0 40px' }}>
@@ -123,26 +123,26 @@ export default function ProofGalleryModal({
                       const btn = e.currentTarget as HTMLButtonElement
                       btn.style.transform = 'translateY(-3px)'
                       const img = btn.querySelector<HTMLDivElement>('.cat-thumb')
-                      if (img) { img.style.borderColor = 'rgba(232,228,220,0.28)'; img.style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)' }
+                      if (img) { img.style.borderColor = 'color-mix(in srgb, var(--brand) 28%, transparent)'; img.style.boxShadow = 'var(--shadow-float)' }
                     }}
                     onMouseLeave={e => {
                       const btn = e.currentTarget as HTMLButtonElement
                       btn.style.transform = 'translateY(0)'
                       const img = btn.querySelector<HTMLDivElement>('.cat-thumb')
-                      if (img) { img.style.borderColor = 'rgba(232,228,220,0.1)'; img.style.boxShadow = 'none' }
+                      if (img) { img.style.borderColor = 'color-mix(in srgb, var(--brand) 10%, transparent)'; img.style.boxShadow = 'none' }
                     }}>
                     <div className="cat-thumb" style={{
                       width: '100%', aspectRatio: '4/3', position: 'relative',
                       borderRadius: 10, overflow: 'hidden',
-                      background: firstProof ? '#0f1218' : 'rgba(232,228,220,0.04)',
-                      border: '1px solid rgba(232,228,220,0.1)',
+                      background: firstProof ? 'var(--bg)' : 'color-mix(in srgb, var(--brand) 4%, transparent)',
+                      border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)',
                       transition: 'border-color 0.2s, box-shadow 0.2s',
                     }}>
                       {firstProof
                         ? <Image src={firstProof.url} alt={cat.label} fill sizes="160px"
                             style={{ objectFit: 'cover', display: 'block' }} />
                         : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                            <span style={{ fontSize: 24, opacity: 0.08 }}>♠</span>
+                            
                           </div>
                       }
                     </div>
@@ -159,7 +159,7 @@ export default function ProofGalleryModal({
           {activeCats.length === 0 ? (
             <div style={{
               textAlign: 'center', padding: '80px 0',
-              borderTop: '1px solid rgba(232,228,220,0.07)',
+              borderTop: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)',
             }}>
               <p style={{ fontSize: 15, color: SILVER }}>Aucune preuve disponible pour ce coach.</p>
             </div>
@@ -173,7 +173,7 @@ export default function ProofGalleryModal({
                     key={cat.value}
                     ref={el => { sectionRefs.current[cat.value] = el }}
                     style={{
-                      borderTop: '1px solid rgba(232,228,220,0.07)',
+                      borderTop: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)',
                       padding: '56px 0',
                     }}
                   >
@@ -188,7 +188,7 @@ export default function ProofGalleryModal({
                           {cat.desc}
                         </p>
                         {catProofs.length > 1 && (
-                          <p style={{ fontSize: 12, color: 'rgba(232,228,220,0.25)', marginTop: 20 }}>
+                          <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 20 }}>
                             {catProofs.length} photo{catProofs.length > 1 ? 's' : ''}
                           </p>
                         )}
@@ -199,7 +199,7 @@ export default function ProofGalleryModal({
 
                         {/* Grande photo principale */}
                         {first && (
-                          <div style={{ borderRadius: 14, overflow: 'hidden', background: '#0f1218' }}>
+                          <div style={{ borderRadius: 14, overflow: 'hidden', background: 'var(--bg)' }}>
                             <img src={first.url} alt={first.caption ?? ''}
                               style={{ width: '100%', display: 'block' }} />
                             {first.caption && (
@@ -218,7 +218,7 @@ export default function ProofGalleryModal({
                             gap: 8,
                           }}>
                             {rest.map(proof => (
-                              <div key={proof.id} style={{ borderRadius: 12, overflow: 'hidden', background: '#0f1218' }}>
+                              <div key={proof.id} style={{ borderRadius: 12, overflow: 'hidden', background: 'var(--bg)' }}>
                                 <img src={proof.url} alt={proof.caption ?? ''}
                                   style={{ width: '100%', display: 'block' }} loading="lazy" />
                                 {proof.caption && (

@@ -6,16 +6,16 @@ import { useUser } from '@/hooks/useUser'
 import { Send, Search, MessageSquare, Inbox, Check, CheckCheck, Plus, Paperclip, FileText, X } from 'lucide-react'
 import FourAcesLoader from '@/components/FourAcesLoader'
 
-const BG       = '#07090e'
-const PANEL    = '#0a0a14'
-const PANEL_HI = 'rgba(232,228,220,0.04)'
-const CREAM    = '#f0f4ff'
-const SILVER   = 'rgba(240,244,255,0.45)'
-const MUTED    = 'rgba(240,244,255,0.22)'
-const VIOLET   = '#7c3aed'
-const CYAN     = '#06b6d4'
-const BORDER   = 'rgba(255,255,255,0.06)'
-const BORDER_S = 'rgba(255,255,255,0.10)'
+const BG       = 'var(--bg)'
+const PANEL    = 'var(--bg)'
+const PANEL_HI = 'color-mix(in srgb, var(--brand) 4%, transparent)'
+const CREAM    = 'var(--text)'
+const SILVER   = 'var(--text-2)'
+const MUTED    = 'var(--text-3)'
+const VIOLET   = 'var(--brand)'
+const CYAN     = 'var(--brand)'
+const BORDER   = 'color-mix(in srgb, var(--overlay) 6%, transparent)'
+const BORDER_S = 'color-mix(in srgb, var(--overlay) 10%, transparent)'
 
 type Message = {
   id: string
@@ -81,10 +81,10 @@ function AttachmentBubble({ att, mine }: { att: AttachmentData; mine: boolean })
     <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textDecoration: 'none' }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={att.url} alt={att.name} style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 12, display: 'block', objectFit: 'cover' }} />
-      <span style={{ fontSize: 10, color: mine ? 'rgba(255,255,255,0.6)' : SILVER, marginTop: 4, display: 'block' }}>{att.name}</span>
+      <span style={{ fontSize: 10, color: mine ? 'var(--text-2)' : SILVER, marginTop: 4, display: 'block' }}>{att.name}</span>
     </a>
   ) : (
-    <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: mine ? '#fff' : CREAM }}>
+    <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: mine ? 'var(--text)' : CREAM }}>
       <FileText size={18} />
       <span style={{ fontSize: 13, fontWeight: 600 }}>{att.name}</span>
     </a>
@@ -95,11 +95,11 @@ function Avatar({ name, src, size = 40, ring }: { name?: string | null; src?: st
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
-      background: `linear-gradient(135deg,${VIOLET},${CYAN})`,
+      background: `${VIOLET}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: '#fff', fontWeight: 700, fontSize: Math.round(size * 0.42),
+      color: 'var(--on-brand)', fontWeight: 700, fontSize: Math.round(size * 0.42),
       flexShrink: 0, overflow: 'hidden', position: 'relative',
-      boxShadow: ring ? `0 0 0 2px ${CYAN}40, 0 0 0 4px ${BG}` : undefined,
+      boxShadow: ring ? 'none' : undefined,
     }}>
       {src ? <Image src={src} alt="" fill sizes={`${size}px`} style={{ objectFit: 'cover' }} /> : initials(name)}
     </div>
@@ -373,18 +373,18 @@ export default function StudentMessagesPage() {
       <style>{`
         @media (max-width: 760px) {
           .smsg-layout { flex-direction: column !important; }
-          .smsg-sidebar { width: 100% !important; flex: 0 0 36% !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08); min-height: 0; overflow: hidden; }
+          .smsg-sidebar { width: 100% !important; flex: 0 0 36% !important; border-right: none !important; border-bottom: 1px solid color-mix(in srgb, var(--overlay) 8%, transparent); min-height: 0; overflow: hidden; }
         }
         @keyframes op-shimmer { 0%{background-position:-240px 0} 100%{background-position:240px 0} }
-        .op-shimmer { background-image:linear-gradient(90deg,rgba(232,228,220,0.03) 0%,rgba(232,228,220,0.08) 50%,rgba(232,228,220,0.03) 100%); background-size:480px 100%; animation:op-shimmer 1.4s linear infinite; }
+        .op-shimmer { background-image:linear-gradient(90deg,color-mix(in srgb, var(--brand) 3%, transparent) 0%,color-mix(in srgb, var(--brand) 8%, transparent) 50%,color-mix(in srgb, var(--brand) 3%, transparent) 100%); background-size:480px 100%; animation:op-shimmer 1.4s linear infinite; }
         @keyframes op-pop { from{transform:translateY(4px) scale(0.98);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
         .op-pop { animation:op-pop 180ms cubic-bezier(0.2,0.7,0.2,1); }
         @keyframes op-pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
         .op-pulse { animation:op-pulse 1.4s ease-in-out infinite; }
         @keyframes op-spin { to{transform:rotate(360deg)} }
-        .op-thread::-webkit-scrollbar{width:8px} .op-thread::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);border-radius:4px}
-        .op-list::-webkit-scrollbar{width:6px} .op-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.05);border-radius:4px}
-        .op-conv-row{transition:background 0.12s ease} .op-conv-row:hover{background:rgba(255,255,255,0.025)}
+        .op-thread::-webkit-scrollbar{width:8px} .op-thread::-webkit-scrollbar-thumb{background:color-mix(in srgb, var(--overlay) 6%, transparent);border-radius:4px}
+        .op-list::-webkit-scrollbar{width:6px} .op-list::-webkit-scrollbar-thumb{background:color-mix(in srgb, var(--overlay) 5%, transparent);border-radius:4px}
+        .op-conv-row{transition:background 0.12s ease} .op-conv-row:hover{background:color-mix(in srgb, var(--overlay) 2%, transparent)}
       `}</style>
 
       {/* ═══ SIDEBAR ═══ */}
@@ -394,7 +394,7 @@ export default function StudentMessagesPage() {
             <h1 style={{ fontSize: 20, fontWeight: 700, color: CREAM, letterSpacing: '-0.5px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>Messages</h1>
             {coaches.length > 0 && <span style={{ fontSize: 11, color: SILVER }}>{coaches.length} coach{coaches.length > 1 ? 's' : ''}</span>}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}`, borderRadius: 10, padding: '8px 11px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'color-mix(in srgb, var(--overlay) 3%, transparent)', border: `1px solid ${BORDER}`, borderRadius: 10, padding: '8px 11px' }}>
             <Search size={13} color={SILVER} strokeWidth={1.8} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un coach…"
               style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', color: CREAM, fontSize: 13, padding: 0 }} />
@@ -422,7 +422,7 @@ export default function StudentMessagesPage() {
               return (
                 <button key={conv.coach.id} onClick={() => setActiveCoach(conv.coach.id)}
                   className="op-conv-row"
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: active ? 'rgba(6,182,212,0.08)' : 'transparent', border: 'none', borderLeft: `2px solid ${active ? CYAN : 'transparent'}`, cursor: 'pointer', textAlign: 'left', color: 'inherit' }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: active ? 'color-mix(in srgb, var(--brand) 8%, transparent)' : 'transparent', border: 'none', borderLeft: `2px solid ${active ? CYAN : 'transparent'}`, cursor: 'pointer', textAlign: 'left', color: 'inherit' }}
                 >
                   <Avatar name={conv.coach.username} src={conv.coach.avatar_url} size={42} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -438,7 +438,7 @@ export default function StudentMessagesPage() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                       {conv.lastMessage ? (
-                        <p style={{ flex: 1, minWidth: 0, margin: 0, fontSize: 12, color: conv.unread > 0 ? 'rgba(240,244,255,0.78)' : SILVER, fontWeight: conv.unread > 0 ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <p style={{ flex: 1, minWidth: 0, margin: 0, fontSize: 12, color: conv.unread > 0 ? 'var(--text)' : SILVER, fontWeight: conv.unread > 0 ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {isMine && <span style={{ color: MUTED, marginRight: 4 }}>Toi :</span>}
                           {conv.lastMessage.content}
                         </p>
@@ -448,7 +448,7 @@ export default function StudentMessagesPage() {
                         </p>
                       )}
                       {conv.unread > 0 && (
-                        <span style={{ minWidth: 18, height: 18, padding: '0 6px', borderRadius: 10, background: CYAN, color: '#fff', fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ minWidth: 18, height: 18, padding: '0 6px', borderRadius: 10, background: CYAN, color: 'var(--on-brand)', fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {conv.unread > 99 ? '99+' : conv.unread}
                         </span>
                       )}
@@ -463,11 +463,11 @@ export default function StudentMessagesPage() {
 
       {/* ═══ THREAD ═══ */}
       <section style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative' }}>
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 70% 40% at 50% 0%,rgba(6,182,212,0.05) 0%,transparent 70%)' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', background: 'transparent' }} />
 
         {!activeConv ? (
           <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center' }}>
-            <div style={{ width: 64, height: 64, borderRadius: 18, background: `linear-gradient(135deg,${VIOLET}22,${CYAN}22)`, border: `1px solid ${BORDER_S}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 22 }}>
+            <div style={{ width: 64, height: 64, borderRadius: 18, background: 'var(--surface-2)', border: `1px solid ${BORDER_S}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 22 }}>
               <MessageSquare size={26} color={CREAM} strokeWidth={1.5} />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: CREAM, letterSpacing: '-0.5px', margin: '0 0 8px', fontFamily: 'var(--font-syne,sans-serif)' }}>
@@ -482,7 +482,7 @@ export default function StudentMessagesPage() {
         ) : (
           <>
             {/* Header thread */}
-            <header style={{ position: 'relative', zIndex: 1, height: 68, padding: '0 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(10,10,20,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0 }}>
+            <header style={{ position: 'relative', zIndex: 1, height: 68, padding: '0 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: 14, background: 'color-mix(in srgb, var(--bg) 60%, transparent)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0 }}>
               <Avatar name={activeConv.coach.username} src={activeConv.coach.avatar_url} size={40} ring />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: CREAM, letterSpacing: '-0.2px' }}>{activeConv.coach.username ?? 'Coach'}</div>
@@ -530,11 +530,11 @@ export default function StudentMessagesPage() {
                                   padding: att ? '8px' : '9px 14px', borderRadius: 18,
                                   borderBottomRightRadius: mine && isLastRun ? 5 : 18,
                                   borderBottomLeftRadius:  !mine && isLastRun ? 5 : 18,
-                                  background: mine ? `linear-gradient(135deg,${CYAN},${VIOLET})` : 'rgba(255,255,255,0.06)',
-                                  color: mine ? '#fff' : CREAM,
+                                  background: mine ? `${CYAN}` : 'color-mix(in srgb, var(--overlay) 6%, transparent)',
+                                  color: mine ? 'var(--on-brand)' : CREAM,
                                   fontSize: 14, lineHeight: 1.45, wordBreak: 'break-word', whiteSpace: 'pre-wrap',
                                   opacity: m.pending ? 0.65 : 1,
-                                  boxShadow: mine ? `0 1px 0 rgba(0,0,0,0.2),0 8px 24px -12px ${CYAN}50` : 'none',
+                                  boxShadow: 'none',
                                   border: mine ? 'none' : `1px solid ${BORDER_S}`,
                                 }}>
                                   {att ? <AttachmentBubble att={att} mine={mine} /> : m.content}
@@ -542,7 +542,7 @@ export default function StudentMessagesPage() {
                               )
                             })()}
                             {isLastRun && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: m.failed ? '#ef4444' : SILVER, padding: '0 6px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: m.failed ? 'var(--error)' : SILVER, padding: '0 6px' }}>
                                 <span>{new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                                 {mine && (
                                   m.failed ? <span style={{ fontWeight: 600 }}>· Échec</span>
@@ -562,9 +562,9 @@ export default function StudentMessagesPage() {
             </div>
 
             {/* Composer */}
-            <div style={{ position: 'relative', zIndex: 1, padding: '14px 20px 18px', borderTop: `1px solid ${BORDER}`, background: 'rgba(10,10,20,0.7)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'rgba(255,255,255,0.04)', border: `1px solid ${BORDER_S}`, borderRadius: 16, padding: '8px 8px 8px 14px', transition: 'border-color 0.15s' }}
-                onFocus={e => (e.currentTarget.style.borderColor = `${CYAN}55`)}
+            <div style={{ position: 'relative', zIndex: 1, padding: '14px 20px 18px', borderTop: `1px solid ${BORDER}`, background: 'color-mix(in srgb, var(--bg) 70%, transparent)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', border: `1px solid ${BORDER_S}`, borderRadius: 16, padding: '8px 8px 8px 14px', transition: 'border-color 0.15s' }}
+                onFocus={e => (e.currentTarget.style.borderColor = `color-mix(in srgb, ${CYAN} 33%, transparent)`)}
                 onBlur={e => (e.currentTarget.style.borderColor = BORDER_S)}
               >
                 <button type="button" onClick={() => attachFileRef.current?.click()} disabled={uploading}
@@ -581,12 +581,12 @@ export default function StudentMessagesPage() {
                   onChange={e => setDraft(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
                   rows={1}
-                  placeholder={`Message à ${activeConv.coach.username ?? 'votre coach'}…`}
+                  placeholder={`Message à ${activeConv.coach.username ?? 'ton coach'}…`}
                   style={{ flex: 1, minWidth: 0, resize: 'none', background: 'transparent', border: 'none', outline: 'none', color: CREAM, fontSize: 14, lineHeight: 1.45, padding: '8px 0', maxHeight: 140, minHeight: 22, fontFamily: 'inherit' }}
                   onInput={e => { const t = e.currentTarget; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 140) + 'px' }}
                 />
                 <button onClick={handleSend} disabled={!draft.trim() || sending} aria-label="Envoyer"
-                  style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 12, border: 'none', background: !draft.trim() || sending ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg,${CYAN},${VIOLET})`, color: !draft.trim() || sending ? MUTED : '#fff', cursor: !draft.trim() || sending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.12s,background 0.15s', boxShadow: !draft.trim() || sending ? 'none' : `0 4px 16px -4px ${CYAN}50` }}
+                  style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 12, border: 'none', background: !draft.trim() || sending ? 'color-mix(in srgb, var(--overlay) 5%, transparent)' : `${CYAN}`, color: !draft.trim() || sending ? MUTED : 'var(--on-brand)', cursor: !draft.trim() || sending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.12s,background 0.15s', boxShadow: !draft.trim() || sending ? 'none' : 'none' }}
                   onMouseDown={e => { if (!sending && draft.trim()) e.currentTarget.style.transform = 'scale(0.94)' }}
                   onMouseUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
@@ -595,10 +595,10 @@ export default function StudentMessagesPage() {
                 </button>
               </div>
               <div style={{ fontSize: 10, color: MUTED, marginTop: 8, paddingLeft: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <kbd style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`, fontFamily: 'inherit', color: SILVER }}>Entrée</kbd>
+                <kbd style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'color-mix(in srgb, var(--overlay) 5%, transparent)', border: `1px solid ${BORDER}`, fontFamily: 'inherit', color: SILVER }}>Entrée</kbd>
                 pour envoyer
                 <span style={{ opacity: 0.5 }}>·</span>
-                <kbd style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`, fontFamily: 'inherit', color: SILVER }}>Maj+Entrée</kbd>
+                <kbd style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'color-mix(in srgb, var(--overlay) 5%, transparent)', border: `1px solid ${BORDER}`, fontFamily: 'inherit', color: SILVER }}>Maj+Entrée</kbd>
                 saut de ligne
               </div>
             </div>

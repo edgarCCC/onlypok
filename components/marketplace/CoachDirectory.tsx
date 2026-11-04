@@ -13,7 +13,7 @@ const HEADER_BUDGET_RANGES: Record<string, [number, number]> = {
   '> 100€/h':  [101, Infinity],
 }
 
-const TAB_ACCENT = '#f59e0b' // couleur de l'onglet Coachs
+const TAB_ACCENT = 'var(--brand)' // couleur de l'onglet Coachs
 
 /* Rangée curée : { titre, sous-titre, coachs, accent } — filtrée si non vide */
 type Row = { key: string; title: string; subtitle: string; coaches: any[]; accent: string }
@@ -95,7 +95,7 @@ export default function CoachDirectory({
         <Search size={40} color={CREAM} />
       </div>
       <p style={{ color: CREAM, fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Aucun coach trouvé</p>
-      <p style={{ color: MUTED, fontSize: 13 }}>Essayez de modifier votre recherche en haut de page</p>
+      <p style={{ color: MUTED, fontSize: 13 }}>Essaie de modifier ta recherche en haut de page</p>
     </div>
   )
 

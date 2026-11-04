@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react'
 
 /* ─── Palette per branch index ─── */
 const PALETTE = [
-  { bg: 'rgba(124,58,237,0.22)', border: 'rgba(124,58,237,0.55)', text: '#d8b4fe', line: '#7c3aed' },
-  { bg: 'rgba(6,182,212,0.18)',  border: 'rgba(6,182,212,0.5)',   text: '#67e8f9', line: '#06b6d4' },
-  { bg: 'rgba(52,211,153,0.18)', border: 'rgba(52,211,153,0.5)', text: '#6ee7b7', line: '#34d399' },
-  { bg: 'rgba(245,158,11,0.18)', border: 'rgba(245,158,11,0.5)', text: '#fcd34d', line: '#f59e0b' },
-  { bg: 'rgba(225,29,72,0.18)',  border: 'rgba(225,29,72,0.5)',  text: '#fca5a5', line: '#e11d48' },
-  { bg: 'rgba(96,165,250,0.18)', border: 'rgba(96,165,250,0.5)', text: '#93c5fd', line: '#60a5fa' },
+  { bg: 'color-mix(in srgb, var(--brand) 22%, transparent)', border: 'color-mix(in srgb, var(--brand) 55%, transparent)', text: 'var(--brand)', line: 'var(--brand)' },
+  { bg: 'color-mix(in srgb, var(--brand) 18%, transparent)',  border: 'color-mix(in srgb, var(--brand) 50%, transparent)',   text: 'var(--brand)', line: 'var(--brand)' },
+  { bg: 'color-mix(in srgb, var(--gain) 18%, transparent)', border: 'color-mix(in srgb, var(--gain) 50%, transparent)', text: 'var(--gain)', line: 'var(--gain)' },
+  { bg: 'color-mix(in srgb, var(--brand) 18%, transparent)', border: 'color-mix(in srgb, var(--brand) 50%, transparent)', text: 'var(--brand)', line: 'var(--brand)' },
+  { bg: 'color-mix(in srgb, var(--error) 18%, transparent)',  border: 'color-mix(in srgb, var(--error) 50%, transparent)',  text: 'var(--error)', line: 'var(--error)' },
+  { bg: 'color-mix(in srgb, var(--brand) 18%, transparent)', border: 'color-mix(in srgb, var(--brand) 50%, transparent)', text: 'var(--brand)', line: 'var(--brand)' },
 ]
-const ROOT_P = { bg: 'rgba(255,255,255,0.07)', border: 'rgba(255,255,255,0.18)', text: '#EDEDEF', line: '#ffffff50' }
+const ROOT_P = { bg: 'color-mix(in srgb, var(--overlay) 7%, transparent)', border: 'color-mix(in srgb, var(--overlay) 18%, transparent)', text: 'var(--text)', line: 'color-mix(in srgb, var(--overlay) 31%, transparent)' }
 
 /* ─── Types ─── */
 interface MNode { content: string; depth: number; children: MNode[]; colorIdx: number }

@@ -19,7 +19,7 @@ export default function ProgramSection({ chapters, typeColor, hasPurchased, allL
   )
 
   return (
-    <div style={{ padding: '40px 0', borderBottom: '1px solid rgba(232,228,220,0.06)' }}>
+    <div style={{ padding: '40px 0', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
       {/* Header avec stats */}
       <div style={{ marginBottom: 28 }}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: '0 0 10px' }}>Programme de la formation</h2>
@@ -31,7 +31,7 @@ export default function ProgramSection({ chapters, typeColor, hasPurchased, allL
             <PlayCircle size={13} /> {allLessonsCount} leçons
           </span>
           {freeLessons > 0 && (
-            <span style={{ fontSize: 12, color: '#06b6d4', background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', padding: '2px 8px', borderRadius: 99 }}>
+            <span style={{ fontSize: 12, color: 'var(--brand)', background: 'color-mix(in srgb, var(--brand) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 25%, transparent)', padding: '2px 8px', borderRadius: 99 }}>
               {freeLessons} gratuites
             </span>
           )}
@@ -43,16 +43,16 @@ export default function ProgramSection({ chapters, typeColor, hasPurchased, allL
           const lessons = chapter.formation_lessons ?? []
           const freeC = lessons.filter((l: any) => l.is_free).length
           return (
-            <div key={chapter.id} style={{ background: isOpen ? 'rgba(232,228,220,0.04)' : 'rgba(232,228,220,0.02)', border: `1px solid ${isOpen ? typeColor + '30' : 'rgba(232,228,220,0.07)'}`, borderRadius: 14, overflow: 'hidden', transition: 'all 0.2s' }}>
+            <div key={chapter.id} style={{ background: isOpen ? 'color-mix(in srgb, var(--brand) 4%, transparent)' : 'color-mix(in srgb, var(--brand) 2%, transparent)', border: `1px solid ${isOpen ? `color-mix(in srgb, ${typeColor} 19%, transparent)` : 'color-mix(in srgb, var(--brand) 7%, transparent)'}`, borderRadius: 14, overflow: 'hidden', transition: 'all 0.2s' }}>
               <button onClick={() => setOpenChapters(prev => isOpen ? prev.filter(x => x !== chapter.id) : [...prev, chapter.id])}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
                 {/* Numéro chapitre */}
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: isOpen ? typeColor : `${typeColor}20`, border: `1px solid ${typeColor}50`, color: isOpen ? '#fff' : typeColor, fontSize: 13, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>{ci + 1}</div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: isOpen ? typeColor : `color-mix(in srgb, ${typeColor} 13%, transparent)`, border: `1px solid color-mix(in srgb, ${typeColor} 31%, transparent)`, color: isOpen ? 'var(--on-brand)' : typeColor, fontSize: 13, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>{ci + 1}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: CREAM, display: 'block' }}>{chapter.title}</span>
                   <span style={{ fontSize: 12, color: SILVER }}>
                     {lessons.length} leçon{lessons.length > 1 ? 's' : ''}
-                    {freeC > 0 && <span style={{ color: '#06b6d4', marginLeft: 6 }}>· {freeC} gratuites</span>}
+                    {freeC > 0 && <span style={{ color: 'var(--brand)', marginLeft: 6 }}>· {freeC} gratuites</span>}
                   </span>
                 </div>
                 <span style={{ color: isOpen ? typeColor : SILVER, flexShrink: 0, transition: 'color 0.2s' }}>
@@ -60,7 +60,7 @@ export default function ProgramSection({ chapters, typeColor, hasPurchased, allL
                 </span>
               </button>
               {isOpen && (
-                <div style={{ borderTop: `1px solid ${typeColor}20` }}>
+                <div style={{ borderTop: `1px solid color-mix(in srgb, ${typeColor} 13%, transparent)` }}>
                   {lessons.map((lesson: any) => {
                     const locked = !lesson.is_free && !hasPurchased
                     const canPlay = (lesson.is_free || hasPurchased) && !!lesson.video_url
@@ -68,11 +68,11 @@ export default function ProgramSection({ chapters, typeColor, hasPurchased, allL
                     return (
                       <div key={lesson.id}
                         onClick={canPlay ? () => onPlayLesson({ url: lesson.video_url, type: lesson.video_type ?? 'youtube', title: lesson.title }) : undefined}
-                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(232,228,220,0.04)', cursor: canPlay ? 'pointer' : 'default', transition: 'background 0.15s' }}
-                        onMouseEnter={e => { if (canPlay) (e.currentTarget as HTMLDivElement).style.background = 'rgba(232,228,220,0.04)' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 18px', borderBottom: '1px solid color-mix(in srgb, var(--brand) 4%, transparent)', cursor: canPlay ? 'pointer' : 'default', transition: 'background 0.15s' }}
+                        onMouseEnter={e => { if (canPlay) (e.currentTarget as HTMLDivElement).style.background = 'color-mix(in srgb, var(--brand) 4%, transparent)' }}
                         onMouseLeave={e => { if (canPlay) (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}>
                         {/* Miniature */}
-                        <div style={{ width: 64, height: 44, borderRadius: 6, overflow: 'hidden', flexShrink: 0, position: 'relative', background: `${typeColor}15` }}>
+                        <div style={{ width: 64, height: 44, borderRadius: 6, overflow: 'hidden', flexShrink: 0, position: 'relative', background: `color-mix(in srgb, ${typeColor} 8%, transparent)` }}>
                           {thumbUrl ? (
                             <Image src={thumbUrl} alt="" fill sizes="64px" style={{ objectFit: 'cover' }} />
                           ) : (
@@ -96,7 +96,7 @@ export default function ProgramSection({ chapters, typeColor, hasPurchased, allL
                           <span style={{ fontSize: 13, color: locked ? SILVER : CREAM, display: 'block', opacity: locked ? 0.6 : 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lesson.title}</span>
                         </div>
                         {lesson.is_free && !hasPurchased && (
-                          <span style={{ fontSize: 10, color: '#06b6d4', border: '1px solid rgba(6,182,212,0.3)', padding: '2px 8px', borderRadius: 99, flexShrink: 0, fontWeight: 600 }}>Gratuit</span>
+                          <span style={{ fontSize: 10, color: 'var(--brand)', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)', padding: '2px 8px', borderRadius: 99, flexShrink: 0, fontWeight: 600 }}>Gratuit</span>
                         )}
                       </div>
                     )

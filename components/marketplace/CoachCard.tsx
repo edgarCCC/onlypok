@@ -29,7 +29,7 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
         cursor: 'pointer',
         transition: 'border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
         transform: hovered ? 'translateY(-4px)' : 'none',
-        boxShadow: hovered ? '0 20px 48px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.3)',
+        boxShadow: hovered ? 'var(--shadow-float)' : 'none',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -40,8 +40,8 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{
           width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
-          border: `1px solid ${hovered ? BORDER_HOV : 'rgba(232,228,220,0.12)'}`,
-          background: 'rgba(255,255,255,0.04)',
+          border: `1px solid ${hovered ? BORDER_HOV : 'color-mix(in srgb, var(--brand) 12%, transparent)'}`,
+          background: 'color-mix(in srgb, var(--overlay) 4%, transparent)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden', fontSize: 17, fontWeight: 700, color: CREAM,
           position: 'relative', transition: 'border-color 0.2s ease',
@@ -70,14 +70,14 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
           <span style={{
             fontSize: 9, fontWeight: 800, color: AMBER, letterSpacing: '0.1em',
             padding: '2px 7px', borderRadius: 99, flexShrink: 0,
-            background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
+            background: 'color-mix(in srgb, var(--brand) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)',
           }}>PRO</span>
         )}
         {coach.unverified && (
           <span style={{
             fontSize: 9, fontWeight: 600, color: SILVER, letterSpacing: '0.06em',
             padding: '2px 7px', borderRadius: 99, flexShrink: 0,
-            background: 'rgba(255,255,255,0.04)', border: `1px solid ${DIM}`,
+            background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', border: `1px solid ${DIM}`,
           }}>Non vérifié</span>
         )}
       </div>
@@ -110,7 +110,7 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
           {variants.slice(0, 3).map(v => (
             <span key={v} style={{
               fontSize: 9.5, fontWeight: 600, padding: '3px 9px', borderRadius: 99,
-              background: 'rgba(255,255,255,0.04)', color: MUTED, border: `1px solid ${DIM}`,
+              background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', color: MUTED, border: `1px solid ${DIM}`,
               letterSpacing: '0.03em',
             }}>{v}</span>
           ))}
@@ -143,7 +143,7 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
         )}
       </div>
 
-      {/* CTA — seul élément qui porte le dégradé de marque */}
+      {/* CTA : le seul bouton plein de la carte */}
       <button
         className="op-cta"
         onClick={e => { e.stopPropagation(); onOpen() }}
@@ -151,7 +151,7 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           width: '100%', padding: '10px', borderRadius: 11, border: 'none',
           background: AMBER_GRAD,
-          color: '#fff',
+          color: 'var(--on-brand)',
           fontSize: 13, fontWeight: 700, cursor: 'pointer',
           opacity: hovered ? 1 : 0.92,
         }}

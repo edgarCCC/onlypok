@@ -60,7 +60,7 @@ export default function VideoComments({ formationId, coachId, videoUrl }: { form
             placeholder="Laisse un commentaire…"
             rows={3}
             style={{
-              width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+              width: '100%', background: 'color-mix(in srgb, var(--overlay) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--overlay) 8%, transparent)',
               borderRadius: 12, padding: '14px 16px', color: CREAM, fontSize: 14, lineHeight: 1.6,
               resize: 'vertical', outline: 'none', boxSizing: 'border-box',
             }}
@@ -70,8 +70,8 @@ export default function VideoComments({ formationId, coachId, videoUrl }: { form
             disabled={!text.trim() || sending}
             style={{
               marginTop: 8, padding: '9px 20px', borderRadius: 10, border: 'none',
-              background: text.trim() ? '#3b82f6' : 'rgba(255,255,255,0.06)',
-              color: text.trim() ? '#fff' : SILVER,
+              background: text.trim() ? 'var(--brand)' : 'color-mix(in srgb, var(--overlay) 6%, transparent)',
+              color: text.trim() ? 'var(--on-brand)' : SILVER,
               fontSize: 13, fontWeight: 600, cursor: text.trim() ? 'pointer' : 'default', transition: 'all 0.15s',
             }}
           >
@@ -82,14 +82,14 @@ export default function VideoComments({ formationId, coachId, videoUrl }: { form
 
       {/* Liste */}
       {loadError ? (
-        <p style={{ color: '#f59e0b', fontSize: 12 }}>Les commentaires sont temporairement indisponibles. Un admin doit activer la politique RLS sur video_comments via /coach/admin.</p>
+        <p style={{ color: 'var(--brand)', fontSize: 12 }}>Les commentaires sont temporairement indisponibles. Un admin doit activer la politique RLS sur video_comments via /coach/admin.</p>
       ) : comments.length === 0 ? (
         <p style={{ color: SILVER, fontSize: 13 }}>Pas encore de commentaires — sois le premier !</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {comments.map((c, i) => (
-            <div key={i} style={{ display: 'flex', gap: 14, padding: '20px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: CREAM, flexShrink: 0 }}>
+            <div key={i} style={{ display: 'flex', gap: 14, padding: '20px 0', borderBottom: '1px solid color-mix(in srgb, var(--overlay) 4%, transparent)' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'color-mix(in srgb, var(--brand) 20%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: CREAM, flexShrink: 0 }}>
                 {(c.student?.username ?? '?')[0].toUpperCase()}
               </div>
               <div style={{ flex: 1 }}>
@@ -101,7 +101,7 @@ export default function VideoComments({ formationId, coachId, videoUrl }: { form
                       : `il y a ${Math.floor((Date.now() - new Date(c.created_at).getTime()) / 86400000)}j`}
                   </span>
                 </div>
-                <p style={{ fontSize: 14, color: 'rgba(240,244,255,0.6)', lineHeight: 1.7, margin: 0 }}>{c.content}</p>
+                <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7, margin: 0 }}>{c.content}</p>
               </div>
             </div>
           ))}

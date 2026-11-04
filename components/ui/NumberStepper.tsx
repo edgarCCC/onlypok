@@ -42,9 +42,9 @@ export default function NumberStepper({
     width: 34,
     minWidth: 34,
     height: '100%',
-    background: 'rgba(255,255,255,0.05)',
+    background: 'var(--surface-3)',
     border: 'none',
-    color: disabled ? 'rgba(240,244,255,0.2)' : 'rgba(240,244,255,0.6)',
+    color: disabled ? 'var(--text-disabled)' : 'var(--text-2)',
     cursor: disabled ? 'not-allowed' : 'pointer',
     transition: 'background 120ms, color 120ms',
     flexShrink: 0,
@@ -55,8 +55,8 @@ export default function NumberStepper({
       style={{
         display: 'flex',
         alignItems: 'stretch',
-        background: 'rgba(255,255,255,0.04)',
-        border: `1px solid ${focused ? 'rgba(124,58,237,0.5)' : 'rgba(232,228,220,0.08)'}`,
+        background: 'var(--surface-2)',
+        border: `1px solid ${focused ? 'var(--focus)' : 'var(--border-input)'}`,
         borderRadius: 10,
         overflow: 'hidden',
         height: 42,
@@ -69,9 +69,9 @@ export default function NumberStepper({
         type="button"
         disabled={disabled || value <= min}
         onClick={() => onChange(clamp(value - step))}
-        onMouseEnter={e => { (e.currentTarget.style.background = 'rgba(255,255,255,0.1)') }}
-        onMouseLeave={e => { (e.currentTarget.style.background = 'rgba(255,255,255,0.05)') }}
-        style={{ ...btnBase, borderRight: '1px solid rgba(232,228,220,0.08)' }}
+        onMouseEnter={e => { (e.currentTarget.style.background = 'var(--surface)') }}
+        onMouseLeave={e => { (e.currentTarget.style.background = 'var(--surface-3)') }}
+        style={{ ...btnBase, borderRight: '1px solid var(--border)' }}
       >
         <Minus size={13} />
       </button>
@@ -92,7 +92,7 @@ export default function NumberStepper({
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            color: '#f0f4ff',
+            color: 'var(--text)',
             fontSize: 14,
             fontWeight: 600,
             textAlign: 'center',
@@ -102,7 +102,7 @@ export default function NumberStepper({
           } as React.CSSProperties}
         />
         {suffix && (
-          <span style={{ color: 'rgba(240,244,255,0.4)', fontSize: 13, paddingRight: 8, flexShrink: 0 }}>
+          <span style={{ color: 'var(--text-3)', fontSize: 13, paddingRight: 8, flexShrink: 0 }}>
             {suffix}
           </span>
         )}
@@ -112,9 +112,9 @@ export default function NumberStepper({
         type="button"
         disabled={disabled || value >= max}
         onClick={() => onChange(clamp(value + step))}
-        onMouseEnter={e => { (e.currentTarget.style.background = 'rgba(255,255,255,0.1)') }}
-        onMouseLeave={e => { (e.currentTarget.style.background = 'rgba(255,255,255,0.05)') }}
-        style={{ ...btnBase, borderLeft: '1px solid rgba(232,228,220,0.08)' }}
+        onMouseEnter={e => { (e.currentTarget.style.background = 'var(--surface)') }}
+        onMouseLeave={e => { (e.currentTarget.style.background = 'var(--surface-3)') }}
+        style={{ ...btnBase, borderLeft: '1px solid var(--border)' }}
       >
         <Plus size={13} />
       </button>

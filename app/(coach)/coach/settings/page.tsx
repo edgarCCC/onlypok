@@ -2,10 +2,10 @@
 import { useUser } from '@/hooks/useUser'
 import { LogOut, Trash2, Bell, Shield } from 'lucide-react'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const BORDER = 'rgba(232,228,220,0.08)'
-const CARD   = 'rgba(232,228,220,0.03)'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const BORDER = 'color-mix(in srgb, var(--brand) 8%, transparent)'
+const CARD   = 'color-mix(in srgb, var(--brand) 3%, transparent)'
 
 export default function CoachSettingsPage() {
   const { profile, signOut } = useUser()
@@ -38,8 +38,8 @@ export default function CoachSettingsPage() {
           .cset-row { flex-wrap: wrap !important; }
         }
       `}</style>
-      <h1 style={{ fontSize: 24, fontWeight: 800, color: CREAM, marginBottom: 8, letterSpacing: '-0.5px' }}>Paramètres</h1>
-      <p style={{ fontSize: 14, color: SILVER, marginBottom: 32 }}>Gérez votre compte et vos préférences.</p>
+      <h1 style={{ fontSize: 24, fontWeight: 600, color: CREAM, marginBottom: 8, letterSpacing: '-0.5px' }}>Paramètres</h1>
+      <p style={{ fontSize: 14, color: SILVER, marginBottom: 32 }}>Gère ton compte et tes préférences.</p>
 
       {section('Compte', <>
         {row(<Shield size={18}/>, 'Email', profile?.email ?? '—',
@@ -52,15 +52,15 @@ export default function CoachSettingsPage() {
 
       {section('Session', <>
         {row(<LogOut size={18}/>, 'Se déconnecter', 'Fermer cette session',
-          <button onClick={signOut} style={{ fontSize: 13, fontWeight: 600, color: '#f0f4ff', background: '#7c3aed', border: 'none', borderRadius: 8, padding: '12px 18px', minHeight: 44, cursor: 'pointer' }}>
+          <button onClick={signOut} style={{ fontSize: 13, fontWeight: 600, color: 'var(--error)', background: 'transparent', border: '1px solid var(--border-strong)', borderRadius: 10, padding: '12px 18px', minHeight: 44, cursor: 'pointer' }}>
             Déconnexion
           </button>
         )}
       </>)}
 
       {section('Zone de danger', <>
-        {row(<Trash2 size={18}/>, 'Supprimer mon compte', 'Action irréversible — toutes vos données seront perdues',
-          <button disabled style={{ fontSize: 12, color: 'rgba(239,68,68,0.5)', background: 'transparent', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'not-allowed' }}>
+        {row(<Trash2 size={18}/>, 'Supprimer mon compte', 'Action irréversible : toutes tes données seront perdues',
+          <button disabled style={{ fontSize: 12, color: 'var(--text-3)', background: 'transparent', border: '1px solid color-mix(in srgb, var(--error) 20%, transparent)', borderRadius: 8, padding: '6px 14px', cursor: 'not-allowed' }}>
             Bientôt disponible
           </button>
         )}

@@ -8,17 +8,17 @@ import {
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const C = {
-  bg:      '#07090e',
-  card:    'rgba(240,244,255,0.03)',
-  border:  'rgba(240,244,255,0.08)',
-  cream:   '#f0f4ff',
-  silver:  'rgba(240,244,255,0.45)',
-  dim:     'rgba(240,244,255,0.2)',
-  violet:  '#7c3aed',
-  cyan:    '#06b6d4',
-  green:   '#4ade80',
-  red:     '#ef4444',
-  amber:   '#f59e0b',
+  bg:      'var(--bg)',
+  card:    'color-mix(in srgb, var(--brand) 3%, transparent)',
+  border:  'color-mix(in srgb, var(--brand) 8%, transparent)',
+  cream:   'var(--brand)',
+  silver:  'color-mix(in srgb, var(--brand) 45%, transparent)',
+  dim:     'color-mix(in srgb, var(--brand) 20%, transparent)',
+  violet:  'var(--brand)',
+  cyan:    'var(--brand)',
+  green:   'var(--gain)',
+  red:     'var(--error)',
+  amber:   'var(--brand)',
 }
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -315,13 +315,13 @@ function LineChart({
       {/* Grid lines */}
       {[0, 0.25, 0.5, 0.75, 1].map(t => {
         const y = pad.t + t * innerH
-        return <line key={t} x1={pad.l} y1={y} x2={W - pad.r} y2={y} stroke="rgba(232,228,220,0.05)" strokeWidth="1" />
+        return <line key={t} x1={pad.l} y1={y} x2={W - pad.r} y2={y} stroke="color-mix(in srgb, var(--brand) 5%, transparent)" strokeWidth="1" />
       })}
 
       {/* Zero line */}
       {min < 0 && max > 0 && (
         <line x1={pad.l} y1={zeroY} x2={W - pad.r} y2={zeroY}
-          stroke="rgba(232,228,220,0.2)" strokeWidth="1" strokeDasharray="4,4" />
+          stroke="color-mix(in srgb, var(--brand) 20%, transparent)" strokeWidth="1" strokeDasharray="4,4" />
       )}
 
       {/* Fill positive */}
@@ -339,7 +339,7 @@ function LineChart({
       {/* Y ticks */}
       {ticks.map(v => (
         <text key={v} x={pad.l - 6} y={toY(v) + 4} textAnchor="end"
-          fontSize="9" fill="rgba(232,228,220,0.35)">
+          fontSize="9" fill="color-mix(in srgb, var(--brand) 35%, transparent)">
           {v > 0 ? '+' : ''}{Math.round(v * 10) / 10}{unit}
         </text>
       ))}
@@ -347,7 +347,7 @@ function LineChart({
       {/* X axis labels */}
       {[0, Math.floor(data.length / 2), data.length - 1].map(i => (
         <text key={i} x={toX(i)} y={H - 4} textAnchor="middle"
-          fontSize="9" fill="rgba(232,228,220,0.3)">
+          fontSize="9" fill="color-mix(in srgb, var(--brand) 30%, transparent)">
           #{i + 1}
         </text>
       ))}
@@ -365,7 +365,7 @@ function StatCard({ label, value, sub, color, icon: Icon }: {
         {Icon && <Icon size={11} color={C.silver} />}
         <span style={{ fontSize: 10, fontWeight: 700, color: C.silver, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
       </div>
-      <div style={{ fontSize: 28, fontWeight: 800, color: color ?? C.cream, letterSpacing: '-1px', lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 28, fontWeight: 600, color: color ?? C.cream, letterSpacing: '-1px', lineHeight: 1 }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: C.silver, marginTop: 4 }}>{sub}</div>}
     </div>
   )
@@ -424,7 +424,7 @@ export default function TrackPage() {
     }
 
     if (newHands.length === 0) {
-      setParseError('Aucune main reconnue. Vérifiez que le fichier est au format Winamax (.txt).')
+      setParseError('Aucune main reconnue. Vérifie que le fichier est au format Winamax (.txt).')
     } else {
       setHands(prev => {
         const existingIds = new Set(prev.map(h => h.id))
@@ -484,7 +484,7 @@ export default function TrackPage() {
     <div style={{ minHeight: '100vh', background: C.bg, color: C.cream }}>
       {/* Ambient */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse 50% 25% at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 70%)' }} />
+        background: 'transparent' }} />
 
       <style>{`
         @media (max-width: 700px) {
@@ -499,10 +499,10 @@ export default function TrackPage() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: `rgba(124,58,237,0.15)`, border: `1px solid rgba(124,58,237,0.35)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: `color-mix(in srgb, var(--brand) 15%, transparent)`, border: `1px solid color-mix(in srgb, var(--brand) 35%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <BarChart2 size={16} color={C.violet} />
               </div>
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: C.cream, letterSpacing: '-0.5px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>Track.me</h1>
+              <h1 style={{ fontSize: 32, fontWeight: 600, color: C.cream, letterSpacing: '-0.5px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>Track.me</h1>
             </div>
             <p style={{ fontSize: 13, color: C.silver, margin: 0 }}>
               {hands.length > 0 ? `${hands.length.toLocaleString('fr')} mains analysées` : 'Importe tes historiques Winamax pour analyser ton jeu'}
@@ -512,21 +512,21 @@ export default function TrackPage() {
             <button
               onClick={() => fileRef.current?.click()}
               disabled={importing}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg, ${C.violet}, ${C.cyan})`, color: '#fff', fontSize: 13, fontWeight: 700, cursor: importing ? 'wait' : 'pointer', boxShadow: `0 4px 20px rgba(124,58,237,0.35)` }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none', background: `${C.violet}`, color: 'var(--text)', fontSize: 13, fontWeight: 700, cursor: importing ? 'wait' : 'pointer', boxShadow: 'none' }}>
               <Upload size={14} />
               {importing ? 'Import…' : 'Importer .txt'}
             </button>
             <input ref={fileRef} type="file" accept=".txt" multiple style={{ display: 'none' }} onChange={handleFiles} />
             {hands.length > 0 && !confirmClear && (
               <button onClick={() => setConfirmClear(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: `1px solid rgba(239,68,68,0.3)`, background: 'rgba(239,68,68,0.06)', color: C.red, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: `1px solid color-mix(in srgb, var(--error) 30%, transparent)`, background: 'color-mix(in srgb, var(--error) 6%, transparent)', color: C.red, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 <Trash2 size={13} /> Effacer
               </button>
             )}
             {confirmClear && (
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <span style={{ fontSize: 12, color: C.silver }}>Confirmer ?</span>
-                <button onClick={clearAll} style={{ padding: '7px 12px', borderRadius: 8, border: 'none', background: C.red, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Oui, tout effacer</button>
+                <button onClick={clearAll} style={{ padding: '7px 12px', borderRadius: 8, border: 'none', background: C.red, color: 'var(--text)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Oui, tout effacer</button>
                 <button onClick={() => setConfirmClear(false)} style={{ padding: '7px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.silver, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
               </div>
             )}
@@ -535,7 +535,7 @@ export default function TrackPage() {
 
         {/* ── Parse error banner ── */}
         {parseError && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'rgba(239,68,68,0.08)', border: `1px solid rgba(239,68,68,0.25)`, borderRadius: 12, marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'color-mix(in srgb, var(--error) 8%, transparent)', border: `1px solid color-mix(in srgb, var(--error) 25%, transparent)`, borderRadius: 12, marginBottom: 20 }}>
             <AlertCircle size={14} color={C.red} />
             <span style={{ fontSize: 13, color: C.cream }}>{parseError}</span>
           </div>
@@ -549,18 +549,18 @@ export default function TrackPage() {
             onDrop={handleDrop}
             onClick={() => fileRef.current?.click()}
             style={{
-              border: `2px dashed ${dragOver ? C.violet : 'rgba(232,228,220,0.12)'}`,
+              border: `2px dashed ${dragOver ? C.violet : 'color-mix(in srgb, var(--brand) 12%, transparent)'}`,
               borderRadius: 20, padding: '64px 32px', textAlign: 'center', cursor: 'pointer',
-              background: dragOver ? 'rgba(124,58,237,0.05)' : 'transparent',
+              background: dragOver ? 'color-mix(in srgb, var(--brand) 5%, transparent)' : 'transparent',
               transition: 'all 0.2s',
             }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(124,58,237,0.1)', border: `1px solid rgba(124,58,237,0.25)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <div style={{ width: 56, height: 56, borderRadius: 16, background: 'color-mix(in srgb, var(--brand) 10%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 25%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
               <Upload size={24} color={C.violet} />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: C.cream, marginBottom: 8 }}>Glisse tes fichiers ici</h2>
             <p style={{ fontSize: 14, color: C.silver, maxWidth: 420, margin: '0 auto 20px', lineHeight: 1.6 }}>
               Importe les historiques de mains Winamax (.txt) — trouve-les dans{' '}
-              <code style={{ background: 'rgba(232,228,220,0.06)', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>
+              <code style={{ background: 'color-mix(in srgb, var(--brand) 6%, transparent)', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>
                 Documents/Winamax/accounts/[pseudo]/history/
               </code>
             </p>
@@ -588,7 +588,7 @@ export default function TrackPage() {
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                     padding: '9px 14px', borderRadius: 9, border: 'none', cursor: 'pointer',
                     fontWeight: tab === id ? 700 : 500, fontSize: 13, transition: 'all 0.15s',
-                    background: tab === id ? `rgba(124,58,237,0.2)` : 'transparent',
+                    background: tab === id ? `color-mix(in srgb, var(--brand) 20%, transparent)` : 'transparent',
                     color: tab === id ? C.cream : C.silver,
                   }}>
                   <Icon size={13} /> {label}
@@ -613,8 +613,8 @@ export default function TrackPage() {
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: '20px 24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(232,228,220,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>bb/100 rolling (fenêtre 200 mains)</div>
-                      <div style={{ fontSize: 28, fontWeight: 800, color: stats.bb100 >= 0 ? C.green : C.red, letterSpacing: '-1px' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>bb/100 rolling (fenêtre 200 mains)</div>
+                      <div style={{ fontSize: 28, fontWeight: 600, color: stats.bb100 >= 0 ? C.green : C.red, letterSpacing: '-1px' }}>
                         {stats.bb100 >= 0 ? '+' : ''}{stats.bb100} bb/100
                       </div>
                     </div>
@@ -641,7 +641,7 @@ export default function TrackPage() {
                   <StatCard label="Mains" value={stats.total.toLocaleString('fr')} icon={FileText} sub="importées" />
                 </div>
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: '20px 24px' }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(232,228,220,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Gains cumulés (€)</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Gains cumulés (€)</div>
                   <LineChart data={euSeries} color={C.cyan} fillPositive={C.cyan} fillNegative={C.red} unit=" €" height={200} />
                 </div>
               </div>
@@ -652,7 +652,7 @@ export default function TrackPage() {
               <div className="strk-table-wrap" style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(232,228,220,0.03)' }}>
+                    <tr style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)' }}>
                       {['Position', 'Mains', 'VPIP', 'PFR', 'bb/100'].map(h => (
                         <th key={h} style={{ padding: '14px 20px', textAlign: h === 'Position' ? 'left' : 'center', fontSize: 10, fontWeight: 700, color: C.silver, letterSpacing: '0.1em', textTransform: 'uppercase', borderBottom: `1px solid ${C.border}` }}>{h}</th>
                       ))}
@@ -662,7 +662,7 @@ export default function TrackPage() {
                     {posSeries.map((p, i) => (
                       <tr key={p.pos} style={{ borderBottom: i < posSeries.length - 1 ? `1px solid ${C.border}` : 'none' }}>
                         <td style={{ padding: '14px 20px' }}>
-                          <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 99, fontSize: 12, fontWeight: 700, background: 'rgba(124,58,237,0.12)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.25)' }}>{p.pos}</span>
+                          <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 99, fontSize: 12, fontWeight: 700, background: 'color-mix(in srgb, var(--brand) 12%, transparent)', color: 'var(--brand)', border: '1px solid color-mix(in srgb, var(--brand) 25%, transparent)' }}>{p.pos}</span>
                         </td>
                         <td style={{ padding: '14px 20px', textAlign: 'center', fontSize: 13, color: C.silver }}>{p.count}</td>
                         <td style={{ padding: '14px 20px', textAlign: 'center' }}>
@@ -689,7 +689,7 @@ export default function TrackPage() {
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ background: 'rgba(232,228,220,0.03)' }}>
+                      <tr style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)' }}>
                         {['#', 'Cartes', 'Position', 'VPIP', 'PFR', '3Bet', 'Résultat (€)', 'Résultat (bb)'].map(h => (
                           <th key={h} style={{ padding: '12px 16px', textAlign: h === '#' || h === 'Cartes' || h === 'Position' ? 'left' : 'center', fontSize: 10, fontWeight: 700, color: C.silver, letterSpacing: '0.08em', textTransform: 'uppercase', borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
@@ -701,8 +701,8 @@ export default function TrackPage() {
                         const euro = h.resultEuro
                         const bb   = h.resultBB
                         return (
-                          <tr key={h.id} style={{ borderBottom: `1px solid rgba(232,228,220,0.04)` }}
-                            onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(232,228,220,0.02)'}
+                          <tr key={h.id} style={{ borderBottom: `1px solid color-mix(in srgb, var(--brand) 4%, transparent)` }}
+                            onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = 'color-mix(in srgb, var(--brand) 2%, transparent)'}
                             onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
                             <td style={{ padding: '11px 16px', fontSize: 12, color: C.silver }}>{globalIdx}</td>
                             <td style={{ padding: '11px 16px' }}>
@@ -712,7 +712,7 @@ export default function TrackPage() {
                                       const suit  = c.slice(-1)
                                       const isRed = suit === 'h' || suit === 'd'
                                       return (
-                                        <span key={c} style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 800, color: isRed ? '#ef4444' : C.cream, background: 'rgba(232,228,220,0.06)', padding: '1px 5px', borderRadius: 4 }}>{c}</span>
+                                        <span key={c} style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 800, color: isRed ? 'var(--error)' : C.cream, background: 'color-mix(in srgb, var(--brand) 6%, transparent)', padding: '1px 5px', borderRadius: 4 }}>{c}</span>
                                       )
                                     })
                                   : <span style={{ fontSize: 12, color: C.silver }}>—</span>
@@ -720,7 +720,7 @@ export default function TrackPage() {
                               </div>
                             </td>
                             <td style={{ padding: '11px 16px' }}>
-                              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(124,58,237,0.1)', color: '#a78bfa' }}>{h.position}</span>
+                              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'color-mix(in srgb, var(--brand) 10%, transparent)', color: 'var(--brand)' }}>{h.position}</span>
                             </td>
                             <td style={{ padding: '11px 16px', textAlign: 'center' }}>
                               <span style={{ fontSize: 11, fontWeight: 700, color: h.vpip ? C.green : C.silver }}>{h.vpip ? 'Oui' : '—'}</span>
@@ -729,7 +729,7 @@ export default function TrackPage() {
                               <span style={{ fontSize: 11, fontWeight: 700, color: h.pfr ? C.cyan : C.silver }}>{h.pfr ? 'Oui' : '—'}</span>
                             </td>
                             <td style={{ padding: '11px 16px', textAlign: 'center' }}>
-                              <span style={{ fontSize: 11, fontWeight: 700, color: h.threeBet ? '#a78bfa' : C.silver }}>{h.threeBet ? 'Oui' : '—'}</span>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: h.threeBet ? 'var(--brand)' : C.silver }}>{h.threeBet ? 'Oui' : '—'}</span>
                             </td>
                             <td style={{ padding: '11px 16px', textAlign: 'center' }}>
                               <span style={{ fontSize: 12, fontWeight: 700, color: euro >= 0 ? C.green : C.red }}>
@@ -780,7 +780,7 @@ function StoryTab({ stats, hands, bbSeries }: { stats: Stats; hands: ParsedHand[
   const downloadStory = () => {
     const el = storyRef.current
     if (!el) return
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>OnlyPok Story</title><style>*{margin:0;padding:0;box-sizing:border-box;}</style></head><body style="background:#07090e;">${el.outerHTML}</body></html>`
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>OnlyPok Story</title><style>*{margin:0;padding:0;box-sizing:border-box;}</style></head><body style="background:var(--bg);">${el.outerHTML}</body></html>`
     const blob = new Blob([html], { type: 'text/html' })
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
@@ -806,7 +806,7 @@ function StoryTab({ stats, hands, bbSeries }: { stats: Stats; hands: ParsedHand[
   }
 
   const positive = stats.totalEuro >= 0
-  const accent   = positive ? '#4ade80' : '#ef4444'
+  const accent   = positive ? 'var(--gain)' : 'var(--error)'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
@@ -818,30 +818,28 @@ function StoryTab({ stats, hands, bbSeries }: { stats: Stats; hands: ParsedHand[
       <div style={{ transform: 'scale(0.45)', transformOrigin: 'top center', marginBottom: -530, width: '100%', display: 'flex', justifyContent: 'center' }}>
         <div ref={storyRef} style={{
           width: 1080, height: 1920,
-          background: 'linear-gradient(160deg, #07090e 0%, #0e0b1a 50%, #07090e 100%)',
+          background: 'var(--bg)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           position: 'relative', overflow: 'hidden',
         }}>
           {/* Background glow */}
-          <div style={{ position: 'absolute', top: 200, left: '50%', transform: 'translateX(-50%)', width: 800, height: 600, borderRadius: '50%', background: `radial-gradient(ellipse, ${accent}18 0%, transparent 70%)`, filter: 'blur(60px)' }} />
-          <div style={{ position: 'absolute', bottom: 300, right: 100, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)', filter: 'blur(40px)' }} />
 
           {/* Logo */}
           <div style={{ position: 'absolute', top: 80, left: 80 }}>
-            <span style={{ fontSize: 48, fontWeight: 900, color: '#7c3aed' }}>OnlyPok</span>
+            <span style={{ fontSize: 48, fontWeight: 700, color: 'var(--text)' }}>OnlyPok</span>
           </div>
-          <div style={{ position: 'absolute', top: 140, left: 80, fontSize: 28, color: 'rgba(232,228,220,0.4)', fontWeight: 500 }}>Track.me</div>
+          <div style={{ position: 'absolute', top: 140, left: 80, fontSize: 28, color: 'var(--text-2)', fontWeight: 500 }}>Track.me</div>
 
           {/* Main result */}
           <div style={{ textAlign: 'center', marginBottom: 80 }}>
-            <div style={{ fontSize: 32, color: 'rgba(232,228,220,0.5)', fontWeight: 600, marginBottom: 16, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: 32, color: 'var(--text-2)', fontWeight: 600, marginBottom: 16, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
               {stats.total.toLocaleString('fr')} mains
             </div>
-            <div style={{ fontSize: 160, fontWeight: 900, color: accent, letterSpacing: '-6px', lineHeight: 1, marginBottom: 8 }}>
+            <div style={{ fontSize: 160, fontWeight: 700, color: accent, letterSpacing: '-6px', lineHeight: 1, marginBottom: 8 }}>
               {positive ? '+' : ''}{stats.totalEuro.toFixed(0)}€
             </div>
-            <div style={{ fontSize: 44, color: 'rgba(232,228,220,0.5)', fontWeight: 500 }}>
+            <div style={{ fontSize: 44, color: 'var(--text-2)', fontWeight: 500 }}>
               {positive ? '+' : ''}{stats.bb100} bb/100
             </div>
           </div>
@@ -854,9 +852,9 @@ function StoryTab({ stats, hands, bbSeries }: { stats: Stats; hands: ParsedHand[
               { label: '3-Bet',value: `${stats.threeBet}%` },
               { label: 'AF',   value: `${stats.af}` },
             ].map(s => (
-              <div key={s.label} style={{ textAlign: 'center', padding: '28px 36px', background: 'rgba(232,228,220,0.04)', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 24 }}>
-                <div style={{ fontSize: 64, fontWeight: 900, color: C.cream, marginBottom: 8 }}>{s.value}</div>
-                <div style={{ fontSize: 26, color: 'rgba(232,228,220,0.45)', fontWeight: 600, letterSpacing: '0.1em' }}>{s.label}</div>
+              <div key={s.label} style={{ textAlign: 'center', padding: '28px 36px', background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', borderRadius: 24 }}>
+                <div style={{ fontSize: 64, fontWeight: 700, color: C.cream, marginBottom: 8 }}>{s.value}</div>
+                <div style={{ fontSize: 26, color: 'var(--text-2)', fontWeight: 600, letterSpacing: '0.1em' }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -898,13 +896,13 @@ function StoryTab({ stats, hands, bbSeries }: { stats: Stats; hands: ParsedHand[
 
           {/* Footer */}
           <div style={{ position: 'absolute', bottom: 80, left: 0, right: 0, textAlign: 'center' }}>
-            <div style={{ fontSize: 26, color: 'rgba(232,228,220,0.3)', fontWeight: 500 }}>onlypok.fr · Track · Train · Coach</div>
+            <div style={{ fontSize: 26, color: 'var(--text-3)', fontWeight: 500 }}>onlypok.fr · Track · Train · Coach</div>
           </div>
         </div>
       </div>
 
       <button onClick={downloadStory}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg, ${C.violet}, ${C.cyan})`, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: `0 4px 20px rgba(124,58,237,0.35)`, marginTop: 16 }}>
+        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 12, border: 'none', background: `${C.violet}`, color: 'var(--text)', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: 'none', marginTop: 16 }}>
         <Download size={15} /> Télécharger le HTML
       </button>
     </div>

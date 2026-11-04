@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { CalendarCheck, MessageSquare, Video, Hourglass } from 'lucide-react'
 import { CREAM, SILVER, VIOLET, CYAN, AMBER, GREEN, EmptyState, type Booking, type StudentLite } from './request-ui'
 
-const DIM = 'rgba(240,244,255,0.22)'
+const DIM = 'color-mix(in srgb, var(--brand) 22%, transparent)'
 
 function dayLabel(iso: string): string {
   const d = new Date(iso)
@@ -22,7 +22,7 @@ const hour = (iso: string) => new Date(iso).toLocaleTimeString('fr-FR', { hour: 
 export function StudentAvatar({ student, size = 38 }: { student: StudentLite | null | undefined; size?: number }) {
   const name = student?.username ?? 'Élève'
   return (
-    <span style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.38, fontWeight: 700, color: '#fff', background: `linear-gradient(135deg,${VIOLET},${CYAN})` }}>
+    <span style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.38, fontWeight: 700, color: 'var(--on-brand)', background: `${VIOLET}` }}>
       {student?.avatar_url
         ? <Image src={student.avatar_url} alt="" fill sizes={`${size}px`} style={{ objectFit: 'cover' }} />
         : name[0]?.toUpperCase()}
@@ -100,8 +100,8 @@ export default function UpcomingPanel({ bookings }: { bookings: Booking[] }) {
               Payées, créneau à choisir par l&apos;élève
             </h3>
           </div>
-          <p style={{ fontSize: 12, color: DIM, margin: '0 0 12px' }}>
-            Rien à faire de votre côté : l&apos;élève propose un créneau, vous le validerez dans « À valider ».
+          <p style={{ fontSize: 12, color: 'var(--text-3)', margin: '0 0 12px' }}>
+            Rien à faire de ton côté : l&apos;élève propose un créneau, tu le valideras dans « À valider ».
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[...groups.values()].map(g => (

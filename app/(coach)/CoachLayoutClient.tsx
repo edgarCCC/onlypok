@@ -2,7 +2,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
-import DVDBounce from '@/components/DVDBounce'
 import LegalFooter from '@/components/layout/LegalFooter'
 import { COACH_TABS, isTabActive, NAV } from './coach-nav'
 import { useCoachBadges } from './useCoachBadges'
@@ -29,11 +28,11 @@ export function CoachHeader({ profile }: { profile: HeaderProfile }) {
     <>
       <header className="coach-header">
         <Link href="/coach/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0 }}>
-          <span style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)' }} />
-          <span style={{ fontFamily: 'var(--font-syne,sans-serif)', fontWeight: 700, fontSize: 13, letterSpacing: '0.18em', color: NAV.cream }}>
+          <span style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--brand)' }} />
+          <span style={{ fontFamily: 'var(--font-logo)', fontWeight: 700, fontSize: 13, letterSpacing: '0.18em', color: NAV.cream }}>
             ONLYPOK
           </span>
-          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: NAV.violet, padding: '2px 6px', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 4 }}>
+          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: NAV.violet, padding: '2px 6px', border: '1px solid color-mix(in srgb, var(--brand) 35%, transparent)', borderRadius: 4 }}>
             Coach
           </span>
         </Link>
@@ -76,17 +75,16 @@ export default function CoachLayoutClient({ children }: { children: React.ReactN
   const incomplete = !loading && profile && profile.onboarding_completed === false
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#04040a', position: 'relative' }}>
-      <DVDBounce />
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
       <CoachHeader profile={profile as HeaderProfile} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
         {incomplete && (
-          <div style={{ background: 'rgba(124,58,237,0.12)', borderBottom: '1px solid rgba(124,58,237,0.25)', padding: '10px clamp(16px,3vw,40px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, flexShrink: 0 }}>
-            <span style={{ fontSize: 13, color: 'rgba(240,244,255,0.7)' }}>
-              Votre profil coach n&apos;est pas encore finalisé — complétez-le pour apparaître dans la marketplace.
+          <div style={{ background: 'color-mix(in srgb, var(--brand) 12%, transparent)', borderBottom: '1px solid color-mix(in srgb, var(--brand) 25%, transparent)', padding: '10px clamp(16px,3vw,40px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, flexShrink: 0 }}>
+            <span style={{ fontSize: 13, color: 'var(--text)' }}>
+              Ton profil coach n&apos;est pas encore finalisé : complète-le pour apparaître dans la marketplace.
             </span>
-            <Link href="/coach/onboarding" style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa', textDecoration: 'none', whiteSpace: 'nowrap', padding: '6px 14px', border: '1px solid rgba(124,58,237,0.4)', borderRadius: 8 }}>
+            <Link href="/coach/onboarding" style={{ fontSize: 13, fontWeight: 700, color: 'var(--brand)', textDecoration: 'none', whiteSpace: 'nowrap', padding: '6px 14px', border: '1px solid color-mix(in srgb, var(--brand) 40%, transparent)', borderRadius: 8 }}>
               Finaliser →
             </Link>
           </div>

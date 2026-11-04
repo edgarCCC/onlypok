@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   // 23505 sur l'index unique bookings_coach_slot_active_uniq : un autre élève a
   // pris ce créneau entre la vérification ci-dessus et l'écriture (course).
   if (isSlotConflictError(error)) {
-    return NextResponse.json({ error: 'Ce créneau vient d’être réservé par un autre élève. Choisissez-en un autre.' }, { status: 409 })
+    return NextResponse.json({ error: 'Ce créneau vient d’être réservé par un autre élève. Choisis-en un autre.' }, { status: 409 })
   }
   if (error) {
     console.error('[confirm-slot] update failed:', { booking_id, error: error.message })
@@ -98,16 +98,16 @@ export async function POST(req: NextRequest) {
   const usernameOf = (id: string | null) => people?.find(p => p.id === id)?.username
 
   if (booking.coach_id) {
-    const formationTitle  = formation?.title ?? 'votre coaching'
+    const formationTitle  = formation?.title ?? 'ton coaching'
     const studentUsername = usernameOf(booking.student_id) ?? "L'élève"
-    const coachUsername   = usernameOf(booking.coach_id) ?? 'Votre coach'
+    const coachUsername   = usernameOf(booking.coach_id) ?? 'Ton coach'
 
     // In-app notification to coach (insertion réservée au service-role — RLS)
     await createAdminSupabaseClient().from('notifications').insert({
       user_id: booking.coach_id,
       type:    'slot_proposed',
       title:   'Créneau proposé',
-      body:    `${studentUsername} a proposé un créneau pour "${formationTitle}". Acceptez ou refusez dans votre espace.`,
+      body:    `${studentUsername} a proposé un créneau pour "${formationTitle}". Accepte ou refuse dans ton espace.`,
       data:    { booking_id },
     })
 

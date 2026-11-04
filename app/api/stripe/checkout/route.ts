@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
         .limit(1)
       if (existingError) {
         console.error('[stripe/checkout] purchase check failed:', existingError.message)
-        return NextResponse.json({ error: 'Vérification de l’achat impossible, réessayez.' }, { status: 500 })
+        return NextResponse.json({ error: 'Vérification de l’achat impossible, réessaie.' }, { status: 500 })
       }
       if (existing && existing.length > 0) return NextResponse.json({ error: 'Already purchased' }, { status: 409 })
     }

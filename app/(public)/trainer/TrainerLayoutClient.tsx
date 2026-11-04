@@ -1,15 +1,10 @@
 'use client'
-import { useUser } from '@/hooks/useUser'
-import { CoachHeader } from '@/app/(coach)/CoachLayoutClient'
-import Navbar from '@/components/landing/Navbar'
+import RoleHeader from '@/components/layout/RoleHeader'
 
 export default function TrainerLayoutClient({ children }: { children: React.ReactNode }) {
-  const { profile } = useUser()
-  const isCoach = profile?.role === 'coach'
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#07090e' }}>
-      {isCoach ? <CoachHeader profile={profile} /> : <Navbar />}
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg)' }}>
+      <RoleHeader />
       <main style={{ flex: 1 }}>{children}</main>
     </div>
   )

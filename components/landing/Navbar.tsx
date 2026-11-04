@@ -20,7 +20,7 @@ const NAV_CTA_TRANSITION = 'background-color 0.2s ease, border-color 0.2s ease, 
 
 const MENU_BTN: React.CSSProperties = {
   padding: '13px', borderRadius: 10, textAlign: 'center',
-  color: '#f0f4ff', textDecoration: 'none', fontSize: 14, fontWeight: 700,
+  color: 'var(--brand)', textDecoration: 'none', fontSize: 14, fontWeight: 700,
 }
 
 export default function Navbar() {
@@ -46,8 +46,8 @@ export default function Navbar() {
     ScrollTrigger.create({
       start: 80,
       onEnter: () => gsap.to(nav, {
-        backgroundColor: 'rgba(4,4,10,0.88)',
-        borderBottomColor: 'rgba(255,255,255,0.06)',
+        backgroundColor: 'var(--bg)',
+        borderBottomColor: 'color-mix(in srgb, var(--overlay) 6%, transparent)',
         duration: 0.4, ease: 'power2.out',
       }),
       onLeaveBack: () => gsap.to(nav, {
@@ -90,17 +90,17 @@ export default function Navbar() {
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <div ref={chipRef} style={{
             width: 7, height: 7, borderRadius: 2,
-            background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', flexShrink: 0,
+            background: 'var(--brand)', flexShrink: 0,
           }} />
           <span style={{
             fontFamily: 'var(--font-syne, sans-serif)',
-            fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: '#f0f4ff',
+            fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: 'var(--brand)',
           }}>ONLYPOK</span>
         </Link>
         {role === 'coach' && (
           <span style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
-            color: '#a78bfa', border: '1px solid rgba(124,58,237,0.45)',
+            color: 'var(--brand)', border: '1px solid color-mix(in srgb, var(--brand) 45%, transparent)',
             borderRadius: 6, padding: '3px 8px',
             fontFamily: 'var(--font-syne, sans-serif)',
           }}>COACH</span>
@@ -112,12 +112,12 @@ export default function Navbar() {
           <a
             key={label} href={href}
             onMouseEnter={onLinkEnter} onMouseLeave={onLinkLeave}
-            style={{ position: 'relative', color: 'rgba(240,244,255,0.5)', textDecoration: 'none', fontSize: 14, fontWeight: 500, paddingBottom: 4 }}
+            style={{ position: 'relative', color: 'var(--text-2)', textDecoration: 'none', fontSize: 14, fontWeight: 500, paddingBottom: 4 }}
           >
             {label}
             <span className="ul" style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
-              background: 'linear-gradient(90deg, #7c3aed, #06b6d4)',
+              background: 'var(--brand)',
               display: 'block', transform: 'scaleX(0)', transformOrigin: 'left',
             }} />
           </a>
@@ -129,9 +129,9 @@ export default function Navbar() {
           <Link
             href={spaceHref}
             className="nav-cta"
-            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(240,244,255,0.85)', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: NAV_CTA_TRANSITION }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)'; e.currentTarget.style.color = '#f0f4ff' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(240,244,255,0.85)' }}
+            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--overlay) 12%, transparent)', color: 'var(--text)', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: NAV_CTA_TRANSITION }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--overlay) 28%, transparent)'; e.currentTarget.style.color = 'var(--brand)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--overlay) 12%, transparent)'; e.currentTarget.style.color = 'var(--text)' }}
           >
             Mon espace
           </Link>
@@ -148,9 +148,9 @@ export default function Navbar() {
             <Link
               href="/become-coach"
               className="nav-cta"
-              style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)', color: '#f0f4ff', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: NAV_CTA_TRANSITION }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.22)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.8)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.12)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)' }}
+              style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--brand) 50%, transparent)', background: 'color-mix(in srgb, var(--brand) 12%, transparent)', color: 'var(--brand)', textDecoration: 'none', fontSize: 13, fontWeight: 600, transition: NAV_CTA_TRANSITION }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'color-mix(in srgb, var(--brand) 22%, transparent)'; e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--brand) 80%, transparent)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'color-mix(in srgb, var(--brand) 12%, transparent)'; e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--brand) 50%, transparent)' }}
             >
               Devenir coach
             </Link>
@@ -165,8 +165,8 @@ export default function Navbar() {
           style={{
             display: 'none', alignItems: 'center', justifyContent: 'center',
             width: 40, height: 40, borderRadius: 10,
-            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-            color: '#f0f4ff', cursor: 'pointer',
+            background: 'color-mix(in srgb, var(--overlay) 5%, transparent)', border: '1px solid color-mix(in srgb, var(--overlay) 10%, transparent)',
+            color: 'var(--brand)', cursor: 'pointer',
           }}>
           {menuOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
@@ -176,29 +176,29 @@ export default function Navbar() {
       {menuOpen && (
         <div style={{
           position: 'absolute', top: 68, left: 0, right: 0,
-          background: 'rgba(4,4,10,0.97)', backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--bg)', backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid color-mix(in srgb, var(--overlay) 8%, transparent)',
           display: 'flex', flexDirection: 'column', padding: '8px 20px 20px',
         }}>
           {NAV_LINKS.map(({ label, href }) => (
             <a key={label} href={href} onClick={() => setMenuOpen(false)}
-              style={{ padding: '15px 4px', color: 'rgba(240,244,255,0.75)', textDecoration: 'none', fontSize: 15, fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              style={{ padding: '15px 4px', color: 'var(--text)', textDecoration: 'none', fontSize: 15, fontWeight: 600, borderBottom: '1px solid color-mix(in srgb, var(--overlay) 5%, transparent)' }}>
               {label}
             </a>
           ))}
           {loading ? null : user ? (
             <Link href={spaceHref} className="nav-menu-cta" onClick={() => setMenuOpen(false)}
-              style={{ ...MENU_BTN, marginTop: 16, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)' }}>
+              style={{ ...MENU_BTN, marginTop: 16, border: '1px solid color-mix(in srgb, var(--brand) 50%, transparent)', background: 'color-mix(in srgb, var(--brand) 12%, transparent)' }}>
               Mon espace
             </Link>
           ) : (
             <>
               <Link href="/login" className="nav-menu-cta" onClick={() => setMenuOpen(false)}
-                style={{ ...MENU_BTN, marginTop: 16, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
+                style={{ ...MENU_BTN, marginTop: 16, border: '1px solid color-mix(in srgb, var(--overlay) 12%, transparent)', background: 'color-mix(in srgb, var(--overlay) 5%, transparent)' }}>
                 Se connecter
               </Link>
               <Link href="/become-coach" className="nav-menu-cta" onClick={() => setMenuOpen(false)}
-                style={{ ...MENU_BTN, marginTop: 10, border: '1px solid rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.12)' }}>
+                style={{ ...MENU_BTN, marginTop: 10, border: '1px solid color-mix(in srgb, var(--brand) 50%, transparent)', background: 'color-mix(in srgb, var(--brand) 12%, transparent)' }}>
                 Devenir coach
               </Link>
             </>
@@ -207,13 +207,13 @@ export default function Navbar() {
       )}
 
       <style>{`
-        .nav-login { color: rgba(240,244,255,0.75); transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1); }
+        .nav-login { color: var(--text); transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1); }
         .nav-menu-cta { display: block; transition: transform 0.1s cubic-bezier(0.23,1,0.32,1); }
         @media (hover: hover) and (pointer: fine) {
-          .nav-login:hover { color: #f0f4ff; background-color: rgba(255,255,255,0.05); }
+          .nav-login:hover { color: var(--brand); background-color: color-mix(in srgb, var(--overlay) 5%, transparent); }
         }
         .nav-cta:active, .nav-login:active, .nav-menu-cta:active { transform: scale(0.97); }
-        .landing-nav :is(a, button):focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; border-radius: 8px; }
+        .landing-nav :is(a, button):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 8px; }
         @media (prefers-reduced-motion: reduce) {
           .nav-cta:active, .nav-login:active, .nav-menu-cta:active { transform: none; }
         }

@@ -13,15 +13,15 @@ import {
 import FourAcesLoader from '@/components/FourAcesLoader'
 import { useUser } from '@/hooks/useUser'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const DIM    = 'rgba(240,244,255,0.18)'
-const VIOLET = '#7c3aed'
-const CYAN   = '#06b6d4'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const DIM    = 'color-mix(in srgb, var(--brand) 18%, transparent)'
+const VIOLET = 'var(--brand)'
+const CYAN   = 'var(--brand)'
 
 const VARIANT_COLORS: Record<string, string> = {
-  'MTT': '#f59e0b', 'Cash': '#10b981', 'Live': '#06b6d4',
-  'Expresso': '#ef4444', 'Mental': '#a78bfa', 'PKO': '#f97316',
+  'MTT': 'var(--brand)', 'Cash': 'var(--gain)', 'Live': 'var(--brand)',
+  'Expresso': 'var(--error)', 'Mental': 'var(--brand)', 'PKO': 'var(--brand)',
 }
 
 const ADVANTAGE_LABELS: Record<string, { label: string; Icon: React.ElementType }> = {
@@ -38,10 +38,10 @@ const ADVANTAGE_LABELS: Record<string, { label: string; Icon: React.ElementType 
 }
 
 const TARGET_LABELS: Record<string, { label: string; sub: string; color: string }> = {
-  fish:    { label: 'Débutants',    sub: 'Récréatifs & poissons',      color: '#06b6d4' },
-  regular: { label: 'Réguliers',   sub: 'Grinders & gagnants',        color: '#4ade80' },
-  semipro: { label: 'Semi-pros',   sub: 'Objectif profit durable',    color: '#f59e0b' },
-  shark:   { label: 'Sharks/Pros', sub: 'High-stakes & élite',        color: '#a855f7' },
+  fish:    { label: 'Débutants',    sub: 'Récréatifs & poissons',      color: 'var(--brand)' },
+  regular: { label: 'Réguliers',   sub: 'Grinders & gagnants',        color: 'var(--gain)' },
+  semipro: { label: 'Semi-pros',   sub: 'Objectif profit durable',    color: 'var(--brand)' },
+  shark:   { label: 'Sharks/Pros', sub: 'High-stakes & élite',        color: 'var(--brand)' },
 }
 
 function Stars({ rating, size = 12 }: { rating: number; size?: number }) {
@@ -49,7 +49,7 @@ function Stars({ rating, size = 12 }: { rating: number; size?: number }) {
     <span style={{ display: 'inline-flex', gap: 2 }}>
       {Array.from({ length: 5 }).map((_, i) => (
         <svg key={i} width={size} height={size} viewBox="0 0 14 14"
-          fill={i < Math.round(rating) ? '#f59e0b' : 'rgba(240,244,255,0.12)'}>
+          fill={i < Math.round(rating) ? 'var(--brand)' : 'color-mix(in srgb, var(--brand) 12%, transparent)'}>
           <polygon points="7,1 8.8,5.5 13.5,5.5 9.8,8.5 11.2,13 7,10.2 2.8,13 4.2,8.5 0.5,5.5 5.2,5.5" />
         </svg>
       ))}
@@ -59,25 +59,25 @@ function Stars({ rating, size = 12 }: { rating: number; size?: number }) {
 
 function ContentLink({ f, cardColor, icon }: { f: Formation; cardColor: string; icon: React.ReactNode }) {
   return (
-    <Link href={`/formations/${f.id}`} className="coach-formation-link" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px', borderRadius: 12, border: '1px solid rgba(240,244,255,0.07)', background: 'rgba(240,244,255,0.02)', textDecoration: 'none', transition: 'background 0.15s, border-color 0.15s' }}>
-      <div style={{ width: 80, height: 52, borderRadius: 8, flexShrink: 0, overflow: 'hidden', background: `linear-gradient(135deg, ${cardColor}40, ${cardColor}15)`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+    <Link href={`/formations/${f.id}`} className="coach-formation-link" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px', borderRadius: 12, border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', background: 'color-mix(in srgb, var(--brand) 2%, transparent)', textDecoration: 'none', transition: 'background 0.15s, border-color 0.15s' }}>
+      <div style={{ width: 80, height: 52, borderRadius: 8, flexShrink: 0, overflow: 'hidden', background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         {f.thumbnail_url
           ? <Image src={f.thumbnail_url} alt={f.title} fill sizes="80px" style={{ objectFit: 'cover' }} />
           : icon}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 13, fontWeight: 600, color: CREAM, margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.title}</p>
-        <span style={{ fontSize: 12, fontWeight: 700, color: f.price > 0 ? cardColor : '#4ade80' }}>{f.price > 0 ? `${f.price}€` : 'Gratuit'}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: f.price > 0 ? cardColor : 'var(--gain)' }}>{f.price > 0 ? `${f.price}€` : 'Gratuit'}</span>
       </div>
-      <ChevronDown size={14} color={'rgba(240,244,255,0.18)'} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }} />
+      <ChevronDown size={14} color={'var(--text-3)'} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }} />
     </Link>
   )
 }
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 16, padding: '20px 24px' }}>
-      <h2 style={{ fontSize: 11, fontWeight: 700, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' }}>{title}</h2>
+    <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 16, padding: '20px 24px' }}>
+      <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' }}>{title}</h2>
       {children}
     </div>
   )
@@ -136,7 +136,7 @@ export default function CoachProfilePage() {
   }, [params.id, supabase, router])
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#07090e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <FourAcesLoader fullPage={false} />
     </div>
   )
@@ -149,7 +149,7 @@ export default function CoachProfilePage() {
   const initials  = (coach.username ?? 'C').slice(0, 2).toUpperCase()
   const colorSeed = coach.username ?? 'coach'
   let h = 0; for (let i = 0; i < colorSeed.length; i++) h = colorSeed.charCodeAt(i) + ((h << 5) - h)
-  const palette   = ['#7c3aed', '#06b6d4', '#a855f7', '#ef4444', '#8b5cf6', '#ec4899']
+  const palette   = ['var(--brand)', 'var(--brand)', 'var(--brand)', 'var(--error)', 'var(--brand)', 'var(--brand)']
   const fallback  = palette[Math.abs(h) % palette.length]
   const variants: string[] = coach.variants ?? []
   const cardColor = variants.map(v => VARIANT_COLORS[v]).find(Boolean) ?? fallback
@@ -185,9 +185,9 @@ export default function CoachProfilePage() {
   })
 
   const modeLabel = coach.coaching_mode === 'auto'
-    ? { text: 'Réponse rapide', color: '#4ade80', icon: Zap }
+    ? { text: 'Réponse rapide', color: 'var(--gain)', icon: Zap }
     : coach.coaching_mode === 'manual'
-    ? { text: 'Sur dossier', color: '#f59e0b', icon: FileText }
+    ? { text: 'Sur dossier', color: 'var(--brand)', icon: FileText }
     : null
 
   const heroCta = bookingHref
@@ -195,22 +195,22 @@ export default function CoachProfilePage() {
     : null
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM }}>
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        background: `radial-gradient(ellipse 70% 35% at 50% 0%, ${cardColor}12 0%, transparent 60%), radial-gradient(ellipse 40% 20% at 85% 35%, ${cardColor}06 0%, transparent 55%)`,
+        background: `transparent, transparent`,
         transition: 'background 0.8s ease' }} />
 
       {/* ── Header fixe ── */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 64, background: 'rgba(4,4,10,0.96)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 clamp(16px,3vw,40px)' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 64, background: 'var(--bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid color-mix(in srgb, var(--overlay) 7%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 clamp(16px,3vw,40px)' }}>
         <Link href="/formations" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--font-syne,sans-serif)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: profile?.role === 'coach' ? '#06b6d4' : '#7c3aed', padding: '2px 7px', border: `1px solid ${profile?.role === 'coach' ? 'rgba(6,182,212,0.35)' : 'rgba(124,58,237,0.35)'}`, borderRadius: 4 }}>{profile?.role === 'coach' ? 'Coach' : 'Élève'}</span>
+          <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--brand)', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'var(--font-logo)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
+          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: profile?.role === 'coach' ? 'var(--brand)' : 'var(--brand)', padding: '2px 7px', border: `1px solid ${profile?.role === 'coach' ? 'color-mix(in srgb, var(--brand) 35%, transparent)' : 'color-mix(in srgb, var(--brand) 35%, transparent)'}`, borderRadius: 4 }}>{profile?.role === 'coach' ? 'Coach' : 'Élève'}</span>
         </Link>
         <button onClick={() => router.back()} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: SILVER, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500, padding: 0 }}>
           <ArrowLeft size={13} /> Retour
         </button>
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#06b6d4,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', overflow: 'hidden', border: '1.5px solid rgba(6,182,212,0.4)', flexShrink: 0, position: 'relative' }}>
+        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--on-brand)', overflow: 'hidden', border: '1.5px solid color-mix(in srgb, var(--brand) 40%, transparent)', flexShrink: 0, position: 'relative' }}>
           {profile?.avatar_url
             ? <Image src={profile.avatar_url} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
             : (profile?.username ?? 'E')[0].toUpperCase()}
@@ -220,21 +220,20 @@ export default function CoachProfilePage() {
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: '88px 28px 100px' }}>
 
         {/* ── Hero card ────────────────────────────────────────────────── */}
-        <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 20, overflow: 'visible', marginBottom: 24, position: 'relative' }}>
+        <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 20, overflow: 'visible', marginBottom: 24, position: 'relative' }}>
 
           {/* Banner */}
-          <div style={{ height: 220, borderRadius: '20px 20px 0 0', overflow: 'hidden', position: 'relative', background: `linear-gradient(135deg, ${cardColor}55 0%, ${cardColor}20 55%, rgba(7,9,14,0.5) 100%)` }}>
-            <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 100% 160% at -5% 60%, ${cardColor}38, transparent 55%)` }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(7,9,14,0.65) 100%)' }} />
+          <div style={{ height: 220, borderRadius: '20px 20px 0 0', overflow: 'hidden', position: 'relative', background: `linear-gradient(135deg, color-mix(in srgb, ${cardColor} 33%, transparent) 0%, color-mix(in srgb, ${cardColor} 13%, transparent) 55%, color-mix(in srgb, var(--bg) 50%, transparent) 100%)` }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, color-mix(in srgb, var(--bg) 65%, transparent) 100%)' }} />
             {modeLabel && (
-              <div style={{ position: 'absolute', top: 14, right: 16, display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 99, background: 'rgba(7,9,14,0.75)', backdropFilter: 'blur(8px)', border: `1px solid ${modeLabel.color}40`, color: modeLabel.color }}>
+              <div style={{ position: 'absolute', top: 14, right: 16, display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 99, background: 'color-mix(in srgb, var(--bg) 75%, transparent)', backdropFilter: 'blur(8px)', border: `1px solid color-mix(in srgb, ${modeLabel.color} 25%, transparent)`, color: modeLabel.color }}>
                 <modeLabel.icon size={11} /> {modeLabel.text}
               </div>
             )}
           </div>
 
           {/* Avatar */}
-          <div style={{ position: 'absolute', top: 176, left: 32, zIndex: 10, width: 88, height: 88, borderRadius: '50%', border: `4px solid #07090e`, overflow: 'hidden', background: coach.avatar_url ? 'transparent' : `linear-gradient(135deg, ${cardColor}, ${cardColor}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, color: '#fff', boxShadow: `0 0 0 1px ${cardColor}50` }}>
+          <div style={{ position: 'absolute', top: 176, left: 32, zIndex: 10, width: 88, height: 88, borderRadius: '50%', border: `4px solid var(--bg)`, overflow: 'hidden', background: coach.avatar_url ? 'transparent' : `transparent`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 600, color: 'var(--text)', boxShadow: 'none' }}>
             {coach.avatar_url
               ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="88px" style={{ objectFit: 'cover' }} />
               : initials}
@@ -245,11 +244,11 @@ export default function CoachProfilePage() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                  <h1 style={{ fontSize: 32, fontWeight: 800, color: CREAM, margin: 0, fontFamily: 'var(--font-syne, sans-serif)', letterSpacing: '-0.5px' }}>
+                  <h1 style={{ fontSize: 32, fontWeight: 600, color: CREAM, margin: 0, fontFamily: 'var(--font-syne, sans-serif)', letterSpacing: '-0.5px' }}>
                     {coach.username ?? 'Coach'}
                   </h1>
                   {coach.is_pro && (
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: `${cardColor}20`, color: cardColor, border: `1px solid ${cardColor}45` }}>PRO</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: `color-mix(in srgb, ${cardColor} 13%, transparent)`, color: cardColor, border: `1px solid color-mix(in srgb, ${cardColor} 27%, transparent)` }}>PRO</span>
                   )}
                 </div>
                 {avgRating !== null && (
@@ -266,29 +265,29 @@ export default function CoachProfilePage() {
 
                 {/* Trust stats */}
                 {(avgRating !== null || reviews.length > 0 || coach.years_experience) && (
-                  <div style={{ display: 'flex', gap: 28, marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(232,228,220,0.06)' }}>
+                  <div style={{ display: 'flex', gap: 28, marginTop: 18, paddingTop: 16, borderTop: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
                     {avgRating !== null && (
                       <div>
-                        <p style={{ fontSize: 36, fontWeight: 900, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, margin: 0 }}>{avgRating.toFixed(1)}</p>
-                        <p style={{ fontSize: 10, color: DIM, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '3px 0 0' }}>Note</p>
+                        <p style={{ fontSize: 36, fontWeight: 600, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, margin: 0 }}>{avgRating.toFixed(1)}</p>
+                        <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '3px 0 0' }}>Note</p>
                       </div>
                     )}
                     {reviews.length > 0 && (
                       <div>
-                        <p style={{ fontSize: 36, fontWeight: 900, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, margin: 0 }}>{reviews.length}</p>
-                        <p style={{ fontSize: 10, color: DIM, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '3px 0 0' }}>Avis</p>
+                        <p style={{ fontSize: 36, fontWeight: 600, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, margin: 0 }}>{reviews.length}</p>
+                        <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '3px 0 0' }}>Avis</p>
                       </div>
                     )}
                     {coach.years_experience && coach.years_experience > 0 && (
                       <div>
-                        <p style={{ fontSize: 36, fontWeight: 900, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, margin: 0 }}>{coach.years_experience}</p>
-                        <p style={{ fontSize: 10, color: DIM, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '3px 0 0' }}>Ans exp.</p>
+                        <p style={{ fontSize: 36, fontWeight: 600, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, margin: 0 }}>{coach.years_experience}</p>
+                        <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '3px 0 0' }}>Ans exp.</p>
                       </div>
                     )}
                     {formations.length > 0 && (
                       <div>
-                        <p style={{ fontSize: 36, fontWeight: 900, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, margin: 0 }}>{formations.length}</p>
-                        <p style={{ fontSize: 10, color: DIM, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '3px 0 0' }}>Contenus</p>
+                        <p style={{ fontSize: 36, fontWeight: 600, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, margin: 0 }}>{formations.length}</p>
+                        <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '3px 0 0' }}>Contenus</p>
                       </div>
                     )}
                   </div>
@@ -296,11 +295,11 @@ export default function CoachProfilePage() {
               </div>
 
               {heroCta ? (
-                <Link href={heroCta.href} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '13px 26px', borderRadius: 12, background: VIOLET, color: '#fff', fontSize: 14, fontWeight: 800, textDecoration: 'none', boxShadow: `0 4px 24px ${VIOLET}50`, flexShrink: 0 }}>
+                <Link href={heroCta.href} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '13px 26px', borderRadius: 12, background: VIOLET, color: 'var(--on-brand)', fontSize: 14, fontWeight: 800, textDecoration: 'none', boxShadow: 'none', flexShrink: 0 }}>
                   <Calendar size={15} /> Réserver une session
                 </Link>
               ) : (
-                <div style={{ padding: '13px 24px', borderRadius: 12, border: '1px solid rgba(240,244,255,0.1)', color: SILVER, fontSize: 13 }}>
+                <div style={{ padding: '13px 24px', borderRadius: 12, border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', color: SILVER, fontSize: 13 }}>
                   Pas d'offre disponible
                 </div>
               )}
@@ -317,9 +316,9 @@ export default function CoachProfilePage() {
             {/* Bio */}
             {(coach.bio || coach.vision) && (
               <SectionCard title="À propos">
-                {coach.bio && <p style={{ fontSize: 14, color: 'rgba(240,244,255,0.78)', lineHeight: 1.75, margin: 0 }}>{coach.bio}</p>}
+                {coach.bio && <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.75, margin: 0 }}>{coach.bio}</p>}
                 {coach.vision && (
-                  <p style={{ fontSize: 13, color: SILVER, lineHeight: 1.65, marginTop: 14, marginBottom: 0, borderTop: '1px solid rgba(240,244,255,0.06)', paddingTop: 14, fontStyle: 'italic' }}>
+                  <p style={{ fontSize: 13, color: SILVER, lineHeight: 1.65, marginTop: 14, marginBottom: 0, borderTop: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)', paddingTop: 14, fontStyle: 'italic' }}>
                     &ldquo;{coach.vision}&rdquo;
                   </p>
                 )}
@@ -333,7 +332,7 @@ export default function CoachProfilePage() {
                   {variants.map(v => {
                     const vc = VARIANT_COLORS[v] ?? cardColor
                     return (
-                      <span key={v} style={{ padding: '7px 16px', borderRadius: 99, fontSize: 13, fontWeight: 600, background: `${vc}15`, color: vc, border: `1px solid ${vc}35` }}>{v}</span>
+                      <span key={v} style={{ padding: '7px 16px', borderRadius: 99, fontSize: 13, fontWeight: 600, background: `color-mix(in srgb, ${vc} 8%, transparent)`, color: vc, border: `1px solid color-mix(in srgb, ${vc} 21%, transparent)` }}>{v}</span>
                     )
                   })}
                 </div>
@@ -348,9 +347,9 @@ export default function CoachProfilePage() {
                     const meta = ADVANTAGE_LABELS[a]
                     if (!meta) return null
                     return (
-                      <div key={a} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(240,244,255,0.02)', border: '1px solid rgba(240,244,255,0.06)' }}>
+                      <div key={a} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 2%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' }}>
                         <meta.Icon size={13} color={cardColor} />
-                        <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(240,244,255,0.75)' }}>{meta.label}</span>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)' }}>{meta.label}</span>
                       </div>
                     )
                   })}
@@ -366,7 +365,7 @@ export default function CoachProfilePage() {
                     const meta = TARGET_LABELS[t]
                     if (!meta) return null
                     return (
-                      <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, background: `${meta.color}08`, border: `1px solid ${meta.color}25` }}>
+                      <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, background: `color-mix(in srgb, ${meta.color} 3%, transparent)`, border: `1px solid color-mix(in srgb, ${meta.color} 15%, transparent)` }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: meta.color, flexShrink: 0 }} />
                         <div>
                           <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{meta.label}</span>
@@ -404,8 +403,8 @@ export default function CoachProfilePage() {
             {/* Avis */}
             {reviewsError && (
               <SectionCard title="Avis">
-                <p style={{ fontSize: 13, color: '#fca5a5', lineHeight: 1.6, margin: 0 }}>
-                  Impossible de charger les avis pour le moment. Rechargez la page dans un instant.
+                <p style={{ fontSize: 13, color: 'var(--error)', lineHeight: 1.6, margin: 0 }}>
+                  Impossible de charger les avis pour le moment. Recharge la page dans un instant.
                 </p>
               </SectionCard>
             )}
@@ -416,9 +415,9 @@ export default function CoachProfilePage() {
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {reviews.map((r, i) => (
-                    <div key={i} style={{ paddingBottom: i < reviews.length - 1 ? 16 : 0, borderBottom: i < reviews.length - 1 ? '1px solid rgba(240,244,255,0.06)' : 'none' }}>
+                    <div key={i} style={{ paddingBottom: i < reviews.length - 1 ? 16 : 0, borderBottom: i < reviews.length - 1 ? '1px solid color-mix(in srgb, var(--brand) 6%, transparent)' : 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: r.student?.avatar_url ? 'transparent' : `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0, position: 'relative' }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: r.student?.avatar_url ? 'transparent' : `${VIOLET}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'var(--on-brand)', flexShrink: 0, position: 'relative' }}>
                           {r.student?.avatar_url
                             ? <Image src={r.student.avatar_url} alt="" fill sizes="36px" style={{ objectFit: 'cover' }} />
                             : (r.student?.username ?? 'E')[0].toUpperCase()}
@@ -427,11 +426,11 @@ export default function CoachProfilePage() {
                           <p style={{ fontSize: 13, fontWeight: 700, color: CREAM, margin: 0 }}>{r.student?.username ?? 'Élève'}</p>
                           <Stars rating={r.rating} size={10} />
                         </div>
-                        <span style={{ fontSize: 11, color: DIM, marginLeft: 'auto' }}>
+                        <span style={{ fontSize: 11, color: 'var(--text-3)', marginLeft: 'auto' }}>
                           {new Date(r.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}
                         </span>
                       </div>
-                      {r.comment && <p style={{ fontSize: 13, color: 'rgba(240,244,255,0.68)', lineHeight: 1.65, margin: 0 }}>{r.comment}</p>}
+                      {r.comment && <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.65, margin: 0 }}>{r.comment}</p>}
                     </div>
                   ))}
                 </div>
@@ -444,11 +443,11 @@ export default function CoachProfilePage() {
 
             {/* Offres de coaching */}
             {coachingFormations.length > 0 && (
-              <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 16, padding: '20px 20px 16px' }}>
-                <h2 style={{ fontSize: 11, fontWeight: 700, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>Offres de coaching</h2>
+              <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 16, padding: '20px 20px 16px' }}>
+                <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>Offres de coaching</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {coachingFormations.map(f => (
-                    <Link key={f.id} href={`/formations/${f.id}`} className="coach-sidebar-link" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 10, border: `1px solid ${cardColor}30`, background: `${cardColor}08`, textDecoration: 'none', transition: 'background 0.15s, border-color 0.15s' }}>
+                    <Link key={f.id} href={`/formations/${f.id}`} className="coach-sidebar-link" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 10, border: `1px solid color-mix(in srgb, ${cardColor} 19%, transparent)`, background: `color-mix(in srgb, ${cardColor} 3%, transparent)`, textDecoration: 'none', transition: 'background 0.15s, border-color 0.15s' }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {coach.username} — {f.title}
                       </span>
@@ -461,12 +460,12 @@ export default function CoachProfilePage() {
 
             {/* Tarification + Forfaits unifiés */}
             {pricingOptions.length > 0 && (
-              <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 16, padding: '20px 20px 16px' }}>
-                <h2 style={{ fontSize: 11, fontWeight: 700, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Tarification</h2>
+              <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 16, padding: '20px 20px 16px' }}>
+                <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Tarification</h2>
 
                 {/* Prix affiché (option sélectionnée) */}
                 <div style={{ textAlign: 'center', padding: '4px 0 18px' }}>
-                  <div style={{ fontSize: 46, fontWeight: 800, color: CREAM, letterSpacing: '-2px', lineHeight: 1 }}>
+                  <div style={{ fontSize: 46, fontWeight: 700, color: CREAM, letterSpacing: '-2px', lineHeight: 1 }}>
                     {pricingOptions[selectedPkgIdx]?.price ?? 0}€
                   </div>
                   <div style={{ fontSize: 12, color: SILVER, marginTop: 6 }}>
@@ -479,10 +478,10 @@ export default function CoachProfilePage() {
                   <select
                     value={selectedPkgIdx}
                     onChange={e => setSelectedPkgIdx(Number(e.target.value))}
-                    style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', background: 'rgba(240,244,255,0.04)', border: '1px solid rgba(240,244,255,0.14)', borderRadius: 10, color: CREAM, fontSize: 13, fontWeight: 600, padding: '12px 36px 12px 14px', cursor: 'pointer', outline: 'none' }}
+                    style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 14%, transparent)', borderRadius: 10, color: CREAM, fontSize: 13, fontWeight: 600, padding: '12px 36px 12px 14px', cursor: 'pointer', outline: 'none' }}
                   >
                     {pricingOptions.map((opt, i) => (
-                      <option key={i} value={i} style={{ background: '#1a1c23', color: CREAM }}>
+                      <option key={i} value={i} style={{ background: 'var(--surface)', color: CREAM }}>
                         {opt.label} — {opt.detail}
                       </option>
                     ))}
@@ -494,7 +493,7 @@ export default function CoachProfilePage() {
                 {bookingHref && (
                   <Link
                     href={`${bookingHref}${pricingOptions[selectedPkgIdx]?.packIndex !== null ? `?pack=${pricingOptions[selectedPkgIdx]?.packIndex}` : ''}`}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', borderRadius: 12, background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, color: '#fff', fontSize: 14, fontWeight: 800, textDecoration: 'none', boxShadow: `0 4px 20px ${VIOLET}40` }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', borderRadius: 12, background: `${VIOLET}`, color: 'var(--on-brand)', fontSize: 14, fontWeight: 800, textDecoration: 'none', boxShadow: 'none' }}
                   >
                     <Calendar size={14} /> Réserver
                   </Link>
@@ -503,8 +502,8 @@ export default function CoachProfilePage() {
             )}
 
             {/* Infos pratiques */}
-            <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 16, padding: '20px 20px' }}>
-              <h2 style={{ fontSize: 11, fontWeight: 700, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Infos pratiques</h2>
+            <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 16, padding: '20px 20px' }}>
+              <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Infos pratiques</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {modeLabel && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -552,7 +551,7 @@ export default function CoachProfilePage() {
                 )}
                 {avgRating !== null && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <CheckCircle size={13} color="#4ade80" />
+                    <CheckCircle size={13} color="var(--gain)" />
                     <span style={{ fontSize: 13, color: SILVER }}><span style={{ color: CREAM, fontWeight: 600 }}>{avgRating.toFixed(1)}/5</span> · {reviews.length} avis vérifiés</span>
                   </div>
                 )}
@@ -568,8 +567,8 @@ export default function CoachProfilePage() {
             {/* Scroll hint (si pas de CTA disponible) */}
             {!bookingHref && (
               <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                <ChevronDown size={16} color={DIM} />
-                <p style={{ fontSize: 11, color: DIM, margin: '4px 0 0' }}>Pas d'offre disponible pour le moment</p>
+                <ChevronDown size={16} color="var(--text-3)" />
+                <p style={{ fontSize: 11, color: 'var(--text-3)', margin: '4px 0 0' }}>Pas d'offre disponible pour le moment</p>
               </div>
             )}
           </div>
@@ -578,8 +577,8 @@ export default function CoachProfilePage() {
 
       <style>{`
         .coach-formation-link:hover {
-          background: rgba(240,244,255,0.05) !important;
-          border-color: rgba(240,244,255,0.16) !important;
+          background: color-mix(in srgb, var(--brand) 5%, transparent) !important;
+          border-color: color-mix(in srgb, var(--brand) 16%, transparent) !important;
         }
         .coach-formation-link:hover img {
           transform: scale(1.04);
@@ -589,8 +588,8 @@ export default function CoachProfilePage() {
           transition: all 0.2s cubic-bezier(0.16,1,0.3,1) !important;
         }
         .coach-sidebar-link:hover {
-          background: rgba(124,58,237,0.14) !important;
-          border-color: rgba(124,58,237,0.5) !important;
+          background: color-mix(in srgb, var(--brand) 14%, transparent) !important;
+          border-color: color-mix(in srgb, var(--brand) 50%, transparent) !important;
           transform: translateY(-2px) scale(1.015) !important;
         }
       `}</style>

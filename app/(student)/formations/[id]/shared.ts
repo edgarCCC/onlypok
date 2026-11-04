@@ -2,15 +2,15 @@
 import { generateWeeklySlots, DEFAULT_COACH_TIMEZONE } from '@/lib/timezone'
 import { MIN_LEAD_MINUTES } from '@/lib/slots'
 
-export const CREAM  = '#f0f4ff'
-export const SILVER = 'rgba(240,244,255,0.45)'
+export const CREAM  = 'var(--text)'
+export const SILVER = 'var(--text-2)'
 
 export const VARIANT_COLORS: Record<string, string> = {
-  NLH: '#7c3aed', MTT: '#7c3aed', Cash: '#06b6d4',
-  Expresso: '#ef4444', Live: '#f59e0b', PLO: '#a855f7',
+  NLH: 'var(--brand)', MTT: 'var(--brand)', Cash: 'var(--brand)',
+  Expresso: 'var(--error)', Live: 'var(--brand)', PLO: 'var(--brand)',
 }
 export const TYPE_COLORS: Record<string, string> = {
-  formation: '#7c3aed', video: '#3b82f6', coaching: '#a855f7',
+  formation: 'var(--brand)', video: 'var(--brand)', coaching: 'var(--brand)',
 }
 export const TYPE_LABELS: Record<string, string> = {
   formation: 'Formation', video: 'Vidéo', coaching: 'Coaching',
@@ -26,11 +26,11 @@ export const REVIEW_CATEGORIES = [
 ]
 
 export const VARIANT_OPTIONS = [
-  { id: 'MTT',      label: 'MTT',        desc: 'Tournois multi-tables',    color: '#7c3aed' },
-  { id: 'Cash',     label: 'Cash Game',  desc: 'Tables cash 6-max / HU',  color: '#06b6d4' },
-  { id: 'Expresso', label: 'Expresso',   desc: 'Sit & Go hyper-turbo',    color: '#ef4444' },
-  { id: 'Live',     label: 'Live',       desc: 'Poker en casino / cercle', color: '#f59e0b' },
-  { id: 'PLO',      label: 'PLO',        desc: 'Pot-Limit Omaha',         color: '#a855f7' },
+  { id: 'MTT',      label: 'MTT',        desc: 'Tournois multi-tables',    color: 'var(--brand)' },
+  { id: 'Cash',     label: 'Cash Game',  desc: 'Tables cash 6-max / HU',  color: 'var(--brand)' },
+  { id: 'Expresso', label: 'Expresso',   desc: 'Sit & Go hyper-turbo',    color: 'var(--error)' },
+  { id: 'Live',     label: 'Live',       desc: 'Poker en casino / cercle', color: 'var(--brand)' },
+  { id: 'PLO',      label: 'PLO',        desc: 'Pot-Limit Omaha',         color: 'var(--brand)' },
 ]
 
 export const HEADER_FIELDS: Record<string, { key: string; label: string; placeholder: string; options: string[] }[]> = {
@@ -52,7 +52,7 @@ export const HEADER_FIELDS: Record<string, { key: string; label: string; placeho
 }
 
 export const HEADER_TAB_COLORS: Record<string, string> = {
-  formations: '#7c3aed', videos: '#3b82f6', coaching: '#a855f7',
+  formations: 'var(--brand)', videos: 'var(--brand)', coaching: 'var(--brand)',
 }
 
 /* ─── calendar helpers ──────────────────────────────────────────────────────── */

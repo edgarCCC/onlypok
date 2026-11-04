@@ -11,13 +11,13 @@ import NumberStepper from '@/components/ui/NumberStepper'
 import VideoUrlCheck from '@/components/formations/VideoUrlCheck'
 import { videoLinkColumns, writeLessonVideo, syncFormationVideo, isVideoLinkRefused, VIDEO_LINK_REQUIRED } from '@/lib/video-columns'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
 
 const TABS = [
-  { id: 'formation', label: 'Formation', color: '#7c3aed', desc: 'Chapitres & leçons structurés' },
-  { id: 'video',     label: 'Vidéo',     color: '#06b6d4', desc: 'Vidéo standalone accessible' },
-  { id: 'coaching',  label: 'Coaching',  color: '#f59e0b', desc: 'Session coaching avec packs' },
+  { id: 'formation', label: 'Formation', color: 'var(--brand)', desc: 'Chapitres & leçons structurés' },
+  { id: 'video',     label: 'Vidéo',     color: 'var(--brand)', desc: 'Vidéo standalone accessible' },
+  { id: 'coaching',  label: 'Coaching',  color: 'var(--brand)', desc: 'Session coaching avec packs' },
 ]
 
 const VARIANTS = ['MTT', 'NLH', 'Cash', 'Expresso', 'PLO', 'SNG', 'Heads-Up', 'PKO', 'Autre']
@@ -34,19 +34,19 @@ const LEVELS_BY_VARIANT: Record<string, { value: string; label: string }[]> = {
   Autre:    LEVELS_BASE,
 }
 
-const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '11px 16px', color: CREAM, fontSize: 14, outline: 'none', fontFamily: 'inherit' }
+const inputStyle = { width: '100%', background: 'color-mix(in srgb, var(--overlay) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--overlay) 8%, transparent)', borderRadius: 10, padding: '11px 16px', color: CREAM, fontSize: 14, outline: 'none', fontFamily: 'inherit' }
 
 type Pkg     = { id: string; name: string; sessions: number; price: string; desc: string }
 type Lesson  = { title: string, video_url: string, is_free: boolean }
 type Chapter = { title: string; lessons: Lesson[] }
 
-const CARD_BG  = 'rgba(232,228,220,0.03)'
-const CARD_BD  = 'rgba(232,228,220,0.08)'
-const VIOLET   = '#7c3aed'
+const CARD_BG  = 'color-mix(in srgb, var(--brand) 3%, transparent)'
+const CARD_BD  = 'color-mix(in srgb, var(--brand) 8%, transparent)'
+const VIOLET   = 'var(--brand)'
 
 export default function NewFormationPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#04040a' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--bg)' }} />}>
       <NewFormationInner />
     </Suspense>
   )
@@ -319,16 +319,16 @@ function NewFormationInner() {
   return (
     <>
       {showLeaveModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(7,9,14,0.85)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#07070f', border: '1px solid rgba(240,244,255,0.08)', borderRadius: 20, padding: '36px 40px', maxWidth: 420, width: '90%', textAlign: 'center' }}>
-            <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(232,228,220,0.06)', border: '1px solid rgba(240,244,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'var(--bg)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--bg)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 20, padding: '36px 40px', maxWidth: 420, width: '90%', textAlign: 'center' }}>
+            <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'color-mix(in srgb, var(--brand) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 6v5M10 14h.01" stroke={CREAM} strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="10" r="8.5" stroke={CREAM} strokeWidth="1.5"/></svg>
             </div>
             <h3 style={{ fontSize: 17, fontWeight: 800, color: CREAM, marginBottom: 10 }}>Quitter sans sauvegarder ?</h3>
-            <p style={{ fontSize: 14, color: SILVER, lineHeight: 1.6, marginBottom: 28 }}>Vous avez des modifications non sauvegardées.</p>
+            <p style={{ fontSize: 14, color: SILVER, lineHeight: 1.6, marginBottom: 28 }}>Tu as des modifications non sauvegardées.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button onClick={async () => { setShowLeaveModal(false); setPublishOnCreate(false); const d = await doInsert(false); if (d) router.push('/coach/dashboard') }} style={{ padding: '12px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.15)', background: 'rgba(232,228,220,0.06)', color: CREAM, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Sauvegarder en brouillon</button>
-              <button onClick={() => { setShowLeaveModal(false); setIsDirty(false); router.push(pendingHref) }} style={{ padding: '12px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.7)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>Ne pas enregistrer</button>
+              <button onClick={async () => { setShowLeaveModal(false); setPublishOnCreate(false); const d = await doInsert(false); if (d) router.push('/coach/dashboard') }} style={{ padding: '12px', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--brand) 15%, transparent)', background: 'color-mix(in srgb, var(--brand) 6%, transparent)', color: CREAM, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Sauvegarder en brouillon</button>
+              <button onClick={() => { setShowLeaveModal(false); setIsDirty(false); router.push(pendingHref) }} style={{ padding: '12px', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--error) 20%, transparent)', background: 'transparent', color: 'color-mix(in srgb, var(--error) 70%, transparent)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>Ne pas enregistrer</button>
               <button onClick={() => setShowLeaveModal(false)} style={{ padding: '10px', borderRadius: 10, border: 'none', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer' }}>Continuer l'édition</button>
             </div>
           </div>
@@ -336,8 +336,7 @@ function NewFormationInner() {
       )}
       {showOverlay && <PublishOverlay type={tab} title={createdTitle} onDone={() => router.push('/coach/dashboard')} />}
 
-      <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 50% 30% at 50% 0%, ${activeTab.color}20 0%, transparent 70%)`, transition: 'background 0.5s' }} />
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM, position: 'relative', overflow: 'hidden' }}>
 
         <style>{`
           @media (max-width: 700px) {
@@ -355,21 +354,21 @@ function NewFormationInner() {
         <div className="cnew-container" style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto', padding: '40px' }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 36 }}>
-            <button type="button" onClick={goBack} style={{ width: 36, height: 36, borderRadius: 9, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <button type="button" onClick={goBack} style={{ width: 36, height: 36, borderRadius: 9, border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'transparent', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <ArrowLeft size={16} />
             </button>
             <div>
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', fontFamily: 'var(--font-syne,sans-serif)' }}>Nouveau contenu</h1>
+              <h1 style={{ fontSize: 32, fontWeight: 600, color: CREAM, letterSpacing: '-0.5px', fontFamily: 'var(--font-syne,sans-serif)' }}>Nouveau contenu</h1>
               <p style={{ fontSize: 13, color: SILVER, marginTop: 2 }}>{activeTab.desc}</p>
             </div>
           </div>
 
           {/* Tabs */}
-          <div style={{ display: 'inline-flex', background: 'rgba(232,228,220,0.04)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 16, padding: 4, gap: 2, marginBottom: 36 }}>
+          <div style={{ display: 'inline-flex', background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 16, padding: 4, gap: 2, marginBottom: 36 }}>
             {TABS.map(t => {
               const active = tab === t.id
               return (
-                <button key={t.id} onClick={() => { setTab(t.id as any); setHighlights([]) }} style={{ padding: '8px 28px', borderRadius: 12, border: 'none', background: active ? t.color + '28' : 'transparent', color: active ? '#fff' : SILVER, fontSize: 13, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', boxShadow: active ? `0 2px 14px ${t.color}50` : 'none' }}>
+                <button key={t.id} onClick={() => { setTab(t.id as any); setHighlights([]) }} style={{ padding: '8px 28px', borderRadius: 12, border: 'none', background: active ? 'var(--brand)' : 'transparent', color: active ? 'var(--on-brand)' : SILVER, fontSize: 13, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', boxShadow: active ? 'none' : 'none' }}>
                   {t.label}
                 </button>
               )
@@ -422,11 +421,11 @@ function NewFormationInner() {
                 <Section title="Chapitres & leçons">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     {chapters.map((chapter, ci) => (
-                      <div key={ci} style={{ background: 'rgba(232,228,220,0.02)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 12, overflow: 'hidden' }}>
+                      <div key={ci} style={{ background: 'color-mix(in srgb, var(--brand) 2%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 12, overflow: 'hidden' }}>
                         {/* Header chapitre */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid rgba(232,228,220,0.06)', background: 'rgba(232,228,220,0.03)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)', background: 'color-mix(in srgb, var(--brand) 3%, transparent)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 26, height: 26, borderRadius: 7, background: `${activeTab.color}20`, border: `1px solid ${activeTab.color}40`, color: activeTab.color, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{ci + 1}</div>
+                            <div style={{ width: 26, height: 26, borderRadius: 7, background: `color-mix(in srgb, ${activeTab.color} 13%, transparent)`, border: `1px solid color-mix(in srgb, ${activeTab.color} 25%, transparent)`, color: activeTab.color, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{ci + 1}</div>
                             <input
                               value={chapter.title}
                               onChange={e => updateChapterTitle(ci, e.target.value)}
@@ -435,9 +434,9 @@ function NewFormationInner() {
                             />
                           </div>
                           <div style={{ display: 'flex', gap: 8 }}>
-                            {ci === 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'rgba(6,182,212,0.15)', color: '#06b6d4', fontWeight: 700 }}>Accès gratuit</span>}
+                            {ci === 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'color-mix(in srgb, var(--brand) 15%, transparent)', color: 'var(--brand)', fontWeight: 700 }}>Accès gratuit</span>}
                             {chapters.length > 1 && (
-                              <button type="button" onClick={() => removeChapter(ci)} style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'rgba(239,68,68,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                              <button type="button" onClick={() => removeChapter(ci)} style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid color-mix(in srgb, var(--error) 20%, transparent)', background: 'transparent', color: 'color-mix(in srgb, var(--error) 50%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                                 <Trash2 size={11} />
                               </button>
                             )}
@@ -462,11 +461,11 @@ function NewFormationInner() {
                                 placeholder="URL YouTube / Vimeo"
                                 style={{ ...inputStyle, flex: 1, padding: '8px 12px', fontSize: 13 }}
                               />
-                              <button type="button" onClick={() => updateLesson(ci, li, 'is_free', !lesson.is_free)} style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 99, border: `1px solid ${lesson.is_free ? 'rgba(6,182,212,0.4)' : 'rgba(240,244,255,0.1)'}`, background: lesson.is_free ? 'rgba(6,182,212,0.1)' : 'transparent', color: lesson.is_free ? '#06b6d4' : SILVER, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                              <button type="button" onClick={() => updateLesson(ci, li, 'is_free', !lesson.is_free)} style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 99, border: `1px solid ${lesson.is_free ? 'color-mix(in srgb, var(--brand) 40%, transparent)' : 'color-mix(in srgb, var(--brand) 10%, transparent)'}`, background: lesson.is_free ? 'color-mix(in srgb, var(--brand) 10%, transparent)' : 'transparent', color: lesson.is_free ? 'var(--brand)' : SILVER, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
                                 {lesson.is_free ? 'Gratuit' : 'Premium'}
                               </button>
                               {chapter.lessons.length > 1 && (
-                                <button type="button" onClick={() => removeLesson(ci, li)} style={{ width: 26, height: 26, borderRadius: 6, border: 'none', background: 'transparent', color: 'rgba(239,68,68,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                                <button type="button" onClick={() => removeLesson(ci, li)} style={{ width: 26, height: 26, borderRadius: 6, border: 'none', background: 'transparent', color: 'color-mix(in srgb, var(--error) 40%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                                   <Trash2 size={11} />
                                 </button>
                               )}
@@ -483,7 +482,7 @@ function NewFormationInner() {
                       </div>
                     ))}
 
-                    <button type="button" onClick={addChapter} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1px dashed rgba(240,244,255,0.08)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer', transition: 'color 0.15s' }}
+                    <button type="button" onClick={addChapter} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1px dashed color-mix(in srgb, var(--brand) 8%, transparent)', background: 'transparent', color: SILVER, fontSize: 13, cursor: 'pointer', transition: 'color 0.15s' }}
                       onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = CREAM}
                       onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = SILVER}>
                       <Plus size={14} /> Ajouter un chapitre
@@ -552,20 +551,20 @@ function NewFormationInner() {
                     }} />
                   <div className="cnew-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
                     {galleryFiles.map((g, i) => (
-                      <div key={i} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: '#0d1117' }}>
+                      <div key={i} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: 'var(--bg)' }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={g.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <button type="button" onClick={() => setGalleryFiles(prev => prev.filter((_, j) => j !== i))}
-                          style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14 }}>
+                          style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--on-scrim)', fontSize: 14 }}>
                           ×
                         </button>
                       </div>
                     ))}
                     {galleryFiles.length < 4 && (
                       <button type="button" onClick={() => galleryInputRef.current?.click()}
-                        style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed rgba(240,244,255,0.1)', background: 'rgba(240,244,255,0.02)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: SILVER, transition: 'border-color 0.2s' }}
-                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.3)'}
-                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.1)'}>
+                        style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed color-mix(in srgb, var(--brand) 10%, transparent)', background: 'color-mix(in srgb, var(--brand) 2%, transparent)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: SILVER, transition: 'border-color 0.2s' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'color-mix(in srgb, var(--brand) 30%, transparent)'}
+                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'color-mix(in srgb, var(--brand) 10%, transparent)'}>
                         <Upload size={18} />
                         <span style={{ fontSize: 11 }}>Ajouter</span>
                       </button>
@@ -584,11 +583,11 @@ function NewFormationInner() {
                           { v: 'auto'   as const, Icon: Zap,           label: 'Acceptation directe', badge: undefined },
                         ]).map(({ v, Icon, label, badge }) => (
                           <button key={v} type="button" onClick={() => setCoachingMode(v)}
-                            style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: 12, border: `1.5px solid ${coachingMode === v ? VIOLET : CARD_BD}`, background: coachingMode === v ? 'rgba(124,58,237,0.12)' : CARD_BG, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left' }}>
-                            <Icon size={18} color={coachingMode === v ? '#a78bfa' : SILVER} />
+                            style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: 12, border: `1.5px solid ${coachingMode === v ? VIOLET : CARD_BD}`, background: coachingMode === v ? 'color-mix(in srgb, var(--brand) 12%, transparent)' : CARD_BG, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left' }}>
+                            <Icon size={18} color={coachingMode === v ? 'var(--brand)' : SILVER} />
                             <div>
                               <div style={{ fontSize: 13, fontWeight: 700, color: coachingMode === v ? CREAM : SILVER }}>{label}</div>
-                              {badge && <span style={{ fontSize: 9, fontWeight: 700, color: '#4ade80', letterSpacing: '0.05em' }}>{badge}</span>}
+                              {badge && <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--gain)', letterSpacing: '0.05em' }}>{badge}</span>}
                             </div>
                           </button>
                         ))}
@@ -600,7 +599,7 @@ function NewFormationInner() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 20, color: SILVER, fontWeight: 300 }}>€</span>
                         <input type="number" min="0" max="9999" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)}
-                          style={{ ...inputStyle, fontSize: 24, fontWeight: 800, textAlign: 'center', padding: '10px', width: '100%' }} />
+                          style={{ ...inputStyle, fontSize: 24, fontWeight: 600, textAlign: 'center', padding: '10px', width: '100%' }} />
                         <span style={{ fontSize: 13, color: SILVER }}>/h</span>
                       </div>
                       {Number(hourlyRate) > 0 && (
@@ -621,13 +620,13 @@ function NewFormationInner() {
                                 placeholder="Nom du forfait (ex : Pack Starter)"
                                 style={inputStyle} />
                               <button type="button" onClick={() => setPackages(ps => ps.filter((_, j) => j !== i))}
-                                style={{ padding: '0 12px', borderRadius: 8, border: 'none', background: 'rgba(239,68,68,0.08)', color: '#ef4444', cursor: 'pointer', flexShrink: 0 }}>
+                                style={{ padding: '0 12px', borderRadius: 8, border: 'none', background: 'color-mix(in srgb, var(--error) 8%, transparent)', color: 'var(--error)', cursor: 'pointer', flexShrink: 0 }}>
                                 <Trash2 size={13} />
                               </button>
                             </div>
                             <div className="cnew-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                               <div>
-                                <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(240,244,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase' as const, display: 'block', marginBottom: 8 }}>Sessions</label>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.08em', textTransform: 'uppercase' as const, display: 'block', marginBottom: 8 }}>Sessions</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
                                   <OfferStepper onClick={() => setPackages(ps => ps.map((p, j) => j === i ? { ...p, sessions: Math.max(1, p.sessions - 1) } : p))}><Minus size={12} /></OfferStepper>
                                   <span style={{ fontSize: 20, fontWeight: 800, color: CREAM, minWidth: 28, textAlign: 'center' }}>{pkg.sessions}</span>
@@ -635,7 +634,7 @@ function NewFormationInner() {
                                 </div>
                               </div>
                               <div>
-                                <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(240,244,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase' as const, display: 'block', marginBottom: 8 }}>Prix total (€)</label>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.08em', textTransform: 'uppercase' as const, display: 'block', marginBottom: 8 }}>Prix total (€)</label>
                                 <input value={pkg.price} placeholder="ex : 320"
                                   onChange={e => setPackages(ps => ps.map((p, j) => j === i ? { ...p, price: e.target.value } : p))}
                                   style={{ ...inputStyle, marginTop: 4 }} />
@@ -646,7 +645,7 @@ function NewFormationInner() {
                               const saved = full - Number(pkg.price)
                               const pct  = Math.round((saved / full) * 100)
                               if (saved <= 0) return null
-                              return <div style={{ fontSize: 11, color: '#4ade80', marginTop: 8 }}>Économie de {saved} € (−{pct} %)</div>
+                              return <div style={{ fontSize: 11, color: 'var(--gain)', marginTop: 8 }}>Économie de {saved} € (−{pct} %)</div>
                             })()}
                           </div>
                         ))}
@@ -661,12 +660,12 @@ function NewFormationInner() {
                 </Section>
 
                 {/* Cal.com */}
-                <div style={{ background: 'rgba(124,58,237,0.04)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 16, padding: '20px 24px' }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 }}>Calendrier intégré OnlyPok</p>
+                <div style={{ background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 20%, transparent)', borderRadius: 16, padding: '20px 24px' }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--brand)', marginBottom: 6 }}>Calendrier intégré OnlyPok</p>
                   <p style={{ fontSize: 12, color: SILVER, lineHeight: 1.65, margin: 0 }}>
                     Les élèves choisissent leur créneau directement sur ta page coaching — aucun compte externe requis.
                     Configure tes disponibilités dans ton{' '}
-                    <a href="/coach/agenda?tab=availability" style={{ color: '#a855f7', textDecoration: 'underline' }}>calendrier coach</a>.
+                    <a href="/coach/agenda?tab=availability" style={{ color: 'var(--brand)', textDecoration: 'underline' }}>calendrier coach</a>.
                   </p>
                 </div>
               </>
@@ -682,16 +681,16 @@ function NewFormationInner() {
               />
             </Section>
 
-            {error && <p style={{ color: '#ef4444', fontSize: 13 }}>{error}</p>}
+            {error && <p style={{ color: 'var(--error)', fontSize: 13 }}>{error}</p>}
 
-            <div style={{ height: 1, background: 'rgba(232,228,220,0.08)' }} />
+            <div style={{ height: 1, background: 'color-mix(in srgb, var(--brand) 8%, transparent)' }} />
             <div style={{ display: 'flex', gap: 12 }}>
-              <button type="button" onClick={goBack} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: SILVER, cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Annuler</button>
-              <button type="submit" disabled={loading || !canSubmit} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.15)', background: 'transparent', color: CREAM, fontSize: 14, fontWeight: 600, cursor: (loading || !canSubmit) ? 'not-allowed' : 'pointer', opacity: (loading || !canSubmit) ? 0.4 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <button type="button" onClick={goBack} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'transparent', color: SILVER, cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Annuler</button>
+              <button type="submit" disabled={loading || !canSubmit} style={{ flex: 1, padding: '13px', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--brand) 15%, transparent)', background: 'transparent', color: CREAM, fontSize: 14, fontWeight: 600, cursor: (loading || !canSubmit) ? 'not-allowed' : 'pointer', opacity: (loading || !canSubmit) ? 0.4 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 {loading ? <><Loader2 size={14} style={{ animation: 'spin 0.7s linear infinite' }} /> Création…</> : 'Brouillon'}
               </button>
               <button type="button" disabled={!canSubmit || loading} onClick={handlePublish}
-                style={{ flex: 2, padding: '13px', borderRadius: 10, border: 'none', background: activeTab.color, color: '#fff', fontSize: 14, fontWeight: 800, cursor: (!canSubmit || loading) ? 'not-allowed' : 'pointer', opacity: (!canSubmit || loading) ? 0.4 : 1, boxShadow: `0 4px 20px ${activeTab.color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                style={{ flex: 2, padding: '13px', borderRadius: 10, border: 'none', background: activeTab.color, color: 'var(--on-brand)', fontSize: 14, fontWeight: 800, cursor: (!canSubmit || loading) ? 'not-allowed' : 'pointer', opacity: (!canSubmit || loading) ? 0.4 : 1, boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 {loading ? <><Loader2 size={14} style={{ animation: 'spin 0.7s linear infinite' }} /> Publication…</> : `Publier la ${activeTab.label.toLowerCase()} →`}
               </button>
             </div>
@@ -706,9 +705,9 @@ function NewFormationInner() {
 function OfferStepper({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
     <button type="button" onClick={onClick}
-      style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(240,244,255,0.1)', background: 'rgba(240,244,255,0.03)', color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
-      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = VIOLET; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.15)' }}
-      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(240,244,255,0.1)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(240,244,255,0.03)' }}>
+      style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'color-mix(in srgb, var(--brand) 3%, transparent)', color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = VIOLET; (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 15%, transparent)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'color-mix(in srgb, var(--brand) 10%, transparent)'; (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 3%, transparent)' }}>
       {children}
     </button>
   )
@@ -723,16 +722,16 @@ function MiniatureEditor({ preview, zoom, position, dragging, onThumb, onZoom, o
   onMouseUp: () => void,
   height?: number
 }) {
-  const SILVER = 'rgba(240,244,255,0.45)', CREAM = '#f0f4ff'
+  const SILVER = 'var(--text-2)', CREAM = 'var(--brand)'
   if (!preview) {
     return (
       <label style={{ display: 'block', cursor: 'pointer' }}>
-        <div style={{ width: '100%', height, borderRadius: 14, border: '2px dashed rgba(232,228,220,0.1)', backgroundColor: 'rgba(232,228,220,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'border-color 0.2s' }}
-          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.3)'}
-          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.1)'}>
+        <div style={{ width: '100%', height, borderRadius: 14, border: '2px dashed color-mix(in srgb, var(--brand) 10%, transparent)', backgroundColor: 'color-mix(in srgb, var(--brand) 2%, transparent)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'border-color 0.2s' }}
+          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--brand) 30%, transparent)'}
+          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--brand) 10%, transparent)'}>
           <Upload size={22} color={SILVER} />
           <span style={{ fontSize: 13, color: SILVER }}>Cliquer pour uploader</span>
-          <span style={{ fontSize: 11, color: 'rgba(138,138,138,0.4)' }}>PNG, JPG, WEBP</span>
+          <span style={{ fontSize: 11, color: 'var(--text-3)' }}>PNG, JPG, WEBP</span>
         </div>
         <input type="file" accept="image/*" onChange={onThumb} style={{ display: 'none' }} />
       </label>
@@ -742,7 +741,7 @@ function MiniatureEditor({ preview, zoom, position, dragging, onThumb, onZoom, o
     <div>
       {/* Zone crop */}
       <div
-        style={{ position: 'relative', width: '100%', maxWidth: 480, height, borderRadius: 12, overflow: 'hidden', cursor: 'grab', userSelect: 'none', backgroundColor: '#111', margin: '0 auto' }}
+        style={{ position: 'relative', width: '100%', maxWidth: 480, height, borderRadius: 12, overflow: 'hidden', cursor: 'grab', userSelect: 'none', backgroundColor: 'var(--bg)', margin: '0 auto' }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
@@ -751,23 +750,23 @@ function MiniatureEditor({ preview, zoom, position, dragging, onThumb, onZoom, o
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${preview})`, backgroundSize: `${zoom * 100}%`, backgroundPosition: `${position.x}% ${position.y}%`, backgroundRepeat: 'no-repeat' }} />
         {/* Masque + zone visible en pointillés */}
         <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 0 9999px rgba(0,0,0,0.3)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '75%', aspectRatio: '16/9', border: '1.5px dashed rgba(232,228,220,0.5)', borderRadius: 4, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 10, color: 'rgba(232,228,220,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(0,0,0,0.4)', padding: '3px 10px', borderRadius: 99 }}>Zone visible</span>
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '75%', aspectRatio: '16/9', border: '1.5px dashed color-mix(in srgb, var(--brand) 50%, transparent)', borderRadius: 4, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-2)', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(0,0,0,0.4)', padding: '3px 10px', borderRadius: 99 }}>Zone visible</span>
         </div>
       </div>
       {/* Contrôles */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, padding: '9px 14px', background: 'rgba(232,228,220,0.04)', borderRadius: 10, border: '1px solid rgba(232,228,220,0.08)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, padding: '9px 14px', background: 'color-mix(in srgb, var(--brand) 4%, transparent)', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)' }}>
         <ZoomOut size={13} color={SILVER} style={{ flexShrink: 0 }} />
         <input type="range" min={0.3} max={2} step={0.02} value={zoom} onChange={e => onZoom(Number(e.target.value))} style={{ flex: 1, accentColor: CREAM, height: 3 }} />
         <ZoomIn size={13} color={SILVER} style={{ flexShrink: 0 }} />
         <span style={{ fontSize: 11, color: SILVER, minWidth: 34, textAlign: 'right' }}>{Math.round(zoom * 100)}%</span>
-        <div style={{ width: 1, height: 14, background: 'rgba(232,228,220,0.1)', flexShrink: 0 }} />
+        <div style={{ width: 1, height: 14, background: 'color-mix(in srgb, var(--brand) 10%, transparent)', flexShrink: 0 }} />
         <label style={{ fontSize: 11, color: SILVER, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
           <Upload size={11} /> Changer
           <input type="file" accept="image/*" onChange={onThumb} style={{ display: 'none' }} />
         </label>
       </div>
-      <p style={{ fontSize: 10, color: 'rgba(138,138,138,0.4)', marginTop: 5 }}>Glissez pour repositionner · zoom avec le slider</p>
+      <p style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 5 }}>Glissez pour repositionner · zoom avec le slider</p>
     </div>
   )
 }
@@ -775,10 +774,10 @@ function MiniatureEditor({ preview, zoom, position, dragging, onThumb, onZoom, o
 function Thumb({ preview, onChange, height = 180, label = 'Cliquer pour uploader' }: { preview: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, height?: number, label?: string }) {
   return (
     <label style={{ display: 'block', cursor: 'pointer' }}>
-      <div style={{ width: '100%', height, borderRadius: 14, border: '2px dashed rgba(232,228,220,0.1)', backgroundImage: preview ? `url(${preview})` : undefined, backgroundColor: preview ? undefined : 'rgba(232,228,220,0.02)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'border-color 0.2s' }}
-        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.3)'}
-        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.1)'}>
-        {!preview && <><Upload size={22} color="rgba(240,244,255,0.45)" /><span style={{ fontSize: 13, color: 'rgba(240,244,255,0.45)' }}>{label}</span></>}
+      <div style={{ width: '100%', height, borderRadius: 14, border: '2px dashed color-mix(in srgb, var(--brand) 10%, transparent)', backgroundImage: preview ? `url(${preview})` : undefined, backgroundColor: preview ? undefined : 'color-mix(in srgb, var(--brand) 2%, transparent)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'border-color 0.2s' }}
+        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--brand) 30%, transparent)'}
+        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--brand) 10%, transparent)'}>
+        {!preview && <><Upload size={22} color="var(--text-2)" /><span style={{ fontSize: 13, color: 'var(--text-2)' }}>{label}</span></>}
       </div>
       <input type="file" accept="image/*" onChange={onChange} style={{ display: 'none' }} />
     </label>
@@ -796,13 +795,13 @@ function HighlightsPicker({
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <p style={{ fontSize: 13, color: SILVER, margin: 0 }}>
-          Choisissez 1 à 5 atouts affichés sur la page de vente.
+          Choisis 1 à 5 atouts affichés sur la page de vente.
         </p>
         <span style={{
           fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99,
-          background: selected.length > 0 ? `${color}18` : 'rgba(232,228,220,0.05)',
+          background: selected.length > 0 ? `color-mix(in srgb, ${color} 9%, transparent)` : 'color-mix(in srgb, var(--brand) 5%, transparent)',
           color: selected.length > 0 ? color : SILVER,
-          border: `1px solid ${selected.length > 0 ? color + '40' : 'rgba(232,228,220,0.1)'}`,
+          border: `1px solid ${selected.length > 0 ? `color-mix(in srgb, ${color} 25%, transparent)` : 'color-mix(in srgb, var(--brand) 10%, transparent)'}`,
         }}>
           {selected.length}/5
         </span>
@@ -816,9 +815,9 @@ function HighlightsPicker({
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '10px 14px', borderRadius: 10, textAlign: 'left',
-                border: `1px solid ${active ? color + '55' : 'rgba(232,228,220,0.08)'}`,
-                background: active ? `${color}12` : 'rgba(232,228,220,0.02)',
-                color: active ? CREAM : disabled ? 'rgba(232,228,220,0.2)' : SILVER,
+                border: `1px solid ${active ? `color-mix(in srgb, ${color} 33%, transparent)` : 'color-mix(in srgb, var(--brand) 8%, transparent)'}`,
+                background: active ? `color-mix(in srgb, ${color} 7%, transparent)` : 'color-mix(in srgb, var(--brand) 2%, transparent)',
+                color: active ? CREAM : disabled ? 'var(--text-3)' : SILVER,
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 opacity: disabled ? 0.45 : 1,
                 transition: 'all 0.15s',
@@ -838,9 +837,9 @@ function HighlightsPicker({
 
 function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.08)', borderRadius: 16, padding: '22px 24px' }}>
-      <h3 style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,244,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: subtitle ? 4 : 18 }}>{title}</h3>
-      {subtitle && <p style={{ fontSize: 12, color: 'rgba(240,244,255,0.28)', marginBottom: 18 }}>{subtitle}</p>}
+    <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 16, padding: '22px 24px' }}>
+      <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: subtitle ? 4 : 18 }}>{title}</h3>
+      {subtitle && <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 18 }}>{subtitle}</p>}
       {children}
     </div>
   )
@@ -849,7 +848,7 @@ function Section({ title, subtitle, children }: { title: string; subtitle?: stri
 function Field({ label, children }: { label: string, children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ fontSize: 10, fontWeight: 700, color: 'rgba(240,244,255,0.45)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', display: 'block', marginBottom: 7 }}>{label}</label>
+      <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', display: 'block', marginBottom: 7 }}>{label}</label>
       {children}
     </div>
   )

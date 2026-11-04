@@ -34,14 +34,14 @@ function SocialIcon({ label, href, path }: { label: string; href: string; path: 
       rel="noopener noreferrer"
       style={{
         width: 36, height: 36, borderRadius: 8,
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid color-mix(in srgb, var(--overlay) 8%, transparent)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'border-color 0.2s, background 0.2s',
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'; e.currentTarget.style.background = 'rgba(124,58,237,0.1)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'transparent' }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--brand) 40%, transparent)'; e.currentTarget.style.background = 'color-mix(in srgb, var(--brand) 10%, transparent)' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--overlay) 8%, transparent)'; e.currentTarget.style.background = 'transparent' }}
     >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,244,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="color-mix(in srgb, var(--brand) 40%, transparent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d={path} />
       </svg>
     </a>
@@ -51,9 +51,9 @@ function SocialIcon({ label, href, path }: { label: string; href: string; path: 
 export default function Footer() {
   return (
     <footer style={{
-      background: '#040608',
+      background: 'var(--bg)',
       borderTop: '1px solid transparent',
-      backgroundImage: 'linear-gradient(#040608, #040608), linear-gradient(90deg, transparent, rgba(124,58,237,0.4), rgba(6,182,212,0.4), transparent)',
+      backgroundImage: 'linear-gradient(var(--bg), var(--bg)), transparent',
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
     }}>
@@ -64,10 +64,10 @@ export default function Footer() {
         <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 56 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 7, height: 7, borderRadius: 2, background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }} />
-              <span style={{ fontFamily: 'var(--font-syne,sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: '#f0f4ff' }}>ONLYPOK</span>
+              <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--brand)' }} />
+              <span style={{ fontFamily: 'var(--font-syne,sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: 'var(--brand)' }}>ONLYPOK</span>
             </div>
-            <p style={{ fontSize: 13, color: 'rgba(240,244,255,0.3)', lineHeight: 1.7, maxWidth: 240, fontFamily: 'var(--font-space,sans-serif)', marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.7, maxWidth: 240, fontFamily: 'var(--font-space,sans-serif)', marginBottom: 24 }}>
               La plateforme de référence pour les joueurs de poker qui jouent pour gagner.
             </p>
             {ACTIVE_SOCIAL_LINKS.length > 0 && (
@@ -79,16 +79,16 @@ export default function Footer() {
 
           {COLS.map(col => (
             <div key={col.title}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,244,255,0.25)', letterSpacing: '0.16em', marginBottom: 20, fontFamily: 'var(--font-space,sans-serif)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', marginBottom: 20, fontFamily: 'var(--font-space,sans-serif)' }}>
                 {col.title.toUpperCase()}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {col.links.map(({ label, href }) => (
                   <Link
                     key={label} href={href}
-                    style={{ fontSize: 13, color: 'rgba(240,244,255,0.35)', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'var(--font-space,sans-serif)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'rgba(240,244,255,0.75)'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(240,244,255,0.35)'}
+                    style={{ fontSize: 13, color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'var(--font-space,sans-serif)' }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
                   >
                     {label}
                   </Link>
@@ -99,9 +99,9 @@ export default function Footer() {
         </div>
 
         <div style={{
-          borderTop: '1px solid rgba(255,255,255,0.05)',
+          borderTop: '1px solid color-mix(in srgb, var(--overlay) 5%, transparent)',
           paddingTop: 24, textAlign: 'center',
-          fontSize: 12, color: 'rgba(240,244,255,0.2)',
+          fontSize: 12, color: 'var(--text-3)',
           fontFamily: 'var(--font-space,sans-serif)',
         }}>
           © 2026 OnlyPok. Tous droits réservés.

@@ -73,7 +73,7 @@ export async function PUT(req: NextRequest) {
      stocker silencieusement en clair. En dev, on dégrade (log dans lib/crypto). */
   if (!isPaymentEncryptionConfigured() && process.env.NODE_ENV === 'production') {
     console.error('[payment-info] PUT refusé : PAYMENT_INFO_ENC_KEY absente/invalide en production')
-    return NextResponse.json({ error: 'Chiffrement non configuré — contactez le support' }, { status: 503 })
+    return NextResponse.json({ error: 'Chiffrement non configuré : contacte le support' }, { status: 503 })
   }
 
   // Content-Type (415), taille (413), JSON, types, longueurs et enum (400) : lib/validate.ts

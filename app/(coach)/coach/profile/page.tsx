@@ -18,13 +18,13 @@ import {
 import SelectInput from '@/components/ui/SelectInput'
 
 /* ── Palette ── */
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const DIM    = 'rgba(232,228,220,0.2)'
-const VIOLET = '#7c3aed'
-const CYAN   = '#06b6d4'
-const CARD   = 'rgba(232,228,220,0.03)'
-const BORDER = 'rgba(232,228,220,0.08)'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const DIM    = 'color-mix(in srgb, var(--brand) 20%, transparent)'
+const VIOLET = 'var(--brand)'
+const CYAN   = 'var(--brand)'
+const CARD   = 'color-mix(in srgb, var(--brand) 3%, transparent)'
+const BORDER = 'color-mix(in srgb, var(--brand) 8%, transparent)'
 
 /* ── Constants ── */
 const ROOMS = [
@@ -39,10 +39,10 @@ const VARIANTS = [
   { id: 'Mental',   desc: 'Mental game & bankroll' },
 ]
 const TARGET_PLAYERS = [
-  { id: 'fish',    label: 'Poissons',        sub: 'Récréatifs & débutants', Icon: Fish,          color: '#06b6d4' },
-  { id: 'regular', label: 'Réguliers',       sub: 'Grinders & gagnants',    Icon: BarChart2,     color: '#4ade80' },
-  { id: 'semipro', label: 'Semi-pros',       sub: 'Objectif profit durable', Icon: GraduationCap, color: '#f59e0b' },
-  { id: 'shark',   label: 'Sharks / Pros',  sub: 'High-stakes & élite',    Icon: Swords,        color: '#a855f7' },
+  { id: 'fish',    label: 'Poissons',        sub: 'Récréatifs & débutants', Icon: Fish,          color: 'var(--brand)' },
+  { id: 'regular', label: 'Réguliers',       sub: 'Grinders & gagnants',    Icon: BarChart2,     color: 'var(--gain)' },
+  { id: 'semipro', label: 'Semi-pros',       sub: 'Objectif profit durable', Icon: GraduationCap, color: 'var(--brand)' },
+  { id: 'shark',   label: 'Sharks / Pros',  sub: 'High-stakes & élite',    Icon: Swords,        color: 'var(--brand)' },
 ]
 
 const ADVANTAGES = [
@@ -64,25 +64,25 @@ type ProofCat = {
   unlimited?: boolean
 }
 const PROOF_CATS: ProofCat[] = [
-  { value: 'stats',     label: 'Stats officielles',      Icon: BarChart2, recommended: 5, required: true,  desc: 'SharkScope · HM3/PT4 · Hendon Mob — selon votre format', color: '#06b6d4' },
-  { value: 'longterme', label: 'Long terme',             Icon: Flame,     recommended: 3, required: false, desc: 'Courbe de gains sur 6 mois minimum',                     color: '#f59e0b' },
-  { value: 'perf',      label: 'Meilleures perfs',       Icon: Trophy,    recommended: 4, required: false, desc: 'Plus gros gains · top résultats · max 4 photos',         color: '#eab308' },
-  { value: 'eleves',    label: 'Transformations élèves', Icon: Users,     recommended: 1, required: false, desc: 'Avant/après · avec accord de l\'élève',                 color: '#ec4899', unlimited: true },
+  { value: 'stats',     label: 'Stats officielles',      Icon: BarChart2, recommended: 5, required: true,  desc: 'SharkScope · HM3/PT4 · Hendon Mob, selon ton format', color: 'var(--brand)' },
+  { value: 'longterme', label: 'Long terme',             Icon: Flame,     recommended: 3, required: false, desc: 'Courbe de gains sur 6 mois minimum',                     color: 'var(--brand)' },
+  { value: 'perf',      label: 'Meilleures perfs',       Icon: Trophy,    recommended: 4, required: false, desc: 'Plus gros gains · top résultats · max 4 photos',         color: 'var(--brand)' },
+  { value: 'eleves',    label: 'Transformations élèves', Icon: Users,     recommended: 1, required: false, desc: 'Avant/après · avec accord de l\'élève',                 color: 'var(--brand)', unlimited: true },
 ]
 const TOTAL_RECOMMENDED = PROOF_CATS.reduce((s, c) => s + c.recommended, 0)
 
 function getColor(s: string) {
-  const palette = ['#7c3aed','#06b6d4','#a855f7','#ef4444','#8b5cf6','#ec4899']
+  const palette = ['var(--brand)','var(--brand)','var(--brand)','var(--error)','var(--brand)','var(--brand)']
   let h = 0; for (let i = 0; i < s.length; i++) h = s.charCodeAt(i) + ((h << 5) - h)
   return palette[Math.abs(h) % palette.length]
 }
 
 const VARIANT_COLORS: Record<string, string> = {
-  'MTT':      '#f59e0b',
-  'Cash':     '#10b981',
-  'Live':     '#06b6d4',
-  'Expresso': '#ef4444',
-  'Mental':   '#a78bfa',
+  'MTT':      'var(--brand)',
+  'Cash':     'var(--gain)',
+  'Live':     'var(--brand)',
+  'Expresso': 'var(--error)',
+  'Mental':   'var(--brand)',
 }
 
 function getBannerColor(variants: string[], fallback: string) {
@@ -368,9 +368,8 @@ export default function CoachProfilePage() {
   const initials = (username || 'C').slice(0, 2).toUpperCase()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM }}>
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', top: '-5%', left: '30%', width: 500, height: 300, background: 'radial-gradient(ellipse, rgba(124,58,237,0.08) 0%, transparent 70%)', filter: 'blur(40px)' }} />
       </div>
 
       <style>{`
@@ -390,25 +389,25 @@ export default function CoachProfilePage() {
         {/* ── Header ── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 36, flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1 style={{ fontSize: 32, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>Mon profil</h1>
+            <h1 style={{ fontSize: 32, fontWeight: 600, color: CREAM, letterSpacing: '-0.5px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>Mon profil</h1>
             <p style={{ fontSize: 13, color: SILVER, marginTop: 4 }}>Ta carte de visite publique — soigne-la.</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {saveStatus === 'dirty' && (
-              <span style={{ fontSize: 12, color: '#f59e0b', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
+              <span style={{ fontSize: 12, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--brand)', display: 'inline-block' }} />
                 Non sauvegardé
               </span>
             )}
             {saveStatus === 'saving' && (
               <span style={{ fontSize: 12, color: SILVER, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 11, height: 11, border: `1.5px solid rgba(138,138,138,0.25)`, borderTopColor: SILVER, borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
+                <div style={{ width: 11, height: 11, border: `1.5px solid color-mix(in srgb, var(--text) 25%, transparent)`, borderTopColor: SILVER, borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
                 Sauvegarde…
               </span>
             )}
             {saveStatus === 'saved' && (
-              <span style={{ fontSize: 12, color: '#4ade80', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Check size={12} color="#4ade80" /> Sauvegardé
+              <span style={{ fontSize: 12, color: 'var(--gain)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Check size={12} color="var(--gain)" /> Sauvegardé
               </span>
             )}
             <Link href={`/coaches/${user?.id}`} target="_blank"
@@ -429,7 +428,7 @@ export default function CoachProfilePage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: SILVER, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>
                 <Icon size={11} /> {label}
               </div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: CREAM, letterSpacing: '-1px', lineHeight: 1, marginBottom: 2 }}>{value}</div>
+              <div style={{ fontSize: 28, fontWeight: 600, color: CREAM, letterSpacing: '-1px', lineHeight: 1, marginBottom: 2 }}>{value}</div>
               <div style={{ fontSize: 11, color: SILVER }}>{sub}</div>
             </div>
           ))}
@@ -441,25 +440,24 @@ export default function CoachProfilePage() {
             const bannerColor = getBannerColor(variants, color)
             const variantColor = (v: string) => VARIANT_COLORS[v] ?? color
             return (
-              <div style={{ position: 'relative', background: 'rgba(232,228,220,0.03)', border: `1px solid rgba(232,228,220,0.09)`, borderRadius: 18, boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
+              <div style={{ position: 'relative', background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 9%, transparent)`, borderRadius: 18, boxShadow: 'var(--shadow-float)' }}>
 
                 {/* hidden file input */}
                 <input ref={avatarRef} type="file" accept="image/*" style={{ display: 'none' }}
                   onChange={e => { const f = e.target.files?.[0]; if (f) setCropFile(f); e.target.value = '' }} />
 
                 {/* Banner — overflow hidden scoped here only */}
-                <div style={{ height: 100, borderRadius: '18px 18px 0 0', overflow: 'hidden', position: 'relative', background: `linear-gradient(135deg, ${bannerColor}55 0%, ${bannerColor}22 50%, rgba(7,9,14,0.6) 100%)` }}>
-                  <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 120% 140% at -10% 60%, ${bannerColor}40, transparent 60%)` }} />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(7,9,14,0.55) 100%)' }} />
+                <div style={{ height: 100, borderRadius: '18px 18px 0 0', overflow: 'hidden', position: 'relative', background: `linear-gradient(135deg, color-mix(in srgb, ${bannerColor} 33%, transparent) 0%, color-mix(in srgb, ${bannerColor} 13%, transparent) 50%, color-mix(in srgb, var(--bg) 60%, transparent) 100%)` }}>
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, color-mix(in srgb, var(--bg) 55%, transparent) 100%)' }} />
                   {/* Rate badge */}
                   {hourlyRate && (
-                    <div style={{ position: 'absolute', top: 12, right: 14, background: 'rgba(7,9,14,0.72)', backdropFilter: 'blur(8px)', border: `1px solid ${bannerColor}50`, borderRadius: 10, padding: '5px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ position: 'absolute', top: 12, right: 14, background: 'color-mix(in srgb, var(--bg) 72%, transparent)', backdropFilter: 'blur(8px)', border: `1px solid color-mix(in srgb, ${bannerColor} 31%, transparent)`, borderRadius: 10, padding: '5px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <span style={{ fontSize: 15, fontWeight: 800, color: CREAM, lineHeight: 1 }}>{hourlyRate}€</span>
                       <span style={{ fontSize: 9, color: SILVER, marginTop: 1 }}>/ heure</span>
                     </div>
                   )}
                   {isPro && (
-                    <div style={{ position: 'absolute', top: 12, left: 14, fontSize: 9, fontWeight: 800, padding: '3px 8px', borderRadius: 99, background: `${bannerColor}25`, color: bannerColor, border: `1px solid ${bannerColor}50`, letterSpacing: '0.08em' }}>PRO</div>
+                    <div style={{ position: 'absolute', top: 12, left: 14, fontSize: 9, fontWeight: 800, padding: '3px 8px', borderRadius: 99, background: `color-mix(in srgb, ${bannerColor} 15%, transparent)`, color: bannerColor, border: `1px solid color-mix(in srgb, ${bannerColor} 31%, transparent)`, letterSpacing: '0.08em' }}>PRO</div>
                   )}
                 </div>
 
@@ -467,7 +465,7 @@ export default function CoachProfilePage() {
                 <div
                   onClick={() => avatarRef.current?.click()}
                   title="Cliquer pour changer la photo"
-                  style={{ position: 'absolute', top: 72, left: 18, zIndex: 10, width: 56, height: 56, borderRadius: '50%', border: `3px solid #07090e`, overflow: 'hidden', cursor: 'pointer', background: avatarUrl ? 'transparent' : `linear-gradient(135deg, ${bannerColor}, ${bannerColor}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff', boxShadow: `0 0 0 1px ${bannerColor}50` }}>
+                  style={{ position: 'absolute', top: 72, left: 18, zIndex: 10, width: 56, height: 56, borderRadius: '50%', border: `3px solid var(--bg)`, overflow: 'hidden', cursor: 'pointer', background: avatarUrl ? 'transparent' : `transparent`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: 'var(--text)', boxShadow: 'none' }}>
                   {avatarUrl
                     // eslint-disable-next-line @next/next/no-img-element
                     ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -475,22 +473,22 @@ export default function CoachProfilePage() {
                   {/* Hover overlay */}
                   <div className="avatar-hover-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, opacity: avatarUploading ? 1 : 0, transition: 'opacity 0.18s' }}>
                     {avatarUploading
-                      ? <div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.25)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                      : <><Camera size={14} color="#fff" /><span style={{ fontSize: 7, color: '#fff', fontWeight: 700, letterSpacing: '0.04em' }}>Changer</span></>}
+                      ? <div style={{ width: 16, height: 16, border: '2px solid color-mix(in srgb, var(--overlay) 25%, transparent)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                      : <><Camera size={14} color="#fff" /><span style={{ fontSize: 7, color: 'var(--text)', fontWeight: 700, letterSpacing: '0.04em' }}>Changer</span></>}
                   </div>
                 </div>
 
                 {/* Body */}
                 <div style={{ padding: '38px 18px 18px', borderRadius: '0 0 18px 18px' }}>
-                  {avatarError && <p style={{ fontSize: 10, color: '#ef4444', margin: '0 0 8px' }}>{avatarError}</p>}
+                  {avatarError && <p style={{ fontSize: 10, color: 'var(--error)', margin: '0 0 8px' }}>{avatarError}</p>}
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 16, color: CREAM, fontFamily: 'var(--font-syne,sans-serif)', letterSpacing: '-0.3px' }}>{username || 'Mon pseudo'}</div>
                       {avgRating ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
-                          {[1,2,3,4,5].map(s => <Star key={s} size={9} fill={s <= Math.round(avgRating) ? '#f59e0b' : 'none'} color={s <= Math.round(avgRating) ? '#f59e0b' : 'rgba(240,244,255,0.2)'} />)}
-                          <span style={{ fontSize: 10, color: '#f59e0b', fontWeight: 700 }}>{avgRating.toFixed(1)}</span>
+                          {[1,2,3,4,5].map(s => <Star key={s} size={9} fill={s <= Math.round(avgRating) ? 'var(--brand)' : 'none'} color={s <= Math.round(avgRating) ? 'var(--brand)' : 'var(--text-3)'} />)}
+                          <span style={{ fontSize: 10, color: 'var(--brand)', fontWeight: 700 }}>{avgRating.toFixed(1)}</span>
                           <span style={{ fontSize: 10, color: SILVER }}>({reviewCount})</span>
                         </div>
                       ) : (
@@ -506,7 +504,7 @@ export default function CoachProfilePage() {
                   </div>
 
                   {(vision || bio) && (
-                    <p style={{ fontSize: 11, color: 'rgba(240,244,255,0.6)', lineHeight: 1.55, margin: '8px 0 10px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.55, margin: '8px 0 10px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {vision || bio}
                     </p>
                   )}
@@ -515,24 +513,24 @@ export default function CoachProfilePage() {
                     <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 12 }}>
                       {variants.map(v => {
                         const vc = variantColor(v)
-                        return <span key={v} style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 99, background: `${vc}18`, color: vc, border: `1px solid ${vc}40`, letterSpacing: '0.04em' }}>{v}</span>
+                        return <span key={v} style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 99, background: `color-mix(in srgb, ${vc} 9%, transparent)`, color: vc, border: `1px solid color-mix(in srgb, ${vc} 25%, transparent)`, letterSpacing: '0.04em' }}>{v}</span>
                       })}
                     </div>
                   )}
 
-                  <div style={{ borderTop: '1px solid rgba(240,244,255,0.06)', paddingTop: 12, display: 'flex', gap: 16 }}>
+                  <div style={{ borderTop: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)', paddingTop: 12, display: 'flex', gap: 16 }}>
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: 13, fontWeight: 800, color: CREAM }}>{formCount}</div>
                       <div style={{ fontSize: 9, color: SILVER }}>formation{formCount !== 1 ? 's' : ''}</div>
                     </div>
-                    <div style={{ width: 1, background: 'rgba(240,244,255,0.06)' }} />
+                    <div style={{ width: 1, background: 'color-mix(in srgb, var(--brand) 6%, transparent)' }} />
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: 13, fontWeight: 800, color: CREAM }}>{reviewCount}</div>
                       <div style={{ fontSize: 9, color: SILVER }}>avis</div>
                     </div>
                     {isPro && (
                       <>
-                        <div style={{ width: 1, background: 'rgba(240,244,255,0.06)' }} />
+                        <div style={{ width: 1, background: 'color-mix(in srgb, var(--brand) 6%, transparent)' }} />
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: 11, fontWeight: 700, color: bannerColor }}>PRO</div>
                           <div style={{ fontSize: 9, color: SILVER }}>vérifié</div>
@@ -558,19 +556,19 @@ export default function CoachProfilePage() {
                   onChange={e => { setUsername(e.target.value); setUsernameErr('') }}
                   placeholder="ton-pseudo"
                   style={{ ...inputStyle, paddingRight: 40 }}
-                  onFocus={e => (e.currentTarget.style.borderColor = `rgba(124,58,237,0.5)`)}
+                  onFocus={e => (e.currentTarget.style.borderColor = `color-mix(in srgb, var(--brand) 50%, transparent)`)}
                   onBlur={e =>  (e.currentTarget.style.borderColor = BORDER)}
                 />
                 <Edit2 size={13} color={SILVER} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
               </div>
-              {usernameErr && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{usernameErr}</p>}
+              {usernameErr && <p style={{ fontSize: 11, color: 'var(--error)', marginTop: 4 }}>{usernameErr}</p>}
             </Field>
 
             <Field label="Bio">
               <textarea value={bio} onChange={e => { setBio(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                 placeholder="Décris ton parcours, tes spécialités, ce qui te distingue…"
                 rows={4} style={{ ...textareaStyle, resize: 'none', overflow: 'hidden' }}
-                onFocus={e => (e.currentTarget.style.borderColor = `rgba(124,58,237,0.5)`)}
+                onFocus={e => (e.currentTarget.style.borderColor = `color-mix(in srgb, var(--brand) 50%, transparent)`)}
                 onBlur={e =>  (e.currentTarget.style.borderColor = BORDER)} />
             </Field>
 
@@ -578,7 +576,7 @@ export default function CoachProfilePage() {
               <textarea value={vision} onChange={e => { setVision(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                 placeholder="Ex : Je t'aide à passer de récréationnel à gagnant régulier en 90 jours."
                 rows={3} style={{ ...textareaStyle, resize: 'none', overflow: 'hidden' }}
-                onFocus={e => (e.currentTarget.style.borderColor = `rgba(124,58,237,0.5)`)}
+                onFocus={e => (e.currentTarget.style.borderColor = `color-mix(in srgb, var(--brand) 50%, transparent)`)}
                 onBlur={e =>  (e.currentTarget.style.borderColor = BORDER)} />
             </Field>
 
@@ -586,7 +584,7 @@ export default function CoachProfilePage() {
               <Field label="Expérience">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <Stepper onClick={() => setYearsExp(y => Math.max(0, y - 1))}><Minus size={14} /></Stepper>
-                  <span style={{ fontSize: 28, fontWeight: 800, color: CREAM, minWidth: 36, textAlign: 'center' }}>{yearsExp}</span>
+                  <span style={{ fontSize: 28, fontWeight: 600, color: CREAM, minWidth: 36, textAlign: 'center' }}>{yearsExp}</span>
                   <Stepper onClick={() => setYearsExp(y => y + 1)}><Plus size={14} /></Stepper>
                   <span style={{ fontSize: 13, color: SILVER }}>an{yearsExp > 1 ? 's' : ''}</span>
                 </div>
@@ -595,7 +593,7 @@ export default function CoachProfilePage() {
                 <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
                   {[{ v: true, l: 'Professionnel' }, { v: false, l: 'Amateur' }].map(({ v, l }) => (
                     <button key={String(v)} onClick={() => setIsPro(v)}
-                      style={{ padding: '9px 14px', borderRadius: 10, border: `1.5px solid ${isPro === v ? VIOLET : BORDER}`, background: isPro === v ? `rgba(124,58,237,0.14)` : CARD, color: isPro === v ? CREAM : SILVER, fontSize: 13, fontWeight: isPro === v ? 700 : 400, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+                      style={{ padding: '9px 14px', borderRadius: 10, border: `1.5px solid ${isPro === v ? VIOLET : BORDER}`, background: isPro === v ? `color-mix(in srgb, var(--brand) 14%, transparent)` : CARD, color: isPro === v ? CREAM : SILVER, fontSize: 13, fontWeight: isPro === v ? 700 : 400, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
                       {l}
                     </button>
                   ))}
@@ -615,7 +613,7 @@ export default function CoachProfilePage() {
                   const disabled = !sel && variants.length >= 3
                   return (
                     <button key={v.id} onClick={() => !disabled && toggleVariant(v.id)}
-                      style={{ padding: '10px 8px', borderRadius: 10, border: `1.5px solid ${sel ? VIOLET : BORDER}`, background: sel ? `rgba(124,58,237,0.14)` : CARD, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.4 : 1, transition: 'all 0.15s', textAlign: 'center' }}>
+                      style={{ padding: '10px 8px', borderRadius: 10, border: `1.5px solid ${sel ? VIOLET : BORDER}`, background: sel ? `color-mix(in srgb, var(--brand) 14%, transparent)` : CARD, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.4 : 1, transition: 'all 0.15s', textAlign: 'center' }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: sel ? CREAM : SILVER }}>{v.id}</div>
                       <div style={{ fontSize: 10, color: SILVER, marginTop: 2 }}>{v.desc}</div>
                     </button>
@@ -629,7 +627,7 @@ export default function CoachProfilePage() {
                   const sel = rooms.includes(r)
                   return (
                     <button key={r} onClick={() => toggleRoom(r)}
-                      style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', background: sel ? `rgba(124,58,237,0.18)` : CARD, border: `1px solid ${sel ? 'rgba(124,58,237,0.5)' : BORDER}`, color: sel ? '#c4b5fd' : SILVER }}>
+                      style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', background: sel ? `color-mix(in srgb, var(--brand) 18%, transparent)` : CARD, border: `1px solid ${sel ? 'color-mix(in srgb, var(--brand) 50%, transparent)' : BORDER}`, color: sel ? 'var(--brand)' : SILVER }}>
                       {r}
                     </button>
                   )
@@ -643,13 +641,13 @@ export default function CoachProfilePage() {
                   const sel = targetPlayers.includes(id)
                   return (
                     <button key={id} onClick={() => toggleTargetPlayer(id)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 12, border: `1.5px solid ${sel ? color + '55' : BORDER}`, background: sel ? `${color}12` : CARD, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 9, border: `1px solid ${sel ? color + '50' : BORDER}`, background: sel ? `${color}18` : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 12, border: `1.5px solid ${sel ? `color-mix(in srgb, ${color} 33%, transparent)` : BORDER}`, background: sel ? `color-mix(in srgb, ${color} 7%, transparent)` : CARD, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 9, border: `1px solid ${sel ? `color-mix(in srgb, ${color} 31%, transparent)` : BORDER}`, background: sel ? `color-mix(in srgb, ${color} 9%, transparent)` : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Icon size={15} color={sel ? color : SILVER} />
                       </div>
                       <div>
                         <div style={{ fontSize: 12, fontWeight: 700, color: sel ? CREAM : SILVER }}>{label}</div>
-                        <div style={{ fontSize: 10, color: 'rgba(232,228,220,0.3)', marginTop: 1 }}>{sub}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 1 }}>{sub}</div>
                       </div>
                     </button>
                   )
@@ -666,9 +664,9 @@ export default function CoachProfilePage() {
               const sel = advantages.includes(id)
               return (
                 <button key={id} onClick={() => toggleAdvantage(id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 10, border: `1.5px solid ${sel ? VIOLET : BORDER}`, background: sel ? `rgba(124,58,237,0.1)` : CARD, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
-                  <div style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${sel ? VIOLET : BORDER}`, background: sel ? `rgba(124,58,237,0.15)` : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Icon size={14} color={sel ? '#a78bfa' : SILVER} />
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 10, border: `1.5px solid ${sel ? VIOLET : BORDER}`, background: sel ? `color-mix(in srgb, var(--brand) 10%, transparent)` : CARD, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${sel ? VIOLET : BORDER}`, background: sel ? `color-mix(in srgb, var(--brand) 15%, transparent)` : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={14} color={sel ? 'var(--brand)' : SILVER} />
                   </div>
                   <span style={{ fontSize: 13, fontWeight: sel ? 600 : 400, color: sel ? CREAM : SILVER }}>{label}</span>
                 </button>
@@ -702,15 +700,15 @@ export default function CoachProfilePage() {
               return (
                 <div key={cat.value}>
                   {/* Category header */}
-                  <div className="cprof-cat-header" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '10px 14px', background: cat.required ? `${cat.color}12` : `${cat.color}08`, border: `1px solid ${cat.required ? cat.color + '35' : cat.color + '20'}`, borderRadius: 12 }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 8, background: `${cat.color}18`, border: `1px solid ${cat.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div className="cprof-cat-header" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '10px 14px', background: cat.required ? `color-mix(in srgb, ${cat.color} 7%, transparent)` : `color-mix(in srgb, ${cat.color} 3%, transparent)`, border: `1px solid ${cat.required ? `color-mix(in srgb, ${cat.color} 21%, transparent)` : `color-mix(in srgb, ${cat.color} 13%, transparent)`}`, borderRadius: 12 }}>
+                    <div style={{ width: 30, height: 30, borderRadius: 8, background: `color-mix(in srgb, ${cat.color} 9%, transparent)`, border: `1px solid color-mix(in srgb, ${cat.color} 19%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <cat.Icon size={14} color={cat.color} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{cat.label}</span>
                         {cat.required && (
-                          <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 99, background: `${cat.color}20`, color: cat.color, border: `1px solid ${cat.color}40`, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                          <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 99, background: `color-mix(in srgb, ${cat.color} 13%, transparent)`, color: cat.color, border: `1px solid color-mix(in srgb, ${cat.color} 25%, transparent)`, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                             Obligatoire
                           </span>
                         )}
@@ -718,18 +716,18 @@ export default function CoachProfilePage() {
                       <div style={{ fontSize: 11, color: SILVER }}>{cat.desc}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: done ? '#4ade80' : SILVER }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: done ? 'var(--gain)' : SILVER }}>
                         {cat.unlimited
                           ? `${catProofs.length} photo${catProofs.length !== 1 ? 's' : ''} · illimité`
                           : `${catProofs.length}/${cat.recommended} photo${cat.recommended > 1 ? 's' : ''}`}
                       </span>
-                      {done && <Check size={12} color="#4ade80" />}
+                      {done && <Check size={12} color="var(--gain)" />}
                       <button
                         onClick={() => { setPendingCategory(cat.value); proofFileRef.current?.click() }}
                         disabled={uploading}
-                        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: `1px solid ${cat.color}40`, background: `${cat.color}10`, color: cat.color, fontSize: 11, fontWeight: 700, cursor: uploading ? 'wait' : 'pointer' }}>
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: `1px solid color-mix(in srgb, ${cat.color} 25%, transparent)`, background: `color-mix(in srgb, ${cat.color} 6%, transparent)`, color: cat.color, fontSize: 11, fontWeight: 700, cursor: uploading ? 'wait' : 'pointer' }}>
                         {uploading && pendingCategory === cat.value
-                          ? <div style={{ width: 10, height: 10, border: `1.5px solid ${cat.color}30`, borderTopColor: cat.color, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                          ? <div style={{ width: 10, height: 10, border: `1.5px solid color-mix(in srgb, ${cat.color} 19%, transparent)`, borderTopColor: cat.color, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
                           : <Upload size={11} />}
                         Ajouter
                       </button>
@@ -742,27 +740,27 @@ export default function CoachProfilePage() {
                       {catProofs.map((proof: any) => {
                         const vs = proof.validation_status ?? 'pending'
                         const vsConfig = vs === 'approved'
-                          ? { label: 'Validé',          color: '#4ade80', bg: 'rgba(74,222,128,0.12)', Icon: ShieldCheck }
+                          ? { label: 'Validé',          color: 'var(--gain)', bg: 'color-mix(in srgb, var(--gain) 12%, transparent)', Icon: ShieldCheck }
                           : vs === 'rejected'
-                          ? { label: 'Refusé',          color: '#ef4444', bg: 'rgba(239,68,68,0.12)',  Icon: AlertCircle }
-                          : { label: 'En vérification', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', Icon: Clock }
+                          ? { label: 'Refusé',          color: 'var(--error)', bg: 'color-mix(in srgb, var(--error) 12%, transparent)',  Icon: AlertCircle }
+                          : { label: 'En vérification', color: 'var(--brand)', bg: 'color-mix(in srgb, var(--brand) 12%, transparent)', Icon: Clock }
                         return (
-                          <div key={proof.id} style={{ background: CARD, border: `1px solid ${vs === 'rejected' ? 'rgba(239,68,68,0.25)' : BORDER}`, borderRadius: 10, overflow: 'hidden' }}>
-                            <div style={{ position: 'relative', aspectRatio: '16/9', background: '#0c0f17' }}>
+                          <div key={proof.id} style={{ background: CARD, border: `1px solid ${vs === 'rejected' ? 'color-mix(in srgb, var(--error) 25%, transparent)' : BORDER}`, borderRadius: 10, overflow: 'hidden' }}>
+                            <div style={{ position: 'relative', aspectRatio: '16/9', background: 'var(--bg)' }}>
                               <img src={proof.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: vs === 'rejected' ? 0.5 : 1 }} />
                               <button onClick={() => deleteProof(proof.id, proof.url)}
                                 style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.8)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Trash2 size={10} color="#ef4444" />
+                                <Trash2 size={10} color="var(--error)" />
                               </button>
                               {/* Validation badge */}
-                              <div style={{ position: 'absolute', bottom: 6, left: 6, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99, background: vsConfig.bg, backdropFilter: 'blur(4px)', border: `1px solid ${vsConfig.color}30` }}>
+                              <div style={{ position: 'absolute', bottom: 6, left: 6, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99, background: vsConfig.bg, backdropFilter: 'blur(4px)', border: `1px solid color-mix(in srgb, ${vsConfig.color} 19%, transparent)` }}>
                                 <vsConfig.Icon size={9} color={vsConfig.color} />
                                 <span style={{ fontSize: 9, fontWeight: 700, color: vsConfig.color }}>{vsConfig.label}</span>
                               </div>
                             </div>
                             <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
                               {vs === 'rejected' && proof.rejection_reason && (
-                                <p style={{ fontSize: 10, color: '#ef4444', margin: 0, lineHeight: 1.4 }}>↳ {proof.rejection_reason}</p>
+                                <p style={{ fontSize: 10, color: 'var(--error)', margin: 0, lineHeight: 1.4 }}>↳ {proof.rejection_reason}</p>
                               )}
                               <SelectInput value={proof.category} onChange={v => updateProof(proof.id, { category: v })}
                                 options={PROOF_CATS.map(c => ({ value: c.value, label: c.label }))}
@@ -776,8 +774,8 @@ export default function CoachProfilePage() {
                       })}
                     </div>
                   ) : (
-                    <div style={{ border: `1px dashed ${cat.required ? cat.color + '30' : 'rgba(232,228,220,0.06)'}`, borderRadius: 10, padding: '20px', textAlign: 'center', background: cat.required ? `${cat.color}04` : 'transparent' }}>
-                      <p style={{ fontSize: 12, color: cat.required ? `${cat.color}80` : 'rgba(232,228,220,0.2)', margin: 0 }}>
+                    <div style={{ border: `1px dashed ${cat.required ? `color-mix(in srgb, ${cat.color} 19%, transparent)` : 'color-mix(in srgb, var(--brand) 6%, transparent)'}`, borderRadius: 10, padding: '20px', textAlign: 'center', background: cat.required ? `color-mix(in srgb, ${cat.color} 2%, transparent)` : 'transparent' }}>
+                      <p style={{ fontSize: 12, color: cat.required ? 'var(--text-2)' : 'var(--text-3)', margin: 0 }}>
                         {cat.required ? '⚠ Obligatoire — ' : 'Aucune photo — '}{cat.desc}
                       </p>
                     </div>
@@ -805,7 +803,7 @@ export default function CoachProfilePage() {
 
               {/* Coordonnées */}
               <div>
-                <label style={{ ...labelStyle, fontSize: 10, color: 'rgba(232,228,220,0.25)', letterSpacing: '0.12em', marginBottom: 12 }}>COORDONNÉES</label>
+                <label style={{ ...labelStyle, fontSize: 10, color: 'var(--text-3)', letterSpacing: '0.12em', marginBottom: 12 }}>COORDONNÉES</label>
                 <div className="cprof-targets" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <div>
                     <label style={labelStyle}>Téléphone</label>
@@ -837,14 +835,14 @@ export default function CoachProfilePage() {
                 <div style={{ display: 'flex', gap: 10 }}>
                   {[{ v: false, l: 'Particulier / Auto-entrepreneur' }, { v: true, l: 'Entreprise (SARL, SAS…)' }].map(({ v, l }) => (
                     <button key={String(v)} onClick={() => setIsCompany(v)}
-                      style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: `1.5px solid ${isCompany === v ? VIOLET : BORDER}`, background: isCompany === v ? `rgba(124,58,237,0.12)` : CARD, color: isCompany === v ? CREAM : SILVER, fontSize: 13, fontWeight: isCompany === v ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
+                      style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: `1.5px solid ${isCompany === v ? VIOLET : BORDER}`, background: isCompany === v ? `color-mix(in srgb, var(--brand) 12%, transparent)` : CARD, color: isCompany === v ? CREAM : SILVER, fontSize: 13, fontWeight: isCompany === v ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
                       {l}
                     </button>
                   ))}
                 </div>
               </div>
               {isCompany && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, background: 'rgba(232,228,220,0.02)', border: `1px solid ${BORDER}`, borderRadius: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, background: 'color-mix(in srgb, var(--brand) 2%, transparent)', border: `1px solid ${BORDER}`, borderRadius: 12 }}>
                   {[
                     { label: 'Raison sociale',       value: companyName, set: setCompanyName, placeholder: 'Ma Société SAS' },
                     { label: 'Numéro SIRET',          value: siret,       set: setSiret,       placeholder: '123 456 789 00012' },
@@ -860,28 +858,28 @@ export default function CoachProfilePage() {
 
               {/* ── Moyens de paiement ── */}
               <div>
-                <label style={{ ...labelStyle, fontSize: 10, color: 'rgba(232,228,220,0.25)', letterSpacing: '0.12em', marginBottom: 4 }}>MOYENS DE PAIEMENT</label>
-                <p style={{ fontSize: 11, color: 'rgba(232,228,220,0.28)', marginBottom: 14, marginTop: 2 }}>
+                <label style={{ ...labelStyle, fontSize: 10, color: 'var(--text-3)', letterSpacing: '0.12em', marginBottom: 4 }}>MOYENS DE PAIEMENT</label>
+                <p style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 14, marginTop: 2 }}>
                   Renseigne au moins un moyen — utilisé par la plateforme pour te verser tes revenus.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {([
-                    { id: 'iban',    Icon: Landmark,   label: 'IBAN / Virement bancaire', value: iban,        set: setIban,        placeholder: 'FR76 XXXX XXXX XXXX XXXX XXXX XXX', type: 'text',  color: '#4ade80' },
-                    { id: 'paypal',  Icon: CreditCard, label: 'PayPal',                   value: paypalEmail, set: setPaypalEmail, placeholder: 'email@paypal.com',                  type: 'email', color: '#3b82f6' },
-                    { id: 'stripe',  Icon: Zap,        label: 'Stripe',                   value: stripeEmail, set: setStripeEmail, placeholder: 'Email ou lien Stripe Connect',       type: 'text',  color: '#8b5cf6' },
-                    { id: 'revolut', Icon: Smartphone, label: 'Revolut',                  value: revolut,     set: setRevolut,     placeholder: '@votre-pseudo Revolut',              type: 'text',  color: '#ef4444' },
+                    { id: 'iban',    Icon: Landmark,   label: 'IBAN / Virement bancaire', value: iban,        set: setIban,        placeholder: 'FR76 XXXX XXXX XXXX XXXX XXXX XXX', type: 'text',  color: 'var(--gain)' },
+                    { id: 'paypal',  Icon: CreditCard, label: 'PayPal',                   value: paypalEmail, set: setPaypalEmail, placeholder: 'email@paypal.com',                  type: 'email', color: 'var(--brand)' },
+                    { id: 'stripe',  Icon: Zap,        label: 'Stripe',                   value: stripeEmail, set: setStripeEmail, placeholder: 'Email ou lien Stripe Connect',       type: 'text',  color: 'var(--brand)' },
+                    { id: 'revolut', Icon: Smartphone, label: 'Revolut',                  value: revolut,     set: setRevolut,     placeholder: '@ton-pseudo Revolut',              type: 'text',  color: 'var(--error)' },
                   ] as const).map(({ id, Icon, label, value, set, placeholder, type, color }) => {
                     const isPref = preferredPayment === id
                     return (
-                    <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: isPref ? `${color}06` : 'rgba(232,228,220,0.02)', border: `1px solid ${isPref ? color + '45' : value ? color + '25' : BORDER}`, borderRadius: 12, transition: 'all 0.2s' }}>
-                      <div style={{ width: 34, height: 34, borderRadius: 9, background: value ? `${color}15` : CARD, border: `1px solid ${value ? color + '35' : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
+                    <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: isPref ? `color-mix(in srgb, ${color} 2%, transparent)` : 'color-mix(in srgb, var(--brand) 2%, transparent)', border: `1px solid ${isPref ? `color-mix(in srgb, ${color} 27%, transparent)` : value ? `color-mix(in srgb, ${color} 15%, transparent)` : BORDER}`, borderRadius: 12, transition: 'all 0.2s' }}>
+                      <div style={{ width: 34, height: 34, borderRadius: 9, background: value ? `color-mix(in srgb, ${color} 8%, transparent)` : CARD, border: `1px solid ${value ? `color-mix(in srgb, ${color} 21%, transparent)` : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
                         <Icon size={15} color={value ? color : SILVER} />
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                           <label style={{ ...labelStyle, fontSize: 10, textTransform: 'none', letterSpacing: 0, marginBottom: 0 }}>{label}</label>
                           {isPref && (
-                            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', padding: '2px 7px', borderRadius: 99, background: `${color}20`, color, border: `1px solid ${color}40` }}>
+                            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', padding: '2px 7px', borderRadius: 99, background: `color-mix(in srgb, ${color} 13%, transparent)`, color, border: `1px solid color-mix(in srgb, ${color} 25%, transparent)` }}>
                               PRÉFÉRÉ
                             </span>
                           )}
@@ -892,14 +890,14 @@ export default function CoachProfilePage() {
                           onChange={e => (set as (v: string) => void)(e.target.value)}
                           placeholder={placeholder}
                           style={{ ...inputStyle, padding: '7px 11px', fontSize: 12 }}
-                          onFocus={e => (e.currentTarget.style.borderColor = `${color}60`)}
+                          onFocus={e => (e.currentTarget.style.borderColor = `color-mix(in srgb, ${color} 38%, transparent)`)}
                           onBlur={e =>  (e.currentTarget.style.borderColor = BORDER)}
                         />
                       </div>
                       <button
                         onClick={() => setPreferredPayment(isPref ? null : id)}
                         title={isPref ? 'Retirer le préféré' : 'Définir comme préféré'}
-                        style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${isPref ? color + '50' : BORDER}`, background: isPref ? `${color}18` : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
+                        style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${isPref ? `color-mix(in srgb, ${color} 31%, transparent)` : BORDER}`, background: isPref ? `color-mix(in srgb, ${color} 9%, transparent)` : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
                         <Star size={13} fill={isPref ? color : 'none'} color={isPref ? color : SILVER} />
                       </button>
                     </div>
@@ -922,20 +920,20 @@ export default function CoachProfilePage() {
         {/* ── Bottom auto-save status ── */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 8, minHeight: 40 }}>
           {saveStatus === 'dirty' && (
-            <span style={{ fontSize: 12, color: '#f59e0b', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
+            <span style={{ fontSize: 12, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--brand)', display: 'inline-block' }} />
               Sauvegarde dans 1 s…
             </span>
           )}
           {saveStatus === 'saving' && (
             <span style={{ fontSize: 12, color: SILVER, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 11, height: 11, border: `1.5px solid rgba(138,138,138,0.25)`, borderTopColor: SILVER, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+              <div style={{ width: 11, height: 11, border: `1.5px solid color-mix(in srgb, var(--text) 25%, transparent)`, borderTopColor: SILVER, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
               Sauvegarde…
             </span>
           )}
           {saveStatus === 'saved' && (
-            <span style={{ fontSize: 12, color: '#4ade80', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <Check size={12} color="#4ade80" /> Tout est sauvegardé
+            <span style={{ fontSize: 12, color: 'var(--gain)', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Check size={12} color="var(--gain)" /> Tout est sauvegardé
             </span>
           )}
         </div>
@@ -999,7 +997,7 @@ function AvatarCropModal({ file, onConfirm, onClose }: {
     const ctx = canvasRef.current.getContext('2d')!
     ctx.clearRect(0, 0, SIZE, SIZE)
 
-    ctx.fillStyle = '#07090e'
+    ctx.fillStyle = 'var(--bg)'
     ctx.fillRect(0, 0, SIZE, SIZE)
 
     const w = img.naturalWidth * scale
@@ -1010,7 +1008,7 @@ function AvatarCropModal({ file, onConfirm, onClose }: {
 
     // Dark vignette outside circle (destination-out trick)
     ctx.save()
-    ctx.fillStyle = 'rgba(7,9,14,0.75)'
+    ctx.fillStyle = 'color-mix(in srgb, var(--bg) 75%, transparent)'
     ctx.fillRect(0, 0, SIZE, SIZE)
     ctx.globalCompositeOperation = 'destination-out'
     ctx.beginPath()
@@ -1023,7 +1021,7 @@ function AvatarCropModal({ file, onConfirm, onClose }: {
     ctx.beginPath()
     ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2 - 2, 0, Math.PI * 2)
     ctx.clip()
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)'
+    ctx.strokeStyle = 'color-mix(in srgb, var(--overlay) 10%, transparent)'
     ctx.lineWidth = 0.5
     ;[SIZE / 3, 2 * SIZE / 3].forEach(p => {
       ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, SIZE); ctx.stroke()
@@ -1031,7 +1029,7 @@ function AvatarCropModal({ file, onConfirm, onClose }: {
     })
     ctx.restore()
 
-    ctx.strokeStyle = '#7c3aed'
+    ctx.strokeStyle = 'var(--brand)'
     ctx.lineWidth = 2
     ctx.beginPath()
     ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2 - 1, 0, Math.PI * 2)
@@ -1099,15 +1097,15 @@ function AvatarCropModal({ file, onConfirm, onClose }: {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ background: '#0c0f17', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 20, padding: 28, display: 'flex', flexDirection: 'column', gap: 20, width: '100%', maxWidth: 360, boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}>
+      <div style={{ background: 'var(--bg)', border: '1px solid color-mix(in srgb, var(--brand) 35%, transparent)', borderRadius: 20, padding: 28, display: 'flex', flexDirection: 'column', gap: 20, width: '100%', maxWidth: 360, boxShadow: 'var(--shadow-float)' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h3 style={{ fontSize: 15, fontWeight: 800, color: '#E8E4DC', margin: 0 }}>Recadrer la photo</h3>
-            <p style={{ fontSize: 11, color: '#8A8A8A', margin: '4px 0 0' }}>Glisse pour repositionner · Scroll ou slider pour zoomer</p>
+            <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--brand)', margin: 0 }}>Recadrer la photo</h3>
+            <p style={{ fontSize: 11, color: 'var(--text-3)', margin: '4px 0 0' }}>Glisse pour repositionner · Scroll ou slider pour zoomer</p>
           </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '50%', border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <X size={14} color="#8A8A8A" />
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '50%', border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={14} color="var(--text-3)" />
           </button>
         </div>
 
@@ -1115,7 +1113,7 @@ function AvatarCropModal({ file, onConfirm, onClose }: {
           <canvas
             ref={canvasRef}
             width={SIZE} height={SIZE}
-            style={{ borderRadius: '50%', cursor: 'grab', userSelect: 'none', touchAction: 'none', boxShadow: '0 8px 40px rgba(124,58,237,0.3)' }}
+            style={{ borderRadius: '50%', cursor: 'grab', userSelect: 'none', touchAction: 'none', boxShadow: 'none' }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -1125,23 +1123,23 @@ function AvatarCropModal({ file, onConfirm, onClose }: {
 
         {/* Zoom slider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Minus size={12} color="#8A8A8A" />
+          <Minus size={12} color="var(--text-3)" />
           <input type="range" min={Math.round(fitScale * 100)} max="800" value={Math.round(scale * 100)}
             onChange={e => setScale(Number(e.target.value) / 100)}
-            style={{ flex: 1, accentColor: '#7c3aed', cursor: 'pointer', height: 4 }} />
-          <Plus size={12} color="#8A8A8A" />
-          <span style={{ fontSize: 11, color: '#8A8A8A', minWidth: 40, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+            style={{ flex: 1, accentColor: 'var(--brand)', cursor: 'pointer', height: 4 }} />
+          <Plus size={12} color="var(--text-3)" />
+          <span style={{ fontSize: 11, color: 'var(--text-3)', minWidth: 40, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
             {Math.round(scale * 100)}%
           </span>
         </div>
 
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={reset}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 10, border: '1px solid rgba(232,228,220,0.1)', background: 'transparent', color: '#8A8A8A', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'transparent', color: 'var(--text-3)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
             <RotateCcw size={12} /> Réinitialiser
           </button>
           <button onClick={handleConfirm}
-            style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(124,58,237,0.4)' }}>
+            style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: 'var(--brand)', color: 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: 'none' }}>
             Valider la photo
           </button>
         </div>
@@ -1153,11 +1151,11 @@ function AvatarCropModal({ file, onConfirm, onClose }: {
 /* ── Sub-components ── */
 function Section({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section style={{ background: 'rgba(232,228,220,0.02)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 18, padding: '24px 28px', marginBottom: 20 }}>
+    <section style={{ background: 'color-mix(in srgb, var(--brand) 2%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 18, padding: '24px 28px', marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontSize: 12, fontWeight: 700, color: 'rgba(232,228,220,0.4)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0, marginBottom: subtitle ? 5 : 0 }}>{title}</h2>
-          {subtitle && <p style={{ fontSize: 12, color: 'rgba(232,228,220,0.28)', margin: 0, lineHeight: 1.5 }}>{subtitle}</p>}
+          <h2 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-2)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0, marginBottom: subtitle ? 5 : 0 }}>{title}</h2>
+          {subtitle && <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>{subtitle}</p>}
         </div>
         {action}
       </div>
@@ -1169,7 +1167,7 @@ function Section({ title, subtitle, action, children }: { title: string; subtitl
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ fontSize: 11, color: 'rgba(232,228,220,0.35)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>{label}</label>
+      <label style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>{label}</label>
       {children}
     </div>
   )
@@ -1178,9 +1176,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function Stepper({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
     <button onClick={onClick}
-      style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(232,228,220,0.1)', background: 'rgba(232,228,220,0.03)', color: '#E8E4DC', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
-      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#7c3aed'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.15)' }}
-      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,228,220,0.1)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(232,228,220,0.03)' }}>
+      style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)', background: 'color-mix(in srgb, var(--brand) 3%, transparent)', color: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--brand)'; (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 15%, transparent)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'color-mix(in srgb, var(--brand) 10%, transparent)'; (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 3%, transparent)' }}>
       {children}
     </button>
   )
@@ -1188,25 +1186,25 @@ function Stepper({ onClick, children }: { onClick: () => void; children: React.R
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 13px',
-  background: 'rgba(232,228,220,0.03)',
-  border: '1px solid rgba(232,228,220,0.08)',
-  borderRadius: 10, fontSize: 14, color: '#E8E4DC',
+  background: 'color-mix(in srgb, var(--brand) 3%, transparent)',
+  border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)',
+  borderRadius: 10, fontSize: 14, color: 'var(--brand)',
   fontFamily: 'inherit', outline: 'none',
   boxSizing: 'border-box', transition: 'border-color 0.2s',
 }
 
 const textareaStyle: React.CSSProperties = {
   width: '100%', padding: '12px 14px',
-  background: 'rgba(232,228,220,0.03)',
-  border: '1px solid rgba(232,228,220,0.08)',
-  borderRadius: 10, fontSize: 14, color: '#E8E4DC',
+  background: 'color-mix(in srgb, var(--brand) 3%, transparent)',
+  border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)',
+  borderRadius: 10, fontSize: 14, color: 'var(--brand)',
   fontFamily: 'inherit', resize: 'vertical', outline: 'none',
   lineHeight: 1.65, boxSizing: 'border-box', transition: 'border-color 0.2s',
 }
 
 const labelStyle: React.CSSProperties = {
   fontSize: 11, fontWeight: 600,
-  color: 'rgba(232,228,220,0.35)',
+  color: 'var(--text-3)',
   letterSpacing: '0.08em', textTransform: 'uppercase',
   display: 'block', marginBottom: 8,
 }

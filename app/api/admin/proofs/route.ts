@@ -87,8 +87,8 @@ export async function POST(req: Request) {
       type:    isApproved ? 'proof_validated' : 'proof_rejected',
       title:   isApproved ? 'Preuve validée ✓' : 'Preuve refusée',
       body:    isApproved
-        ? `Votre preuve "${categoryLabel}" a été vérifiée : elle est maintenant visible sur votre profil public.`
-        : `Votre preuve "${categoryLabel}" n'a pas été validée.${reason ? ` Motif : ${reason}` : ''} Vous pouvez en soumettre une nouvelle depuis votre profil.`,
+        ? `Ta preuve "${categoryLabel}" a été vérifiée : elle est maintenant visible sur ton profil public.`
+        : `Ta preuve "${categoryLabel}" n'a pas été validée.${reason ? ` Motif : ${reason}` : ''} Tu peux en soumettre une nouvelle depuis ton profil.`,
       data:    { proof_id: proof.id, category: proof.category ?? '' },
     })
     if (notifError) console.error('[admin/proofs] notification insert failed:', notifError.message)

@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useEffect, useRef, useState } from 'react'
 import {
   UserRound, ExternalLink, Star, BarChart2, Target, Settings, LogOut, ChevronDown,
@@ -43,9 +44,9 @@ export function CoachAvatar({ url, name, size = 28 }: { url?: string | null; nam
   return (
     <span style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-      background: 'linear-gradient(135deg,#7c3aed,#a855f7)', boxShadow: '0 0 0 2px rgba(124,58,237,0.25)',
+      background: 'var(--brand)', boxShadow: 'none',
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.36, fontWeight: 800, color: '#fff',
+      fontSize: size * 0.36, fontWeight: 800, color: 'var(--on-brand)',
     }}>
       {url
         // eslint-disable-next-line @next/next/no-img-element
@@ -75,6 +76,7 @@ export function MenuSections({ coachId, onNavigate, onSignOut }: {
         </div>
       ))}
       <div className="coach-menu-section">
+        <div className="coach-menu-row"><span>Thème clair ou sombre</span><ThemeToggle /></div>
         <button onClick={onSignOut} className="coach-menu-item coach-menu-danger">
           <LogOut size={15} strokeWidth={1.8} />
           <span style={{ flex: 1, textAlign: 'left' }}>Déconnexion</span>

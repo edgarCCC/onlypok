@@ -10,14 +10,14 @@ import {
 } from 'lucide-react'
 
 /* ── Design tokens ──────────────────────────────────────────── */
-export const BG     = '#07090e'
-export const CREAM  = '#f0f4ff'
-export const SILVER = 'rgba(240,244,255,0.45)'
-export const VIOLET = '#7c3aed'
-export const CYAN   = '#06b6d4'
-export const AMBER  = '#f59e0b'
-export const GREEN  = '#10b981'
-export const RED    = '#ef4444'
+export const BG     = 'var(--bg)'
+export const CREAM  = 'var(--text)'
+export const SILVER = 'var(--text-2)'
+export const VIOLET = 'var(--brand)'
+export const CYAN   = 'var(--brand)'
+export const AMBER  = 'var(--brand)'
+export const GREEN  = 'var(--gain)'
+export const RED    = 'var(--error)'
 
 /* ── Types ──────────────────────────────────────────────────── */
 export type BookingStatus = 'pending_coach_approval' | 'paid_pending_schedule' | 'scheduled' | 'completed' | 'declined_by_coach'
@@ -79,13 +79,13 @@ export function Toast({ toast }: { toast: { kind: 'success' | 'error'; text: str
     <div role="status" aria-live="polite" style={{
       position: 'fixed', bottom: 28, left: '50%',
       transform: 'translateX(-50%)', zIndex: 9999,
-      background: '#0c0f17', border: `1px solid ${color}55`, borderRadius: 12,
+      background: 'var(--bg)', border: `1px solid color-mix(in srgb, ${color} 33%, transparent)`, borderRadius: 12,
       padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10,
-      boxShadow: `0 10px 40px ${color}25, 0 2px 12px rgba(0,0,0,0.6)`,
+      boxShadow: 'none',
       animation: 'op-toast-in 220ms cubic-bezier(0.2,0.8,0.2,1)',
     }}>
       <div style={{
-        width: 22, height: 22, borderRadius: '50%', background: `${color}1a`,
+        width: 22, height: 22, borderRadius: '50%', background: `color-mix(in srgb, ${color} 10%, transparent)`,
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
       }}>
         {toast.kind === 'success' ? <Check size={13} color={color} /> : <X size={13} color={color} />}
@@ -109,7 +109,7 @@ export function DeclineModal({
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(7,9,14,0.88)', backdropFilter: 'blur(12px)',
+        background: 'var(--bg)', backdropFilter: 'blur(12px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 20, animation: 'op-fade-in 160ms ease-out',
       }}
@@ -118,14 +118,14 @@ export function DeclineModal({
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#07070f', border: '1px solid rgba(232,228,220,0.1)',
+          background: 'var(--bg)', border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)',
           borderRadius: 20, padding: '32px 36px', maxWidth: 420, width: '100%',
           textAlign: 'center', animation: 'op-scale-in 200ms cubic-bezier(0.2,0.8,0.2,1)',
         }}
       >
         <div style={{
           width: 52, height: 52, borderRadius: '50%',
-          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)',
+          background: 'color-mix(in srgb, var(--error) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--error) 25%, transparent)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px',
         }}>
           <AlertTriangle size={20} color={RED} />
@@ -134,10 +134,10 @@ export function DeclineModal({
           Refuser cette demande&nbsp;?
         </h3>
         <p style={{ fontSize: 13, color: SILVER, lineHeight: 1.6, marginBottom: 6 }}>
-          Vous êtes sur le point de refuser la demande de
+          Tu es sur le point de refuser la demande de
         </p>
         <p style={{ fontSize: 14, fontWeight: 700, color: CREAM, marginBottom: 10 }}>{name}</p>
-        <p style={{ fontSize: 12, color: 'rgba(239,68,68,0.7)', marginBottom: 24 }}>
+        <p style={{ fontSize: 12, color: 'color-mix(in srgb, var(--error) 70%, transparent)', marginBottom: 24 }}>
           L&apos;élève sera remboursé automatiquement. Cette action est irréversible.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -145,15 +145,15 @@ export function DeclineModal({
             onClick={onConfirm}
             disabled={loading}
             style={{
-              padding: '12px', borderRadius: 10, border: `1px solid ${RED}40`,
-              background: loading ? `${RED}08` : `${RED}12`,
+              padding: '12px', borderRadius: 10, border: `1px solid color-mix(in srgb, ${RED} 25%, transparent)`,
+              background: loading ? `color-mix(in srgb, ${RED} 3%, transparent)` : `color-mix(in srgb, ${RED} 7%, transparent)`,
               color: RED, fontSize: 14, fontWeight: 700,
               cursor: loading ? 'wait' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             }}
           >
             {loading
-              ? <span style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${RED}55`, borderTopColor: RED, animation: 'op-spin 0.7s linear infinite' }} />
+              ? <span style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid color-mix(in srgb, ${RED} 33%, transparent)`, borderTopColor: RED, animation: 'op-spin 0.7s linear infinite' }} />
               : <X size={15} />
             }
             Oui, refuser et rembourser
@@ -163,7 +163,7 @@ export function DeclineModal({
             disabled={loading}
             style={{
               padding: '12px', borderRadius: 10,
-              border: '1px solid rgba(232,228,220,0.1)',
+              border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)',
               background: 'transparent', color: SILVER, fontSize: 14, fontWeight: 500,
               cursor: loading ? 'not-allowed' : 'pointer',
             }}
@@ -179,21 +179,21 @@ export function DeclineModal({
 /* ── Status pill ────────────────────────────────────────────── */
 export function StatusPill({ status }: { status: BookingStatus }) {
   const cfg: Record<BookingStatus, { label: string; color: string; bg: string }> = {
-    pending_coach_approval: { label: 'En attente',     color: AMBER,  bg: `${AMBER}12`  },
-    paid_pending_schedule:  { label: 'À planifier',    color: CYAN,   bg: `${CYAN}12`   },
-    scheduled:              { label: 'Planifiée',      color: GREEN,  bg: `${GREEN}12`  },
-    completed:              { label: 'Terminée',       color: VIOLET, bg: `${VIOLET}14` },
-    declined_by_coach:      { label: 'Refusée',        color: RED,    bg: `${RED}12`    },
+    pending_coach_approval: { label: 'En attente',     color: AMBER,  bg: `color-mix(in srgb, ${AMBER} 7%, transparent)`  },
+    paid_pending_schedule:  { label: 'À planifier',    color: CYAN,   bg: `color-mix(in srgb, ${CYAN} 7%, transparent)`   },
+    scheduled:              { label: 'Planifiée',      color: GREEN,  bg: `color-mix(in srgb, ${GREEN} 7%, transparent)`  },
+    completed:              { label: 'Terminée',       color: VIOLET, bg: `color-mix(in srgb, ${VIOLET} 8%, transparent)` },
+    declined_by_coach:      { label: 'Refusée',        color: RED,    bg: `color-mix(in srgb, ${RED} 7%, transparent)`    },
   }
-  const c = cfg[status] ?? { label: status, color: SILVER, bg: 'rgba(240,244,255,0.06)' }
+  const c = cfg[status] ?? { label: status, color: SILVER, bg: 'color-mix(in srgb, var(--brand) 6%, transparent)' }
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
       padding: '4px 10px', borderRadius: 99,
-      background: c.bg, color: c.color, border: `1px solid ${c.color}30`,
+      background: c.bg, color: c.color, border: `1px solid color-mix(in srgb, ${c.color} 19%, transparent)`,
     }}>
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.color, boxShadow: `0 0 8px ${c.color}` }} />
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.color, boxShadow: 'none' }} />
       {c.label}
     </span>
   )
@@ -222,13 +222,13 @@ export function BookingCard({
     <div
       style={{
         position: 'relative',
-        background: 'rgba(232,228,220,0.025)',
-        border: '1px solid rgba(232,228,220,0.07)',
+        background: 'color-mix(in srgb, var(--brand) 2%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)',
         borderRadius: 16, padding: '22px 24px 20px 28px',
         overflow: 'hidden', transition: 'border-color 0.2s',
       }}
-      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = `${accent}35` }}
-      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,228,220,0.07)' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = `color-mix(in srgb, ${accent} 21%, transparent)` }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--brand) 7%, transparent)' }}
     >
       {/* Left accent bar */}
       <div style={{
@@ -237,20 +237,15 @@ export function BookingCard({
       }} />
 
       {/* Ambient glow */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: `radial-gradient(ellipse at 100% 0%, ${accent}0d 0%, transparent 55%)`,
-        pointerEvents: 'none',
-      }} />
 
       {/* Header row */}
       <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 14 }}>
         <div style={{
           width: 44, height: 44, borderRadius: '50%',
-          background: booking.student?.avatar_url ? 'transparent' : `linear-gradient(135deg,${VIOLET},${CYAN})`,
+          background: booking.student?.avatar_url ? 'transparent' : `${VIOLET}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0,
-          overflow: 'hidden', border: `1px solid ${accent}30`, position: 'relative',
+          fontSize: 16, fontWeight: 700, color: 'var(--on-brand)', flexShrink: 0,
+          overflow: 'hidden', border: `1px solid color-mix(in srgb, ${accent} 19%, transparent)`, position: 'relative',
         }}>
           {booking.student?.avatar_url
             ? <Image src={booking.student.avatar_url} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />
@@ -286,7 +281,7 @@ export function BookingCard({
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             fontSize: 11, fontWeight: 600, padding: '5px 10px', borderRadius: 8,
-            background: `${VIOLET}12`, border: `1px solid ${VIOLET}25`, color: VIOLET,
+            background: `color-mix(in srgb, ${VIOLET} 7%, transparent)`, border: `1px solid color-mix(in srgb, ${VIOLET} 15%, transparent)`, color: VIOLET,
           }}>
             <BookOpen size={11} />
             {booking.formation.title}
@@ -296,7 +291,7 @@ export function BookingCard({
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             fontSize: 11, fontWeight: 600, padding: '5px 10px', borderRadius: 8,
-            background: `${CYAN}12`, border: `1px solid ${CYAN}25`, color: CYAN,
+            background: `color-mix(in srgb, ${CYAN} 7%, transparent)`, border: `1px solid color-mix(in srgb, ${CYAN} 15%, transparent)`, color: CYAN,
           }}>
             {pack.label}
           </span>
@@ -305,7 +300,7 @@ export function BookingCard({
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             fontSize: 11, fontWeight: 600, padding: '5px 10px', borderRadius: 8,
-            background: `${GREEN}12`, border: `1px solid ${GREEN}25`, color: GREEN,
+            background: `color-mix(in srgb, ${GREEN} 7%, transparent)`, border: `1px solid color-mix(in srgb, ${GREEN} 15%, transparent)`, color: GREEN,
           }}>
             <Clock size={11} />
             {fmtDate(booking.scheduled_at)} · {fmtHour(booking.scheduled_at)}
@@ -321,16 +316,16 @@ export function BookingCard({
             disabled={busy !== null}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '9px 16px', borderRadius: 10, border: `1px solid ${RED}30`,
+              padding: '9px 16px', borderRadius: 10, border: `1px solid color-mix(in srgb, ${RED} 19%, transparent)`,
               background: 'transparent', color: RED, fontSize: 13, fontWeight: 600,
               cursor: busy ? 'not-allowed' : 'pointer',
               opacity: busy && busy !== 'decline' ? 0.45 : 1, transition: 'all 0.15s',
             }}
-            onMouseEnter={e => { if (!busy) (e.currentTarget as HTMLButtonElement).style.background = `${RED}08` }}
+            onMouseEnter={e => { if (!busy) (e.currentTarget as HTMLButtonElement).style.background = `color-mix(in srgb, ${RED} 3%, transparent)` }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
           >
             {busy === 'decline'
-              ? <span style={{ width: 12, height: 12, borderRadius: '50%', border: `2px solid ${RED}55`, borderTopColor: RED, animation: 'op-spin 0.7s linear infinite' }} />
+              ? <span style={{ width: 12, height: 12, borderRadius: '50%', border: `2px solid color-mix(in srgb, ${RED} 33%, transparent)`, borderTopColor: RED, animation: 'op-spin 0.7s linear infinite' }} />
               : <X size={14} />
             }
             Refuser
@@ -342,25 +337,25 @@ export function BookingCard({
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
               padding: '9px 18px', borderRadius: 10, border: 'none',
-              background: `linear-gradient(135deg,${GREEN},#059669)`,
-              color: '#fff', fontSize: 13, fontWeight: 700,
+              background: `${GREEN}`,
+              color: 'var(--on-brand)', fontSize: 13, fontWeight: 700,
               cursor: busy ? 'not-allowed' : 'pointer',
               opacity: busy && busy !== 'accept' ? 0.55 : 1,
-              boxShadow: `0 4px 16px ${GREEN}30`, transition: 'all 0.15s',
+              boxShadow: 'none', transition: 'all 0.15s',
             }}
             onMouseEnter={e => {
               if (!busy) {
                 (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'
-                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = `0 6px 22px ${GREEN}50`
+                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = `0 6px 22px color-mix(in srgb, ${GREEN} 31%, transparent)`
               }
             }}
             onMouseLeave={e => {
               (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
-              ;(e.currentTarget as HTMLButtonElement).style.boxShadow = `0 4px 16px ${GREEN}30`
+              ;(e.currentTarget as HTMLButtonElement).style.boxShadow = `0 4px 16px color-mix(in srgb, ${GREEN} 19%, transparent)`
             }}
           >
             {busy === 'accept'
-              ? <span style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', animation: 'op-spin 0.7s linear infinite' }} />
+              ? <span style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid color-mix(in srgb, var(--overlay) 40%, transparent)', borderTopColor: '#fff', animation: 'op-spin 0.7s linear infinite' }} />
               : <Check size={14} />
             }
             Accepter
@@ -382,12 +377,12 @@ export function EmptyState({ icon: Ico, color, title, sub }: {
   return (
     <div style={{
       textAlign: 'center', padding: '80px 24px',
-      background: 'rgba(232,228,220,0.02)',
-      border: '1px dashed rgba(232,228,220,0.08)', borderRadius: 18,
+      background: 'color-mix(in srgb, var(--brand) 2%, transparent)',
+      border: '1px dashed color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 18,
     }}>
       <div style={{
         width: 56, height: 56, borderRadius: '50%',
-        background: `${c.color}10`, border: `1px solid ${c.color}25`,
+        background: `color-mix(in srgb, ${c.color} 6%, transparent)`, border: `1px solid color-mix(in srgb, ${c.color} 15%, transparent)`,
         display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px',
       }}>
         <Ico size={22} color={c.color} />

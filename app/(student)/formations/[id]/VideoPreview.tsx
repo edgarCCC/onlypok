@@ -191,7 +191,7 @@ export default function VideoPreview({ url, type, color, onEnded }: {
   if (provider === 'youtube') {
     if (ytError) {
       player = (
-        <div style={{ aspectRatio: '16/9', background: '#0f1218', borderRadius: 12,
+        <div style={{ aspectRatio: '16/9', background: 'var(--bg)', borderRadius: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ fontSize: 13, color: SILVER }}>Vidéo non disponible (privée ou supprimée)</span>
         </div>
@@ -229,13 +229,13 @@ export default function VideoPreview({ url, type, color, onEnded }: {
       {/* Countdown badge */}
       <div style={{
         position: 'absolute', bottom: 14, right: 14,
-        background: 'rgba(7,9,14,0.82)', backdropFilter: 'blur(10px)',
-        border: `1px solid ${color}50`, borderRadius: 10, padding: '6px 10px 6px 8px',
+        background: 'color-mix(in srgb, var(--bg) 82%, transparent)', backdropFilter: 'blur(10px)',
+        border: `1px solid color-mix(in srgb, ${color} 31%, transparent)`, borderRadius: 10, padding: '6px 10px 6px 8px',
         display: 'flex', alignItems: 'center', gap: 8,
         pointerEvents: 'none', zIndex: 5,
       }}>
         <svg width="22" height="22" style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
-          <circle cx="11" cy="11" r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2.5" />
+          <circle cx="11" cy="11" r={r} fill="none" stroke="color-mix(in srgb, var(--overlay) 10%, transparent)" strokeWidth="2.5" />
           <circle cx="11" cy="11" r={r} fill="none" stroke={color} strokeWidth="2.5"
             strokeDasharray={`${dash} ${circ}`}
             style={{ transition: 'stroke-dasharray 0.9s linear' }} />
@@ -268,11 +268,11 @@ export function SalesVideoSection({ videoUrl, videoType, canWatchFull, thumbnail
           <VideoPlayer url={videoUrl} type={videoType} />
           <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
             <button onClick={() => { navigator.clipboard.writeText(window.location.href) }}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(240,244,255,0.08)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer' }}>
               <Share2 size={13} /> Partager
             </button>
             <button onClick={() => document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(240,244,255,0.08)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', background: 'transparent', color: SILVER, fontSize: 12, cursor: 'pointer' }}>
               <MessageSquare size={13} /> Commenter
             </button>
           </div>
@@ -283,14 +283,14 @@ export function SalesVideoSection({ videoUrl, videoType, canWatchFull, thumbnail
         <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', aspectRatio: '16/9' }}>
           {thumbnailUrl
             ? <Image src={thumbnailUrl} alt="" fill sizes="100vw" style={{ objectFit: 'cover', filter: 'blur(8px) brightness(0.35)', transform: 'scale(1.05)' }} />
-            : <div style={{ position: 'absolute', inset: 0, background: '#0d1017' }} />}
+            : <div style={{ position: 'absolute', inset: 0, background: 'var(--bg)' }} />}
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24, textAlign: 'center' }}>
             <Lock size={20} color={SILVER} />
             <p style={{ fontSize: 15, fontWeight: 700, color: CREAM, margin: 0 }}>Fin de la prévisualisation</p>
             <p style={{ fontSize: 13, color: SILVER, margin: 0 }}>Achetez pour accéder au contenu complet</p>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setPreviewEnded(false)} style={{ padding: '9px 18px', borderRadius: 9, border: '1px solid rgba(232,228,220,0.15)', background: 'rgba(232,228,220,0.07)', color: CREAM, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>↩ Revoir</button>
-              <button onClick={onCTA} disabled={paying} style={{ padding: '9px 20px', borderRadius: 9, border: 'none', background: typeColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: paying ? 'wait' : 'pointer' }}>{paying ? 'Redirection…' : ctaLabel}</button>
+              <button onClick={() => setPreviewEnded(false)} style={{ padding: '9px 18px', borderRadius: 9, border: '1px solid color-mix(in srgb, var(--brand) 15%, transparent)', background: 'color-mix(in srgb, var(--brand) 7%, transparent)', color: CREAM, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>↩ Revoir</button>
+              <button onClick={onCTA} disabled={paying} style={{ padding: '9px 20px', borderRadius: 9, border: 'none', background: typeColor, color: 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: paying ? 'wait' : 'pointer' }}>{paying ? 'Redirection…' : ctaLabel}</button>
             </div>
           </div>
         </div>

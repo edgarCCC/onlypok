@@ -5,7 +5,7 @@ import Image from 'next/image'
 import type { Proof } from '@/components/ProofGalleryModal'
 import { CREAM, SILVER, VARIANT_COLORS } from './shared'
 
-/* ─── Coach presentation — "Faites connaissance avec votre coach" ───────────── */
+/* ─── Coach presentation — "Fais connaissance avec ton coach" ───────────── */
 export default function CoachPresentation({ coach, typeColor, avgRating, reviewCount, isSuperCoach, proofs, coCoaches, onOpenProofModal }: {
   coach: any
   typeColor: string
@@ -18,9 +18,9 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
 }) {
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 120px' }}>
-      <div style={{ borderTop: '1px solid rgba(232,228,220,0.06)', paddingTop: 64 }}>
-        <h2 style={{ fontSize: 28, fontWeight: 900, color: CREAM, letterSpacing: '-0.7px', margin: '0 0 36px' }}>
-          Faites connaissance avec votre coach
+      <div style={{ borderTop: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)', paddingTop: 64 }}>
+        <h2 style={{ fontSize: 28, fontWeight: 600, color: CREAM, letterSpacing: '-0.7px', margin: '0 0 36px' }}>
+          Fais connaissance avec ton coach
         </h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 48, alignItems: 'start' }}>
@@ -28,7 +28,7 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
           {/* ── Colonne gauche : avatar + stats ── */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
             {/* Avatar */}
-            <div style={{ width: 110, height: 110, borderRadius: '50%', background: `linear-gradient(135deg, ${typeColor}, ${typeColor}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 800, color: '#fff', overflow: 'hidden', boxShadow: `0 0 0 3px #07090e, 0 0 0 5px ${typeColor}40`, position: 'relative' }}>
+            <div style={{ width: 110, height: 110, borderRadius: '50%', background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', boxShadow: 'none', position: 'relative' }}>
               {coach.avatar_url
                 ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="110px" style={{ objectFit: 'cover' }} />
                 : (coach.username ?? 'C')[0].toUpperCase()}
@@ -38,24 +38,24 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 17, fontWeight: 800, color: CREAM }}>{coach.username}</span>
                 {coach.is_pro && (
-                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: `${typeColor}20`, color: typeColor, border: `1px solid ${typeColor}40` }}>PRO</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: `color-mix(in srgb, ${typeColor} 13%, transparent)`, color: typeColor, border: `1px solid color-mix(in srgb, ${typeColor} 25%, transparent)` }}>PRO</span>
                 )}
                 {isSuperCoach && (
-                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,216,107,0.12)', color: '#ffd86b', border: '1px solid rgba(255,216,107,0.3)' }}>SUPER COACH</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'color-mix(in srgb, var(--brand) 12%, transparent)', color: 'var(--brand)', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)' }}>SUPER COACH</span>
                 )}
               </div>
               {avgRating !== null && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 6 }}>
-                  <Star size={12} color="#a855f7" fill="#a855f7" />
+                  <Star size={12} color="var(--brand)" fill="var(--brand)" />
                   <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{avgRating.toFixed(1)}</span>
                   <span style={{ fontSize: 12, color: SILVER }}>· {reviewCount} avis</span>
                 </div>
               )}
             </div>
             {/* Stats */}
-            <div style={{ width: '100%', background: 'rgba(232,228,220,0.03)', border: '1px solid rgba(232,228,220,0.07)', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ width: '100%', background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 12, overflow: 'hidden' }}>
               {coach.years_experience != null && coach.years_experience > 0 && (
-                <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(232,228,220,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ padding: '10px 16px', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 12, color: SILVER }}>Expérience</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{coach.years_experience} an{coach.years_experience > 1 ? 's' : ''}</span>
                 </div>
@@ -69,14 +69,14 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
             </div>
             {/* Link to full profile */}
             <Link href={`/coaches/${coach.id}`} style={{ textDecoration: 'none', width: '100%' }}>
-              <button style={{ width: '100%', padding: '11px', borderRadius: 10, background: 'rgba(232,228,220,0.06)', border: '1px solid rgba(232,228,220,0.12)', color: CREAM, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,228,220,0.1)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(232,228,220,0.06)')}>
+              <button style={{ width: '100%', padding: '11px', borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 12%, transparent)', color: CREAM, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'color-mix(in srgb, var(--brand) 10%, transparent)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'color-mix(in srgb, var(--brand) 6%, transparent)')}>
                 Voir le profil complet
               </button>
             </Link>
             {proofs.length > 0 && (
-              <button onClick={onOpenProofModal} style={{ width: '100%', padding: '11px', borderRadius: 10, border: `1px solid ${typeColor}40`, background: `${typeColor}10`, color: typeColor, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={onOpenProofModal} style={{ width: '100%', padding: '11px', borderRadius: 10, border: `1px solid color-mix(in srgb, ${typeColor} 25%, transparent)`, background: `color-mix(in srgb, ${typeColor} 6%, transparent)`, color: typeColor, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Voir les preuves ({proofs.length})
               </button>
             )}
@@ -87,20 +87,20 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
 
             {/* Bio */}
             {coach.bio ? (
-              <p style={{ fontSize: 15, color: 'rgba(240,244,255,0.78)', lineHeight: 1.75, margin: 0 }}>{coach.bio}</p>
+              <p style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.75, margin: 0 }}>{coach.bio}</p>
             ) : (
-              <p style={{ fontSize: 14, color: 'rgba(138,138,138,0.4)', fontStyle: 'italic', margin: 0 }}>Ce coach n&apos;a pas encore renseigné sa bio.</p>
+              <p style={{ fontSize: 14, color: 'var(--text-3)', fontStyle: 'italic', margin: 0 }}>Ce coach n&apos;a pas encore renseigné sa bio.</p>
             )}
 
             {/* Spécialités */}
             {(coach.variants as string[] | undefined)?.length ? (
               <div>
-                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,244,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 10px' }}>Spécialités</h4>
+                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 10px' }}>Spécialités</h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {(coach.variants as string[]).map((v: string) => {
                     const vc = VARIANT_COLORS[v] ?? typeColor
                     return (
-                      <span key={v} style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, fontWeight: 700, background: `${vc}15`, color: vc, border: `1px solid ${vc}35` }}>{v}</span>
+                      <span key={v} style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, fontWeight: 700, background: `color-mix(in srgb, ${vc} 8%, transparent)`, color: vc, border: `1px solid color-mix(in srgb, ${vc} 21%, transparent)` }}>{v}</span>
                     )
                   })}
                 </div>
@@ -110,7 +110,7 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
             {/* Rooms */}
             {(coach.rooms as string[] | undefined)?.length ? (
               <div>
-                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,244,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 10px' }}>Joue sur</h4>
+                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 10px' }}>Joue sur</h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
                   {(coach.rooms as string[]).filter((r: string) => r !== 'PMU Poker').map((room: string) => {
                     const logoSrc: Record<string, string> = {
@@ -134,7 +134,7 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
                         />
                       </div>
                     ) : (
-                      <span key={room} style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'rgba(240,244,255,0.05)', color: CREAM, border: '1px solid rgba(240,244,255,0.1)' }}>{room}</span>
+                      <span key={room} style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'color-mix(in srgb, var(--brand) 5%, transparent)', color: CREAM, border: '1px solid color-mix(in srgb, var(--brand) 10%, transparent)' }}>{room}</span>
                     )
                   })}
                 </div>
@@ -144,11 +144,11 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
             {/* Co-coachs */}
             {coCoaches.length > 0 && (
               <div>
-                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,244,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 10px' }}>Co-coachs</h4>
+                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 10px' }}>Co-coachs</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {coCoaches.map(cc => (
                     <div key={cc.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, ${typeColor}30, rgba(232,228,220,0.06))`, border: '1px solid rgba(240,244,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: CREAM, flexShrink: 0 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--surface-2)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: CREAM, flexShrink: 0 }}>
                         {(cc.username ?? 'C')[0].toUpperCase()}
                       </div>
                       <span style={{ fontSize: 14, color: CREAM }}>{cc.username}</span>

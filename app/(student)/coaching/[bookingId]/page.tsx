@@ -10,18 +10,18 @@ import {
 import { createClient } from '@/lib/supabase/client'
 
 /* ─── Tokens ─────────────────────────────────────── */
-const BG      = '#07090e'
-const SURFACE = 'rgba(255,255,255,0.028)'
-const SURFACE_HI = 'rgba(255,255,255,0.048)'
-const BORDER  = 'rgba(255,255,255,0.07)'
-const BORDER_H = 'rgba(255,255,255,0.13)'
-const CREAM   = '#f0f4ff'
-const MID     = 'rgba(240,244,255,0.5)'
-const DIM     = 'rgba(240,244,255,0.22)'
-const CYAN    = '#06b6d4'
-const VIOLET  = '#7c3aed'
-const AMBER   = '#f59e0b'
-const EMER    = '#10b981'
+const BG      = 'var(--bg)'
+const SURFACE = 'color-mix(in srgb, var(--overlay) 3%, transparent)'
+const SURFACE_HI = 'color-mix(in srgb, var(--overlay) 5%, transparent)'
+const BORDER  = 'color-mix(in srgb, var(--overlay) 7%, transparent)'
+const BORDER_H = 'color-mix(in srgb, var(--overlay) 13%, transparent)'
+const CREAM   = 'var(--text)'
+const MID     = 'var(--text-2)'
+const DIM     = 'color-mix(in srgb, var(--brand) 22%, transparent)'
+const CYAN    = 'var(--brand)'
+const VIOLET  = 'var(--brand)'
+const AMBER   = 'var(--brand)'
+const EMER    = 'var(--gain)'
 
 type Question = { id: string; text: string; checked: boolean }
 type HandHistory = { id: string; ref: string; comment: string }
@@ -241,7 +241,7 @@ export default function PrepPage() {
 
               {/* Coach info row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg,${CYAN},${VIOLET})`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', border: `1.5px solid rgba(6,182,212,0.3)`, flexShrink: 0, position: 'relative' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${CYAN}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: 'var(--on-brand)', border: `1.5px solid color-mix(in srgb, var(--brand) 30%, transparent)`, flexShrink: 0, position: 'relative' }}>
                   {coachAvatar
                     ? <Image src={coachAvatar} alt="" fill sizes="32px" style={{ objectFit: 'cover' }} />
                     : coachName[0]?.toUpperCase()}
@@ -260,8 +260,8 @@ export default function PrepPage() {
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '6px 14px', borderRadius: 99,
-              background: isPast ? 'rgba(240,244,255,0.06)' : 'rgba(16,185,129,0.1)',
-              border: `1px solid ${isPast ? BORDER : 'rgba(16,185,129,0.25)'}`,
+              background: isPast ? 'color-mix(in srgb, var(--brand) 6%, transparent)' : 'color-mix(in srgb, var(--gain) 10%, transparent)',
+              border: `1px solid ${isPast ? BORDER : 'color-mix(in srgb, var(--gain) 25%, transparent)'}`,
             }}>
               {isPast
                 ? <><Clock size={12} color={MID} /><span style={{ fontSize: 11, fontWeight: 700, color: MID }}>Session passée</span></>
@@ -277,10 +277,10 @@ export default function PrepPage() {
             <button key={t} onClick={() => setTab(t)} style={{
               padding: '8px 20px', borderRadius: 9, border: 'none', cursor: 'pointer',
               background: tab === t ? SURFACE_HI : 'transparent',
-              color: tab === t ? CREAM : DIM,
+              color: tab === t ? CREAM : 'var(--text-3)',
               fontSize: 13, fontWeight: tab === t ? 600 : 500,
               transition: 'all 0.15s',
-              boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.3)' : 'none',
+              boxShadow: tab === t ? 'none' : 'none',
             }}>
               {t === 'prep' ? 'Préparer' : 'Notes de session'}
             </button>
@@ -305,9 +305,9 @@ export default function PrepPage() {
                       background: q.checked ? EMER : 'transparent', cursor: 'pointer', flexShrink: 0,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
                     }}>
-                      {q.checked && <Check size={10} color="#fff" strokeWidth={3} />}
+                      {q.checked && <Check size={10} color="var(--on-brand)" strokeWidth={3} />}
                     </button>
-                    <span style={{ flex: 1, fontSize: 13, color: q.checked ? DIM : CREAM, textDecoration: q.checked ? 'line-through' : 'none', transition: 'all 0.15s' }}>
+                    <span style={{ flex: 1, fontSize: 13, color: q.checked ? 'var(--text-3)' : CREAM, textDecoration: q.checked ? 'line-through' : 'none', transition: 'all 0.15s' }}>
                       {q.text}
                     </span>
                     <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
@@ -333,7 +333,7 @@ export default function PrepPage() {
                 />
                 <button onClick={addQuestion} disabled={!newQ.trim()} style={{
                   padding: '10px 16px', borderRadius: 10, border: 'none', cursor: newQ.trim() ? 'pointer' : 'not-allowed',
-                  background: newQ.trim() ? CYAN : SURFACE, color: newQ.trim() ? '#000' : DIM,
+                  background: newQ.trim() ? CYAN : SURFACE, color: newQ.trim() ? 'var(--on-brand)' : 'var(--text-3)',
                   fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6,
                   transition: 'all 0.15s', flexShrink: 0,
                 }}>
@@ -407,7 +407,7 @@ export default function PrepPage() {
           <div>
             <div style={{ marginBottom: 16 }}>
               <SectionLabel label="Notes prises pendant le coaching" accent={EMER} />
-              <p style={{ fontSize: 12, color: DIM, margin: '4px 0 0' }}>
+              <p style={{ fontSize: 12, color: 'var(--text-3)', margin: '4px 0 0' }}>
                 {isPast ? 'Session terminée — notes en lecture seule' : 'Sauvegarde automatique activée'}
               </p>
             </div>
@@ -438,7 +438,7 @@ export default function PrepPage() {
       {/* ── Sticky footer bar ─────────────────────── */}
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
-        background: 'rgba(7,9,14,0.95)', backdropFilter: 'blur(20px)',
+        background: 'var(--bg)', backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderTop: `1px solid ${BORDER}`,
         padding: '14px clamp(16px,3vw,40px)',
@@ -447,15 +447,15 @@ export default function PrepPage() {
         {/* Save status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {saveState === 'saving' && (
-            <><Loader2 size={13} color={DIM} style={{ animation: 'spin 1s linear infinite' }} />
-            <span style={{ fontSize: 12, color: DIM }}>Sauvegarde…</span></>
+            <><Loader2 size={13} color="var(--text-3)" style={{ animation: 'spin 1s linear infinite' }} />
+            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Sauvegarde…</span></>
           )}
           {saveState === 'saved' && (
             <><CheckCircle size={13} color={EMER} />
             <span style={{ fontSize: 12, color: EMER }}>Sauvegardé</span></>
           )}
           {saveState === 'idle' && (
-            <span style={{ fontSize: 12, color: DIM }}>Autosave actif</span>
+            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Autosave actif</span>
           )}
         </div>
 
@@ -463,7 +463,7 @@ export default function PrepPage() {
           <button onClick={handleManualSave} style={{
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '10px 24px', borderRadius: 10, border: 'none',
-            background: VIOLET, color: '#fff', fontSize: 13, fontWeight: 700,
+            background: VIOLET, color: 'var(--on-brand)', fontSize: 13, fontWeight: 700,
             cursor: 'pointer', transition: 'opacity 0.15s',
           }}
             onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.opacity = '0.85'}
@@ -503,11 +503,11 @@ function IconBtn({
         width: 26, height: 26, borderRadius: 7, border: `1px solid ${BORDER}`,
         background: 'transparent', cursor: disabled ? 'not-allowed' : 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: disabled ? DIM : danger ? '#ef4444' : MID,
+        color: disabled ? 'var(--text-3)' : danger ? 'var(--error)' : MID,
         opacity: disabled ? 0.35 : 1,
         transition: 'all 0.12s',
       }}
-      onMouseEnter={e => { if (!disabled) { const el = e.currentTarget; el.style.background = danger ? 'rgba(239,68,68,0.1)' : SURFACE_HI; el.style.borderColor = BORDER_H } }}
+      onMouseEnter={e => { if (!disabled) { const el = e.currentTarget; el.style.background = danger ? 'color-mix(in srgb, var(--error) 10%, transparent)' : SURFACE_HI; el.style.borderColor = BORDER_H } }}
       onMouseLeave={e => { const el = e.currentTarget; el.style.background = 'transparent'; el.style.borderColor = BORDER }}
     >
       {children}

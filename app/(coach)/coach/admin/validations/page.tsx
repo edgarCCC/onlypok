@@ -4,10 +4,10 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Check, X, Clock, ChevronDown, ChevronUp, ExternalLink, ShieldCheck, AlertCircle } from 'lucide-react'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const CARD   = 'rgba(232,228,220,0.03)'
-const BORDER = 'rgba(232,228,220,0.08)'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const CARD   = 'color-mix(in srgb, var(--brand) 3%, transparent)'
+const BORDER = 'color-mix(in srgb, var(--brand) 8%, transparent)'
 
 const CAT_LABELS: Record<string, string> = {
   stats:     'Stats officielles',
@@ -80,7 +80,7 @@ export default function AdminValidationsPage() {
   }
 
   if (isAdmin === false) return (
-    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: 14 }}>
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--error)', fontSize: 14 }}>
       Accès réservé aux admins.
     </div>
   )
@@ -92,12 +92,12 @@ export default function AdminValidationsPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090e', color: CREAM, padding: '48px 40px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM, padding: '48px 40px' }}>
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.5px', margin: '0 0 6px', fontFamily: 'var(--font-syne,sans-serif)' }}>
+          <h1 style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-0.5px', margin: '0 0 6px', fontFamily: 'var(--font-syne,sans-serif)' }}>
             Validation des preuves
           </h1>
           <p style={{ fontSize: 13, color: SILVER, margin: 0 }}>
@@ -112,9 +112,9 @@ export default function AdminValidationsPage() {
               padding: '7px 16px', borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: 'pointer',
               border: filter === s ? 'none' : `1px solid ${BORDER}`,
               background: filter === s
-                ? s === 'pending' ? '#f59e0b' : s === 'approved' ? '#4ade80' : '#ef4444'
+                ? s === 'pending' ? 'var(--brand)' : s === 'approved' ? 'var(--gain)' : 'var(--error)'
                 : CARD,
-              color: filter === s ? '#07090e' : SILVER,
+              color: filter === s ? 'var(--bg)' : SILVER,
             }}>
               {s === 'pending' ? 'En attente' : s === 'approved' ? 'Validées' : 'Refusées'}
             </button>
@@ -122,7 +122,7 @@ export default function AdminValidationsPage() {
         </div>
 
         {actErr && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, color: '#ef4444', fontSize: 13 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '10px 14px', background: 'color-mix(in srgb, var(--error) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--error) 25%, transparent)', borderRadius: 10, color: 'var(--error)', fontSize: 13 }}>
             <AlertCircle size={14} /> {actErr}
           </div>
         )}
@@ -145,7 +145,7 @@ export default function AdminValidationsPage() {
                 <div className="cadm-proof-row" style={{ display: 'grid', gridTemplateColumns: '220px 1fr auto', gap: 16, padding: 16, alignItems: 'start' }}>
 
                   {/* Thumbnail — clic = ouvrir la photo en taille réelle */}
-                  <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', aspectRatio: '16/9', background: '#0c0f17', cursor: 'zoom-in' }}
+                  <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', aspectRatio: '16/9', background: 'var(--bg)', cursor: 'zoom-in' }}
                     onClick={() => window.open(proof.url, '_blank')}
                     title="Ouvrir la photo en taille réelle">
                     <Image src={proof.url} alt="" fill sizes="220px" style={{ objectFit: 'cover' }} />
@@ -156,7 +156,7 @@ export default function AdminValidationsPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                       {proof.coach?.avatar_url
                         ? <Image src={proof.coach.avatar_url} alt="" width={24} height={24} style={{ borderRadius: '50%', objectFit: 'cover' }} />
-                        : <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#7c3aed22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#7c3aed' }}>
+                        : <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'color-mix(in srgb, var(--brand) 13%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--brand)' }}>
                             {(proof.coach?.username ?? '?').slice(0, 2).toUpperCase()}
                           </div>}
                       <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{proof.coach?.username ?? 'Coach inconnu'}</span>
@@ -167,7 +167,7 @@ export default function AdminValidationsPage() {
                     </div>
 
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'rgba(6,182,212,0.12)', color: '#06b6d4', fontWeight: 700 }}>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: 'color-mix(in srgb, var(--brand) 12%, transparent)', color: 'var(--brand)', fontWeight: 700 }}>
                         {CAT_LABELS[proof.category] ?? proof.category}
                       </span>
                       <span style={{ fontSize: 10, color: SILVER }}>
@@ -180,7 +180,7 @@ export default function AdminValidationsPage() {
                     )}
 
                     {proof.rejection_reason && (
-                      <p style={{ fontSize: 11, color: '#ef4444', margin: '6px 0 0', lineHeight: 1.4 }}>
+                      <p style={{ fontSize: 11, color: 'var(--error)', margin: '6px 0 0', lineHeight: 1.4 }}>
                         Motif : {proof.rejection_reason}
                       </p>
                     )}
@@ -190,13 +190,13 @@ export default function AdminValidationsPage() {
                   {filter === 'pending' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 130 }}>
                       <button onClick={() => act(proof.id, 'approved')} disabled={!!processing}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: 'none', background: 'rgba(74,222,128,0.15)', color: '#4ade80', fontSize: 12, fontWeight: 700, cursor: processing ? 'wait' : 'pointer' }}>
-                        {processing === proof.id ? <div style={{ width: 12, height: 12, border: '1.5px solid #4ade8040', borderTopColor: '#4ade80', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> : <Check size={13} />}
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: 'none', background: 'color-mix(in srgb, var(--gain) 15%, transparent)', color: 'var(--gain)', fontSize: 12, fontWeight: 700, cursor: processing ? 'wait' : 'pointer' }}>
+                        {processing === proof.id ? <div style={{ width: 12, height: 12, border: '1.5px solid color-mix(in srgb, var(--gain) 25%, transparent)', borderTopColor: 'var(--gain)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> : <Check size={13} />}
                         Valider
                       </button>
 
                       <button onClick={() => setExpanded(expanded === proof.id ? null : proof.id)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: `1px solid rgba(239,68,68,0.3)`, background: 'rgba(239,68,68,0.08)', color: '#ef4444', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: `1px solid color-mix(in srgb, var(--error) 30%, transparent)`, background: 'color-mix(in srgb, var(--error) 8%, transparent)', color: 'var(--error)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                         <X size={13} />
                         Refuser
                         {expanded === proof.id ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
@@ -205,9 +205,9 @@ export default function AdminValidationsPage() {
                   )}
 
                   {filter !== 'pending' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: filter === 'approved' ? 'rgba(74,222,128,0.1)' : 'rgba(239,68,68,0.1)' }}>
-                      {filter === 'approved' ? <ShieldCheck size={13} color="#4ade80" /> : <AlertCircle size={13} color="#ef4444" />}
-                      <span style={{ fontSize: 11, fontWeight: 700, color: filter === 'approved' ? '#4ade80' : '#ef4444' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: filter === 'approved' ? 'color-mix(in srgb, var(--gain) 10%, transparent)' : 'color-mix(in srgb, var(--error) 10%, transparent)' }}>
+                      {filter === 'approved' ? <ShieldCheck size={13} color="var(--gain)" /> : <AlertCircle size={13} color="var(--error)" />}
+                      <span style={{ fontSize: 11, fontWeight: 700, color: filter === 'approved' ? 'var(--gain)' : 'var(--error)' }}>
                         {filter === 'approved' ? 'Validée' : 'Refusée'}
                       </span>
                     </div>
@@ -221,10 +221,10 @@ export default function AdminValidationsPage() {
                       value={rejectionDraft[proof.id] ?? ''}
                       onChange={e => setRejectionDraft(prev => ({ ...prev, [proof.id]: e.target.value }))}
                       placeholder="Motif du refus (optionnel)…"
-                      style={{ flex: 1, background: 'rgba(232,228,220,0.04)', border: `1px solid ${BORDER}`, borderRadius: 8, padding: '8px 12px', color: CREAM, fontSize: 12, outline: 'none', fontFamily: 'inherit' }}
+                      style={{ flex: 1, background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: `1px solid ${BORDER}`, borderRadius: 8, padding: '8px 12px', color: CREAM, fontSize: 12, outline: 'none', fontFamily: 'inherit' }}
                     />
                     <button onClick={() => act(proof.id, 'rejected')} disabled={!!processing}
-                      style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: 'rgba(239,68,68,0.15)', color: '#ef4444', fontSize: 12, fontWeight: 700, cursor: processing ? 'wait' : 'pointer' }}>
+                      style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: 'color-mix(in srgb, var(--error) 15%, transparent)', color: 'var(--error)', fontSize: 12, fontWeight: 700, cursor: processing ? 'wait' : 'pointer' }}>
                       Confirmer le refus
                     </button>
                   </div>

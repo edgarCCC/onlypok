@@ -95,7 +95,7 @@ export default function ChapterList({ chapters, hasPurchased, completedLessons, 
                         {lesson.pdf_url && <FileText size={12} style={{ color: 'var(--text-muted)' }} />}
                         {lesson.duration > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{formatDuration(lesson.duration)}</span>}
                         {lesson.is_free && !hasPurchased && (
-                          <span style={{ fontSize: 10, background: 'var(--accent-glow)', color: 'var(--accent)', padding: '2px 6px', borderRadius: 99, border: '1px solid rgba(16,185,129,0.3)' }}>FREE</span>
+                          <span style={{ fontSize: 10, background: 'var(--accent-glow)', color: 'var(--accent)', padding: '2px 6px', borderRadius: 99, border: '1px solid color-mix(in srgb, var(--gain) 30%, transparent)' }}>FREE</span>
                         )}
                       </div>
                       {isCompleted && !isLocked && (

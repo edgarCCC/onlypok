@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 const SUITS  = ['♠', '♥', '♦', '♣']
-const COLORS = ['#7c3aed', '#e11d48', '#e11d48', '#06b6d4']
+const COLORS = ['var(--brand)', 'var(--error)', 'var(--error)', 'var(--brand)']
 const SIZE   = 52
 
 export default function DVDBounce() {

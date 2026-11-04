@@ -60,9 +60,28 @@
   --range-pair: #233F31;
   --range-suited: #1E3A2E;
   --range-offsuit: #1A3429;
+  /* Actions du trainer : une échelle du plus joué au jamais joué (pâle, sauge, mousse, fond), l'argile réservée au tapis */
+  --act-raise: #C7CBB8;
+  --act-raise-ink: #0F1F17;
+  --act-allin: #E39A87;
+  --act-allin-ink: #0F1F17;
+  --act-limp: #9CCB8E;
+  --act-limp-ink: #0F1F17;
+  --act-3bet: #C4806A;
+  --act-3bet-ink: #0F1F17;
+  --act-call: #82927B;
+  --act-call-ink: #0F1F17;
+  --act-tight: #82927B;
+  --act-tight-ink: #0F1F17;
+  --act-loose: #3E5A3F;
+  --act-loose-ink: #EAEBE4;
+  --act-fold: #1A3429;
+  --act-fold-ink: #9EA994;
 
   /* Voile derrière les modales et calque de contraste pour l'ancien code (blanc en sombre, encre en clair) */
   --scrim: rgb(0 0 0 / .6);
+  /* Texte posé sur une image assombrie : blanc dans les deux thèmes */
+  --on-scrim: #FFFFFF;
   --overlay: #FFFFFF;
 
   /* Espacement : base 4 px. Contrôle 8 × 12 ou 16 ; carte 16 ou 24 ; entre groupes 32, 48 ; entre sections 96 (64 sous 768). */
@@ -131,7 +150,24 @@ html[data-theme="light"] {
   --range-pair: #DFE1D6;
   --range-suited: #E6E8DE;
   --range-offsuit: #EFF0E9;
+  --act-raise: #1E3A2E;
+  --act-raise-ink: #F3F4EF;
+  --act-allin: #9A3522;
+  --act-allin-ink: #F3F4EF;
+  --act-limp: #2A6236;
+  --act-limp-ink: #F3F4EF;
+  --act-3bet: #D27A62;
+  --act-3bet-ink: #0F1F17;
+  --act-call: #5F755E;
+  --act-call-ink: #F9FAF8;
+  --act-tight: #5F755E;
+  --act-tight-ink: #F9FAF8;
+  --act-loose: #B4BFAC;
+  --act-loose-ink: #0F1F17;
+  --act-fold: #EFF0E9;
+  --act-fold-ink: #506753;
   --scrim: rgb(15 31 23 / .4);
+  --shadow-float: 0 16px 40px -18px rgb(15 31 23 / .28);
   --overlay: #0F1F17;
   color-scheme: light;
 }

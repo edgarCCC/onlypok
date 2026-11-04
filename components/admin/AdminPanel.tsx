@@ -3,11 +3,11 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ShieldCheck, Database, ChevronRight, CheckCircle2, XCircle, Loader2, Copy, Check, Lock, Users } from 'lucide-react'
 
-const CREAM  = '#f0f4ff'
-const SILVER = 'rgba(240,244,255,0.45)'
-const VIOLET = '#7c3aed'
-const CARD   = 'rgba(232,228,220,0.03)'
-const BORDER = 'rgba(232,228,220,0.08)'
+const CREAM  = 'var(--text)'
+const SILVER = 'var(--text-2)'
+const VIOLET = 'var(--brand)'
+const CARD   = 'color-mix(in srgb, var(--brand) 3%, transparent)'
+const BORDER = 'color-mix(in srgb, var(--brand) 8%, transparent)'
 
 // Les routes /api/migrate/* répondent 404 en production : on ne les propose qu'en preview/local.
 // NEXT_PUBLIC_VERCEL_ENV est exposée automatiquement par Vercel (variables système).
@@ -71,7 +71,7 @@ function MigrationCard({ migration }: { migration: typeof MIGRATIONS[0] }) {
           <div style={{ fontSize: 13, color: SILVER, lineHeight: 1.5 }}>{migration.desc}</div>
         </div>
         {status === 'idle' && (
-          <button onClick={run} style={{ flexShrink: 0, padding: '8px 18px', background: VIOLET, border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+          <button onClick={run} style={{ flexShrink: 0, padding: '8px 18px', background: VIOLET, border: 'none', borderRadius: 8, color: 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
             Appliquer
           </button>
         )}
@@ -79,12 +79,12 @@ function MigrationCard({ migration }: { migration: typeof MIGRATIONS[0] }) {
           <Loader2 size={18} color={SILVER} style={{ flexShrink: 0, animation: 'spin 1s linear infinite' }} />
         )}
         {status === 'ok' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#4ade80', fontSize: 13, fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--gain)', fontSize: 13, fontWeight: 700 }}>
             <CheckCircle2 size={16} /> Appliquée
           </div>
         )}
         {status === 'error' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#f87171', fontSize: 13 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--error)', fontSize: 13 }}>
             <XCircle size={16} /> Erreur
           </div>
         )}
@@ -92,14 +92,14 @@ function MigrationCard({ migration }: { migration: typeof MIGRATIONS[0] }) {
 
       {status === 'manual' && (
         <div style={{ marginTop: 16 }}>
-          <div style={{ fontSize: 12, color: '#f59e0b', marginBottom: 8, fontWeight: 600 }}>
+          <div style={{ fontSize: 12, color: 'var(--brand)', marginBottom: 8, fontWeight: 600 }}>
             Aucun token de gestion disponible. Exécute ce SQL dans Supabase SQL Editor :
           </div>
           <div style={{ position: 'relative' }}>
-            <pre style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '12px 16px', fontSize: 12, color: SILVER, overflow: 'auto', maxHeight: 240, margin: 0, lineHeight: 1.6 }}>
+            <pre style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid color-mix(in srgb, var(--overlay) 6%, transparent)', borderRadius: 8, padding: '12px 16px', fontSize: 12, color: SILVER, overflow: 'auto', maxHeight: 240, margin: 0, lineHeight: 1.6 }}>
               {sql.trim()}
             </pre>
-            <button onClick={copy} style={{ position: 'absolute', top: 8, right: 8, background: copied ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${copied ? '#4ade80' : 'rgba(255,255,255,0.1)'}`, borderRadius: 6, padding: '4px 10px', color: copied ? '#4ade80' : SILVER, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <button onClick={copy} style={{ position: 'absolute', top: 8, right: 8, background: copied ? 'color-mix(in srgb, var(--gain) 15%, transparent)' : 'color-mix(in srgb, var(--overlay) 6%, transparent)', border: `1px solid ${copied ? 'var(--gain)' : 'color-mix(in srgb, var(--overlay) 10%, transparent)'}`, borderRadius: 6, padding: '4px 10px', color: copied ? 'var(--gain)' : SILVER, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
               {copied ? <><Check size={11} /> Copié</> : <><Copy size={11} /> Copier</>}
             </button>
           </div>
@@ -145,7 +145,7 @@ function EncryptPaymentInfoCard() {
           </div>
         </div>
         {(status === 'idle' || status === 'error') && (
-          <button onClick={run} style={{ flexShrink: 0, padding: '8px 18px', background: VIOLET, border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+          <button onClick={run} style={{ flexShrink: 0, padding: '8px 18px', background: VIOLET, border: 'none', borderRadius: 8, color: 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
             {status === 'error' ? 'Réessayer' : 'Lancer'}
           </button>
         )}
@@ -153,7 +153,7 @@ function EncryptPaymentInfoCard() {
           <Loader2 size={18} color={SILVER} style={{ flexShrink: 0, animation: 'spin 1s linear infinite' }} />
         )}
         {status === 'ok' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#4ade80', fontSize: 13, fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--gain)', fontSize: 13, fontWeight: 700 }}>
             <CheckCircle2 size={16} /> Terminé
           </div>
         )}
@@ -164,7 +164,7 @@ function EncryptPaymentInfoCard() {
         </div>
       )}
       {status === 'error' && errMsg && (
-        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, color: '#f87171', fontSize: 12 }}>
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--error)', fontSize: 12 }}>
           <XCircle size={14} /> {errMsg}
         </div>
       )}
@@ -176,13 +176,13 @@ function EncryptPaymentInfoCard() {
    et /coach/admin (accès historique). Le lien validations dépend du contexte. */
 export default function AdminPanel({ validationsHref }: { validationsHref: string }) {
   return (
-    <div style={{ minHeight: '100vh', background: '#04040a', color: CREAM, padding: 'clamp(32px,5vw,64px) clamp(20px,5vw,64px)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM, padding: 'clamp(32px,5vw,64px) clamp(20px,5vw,64px)' }}>
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
 
         <div style={{ marginBottom: 40 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <ShieldCheck size={20} color={VIOLET} />
-            <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px', margin: 0 }}>Administration</h1>
+            <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.5px', margin: 0 }}>Administration</h1>
           </div>
           <p style={{ fontSize: 14, color: SILVER, margin: 0 }}>Outils réservés aux administrateurs de la plateforme.</p>
         </div>
