@@ -4,7 +4,6 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 import Providers from './providers'
-import ThemeScript from '@/components/ui/ThemeScript'
 
 // Unbounded ne sert plus qu'au logotype : tout le reste est en police système (styles/tokens.css).
 const unbounded = Unbounded({
@@ -38,7 +37,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={unbounded.variable} suppressHydrationWarning>
       <head>
-        <ThemeScript />
       </head>
       <body>
         <Providers>{children}</Providers>

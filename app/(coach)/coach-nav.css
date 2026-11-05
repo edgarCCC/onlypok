@@ -124,7 +124,6 @@
 /* Listes de liens (menu compte + feuille mobile) */
 .coach-menu-section { padding: 6px; border-bottom: 1px solid var(--coach-border); }
 .coach-menu-section:last-child { border-bottom: none; }
-.coach-menu-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 6px 4px 10px; font-size: 13px; color: var(--text); }
 .coach-menu-title {
   font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--coach-faint); margin: 6px 8px 4px;

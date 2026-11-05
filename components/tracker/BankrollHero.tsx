@@ -24,7 +24,7 @@ export default function BankrollHero({ summary, initialBankroll, needsMigration 
   ]
 
   return (
-    <Card style={{ marginBottom: 14 }}>
+    <Card className="on-forest" style={{ marginBottom: 14 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'stretch' }}>
         {/* Chiffre principal */}
         <div style={{ flex: '0 1 280px', minWidth: 0, display: 'flex', flexDirection: 'column' }}>

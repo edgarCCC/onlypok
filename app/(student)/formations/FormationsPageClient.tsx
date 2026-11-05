@@ -4,7 +4,6 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { Search, HelpCircle, Menu, X, Check } from 'lucide-react'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import Link from 'next/link'
 import Image from 'next/image'
 import NetflixRow from '@/components/marketplace/NetflixRow'
@@ -350,7 +349,6 @@ export default function FormationsPageClient({
                 </Link>
               </>
             ) : null}
-            <ThemeToggle />
             <button style={{ width: 38, height: 38, borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>

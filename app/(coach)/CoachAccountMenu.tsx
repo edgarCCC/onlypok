@@ -1,6 +1,5 @@
 'use client'
 import Link from 'next/link'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useEffect, useRef, useState } from 'react'
 import {
   UserRound, ExternalLink, Star, BarChart2, Target, Settings, LogOut, ChevronDown,
@@ -76,7 +75,6 @@ export function MenuSections({ coachId, onNavigate, onSignOut }: {
         </div>
       ))}
       <div className="coach-menu-section">
-        <div className="coach-menu-row"><span>Thème clair ou sombre</span><ThemeToggle /></div>
         <button onClick={onSignOut} className="coach-menu-item coach-menu-danger">
           <LogOut size={15} strokeWidth={1.8} />
           <span style={{ flex: 1, textAlign: 'left' }}>Déconnexion</span>

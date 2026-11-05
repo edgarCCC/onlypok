@@ -94,9 +94,9 @@ export function TrackerShell({ children, actions, wide }: {
 
 /* ─── Primitives ─────────────────────────────────────────────────────────────── */
 
-export function Card({ children, style, pad = true }: { children: React.ReactNode; style?: React.CSSProperties; pad?: boolean }) {
+export function Card({ children, style, pad = true, className }: { children: React.ReactNode; style?: React.CSSProperties; pad?: boolean; className?: string }) {
   return (
-    <div style={{
+    <div className={className} style={{
       background: T.surface, border: `1px solid ${T.border}`, borderRadius: 'var(--radius-card)',
       padding: pad ? '18px 20px' : 0, overflow: 'hidden', ...style,
     }}>
@@ -158,7 +158,7 @@ export function Seg<K extends string>({ options, value, onChange }: {
 /* Badge de format de tournoi */
 const FORMAT_STYLE: Record<string, { label: string; color: string }> = {
   classic:    { label: 'Classique',   color: 'var(--text-2)' },
-  ko:         { label: 'KO',          color: T.red },
+  ko:         { label: 'KO',          color: T.cream },
   mystery_ko: { label: 'Mystery KO',  color: 'var(--brand)' },
   space_ko:   { label: 'Space KO',    color: T.blue },
   spin_rush:  { label: 'Spin & Rush', color: T.amber },

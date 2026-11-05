@@ -41,7 +41,7 @@ export default function HistoryPanel({ bookings, notes, notesError, coachId, onN
       <div role="group" aria-label="Filtrer l'historique" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
         {chips.map(c => (
           <button key={c.key} onClick={() => setFilter(c.key)} aria-pressed={filter === c.key} className="agenda-chip">
-            {c.label} <span style={{ opacity: 0.6 }}>{c.n}</span>
+            {c.label} <span>{c.n}</span>
           </button>
         ))}
       </div>
@@ -84,7 +84,7 @@ export default function HistoryPanel({ bookings, notes, notesError, coachId, onN
                 )}
                 {canNote
                   ? <ChevronDown size={15} color={SILVER} style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none', flexShrink: 0 }} />
-                  : b.status === 'declined_by_coach' && <span style={{ fontSize: 11, color: RED, opacity: 0.7 }}>Remboursée</span>}
+                  : b.status === 'declined_by_coach' && <span style={{ fontSize: 11, color: RED }}>Remboursée</span>}
               </button>
               {open && (
                 <SessionNotesEditor

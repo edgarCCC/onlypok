@@ -57,7 +57,7 @@
 .ui-btn:disabled, .ui-btn[aria-disabled="true"] { cursor: not-allowed; }
 /* Un lien désactivé (href + disabled) garde sa place et sa taille ; hors tabulation et clic annulé côté composant (Button.tsx) */
 .ui-btn[aria-busy="true"] { cursor: progress; }
-/* Primaire : le pâle à plat, texte encre (10,3:1), un seul par écran. */
+/* Primaire : le forêt à plat, texte pâle (7,5:1), un seul par écran. Sur un panneau sombre : le pâle, texte encre. */
 .ui-btn-primary { background: var(--brand); color: var(--on-brand); }
 .ui-btn-primary.is-hover { background: var(--brand-hover); }
 .ui-btn-primary:disabled, .ui-btn-primary[aria-disabled="true"]:not([aria-busy="true"]) { background: var(--surface-3); color: var(--text-disabled); }
@@ -65,7 +65,7 @@
 .ui-btn-secondary { border-color: var(--border-strong); }
 .ui-btn-secondary.is-hover { background: var(--surface-2); border-color: var(--text-3); }
 .ui-btn-secondary:disabled, .ui-btn-secondary[aria-disabled="true"]:not([aria-busy="true"]) { border-color: var(--border); color: var(--text-disabled); }
-/* Action secondaire forte : remplissage forêt, libellé texte. Une par écran, quand elle est l'urgence du jour. */
+/* Action secondaire forte : remplissage de surface, libellé texte. Une par écran, quand elle est l'urgence du jour. */
 .ui-btn-strong { background: var(--surface-2); border-color: var(--border-strong); color: var(--text); font-weight: 600; }
 .ui-btn-strong.is-hover { background: var(--surface-3); }
 .ui-btn-strong:disabled, .ui-btn-strong[aria-disabled="true"]:not([aria-busy="true"]) { border-color: var(--border); color: var(--text-disabled); }
@@ -281,7 +281,7 @@ textarea.ui-input { min-height: 96px; padding: var(--space-2) var(--space-3); re
 .ui-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ── Logo ─────────────────────────────────────────────────────────────────── */
-/* Point de 7 × 7 px, rayon 2, pâle à plat, puis le mot en Unbounded 700, 15 px, +0,18 em : un dessin, pas du texte */
+/* Point de 7 × 7 px, rayon 2, couleur d'action à plat, puis le mot en Unbounded 700, 15 px, +0,18 em : un dessin, pas du texte */
 .ui-logo {
   display: inline-flex;
   align-items: center;
@@ -305,7 +305,7 @@ textarea.ui-input { min-height: 96px; padding: var(--space-2) var(--space-3); re
   .ui-btn:not(.ui-btn-link):active:not(:disabled):not([aria-disabled="true"]), .ui-btn:not(.ui-btn-link).is-active, .ui-card-interactive:active, .ui-card-interactive.is-active { transform: none; }
 }
 
-/* Résultats du tracker : gains en feuille, pertes en argile, zéro en texte. */
+/* Résultats du tracker : gains en vert soutenu, pertes en argile, zéro en texte. */
 .ui-gain { color: var(--gain); }
 .ui-loss { color: var(--error); }
 
@@ -409,8 +409,7 @@ textarea.ui-input { min-height: 96px; padding: var(--space-2) var(--space-3); re
 @media (hover: hover) and (pointer: fine) { .ui-theme-btn:hover { background: var(--surface-2); color: var(--text); } }
 
 /* Préférences du système (apple-design §14) : transparence réduite = matériau plein ; contraste renforcé = filets et textes plus francs */
-@media (prefers-reduced-transparency: reduce) { :root { --material: var(--material-solid); } html[data-theme="light"] { --material: var(--material-solid); } }
+@media (prefers-reduced-transparency: reduce) { :root { --material: var(--material-solid); } }
 @media (prefers-contrast: more) {
-  :root { --border: rgb(199 203 184 / .4); --border-strong: rgb(199 203 184 / .7); --text-3: var(--text-2); --material: var(--material-solid); }
-  html[data-theme="light"] { --border: rgb(15 31 23 / .4); --border-strong: rgb(15 31 23 / .7); --text-3: var(--text-2); --material: var(--material-solid); }
+  :root { --border: rgb(15 31 23 / .4); --border-strong: rgb(15 31 23 / .7); --text-3: var(--text-2); --material: var(--material-solid); }
 }

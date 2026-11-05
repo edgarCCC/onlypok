@@ -1,7 +1,6 @@
 'use client'
 import { LogOut } from 'lucide-react'
 import Logo from '@/components/ui/Logo'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import { createClient } from '@/lib/supabase/client'
 
 const SILVER = 'var(--text-2)'
@@ -22,7 +21,6 @@ export default function AdminTopbar({ email }: { email: string }) {
         <span className="ui-nav-role">Admin</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <ThemeToggle />
         <span style={{ fontSize: 12, color: SILVER }}>{email}</span>
         <button onClick={logout} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'color-mix(in srgb, var(--overlay) 5%, transparent)', border: `1px solid ${BORDER}`, borderRadius: 8, color: SILVER, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
           <LogOut size={13} /> Déconnexion

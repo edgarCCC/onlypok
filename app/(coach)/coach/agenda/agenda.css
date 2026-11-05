@@ -20,18 +20,18 @@
   font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer;
   transition: background 160ms ease, color 160ms ease;
 }
-.agenda-tab:hover { color: var(--brand); }
+.agenda-tab:hover { color: var(--text); }
 .agenda-tab[data-active] {
-  color: var(--tab-color); font-weight: 700;
-  background: color-mix(in srgb, var(--tab-color) 16%, transparent);
+  color: var(--text); font-weight: 600;
+  background: var(--surface-2);
 }
-.agenda-tab:focus-visible { outline: 2px solid var(--tab-color); outline-offset: 1px; }
+.agenda-tab:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .agenda-tab-count {
   min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 800; color: var(--brand); background: color-mix(in srgb, var(--brand) 10%, transparent);
 }
-.agenda-tab-count[data-urgent] { color: var(--bg); background: var(--brand); }
+.agenda-tab-count[data-urgent] { color: var(--on-brand); background: var(--brand); }
 
 /* Lignes de séance */
 .agenda-row {

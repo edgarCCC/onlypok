@@ -194,13 +194,13 @@ export default function CoachDashboard() {
       </section>
 
       <div className="ch-numbers">
-        <dl className="ch-kpis">
+        <dl className="ch-kpis on-forest">
           <Link href="/coach/revenue" className="ch-kpi"><dt>Revenus</dt><dd>{euro(totalRevenue)}</dd></Link>
           <Link href="/coach/students" className="ch-kpi"><dt>Élèves ce mois</dt><dd>{studentsThisMonth}</dd></Link>
           <a href="#content" className="ch-kpi"><dt>Contenus publiés</dt><dd>{published}</dd></a>
           <Link href="/coach/reviews" className="ch-kpi"><dt>Note moyenne</dt><dd>{averageRating !== null ? averageRating.toFixed(1).replace('.', ',') : '—'}</dd></Link>
         </dl>
-        <section className="ch-revenue" aria-labelledby="ch-rev">
+        <section className="ch-revenue on-olive" aria-labelledby="ch-rev">
           <div className="ch-section-head">
             <h2 id="ch-rev" className="t-caps">Revenus sur 6 mois</h2>
             <Link href="/coach/revenue" className="ch-more">Le détail</Link>

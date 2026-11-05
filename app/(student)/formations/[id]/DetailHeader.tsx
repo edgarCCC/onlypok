@@ -2,7 +2,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { ArrowLeft, Search, Menu, HelpCircle, Check, X } from 'lucide-react'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
 import { CREAM, SILVER, VARIANT_OPTIONS, HEADER_FIELDS, HEADER_TAB_COLORS } from './shared'
@@ -181,7 +180,6 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
                 </Link>
               </>
             ) : null}
-            <ThemeToggle />
             <button
               style={{ width: 38, height: 38, borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM }}

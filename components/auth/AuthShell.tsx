@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import Logo from '@/components/ui/Logo'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import { cx } from '@/lib/cx'
 import './auth.css'
 
@@ -10,7 +9,6 @@ export default function AuthShell({ title, subtitle, wide, children }: { title?:
     <div className="au">
       <header className="au-top">
         <Logo />
-        <ThemeToggle />
       </header>
       <main className="au-main">
         <div className={cx('au-col', wide && 'au-col-wide')}>

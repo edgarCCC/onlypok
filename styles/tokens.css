@@ -1,7 +1,8 @@
-/* OnlyPok — tokens de design v4 (palette « forêt » choisie par Edgar le 04/11, inspiration GTO Wizard pour la densité, skill apple-design pour la matière).
-   Six couleurs : #0F1F17 encre · #1E3A2E forêt · #3E5A3F mousse · #6B7F67 sauge · #C7CBB8 pâle · #3D4337 olive.
-   Tout le reste en dérive, sans autre teinte, sauf deux sens qui en ont besoin : le gain (feuille) et la perte / l'erreur (argile).
-   Sombre par défaut ; thème clair sous html[data-theme="light"], posé avant le premier rendu (components/ui/ThemeScript.tsx). */
+/* OnlyPok — tokens de design v5. Décision d'Edgar du 05/11 : la base est #C7CBB8, tout le reste en nuances de vert.
+   Six couleurs : #C7CBB8 pâle (la base) · #0F1F17 encre · #1E3A2E forêt · #3E5A3F mousse · #6B7F67 sauge · #3D4337 olive.
+   Un seul thème. Les surfaces sont le pâle teinté de sauge. Les panneaux sombres (.on-forest, .on-moss, .on-olive, .on-ink)
+   redéfinissent les mêmes tokens à l'intérieur : un composant s'y pose sans rien changer.
+   Seule exception hors des verts : l'argile, pour une erreur, une perte et les cartes rouges. */
 
 :root {
   /* Les six couleurs de la palette, disponibles telles quelles */
@@ -12,79 +13,82 @@
   --pale: #C7CBB8;
   --olive: #3D4337;
 
-  /* Surfaces : l'encre, un palier, la forêt, un palier vers la mousse. La profondeur vient de cet empilement. */
-  --bg: #0F1F17;
-  --surface: #162B21;
-  --surface-2: #1E3A2E;
-  --surface-3: #2E4A36;
+  /* La base, puis le pâle teinté de sauge à 14, 26 et 40 % */
+  --bg: #C7CBB8;
+  --surface: #BAC0AD;
+  --surface-2: #AFB7A3;
+  --surface-3: #A2AD98;
 
-  /* Filets : le pâle à 12 % (filets), 22 % (contrôles), 44 % réservé aux champs */
-  --border: rgb(199 203 184 / .12);
-  --border-strong: rgb(199 203 184 / .22);
-  --border-input: rgb(199 203 184 / .44);
+  /* Filets : l'encre à 14 %, 28 %, 50 % pour les champs */
+  --border: rgb(15 31 23 / .14);
+  --border-strong: rgb(15 31 23 / .28);
+  --border-input: rgb(15 31 23 / .5);
 
-  /* Texte : pâle éclairci 14,2:1 · pâle 10,3:1 · sauge éclaircie 7,0:1 (5,0:1 sur la forêt) · désactivé */
-  --text: #EAEBE4;
-  --text-2: #C7CBB8;
-  --text-3: #9EA994;
-  --text-disabled: rgb(199 203 184 / .42);
+  /* Texte sur la base : encre 10,3:1 · forêt 7,5:1 · olive 6,2:1 (4,9:1 sur surface-2) */
+  --text: #0F1F17;
+  --text-2: #1E3A2E;
+  --text-3: #3D4337;
+  --text-disabled: rgb(15 31 23 / .45);
 
-  /* Action : le pâle, comme le bouton clair à texte sombre de P3 (encre dessus : 10,3:1). Un seul bouton plein par écran. */
-  --brand: #C7CBB8;
-  --brand-hover: #D5D8CA;
-  --on-brand: #0F1F17;
-  --brand-soft: rgb(199 203 184 / .10);
-  --brand-text: #C7CBB8;
-  --focus: #C7CBB8;
+  /* Action : le forêt à plat, texte pâle 7,5:1, un seul bouton plein par écran */
+  --brand: #1E3A2E;
+  --brand-hover: #0F1F17;
+  --on-brand: #C7CBB8;
+  --brand-soft: rgb(30 58 46 / .1);
+  --brand-text: #1E3A2E;
+  --focus: #0F1F17;
 
-  /* Attention (notification, badge « Nouveau ») : la mousse, pâle dessus 4,6:1. Écrit en texte : le pâle. */
+  /* Attention (notification, badge « Nouveau ») : la mousse */
   --accent: #3E5A3F;
   --on-accent: #EAEBE4;
-  --accent-text: #C7CBB8;
+  --accent-text: #1E3A2E;
 
-  /* Sens : gain en feuille 9,2:1 ; perte et erreur en argile 7,5:1, en texte et en contour seulement. */
-  --gain: #9CCB8E;
-  --error: #E39A87;
-  --card-red: var(--error);
+  /* Sens : gain en vert soutenu 5,7:1 ; perte et erreur en argile 5,1:1 */
+  --gain: #1B5029;
+  --error: #8A2E1C;
+  --card-red: #8A2E1C;
+  /* Face d'une carte à jouer, posée sur un panneau vert */
+  --card-face: #EAEBE4;
+  --card-ink: #0F1F17;
 
   /* Matériau translucide de la barre de navigation (apple-design §12) : le contenu défile dessous */
-  --material: rgb(15 31 23 / .72);
-  --material-solid: #0F1F17;
+  --material: rgb(199 203 184 / .82);
+  --material-solid: #C7CBB8;
 
-  /* Grille de ranges : le pâle = dans la range (encre 10,3:1), sauge éclaircie = à la frontière (encre 5,2:1), forêt = hors range */
-  --range-in: #C7CBB8;
-  --range-in-ink: #0F1F17;
+  /* Grille de ranges : forêt = dans la range, sauge éclaircie = à la frontière, surfaces = hors range */
+  --range-in: #1E3A2E;
+  --range-in-ink: #C7CBB8;
   --range-border: #82927B;
   --range-border-ink: #0F1F17;
-  --range-out: #1E3A2E;
-  --range-pair: #233F31;
-  --range-suited: #1E3A2E;
-  --range-offsuit: #1A3429;
-  /* Actions du trainer : une échelle du plus joué au jamais joué (pâle, sauge, mousse, fond), l'argile réservée au tapis */
-  --act-raise: #C7CBB8;
-  --act-raise-ink: #0F1F17;
-  --act-allin: #E39A87;
-  --act-allin-ink: #0F1F17;
-  --act-limp: #9CCB8E;
-  --act-limp-ink: #0F1F17;
-  --act-3bet: #C4806A;
-  --act-3bet-ink: #0F1F17;
-  --act-call: #82927B;
-  --act-call-ink: #0F1F17;
+  --range-out: #BAC0AD;
+  --range-pair: #AFB7A3;
+  --range-suited: #BAC0AD;
+  --range-offsuit: #C7CBB8;
+  /* Actions du trainer : plus l'action engage, plus le vert est sombre */
+  --act-allin: #0F1F17;
+  --act-allin-ink: #C7CBB8;
+  --act-3bet: #1E3A2E;
+  --act-3bet-ink: #C7CBB8;
+  --act-limp: #3D4337;
+  --act-limp-ink: #C7CBB8;
+  --act-raise: #3E5A3F;
+  --act-raise-ink: #EAEBE4;
+  --act-call: #5F755E;
+  --act-call-ink: #F3F4EF;
   --act-tight: #82927B;
   --act-tight-ink: #0F1F17;
-  --act-loose: #3E5A3F;
-  --act-loose-ink: #EAEBE4;
-  --act-fold: #1A3429;
-  --act-fold-ink: #9EA994;
+  --act-loose: #A2AD98;
+  --act-loose-ink: #0F1F17;
+  --act-fold: #C7CBB8;
+  --act-fold-ink: #3D4337;
 
-  /* Voile derrière les modales et calque de contraste pour l'ancien code (blanc en sombre, encre en clair) */
-  --scrim: rgb(0 0 0 / .6);
-  /* Texte posé sur une image assombrie : blanc dans les deux thèmes */
+  /* Voile derrière les modales et calque de contraste pour l'ancien code */
+  --scrim: rgb(15 31 23 / .5);
+  /* Texte posé sur une image assombrie */
   --on-scrim: #FFFFFF;
-  --overlay: #FFFFFF;
+  --overlay: #0F1F17;
 
-  /* Espacement : base 4 px. Contrôle 8 × 12 ou 16 ; carte 16 ou 24 ; entre groupes 32, 48 ; entre sections 96 (64 sous 768). */
+/* Espacement : base 4 px. Contrôle 8 × 12 ou 16 ; carte 16 ou 24 ; entre groupes 32, 48 ; entre sections 96 (64 sous 768). */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -109,71 +113,57 @@
   --font-space: var(--font-text);
   --font-dm-mono: var(--font-text);
 
-  color-scheme: dark;
-}
-
-/* color-scheme: dark rend opaque et blanc un iframe transparent (lecteurs vidéo YouTube / Vimeo, Daily) : les iframes gardent le schéma normal.
-   À vérifier sur VideoPlayer, VideoPreview et learn/page.tsx au premier passage sur le serveur de dev. */
-iframe { color-scheme: normal; }
-
-/* Thème clair : la même palette inversée. Fond = pâle éclairci, bouton = forêt, texte = encre. Contrastes mesurés sur le fond et sur chaque surface. */
-html[data-theme="light"] {
-  --bg: #F3F4EF;
-  --surface: #F9FAF8;
-  --surface-2: #EAEBE4;
-  --surface-3: #DFE1D6;
-  --border: rgb(15 31 23 / .12);
-  --border-strong: rgb(15 31 23 / .22);
-  --border-input: rgb(15 31 23 / .44);
-  --text: #0F1F17;
-  --text-2: #3D4337;
-  --text-3: #506753;
-  --text-disabled: rgb(15 31 23 / .40);
-  --brand: #1E3A2E;
-  --brand-hover: #0F1F17;
-  --on-brand: #F3F4EF;
-  --brand-soft: rgb(30 58 46 / .08);
-  --brand-text: #3E5A3F;
-  --focus: #1E3A2E;
-  --accent: #3E5A3F;
-  --on-accent: #F3F4EF;
-  --accent-text: #3E5A3F;
-  --gain: #2A6236;
-  --error: #9A3522;
-  --material: rgb(243 244 239 / .78);
-  --material-solid: #F3F4EF;
-  --range-in: #1E3A2E;
-  --range-in-ink: #F3F4EF;
-  --range-border: #5F755E;
-  --range-border-ink: #F9FAF8;
-  --range-out: #EAEBE4;
-  --range-pair: #DFE1D6;
-  --range-suited: #E6E8DE;
-  --range-offsuit: #EFF0E9;
-  --act-raise: #1E3A2E;
-  --act-raise-ink: #F3F4EF;
-  --act-allin: #9A3522;
-  --act-allin-ink: #F3F4EF;
-  --act-limp: #2A6236;
-  --act-limp-ink: #F3F4EF;
-  --act-3bet: #D27A62;
-  --act-3bet-ink: #0F1F17;
-  --act-call: #5F755E;
-  --act-call-ink: #F9FAF8;
-  --act-tight: #5F755E;
-  --act-tight-ink: #F9FAF8;
-  --act-loose: #B4BFAC;
-  --act-loose-ink: #0F1F17;
-  --act-fold: #EFF0E9;
-  --act-fold-ink: #506753;
-  --scrim: rgb(15 31 23 / .4);
-  --shadow-float: 0 16px 40px -18px rgb(15 31 23 / .28);
-  --overlay: #0F1F17;
   color-scheme: light;
 }
 
-/* Transition douce à la bascule de thème : pas de saut de luminosité brutal (apple-design §14) */
-html.theme-changing, html.theme-changing * { transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease !important; }
+/* Panneaux sombres : les nuances de vert posées sur la base. À l'intérieur, les mêmes tokens donnent un texte pâle et un bouton pâle. */
+.on-forest, .on-moss, .on-olive, .on-ink {
+  --border: rgb(199 203 184 / .18);
+  --border-strong: rgb(199 203 184 / .32);
+  --border-input: rgb(199 203 184 / .5);
+  --text: #EAEBE4;
+  --text-2: #C7CBB8;
+  --text-3: #AEB8A5;
+  --text-disabled: rgb(199 203 184 / .5);
+  --brand: #C7CBB8;
+  --brand-hover: #D5D8CA;
+  --on-brand: #0F1F17;
+  --brand-soft: rgb(199 203 184 / .12);
+  --brand-text: #C7CBB8;
+  --focus: #C7CBB8;
+  --accent: #C7CBB8;
+  --on-accent: #0F1F17;
+  --accent-text: #C7CBB8;
+  --gain: #A9D79B;
+  --error: #EBA794;
+  --card-red: #8A2E1C;
+  --overlay: #FFFFFF;
+  --range-in: #C7CBB8;
+  --range-in-ink: #0F1F17;
+  --range-border: #82927B;
+  --range-border-ink: #0F1F17;
+  --act-allin: #A9D79B;
+  --act-allin-ink: #0F1F17;
+  --act-3bet: #EAEBE4;
+  --act-3bet-ink: #0F1F17;
+  --act-limp: #6B7F67;
+  --act-limp-ink: #F3F4EF;
+  --act-raise: #C7CBB8;
+  --act-raise-ink: #0F1F17;
+  --act-call: #82927B;
+  --act-call-ink: #0F1F17;
+  --act-tight: #82927B;
+  --act-tight-ink: #0F1F17;
+  --act-loose: #3E5A3F;
+  --act-loose-ink: #EAEBE4;
+  color-scheme: dark;
+  background-color: var(--bg);
+  color: var(--text);
+}
+.on-forest { --bg: #1E3A2E; --surface: #1E3A2E; --surface-2: #2B4A3A; --surface-3: #3E5A3F; --range-out: #254335; --range-pair: #34543F; --range-suited: #2B4A3A; --range-offsuit: #254335; --act-fold: #254335; --act-fold-ink: #AEB8A5; }
+.on-ink { --bg: #0F1F17; --surface: #0F1F17; --surface-2: #1E3A2E; --surface-3: #3E5A3F; --range-out: #162B21; --range-pair: #2B4A3A; --range-suited: #1E3A2E; --range-offsuit: #162B21; --act-fold: #162B21; --act-fold-ink: #AEB8A5; }
+.on-olive { --bg: #3D4337; --surface: #3D4337; --surface-2: #4A5143; --surface-3: #575F4F; --text-3: #C7CBB8; --range-out: #454C3F; --range-pair: #575F4F; --range-suited: #4A5143; --range-offsuit: #454C3F; --act-fold: #454C3F; --act-fold-ink: #C7CBB8; }
+.on-moss { --bg: #3E5A3F; --surface: #3E5A3F; --surface-2: #4A674B; --surface-3: #567457; --text: #F3F4EF; --text-2: #EAEBE4; --text-3: #DCDFD2; --range-out: #456246; --range-pair: #567457; --range-suited: #4A674B; --range-offsuit: #456246; --act-fold: #456246; --act-fold-ink: #DCDFD2; }
 
 /* Rayons, familles, échelle, courbes et ombre : déclarés dans @theme static.
    Tailwind v4 les émet tels quels sur :root (ce sont de vraies variables CSS, utilisables partout)
@@ -205,7 +195,7 @@ html.theme-changing, html.theme-changing * { transition: background-color 200ms 
   --ease-drawer: cubic-bezier(.32, .72, 0, 1);
 
   /* La seule ombre du produit : neutre et faible, sur ce qui flotte (menu, popover, modale, toast). Jamais sur une carte. */
-  --shadow-float: 0 16px 40px -16px rgb(0 0 0 / .55);
+  --shadow-float: 0 16px 40px -18px rgb(15 31 23 / .38);
 }
 
 /* Exposition des couleurs et de l'unité d'espacement aux utilitaires Tailwind (bg-brand, text-brand-text, border-border-strong, p-4 = 16 px…).

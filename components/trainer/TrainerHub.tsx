@@ -22,7 +22,7 @@ export default function TrainerHub({ base, links }: TrainerHubProps) {
         <p className="t-2">Trois outils pour travailler tes décisions entre deux sessions. Gratuits, sans compte.</p>
       </header>
       <div className="hub-grid">
-        <Link href={`${base}/ranges`} className="hub-tile hub-tile-ranges">
+        <Link href={`${base}/ranges`} className="hub-tile hub-tile-ranges on-forest">
           <div className="hub-frag hub-frag-mx" aria-hidden="true">
             <Matrix actionOf={(combo) => demoMap[combo]} revealed current="A5s" />
           </div>
@@ -31,7 +31,7 @@ export default function TrainerHub({ base, links }: TrainerHubProps) {
             <p className="t-2">Drill, quiz et explorateur sur 70 ranges d’ouverture, de 10 à 100 bb. Peins aussi la tienne et partage-la.</p>
           </div>
         </Link>
-        <Link href={`${base}/equity`} className="hub-tile">
+        <Link href={`${base}/equity`} className="hub-tile on-olive">
           <div className="hub-frag" aria-hidden="true">
             <p className="hub-eq"><b>A♠ K♠</b><span>46 %</span></p>
             <div className="hub-eq-bar"><i style={{ flexGrow: 46 }} /><i style={{ flexGrow: 54 }} /></div>
@@ -42,7 +42,7 @@ export default function TrainerHub({ base, links }: TrainerHubProps) {
             <p className="t-2">Calcule une équité main contre main, ou estime-la d’abord et compare au tirage.</p>
           </div>
         </Link>
-        <Link href={`${base}/quiz`} className="hub-tile">
+        <Link href={`${base}/quiz`} className="hub-tile on-moss">
           <div className="hub-frag" aria-hidden="true">
             <p className="hub-spot"><span>HJ · 20 bb</span><b>QQ</b></p>
             <p className="hub-opts"><span>Fold</span><span>Raise</span><span className="is-on">Jam</span></p>

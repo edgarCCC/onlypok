@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
 import Button from '@/components/ui/Button'
 import Logo from '@/components/ui/Logo'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import { cx } from '@/lib/cx'
 import { LANDING_ROUTES } from '@/lib/routes'
 
@@ -72,7 +71,6 @@ export default function SiteNav({ promoteCta = false, wide = false }: { promoteC
         <div className="ui-nav-right">
           <Link href={LANDING_ROUTES.becomeCoach} className="ui-nav-login ui-nav-coach">Devenir coach</Link>
           <Link href={LANDING_ROUTES.login} className="ui-nav-login">Se connecter</Link>
-          <ThemeToggle />
           <Button href={LANDING_ROUTES.register} size="sm" variant={promoteCta && stage === 2 ? 'primary' : 'secondary'} className="ui-nav-cta">Créer mon compte</Button>
           <button
             ref={buttonRef}

@@ -237,7 +237,7 @@ export default function StudentDashboard() {
             {todos.length > 0 ? (
               <ol className="sd-todos">
                 {todos.map((todo, index) => (
-                  <li key={todo.key} className="sd-todo">
+                  <li key={todo.key} className={index === 0 ? 'sd-todo on-forest' : 'sd-todo'}>
                     <div className="sd-todo-text">
                       <p className="sd-todo-eyebrow">{todo.eyebrow}</p>
                       <p className="t-heading">{todo.title}</p>
@@ -249,7 +249,7 @@ export default function StudentDashboard() {
               </ol>
             ) : (
               <ol className="sd-todos">
-                <li className="sd-todo">
+                <li className="sd-todo on-forest">
                   <div className="sd-todo-text">
                     <p className="sd-todo-eyebrow">Dix minutes</p>
                     <p className="t-heading">Un drill de ranges pour commencer</p>

@@ -45,7 +45,7 @@ export function Table({ position, stack, cards }: { position: Position; stack: n
   const hero = SEATS.indexOf(position)
   return (
     <div className="tr-table" aria-hidden="true">
-      <div className="tr-felt">
+      <div className="tr-felt on-forest">
         <span className="tr-pot">Pot {POT_BB}</span>
       </div>
       {SEATS.map((seat, index) => {

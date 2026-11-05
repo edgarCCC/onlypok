@@ -126,7 +126,7 @@ export default function RangeDrill({ ranges, sequence, firstHand }: RangeDrillPr
     const score = answers.filter((item) => item.accepted).length
     const lastRound = rounds[DRILL_HANDS - 1]
     return (
-      <div className="lp-tool" id="exercice">
+      <div className="lp-tool on-forest" id="exercice">
         {toolbar(lastRound.position)}
         <div className="lp-tool-body">
           <div className="lp-tool-grid">
@@ -156,7 +156,7 @@ export default function RangeDrill({ ranges, sequence, firstHand }: RangeDrillPr
 
   const explanation = last ? explainVerdict(range, current.hand, last.verdict) : ''
   return (
-    <div className="lp-tool" id="exercice">
+    <div className="lp-tool on-forest" id="exercice">
       {toolbar(current.position)}
       <div className="lp-tool-body">
         <div className="lp-tool-grid">

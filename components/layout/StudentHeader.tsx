@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronDown, LogOut, Sparkles } from 'lucide-react'
 import Logo from '@/components/ui/Logo'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useUser } from '@/hooks/useUser'
 
 const TABS = [
@@ -98,7 +97,6 @@ export default function StudentHeader() {
           ))}
         </nav>
         <div className="ui-nav-right">
-          <ThemeToggle />
           <div ref={accountRef} className="ui-nav-account">
             <button ref={triggerRef} type="button" className="ui-nav-me" aria-label="Menu du compte" aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((value) => !value)}>
               {avatar(28)}
