@@ -4,13 +4,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { RotateCcw, Shuffle } from 'lucide-react'
 import { cx } from '@/lib/cx'
-import { RANK_CHARS, SUIT_SYMS, calcEquity, cardName, cid, rc, shuffledDeck, type Card } from '@/lib/equity'
+import { EQUITY_GUESS_STEPS, RANK_CHARS, SUIT_SYMS, calcEquity, cardName, cid, gradeEquity, rc, shuffledDeck, type Card } from '@/lib/equity'
 import ToolBar from './ToolBar'
 import './trainer.css'
 
 type SlotRef = { type: 'hand'; hi: number; ci: number } | { type: 'board'; bi: number }
 type QuizType = 'preflop' | 'flop' | 'turn' | 'river'
-type Grade = { label: string; pts: number; good: boolean }
 
 const QUIZ_BOARD: Record<QuizType, number> = { preflop: 0, flop: 3, turn: 4, river: 5 }
 const QUIZ_LABEL: Record<QuizType, string> = { preflop: 'Préflop', flop: 'Flop', turn: 'Turn', river: 'River' }
@@ -21,20 +20,11 @@ const SCALE: { label: string; range: string; pts: number }[] = [
   { label: 'Bon', range: '7 %', pts: 2 },
   { label: 'Proche', range: '15 %', pts: 1 },
 ]
-/* Choix d'Edgar : des boutons d'ajustement plutôt qu'un champ ou un curseur, grand chiffre et barre au-dessus. */
-const STEPS = [-10, -5, -1, 1, 5, 10]
 const emptyHands = (): (Card | null)[][] => [[null, null], [null, null], [null, null]]
 const emptyBoard = (): (Card | null)[] => [null, null, null, null, null]
 const initGuesses = (n: number) => (n === 3 ? [34, 33, 33] : [50, 50])
 const isRed = (suit: number) => suit === 1 || suit === 2
 const fmt = (value: number) => value.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
-
-function grade(delta: number): Grade {
-  if (delta <= 3) return { label: 'Parfait', pts: 3, good: true }
-  if (delta <= 7) return { label: 'Bon', pts: 2, good: true }
-  if (delta <= 15) return { label: 'Proche', pts: 1, good: true }
-  return { label: 'Raté', pts: 0, good: false }
-}
 
 function CardSlot({ card, active, readonly, label, onClick }: { card: Card | null; active?: boolean; readonly?: boolean; label: string; onClick?: () => void }) {
   const content = card
@@ -133,7 +123,7 @@ export default function EquityTool({ backHref = '/trainer' }: { backHref?: strin
       const results = calcEquity(quizHands, quizBoard, 50000)
       setQuizResults(results)
       setQuizRunning(false)
-      const g = grade(Math.max(...guesses.map((guess, i) => Math.abs(guess - results[i]))))
+      const g = gradeEquity(Math.max(...guesses.map((guess, i) => Math.abs(guess - results[i]))))
       setScore((s) => ({ pts: s.pts + g.pts, rounds: s.rounds + 1 }))
       setStreak((s) => (g.pts > 0 ? s + 1 : 0))
     }, 10)
@@ -144,7 +134,7 @@ export default function EquityTool({ backHref = '/trainer' }: { backHref?: strin
   }
 
   const guessTotal = guesses.reduce((sum, guess) => sum + guess, 0)
-  const roundGrade = quizResults ? grade(Math.max(...guesses.map((guess, i) => Math.abs(guess - quizResults[i])))) : null
+  const roundGrade = quizResults ? gradeEquity(Math.max(...guesses.map((guess, i) => Math.abs(guess - quizResults[i])))) : null
 
   return (
     <div className="tr">
@@ -276,7 +266,7 @@ export default function EquityTool({ backHref = '/trainer' }: { backHref?: strin
                       <p className="eq-hint">100 % moins la main 1</p>
                     ) : (
                       <div className="eq-steps" role="group" aria-label={`Ajuster la main ${hi + 1}`}>
-                        {STEPS.map((delta) => (
+                        {EQUITY_GUESS_STEPS.map((delta) => (
                           <button key={delta} type="button" className="eq-step" aria-label={`${delta > 0 ? 'Plus' : 'Moins'} ${Math.abs(delta)} points`} onClick={() => adjustGuess(hi, delta)}>
                             {delta > 0 ? `+${delta}` : `−${Math.abs(delta)}`}
                           </button>

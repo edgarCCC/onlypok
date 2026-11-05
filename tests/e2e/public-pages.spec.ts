@@ -18,6 +18,27 @@ test.describe('Pages publiques', () => {
     expect(sw).toBeLessThanOrEqual(vw + 2)
   })
 
+  test('landing : deviner une équité sans compte, puis passer à la main suivante', async ({ page }) => {
+    await page.goto('/')
+    const guess = page.getByRole('group', { name: 'Devine l’équité' })
+    const value = guess.locator('output')
+    await expect(value).toHaveText('50 %')
+    await guess.getByRole('button', { name: 'Moins 5 points' }).click()
+    await expect(value).toHaveText('45 %')
+    await guess.getByRole('button', { name: 'Vérifier' }).click()
+    await expect(value).toHaveText('46,2 %')
+    await expect(guess).toContainText('Parfait.')
+    await expect(guess).toContainText('Tu avais dit 45 %.')
+    await guess.getByRole('button', { name: 'Main suivante' }).click()
+    await expect(value).toHaveText('50 %')
+    await expect(guess.getByRole('button', { name: 'Vérifier' })).toBeVisible()
+  })
+
+  test('landing : les outils du trainer ne répètent pas la grille de l’exercice', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.locator('#entrainer .lp-rg')).toHaveCount(0)
+  })
+
   test('marketplace formations liste les cartes', async ({ page }) => {
     await page.goto('/formations')
     await expect(page).toHaveTitle(/Formations poker/i)

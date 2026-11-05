@@ -2,13 +2,13 @@
 import type { ReactNode } from 'react'
 import Button from '@/components/ui/Button'
 import { cx } from '@/lib/cx'
-import type { OpeningRange } from '@/lib/ranges/drill'
 import { LANDING_ROUTES } from '@/lib/routes'
-import { AgendaFragment, BankrollFragment, EquityFragment, PlayerFragment, PrepFragment, ProgressFragment, QuizFragment, RangeExplorer, SessionsFragment } from './Fragments'
+import EquityGuess from './EquityGuess'
+import { AgendaFragment, BankrollFragment, PaintFragment, PlayerFragment, PrepFragment, ProgressFragment, QuizFragment, SessionsFragment } from './Fragments'
 
-function Tile({ title, children, span = 6, tall = false, tone }: { title: string; children: ReactNode; span?: 4 | 5 | 6 | 7 | 8 | 12; tall?: boolean; tone?: 'forest' | 'ink' | 'caramel' | 'taupe' | 'moss' | 'olive' | 'ink' }) {
+function Tile({ title, children, span = 6, tone }: { title: string; children: ReactNode; span?: 4 | 5 | 6 | 7 | 8 | 12; tone?: 'forest' | 'ink' | 'caramel' | 'taupe' | 'moss' | 'olive' | 'ink' }) {
   return (
-    <article className={cx('lp-tile', `lp-span-${span}`, tall && 'lp-tile-tall', tone && `on-${tone}`)}>
+    <article className={cx('lp-tile', `lp-span-${span}`, tone && `on-${tone}`)}>
       <div className="lp-tile-frag">{children}</div>
       <h3 className="lp-tile-title">{title}</h3>
     </article>
@@ -53,14 +53,14 @@ export function PillarIndex() {
   )
 }
 
-export default function Pillars({ btnRange }: { btnRange: OpeningRange }) {
+export default function Pillars() {
   return (
     <>
-      <Pillar id="entrainer" kicker="S’entraîner" lead="Travaille tes ranges." rest="Cinq positions, quatorze profondeurs, de 10 à 100 bb. Gratuit avec ton compte." href={LANDING_ROUTES.trainer} cta="Ouvrir le trainer">
-        <Tile title="Explore chaque range, position par position" span={8} tall tone="forest"><RangeExplorer range={btnRange} /></Tile>
+      <Pillar id="entrainer" kicker="S’entraîner" lead="Va plus loin que l’ouverture." rest="Équité, spots expliqués, ranges sur mesure. Gratuit avec ton compte." href={LANDING_ROUTES.trainer} cta="Ouvrir le trainer">
+        <Tile title="Devine l’équité, puis vérifie" span={8} tone="forest"><EquityGuess /></Tile>
         <div className="lp-stack lp-span-4">
-          <Tile title="Calcule une équité" span={12}><EquityFragment /></Tile>
           <Tile title="Teste-toi sur des mains" span={12} tone="taupe"><QuizFragment /></Tile>
+          <Tile title="Peins tes propres ranges" span={12}><PaintFragment /></Tile>
         </div>
       </Pillar>
       <Pillar id="etudier" kicker="Étudier" lead="Apprends par chapitres." rest="Des formations vidéo, des leçons gratuites pour te faire une idée, ta progression enregistrée." href={LANDING_ROUTES.formations} cta="Voir les formations">

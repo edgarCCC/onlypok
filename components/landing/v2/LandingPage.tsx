@@ -1,7 +1,7 @@
 // Landing publique (D4), inspirée de la densité de GTO Wizard : l'outil d'abord, puis les quatre métiers avec de vrais morceaux d'interface.
 // Composant pur : la page (app/(public)/page.tsx) fait les requêtes, la recette l'alimente avec des jeux de données.
 import './landing.css'
-import { DRILL_STACK, type DrillDepth, type DrillPosition, type OpeningRange } from '@/lib/ranges/drill'
+import type { DrillDepth, DrillPosition, OpeningRange } from '@/lib/ranges/drill'
 import { SHOWCASE_MIN_CONTENTS, type Showcase as ShowcaseData } from '@/lib/showcase'
 import CoachBand from './CoachBand'
 import Faq from './Faq'
@@ -33,7 +33,7 @@ export default function LandingPage({ showcase, drill, year }: LandingPageProps)
       <main id="main">
         <Hero showFormationsLink={showcase.contentCount >= SHOWCASE_MIN_CONTENTS} ranges={drill.ranges} sequence={drill.sequence} firstHand={drill.firstHand} />
         <PillarIndex />
-        <Pillars btnRange={drill.ranges.BTN[DRILL_STACK]} />
+        <Pillars />
         <Showcase showcase={showcase} />
         <Faq />
         <CoachBand />

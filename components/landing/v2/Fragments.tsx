@@ -1,52 +1,20 @@
 // Fragments d'interface des sections : du vrai HTML, dans les vrais tokens, pas des captures d'écran.
 // Aucun pseudo, prix ou titre inventé. Les chiffres du tracker sont marqués « Données d'exemple ». Illustrations : aria-hidden, le titre de la tuile dit tout.
 import { cx } from '@/lib/cx'
-import type { OpeningRange } from '@/lib/ranges/drill'
-import RangeGrid from './RangeGrid'
 
-const POSITIONS = ['LJ', 'HJ', 'CO', 'BTN', 'SB']
-const DEPTHS = ['100', '50', '25', '20', '15', '10']
+const PAINT_ACTIONS = [['Raise', 'raise'], ['All-in', 'allin'], ['3-bet', '3bet'], ['Call', 'call'], ['Limp', 'limp'], ['Fold', 'fold']] as const
 
-function Seg({ items, on }: { items: string[]; on: string }) {
-  return (
-    <div className="ui-seg">
-      {items.map((item) => <span key={item} className={cx('ui-seg-item', item === on && 'is-on')}>{item}</span>)}
-    </div>
-  )
-}
-
-/** S'entraîner : l'explorateur de ranges, tel qu'il est dans le trainer. */
-export function RangeExplorer({ range }: { range: OpeningRange }) {
-  return (
-    <div className="lp-frag lp-frag-explorer" aria-hidden="true">
-      <div className="lp-frag-controls">
-        <div><span className="t-caps">Position</span><Seg items={POSITIONS} on="BTN" /></div>
-        <div><span className="t-caps">Profondeur (bb)</span><Seg items={DEPTHS} on="100" /></div>
-      </div>
-      <div className="lp-frag-matrix">
-        <RangeGrid range={range} revealed />
-        <dl className="lp-frag-stats num">
-          <div><dt>Ouvrir</dt><dd>{range.split.in} %</dd></div>
-          <div><dt>Frontière</dt><dd>{range.split.border} %</dd></div>
-          <div><dt>Passer</dt><dd>{range.split.out} %</dd></div>
-        </dl>
-      </div>
-    </div>
-  )
-}
-
-/** S'entraîner : le calculateur d'équité (AA contre KK : 82 / 18, résultat classique). */
-export function EquityFragment() {
+/** S'entraîner : le pinceau de « Ma range », sans répéter la grille de l'exercice du haut de page. */
+export function PaintFragment() {
   return (
     <div className="lp-frag" aria-hidden="true">
-      <div className="lp-eq-row"><span className="lp-mini-cards"><b>A♠</b><b className="r">A♥</b></span><span className="lp-eq-bar"><i style={{ width: '82%' }} /></span><span className="num lp-eq-v">82 %</span></div>
-      <div className="lp-eq-row"><span className="lp-mini-cards"><b className="r">K♦</b><b>K♣</b></span><span className="lp-eq-bar"><i className="dim" style={{ width: '18%' }} /></span><span className="num lp-eq-v">18 %</span></div>
-      <p className="lp-frag-note">Main contre main, avec ou sans board. Monte Carlo.</p>
+      <ul className="lp-paint">
+        {PAINT_ACTIONS.map(([action, token]) => <li key={action}><i style={{ background: `var(--act-${token})` }} />{action}</li>)}
+      </ul>
+      <p className="lp-frag-note">Sauvegarde, code d’export, lien de partage.</p>
     </div>
   )
 }
-
-/** S'entraîner : le quiz de mains. */
 export function QuizFragment() {
   return (
     <div className="lp-frag" aria-hidden="true">

@@ -10,6 +10,8 @@ export const RANK_NAMES: Record<string, string> = { A: 'As', K: 'Roi', Q: 'Dame'
 export const rc = (rank: number) => RANK_CHARS[rank - 2]
 export const cid = (c: Card) => `${rc(c.rank)}${SUIT_CHARS[c.suit]}`
 export const cardName = (c: Card) => `${RANK_NAMES[rc(c.rank)] ?? rc(c.rank)} de ${SUIT_NAMES[c.suit]}`
+/** L'inverse de cid : « As » donne l'as de pique. */
+export const parseCard = (id: string): Card => ({ rank: RANK_CHARS.indexOf(id[0]) + 2, suit: SUIT_CHARS.indexOf(id[1]) })
 
 /* ─── Evaluator ─── */
 export function evaluate5(cards: Card[]): number {
@@ -87,4 +89,17 @@ export function shuffledDeck(): Card[] {
     [deck[i], deck[j]] = [deck[j], deck[i]]
   }
   return deck
+}
+
+/* ─── Quiz d'équité, partagé par le trainer et la landing ─── */
+/* Choix d'Edgar : des boutons d'ajustement plutôt qu'un champ ou un curseur, grand chiffre et barre au-dessus. */
+export const EQUITY_GUESS_STEPS = [-10, -5, -1, 1, 5, 10]
+
+export type EquityGrade = { label: string; pts: number; good: boolean }
+
+export function gradeEquity(delta: number): EquityGrade {
+  if (delta <= 3) return { label: 'Parfait', pts: 3, good: true }
+  if (delta <= 7) return { label: 'Bon', pts: 2, good: true }
+  if (delta <= 15) return { label: 'Proche', pts: 1, good: true }
+  return { label: 'Raté', pts: 0, good: false }
 }

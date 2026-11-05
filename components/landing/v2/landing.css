@@ -154,23 +154,44 @@
 .lp-tile-title { margin-top: auto; padding: var(--space-4);  font: 600 var(--text-heading)/1.3 var(--font-text); letter-spacing: -.014em; }
 .lp-frag { display: flex; flex-direction: column; gap: var(--space-3); height: 100%; min-width: 0; font-size: var(--text-label); }
 .lp-frag-note { color: var(--text-3); font-size: 11px; }
-.lp-frag-controls { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); }
-.lp-frag-controls > div { display: flex; flex-direction: column; gap: var(--space-1); }
-.lp-frag-matrix { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-4); align-items: end; }
-.lp-frag-matrix .lp-rg { max-width: 420px; }
-.lp-frag-stats { display: grid; gap: var(--space-3); }
-.lp-frag-stats dt { color: var(--text-3); font-size: 11px; }
-.lp-frag-stats dd { font-size: 1.25rem; font-weight: 600; letter-spacing: -.02em; }
-@media (max-width: 559px) { .lp-frag-matrix { grid-template-columns: minmax(0, 1fr); } .lp-frag-stats { display: flex; justify-content: space-between; } }
 .lp-mini-cards { display: inline-flex; gap: 2px; }
 .lp-mini-cards b { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 36px; padding: 0 var(--space-1); background: var(--card-face); color: var(--card-ink); border-radius: 6px; font: 600 .8125rem/1 var(--font-text); font-variant-numeric: tabular-nums; }
 .lp-mini-cards b.r { color: var(--card-red); }
 .lp-mini-cards.lg b { min-width: 40px; height: 52px; font-size: 1rem; border-radius: var(--radius-control); }
-.lp-eq-row { display: grid; grid-template-columns: auto minmax(0, 1fr) 3em; align-items: center; gap: var(--space-3); }
-.lp-eq-bar { height: 8px; overflow: hidden; background: var(--surface-2); border-radius: 4px; }
-.lp-eq-bar i { display: block; height: 100%; background: var(--range-in); border-radius: 4px; }
-.lp-eq-bar i.dim { background: var(--accent); }
-.lp-eq-v { text-align: right; font-weight: 600; }
+.lp-paint { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); list-style: none; }
+.lp-paint li { display: flex; align-items: center; gap: var(--space-2); min-width: 0; padding: var(--space-2); border: 1px solid var(--border); border-radius: var(--radius-control); font-weight: 600; }
+.lp-paint i { flex: none; width: 12px; height: 12px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--border); }
+
+/* Deviner l'équité : deux colonnes dès que la tuile a la place. Les boutons et le verdict partagent la même case : rien ne saute à la révélation. */
+.lp-eg-wrap { container-type: inline-size; min-width: 0; }
+.lp-eg { display: grid; gap: var(--space-6); min-width: 0; }
+@container (min-width: 600px) { .lp-eg { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8); } }
+.lp-eg-deal { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; animation: lp-fade 140ms ease; }
+.lp-eg-hands { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2) var(--space-3); }
+.lp-eg-hand { display: flex; flex-direction: column; gap: var(--space-2); }
+.lp-eg-vs { padding-bottom: var(--space-6); color: var(--text-3); font-size: var(--text-label); }
+.lp-eg-street { display: flex; flex-direction: column; gap: var(--space-2); }
+.lp-eg-board { display: flex; gap: var(--space-1); }
+.lp-eg-board .lp-pc, .lp-eg-slot { width: 44px; height: 60px; }
+.lp-eg-board .lp-pc { padding: var(--space-1) 6px; }
+.lp-eg-slot { flex: none; border: 1px dashed var(--border-strong); border-radius: var(--radius-control); }
+.lp-eg-guess { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.lp-eg-num { display: block; font: 600 clamp(2.5rem, 2rem + 2vw, 3.25rem)/1 var(--font-display); letter-spacing: -.03em; }
+.lp-eg-bar { position: relative; height: 8px; margin-block: var(--space-1); background: var(--surface-3); border-radius: 4px; }
+.lp-eg-bar i { display: block; height: 100%; background: var(--text-2); border-radius: 4px; transform-origin: left; transition: transform 180ms var(--ease-out), background-color 180ms ease; }
+.lp-eg-bar.is-revealed i { background: var(--accent); }
+.lp-eg-bar em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--text); border-radius: 1px; opacity: 0; transition: opacity 180ms ease; }
+.lp-eg-bar.is-revealed em { opacity: 1; }
+.lp-eg-zone { display: grid; margin-top: var(--space-2); }
+.lp-eg-zone > * { grid-area: 1 / 1; }
+.lp-eg-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-1); align-self: start; }
+.lp-eg-steps.is-hidden { visibility: hidden; }
+.lp-eg-step { min-height: 44px; padding: 0; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: var(--radius-control); color: var(--text); font: 600 var(--text-label)/1 var(--font-text); cursor: pointer; transition: transform 160ms var(--ease-out), background-color var(--dur-hover) ease, border-color var(--dur-hover) ease; }
+.lp-eg-step:active { transform: scale(.97); background: var(--surface-3); transition-duration: var(--dur-press); }
+@media (hover: hover) and (pointer: fine) { .lp-eg-step:hover { background: var(--surface-3); border-color: var(--text-3); } }
+.lp-eg-verdict { min-height: 6em; }
+.lp-eg-verdict:not(.is-visible) { pointer-events: none; }
+.lp-eg-action { width: 100%; }
 .lp-quiz { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .lp-quiz-opts { display: flex; gap: var(--space-2); }
 .lp-quiz-opts span { padding: var(--space-2) var(--space-3); border: 1px solid var(--border-strong); border-radius: var(--radius-control); font-weight: 600; }
@@ -280,7 +301,9 @@
 @media (prefers-reduced-motion: reduce) {
   .lp-verdict, .lp-choice, .lp-split-bar, .lp-split-legend { transition-duration: 150ms; transition-delay: 0s; }
   .lp-choice:active:not(:disabled) { transform: none; }
-  .lp-hand-in { animation: none; }
+  .lp-hand-in, .lp-eg-deal { animation: none; }
+  .lp-eg-bar i { transition: background-color 180ms ease; }
+  .lp-eg-step:active { transform: none; }
   .lp-rg .c { transition: none; }
   .lp-faq-item summary svg { transition: none; }
 }
