@@ -22,7 +22,7 @@ Tokens : `styles/tokens.css` (`:root` + `@theme`, importé par `app/globals.css`
 
 ## Les trois couleurs en dix lignes
 
-1. La base est `#C7CBB8`, tout le reste en nuances de vert : encre `#0F1F17`, forêt `#1E3A2E`, mousse `#3E5A3F`, sauge `#6B7F67`, olive `#3D4337`. Un seul thème ; les panneaux `.on-forest`, `.on-moss`, `.on-olive`, `.on-ink` redéfinissent les tokens à l'intérieur.
+1. La base est crème `#EEEDE1`, avec l'encre `#15261C`, le forêt `#1F3D2B`, le caramel `#886429` et le taupe `#A88D70`. Un seul thème ; les panneaux `.on-forest`, `.on-ink`, `.on-caramel`, `.on-taupe` redéfinissent les tokens à l'intérieur, et l'accent passe par `--accent`.
 2. `--brand` est le pâle : remplissage du seul bouton plein de l'écran, encre dessus (`--on-brand`). En clair, `--brand` devient la forêt, texte clair dessus.
 3. `--brand-text` pour les liens d'action et l'onglet actif, `--focus` pour l'anneau de focus.
 4. `--accent` (mousse) pour le badge « Nouveau » et les notifications, texte `--on-accent` dessus.

@@ -92,16 +92,16 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
 }) {
   return (
     <div style={{ position: 'sticky', top: 200 }}>
-      <div style={{
-        background: 'var(--bg)',
-        border: '1px solid color-mix(in srgb, var(--brand) 9%, transparent)',
+      <div className="market-card" style={{
+        background: 'var(--surface)',
+        border: '1.5px solid var(--forest)',
         borderRadius: 22, overflow: 'hidden',
         boxShadow: 'var(--shadow-float)',
       }}>
 
         {contentType !== 'coaching' && formation.thumbnail_url && (
           <div style={{ height: 165, backgroundImage: `url(${formation.thumbnail_url})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, var(--bg) 100%)' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, var(--surface) 100%)' }} />
           </div>
         )}
 
@@ -121,8 +121,8 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
                   <span style={{ fontSize: 11, fontWeight: 600, color: SILVER, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{currentPack?.label}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                  <span style={{ fontSize: 38, fontWeight: 600, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1 }}>{currentPack ? currentPack.price : ''}</span>
-                  <span style={{ fontSize: 18, fontWeight: 600, color: SILVER }}>€</span>
+                  <span style={{ fontSize: 38, fontWeight: 600, color: 'var(--accent-text)', letterSpacing: '-1.5px', lineHeight: 1 }}>{currentPack ? currentPack.price : ''}</span>
+                  <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--accent-text)' }}>€</span>
                   <span style={{ fontSize: 13, color: 'var(--text-3)', marginLeft: 2 }}>/ {currentPack?.hours}h</span>
                 </div>
                 {currentPack?.hours > 0 && <p style={{ fontSize: 12, color: 'var(--text-3)', margin: '6px 0 0' }}>soit {Math.round(currentPack.price / currentPack.hours)}€/h</p>}
@@ -137,8 +137,8 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                  <span style={{ fontSize: 38, fontWeight: 600, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1 }}>{formation.price}</span>
-                  <span style={{ fontSize: 18, fontWeight: 600, color: SILVER }}>€</span>
+                  <span style={{ fontSize: 38, fontWeight: 600, color: 'var(--accent-text)', letterSpacing: '-1.5px', lineHeight: 1 }}>{formation.price}</span>
+                  <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--accent-text)' }}>€</span>
                 </div>
               )}
               {hasPurchased && formation.price > 0 && (
@@ -157,8 +157,8 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
                 ? 'color-mix(in srgb, var(--brand) 12%, transparent)'
                 : ctaDisabled && !paying
                   ? 'color-mix(in srgb, var(--overlay) 5%, transparent)'
-                  : 'var(--brand)',
-              color: hasPurchased ? 'var(--text)' : ctaDisabled && !paying ? SILVER : 'var(--on-brand)',
+                  : 'var(--violet)',
+              color: hasPurchased ? 'var(--text)' : ctaDisabled && !paying ? SILVER : 'var(--on-violet)',
               fontSize: 14, fontWeight: 800, cursor: ctaDisabled ? 'default' : 'pointer',
               opacity: paying ? 0.75 : 1,
               boxShadow: hasPurchased || ctaDisabled ? 'none' : 'none',

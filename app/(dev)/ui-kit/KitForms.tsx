@@ -48,7 +48,7 @@ export default function KitForms() {
         <div className={`${styles.states} ${styles.wide}`}>
           <Figure label="Section vide" tokens=".ui-empty · --surface · --border · --radius-card · bouton secondaire" column>
             <EmptyState title="Aucune formation pour l’instant" action={<Button href="/trainer">Ouvrir le trainer</Button>}>
-              Les coachs publient leurs premiers cours. En attendant, le trainer est ouvert, sans compte.
+              Les coachs publient leurs premiers cours. En attendant, le trainer est ouvert.
             </EmptyState>
           </Figure>
           <Figure label="Liste vide, en ligne" tokens=".ui-empty-inline · --text-2 · lien d'action --brand-text" column>

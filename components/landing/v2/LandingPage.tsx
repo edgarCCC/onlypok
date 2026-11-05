@@ -1,7 +1,7 @@
 // Landing publique (D4), inspirée de la densité de GTO Wizard : l'outil d'abord, puis les quatre métiers avec de vrais morceaux d'interface.
 // Composant pur : la page (app/(public)/page.tsx) fait les requêtes, la recette l'alimente avec des jeux de données.
 import './landing.css'
-import type { DrillPosition, OpeningRange } from '@/lib/ranges/drill'
+import { DRILL_STACK, type DrillDepth, type DrillPosition, type OpeningRange } from '@/lib/ranges/drill'
 import { SHOWCASE_MIN_CONTENTS, type Showcase as ShowcaseData } from '@/lib/showcase'
 import CoachBand from './CoachBand'
 import Faq from './Faq'
@@ -13,7 +13,7 @@ import Pillars, { PillarIndex } from './Pillars'
 import Showcase from './Showcase'
 
 export interface LandingDrill {
-  ranges: Record<DrillPosition, OpeningRange>
+  ranges: Record<DrillPosition, Record<DrillDepth, OpeningRange>>
   sequence: DrillPosition[]
   firstHand: string
 }
@@ -27,13 +27,13 @@ export interface LandingPageProps {
 
 export default function LandingPage({ showcase, drill, year }: LandingPageProps) {
   return (
-    <div className="ui-page">
+    <div className="ui-page theme-sand">
       <a className="lp-skip" href="#main">Aller au contenu</a>
       <Navbar />
       <main id="main">
         <Hero showFormationsLink={showcase.contentCount >= SHOWCASE_MIN_CONTENTS} ranges={drill.ranges} sequence={drill.sequence} firstHand={drill.firstHand} />
         <PillarIndex />
-        <Pillars btnRange={drill.ranges.BTN} />
+        <Pillars btnRange={drill.ranges.BTN[DRILL_STACK]} />
         <Showcase showcase={showcase} />
         <Faq />
         <CoachBand />

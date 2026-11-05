@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   X, ChevronRight, Award, Users, TrendingUp, BookOpen,
 } from 'lucide-react'
-import { CREAM, MUTED, SILVER, DIM, AMBER, AMBER_GRAD, Stars } from './coachTheme'
+import { CREAM, MUTED, SILVER, DIM, AMBER, Stars } from './coachTheme'
 
 /* ─── Panneau latéral coach — détail + offres cliquables + CTA réservation ────
    Parcours express type Airbnb : chaque offre mène directement à la page de
@@ -51,7 +51,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
           .coach-slide-panel { width: 100% !important; }
         }
         .coach-offer-row:hover {
-          background: color-mix(in srgb, var(--overlay) 5%, transparent) !important;
+          background: var(--surface-2) !important;
           border-color: color-mix(in srgb, var(--brand) 20%, transparent) !important;
         }
         .coach-offer-row:hover .coach-offer-chevron {
@@ -106,7 +106,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
                     <span style={{
                       fontSize: 9, fontWeight: 800, color: AMBER, letterSpacing: '0.1em',
                       padding: '3px 9px', borderRadius: 99,
-                      background: 'color-mix(in srgb, var(--brand) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)',
+                      background: 'color-mix(in srgb, var(--accent) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
                     }}>PRO</span>
                   )}
                   {coach.unverified && (
@@ -187,7 +187,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
               ].map(({ icon, val, label }) => (
                 <div key={label} style={{
                   padding: '14px 16px', borderRadius: 14,
-                  background: 'color-mix(in srgb, var(--overlay) 2%, transparent)', border: `1px solid ${DIM}`,
+                  background: 'var(--surface)', border: `1px solid ${DIM}`,
                   display: 'flex', flexDirection: 'column', gap: 6,
                 }}>
                   {icon}
@@ -222,7 +222,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
                     style={{
                       display: 'flex', alignItems: 'center', gap: 14,
                       padding: '16px 18px', borderRadius: 14, textDecoration: 'none',
-                      background: 'color-mix(in srgb, var(--overlay) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`,
+                      background: 'var(--surface)', border: '1px solid var(--border)',
                       transition: 'background 0.15s ease, border-color 0.15s ease',
                     }}
                   >
@@ -260,7 +260,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
                 style={{
                   display: 'flex', alignItems: 'center', gap: 14,
                   padding: '18px', borderRadius: 14, textDecoration: 'none',
-                  background: 'color-mix(in srgb, var(--overlay) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`,
+                  background: 'var(--surface)', border: '1px solid var(--border)',
                   transition: 'background 0.15s ease, border-color 0.15s ease',
                 }}
               >
@@ -295,7 +295,7 @@ export default function CoachSlidePanel({ coach, onClose }: { coach: any; onClos
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               width: '100%', padding: '15px', borderRadius: 14,
-              background: AMBER_GRAD, color: 'var(--on-brand)', fontSize: 14, fontWeight: 800,
+              background: 'var(--brand)', color: 'var(--on-brand)', fontSize: 14, fontWeight: 800,
               textDecoration: 'none', letterSpacing: '-0.2px',
               boxShadow: 'none',
             }}

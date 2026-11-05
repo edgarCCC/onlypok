@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import LandingPage from '@/components/landing/v2/LandingPage'
-import { DRILL_SEQUENCE, buildOpeningRange, handOfDay } from '@/lib/ranges/drill'
+import { DRILL_SEQUENCE, DRILL_STACK, buildDrillRanges, handOfDay } from '@/lib/ranges/drill'
 import { getShowcase } from '@/lib/showcase'
 
 /* Landing publique (D4). Composant serveur : quatre requêtes anonymes (lib/showcase.ts), une main du jour
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const now = new Date()
   const showcase = await getShowcase(now)
-  const ranges = { BTN: buildOpeningRange('BTN'), CO: buildOpeningRange('CO') }
+  const ranges = buildDrillRanges()
   const sequence = [...DRILL_SEQUENCE]
-  const firstHand = handOfDay(ranges[sequence[0]], now)
+  const firstHand = handOfDay(ranges[sequence[0]][DRILL_STACK], now)
 
   return <LandingPage showcase={showcase} drill={{ ranges, sequence, firstHand }} year={now.getUTCFullYear()} />
 }

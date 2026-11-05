@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Zap, ChevronRight } from 'lucide-react'
-import { CREAM, MUTED, SILVER, DIM, CARD, CARD_HOV, BORDER_HOV, AMBER, AMBER_GRAD, Stars } from './coachTheme'
+import { CREAM, MUTED, SILVER, DIM, CARD, CARD_HOV, BORDER_HOV, AMBER, Stars } from './coachTheme'
 
 /* ─── Carte coach — neutre et sobre, l'accent est réservé au prix/note (ambre)
    et au CTA (dégradé de marque). Clic n'importe où = ouverture du panneau. ─── */
@@ -19,13 +19,14 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
 
   return (
     <div
+      className="market-card"
       onClick={onOpen}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         background: hovered ? CARD_HOV : CARD,
-        border: `1px solid ${hovered ? BORDER_HOV : DIM}`,
-        borderRadius: 18,
+        border: `1.5px solid ${hovered ? 'var(--ink)' : 'var(--forest)'}`,
+        borderRadius: 16,
         cursor: 'pointer',
         transition: 'border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
         transform: hovered ? 'translateY(-4px)' : 'none',
@@ -70,7 +71,7 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
           <span style={{
             fontSize: 9, fontWeight: 800, color: AMBER, letterSpacing: '0.1em',
             padding: '2px 7px', borderRadius: 99, flexShrink: 0,
-            background: 'color-mix(in srgb, var(--brand) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)',
+            background: 'color-mix(in srgb, var(--accent) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
           }}>PRO</span>
         )}
         {coach.unverified && (
@@ -95,13 +96,15 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
 
       {/* Bio */}
       {coach.bio ? (
-        <p style={{
-          fontSize: 12, color: MUTED, lineHeight: 1.6, margin: '0 0 12px',
-          display: '-webkit-box', WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1,
-        }}>
-          {coach.bio}
-        </p>
+        <div style={{ flex: 1, minHeight: 0, marginBottom: 12 }}>
+          <p style={{
+            fontSize: 12, color: MUTED, lineHeight: 1.6, margin: 0,
+            display: '-webkit-box', WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
+            {coach.bio}
+          </p>
+        </div>
       ) : <div style={{ flex: 1 }} />}
 
       {/* Chips variantes — neutres */}
@@ -149,11 +152,10 @@ export default function CoachCard({ coach, onOpen }: { coach: any; onOpen: () =>
         onClick={e => { e.stopPropagation(); onOpen() }}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          width: '100%', padding: '10px', borderRadius: 11, border: 'none',
-          background: AMBER_GRAD,
+          width: '100%', padding: '9px', borderRadius: 10, border: 'none',
+          background: hovered ? 'var(--brand-hover)' : 'var(--brand)',
           color: 'var(--on-brand)',
           fontSize: 13, fontWeight: 700, cursor: 'pointer',
-          opacity: hovered ? 1 : 0.92,
         }}
       >
         Réserver <ChevronRight size={13} className="op-cta-arrow" />

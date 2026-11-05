@@ -19,7 +19,7 @@ export default function TrainerHub({ base, links }: TrainerHubProps) {
     <div className="tr hub">
       <header className="hub-head">
         <h1 className="t-title">Trainer</h1>
-        <p className="t-2">Trois outils pour travailler tes décisions entre deux sessions. Gratuits, sans compte.</p>
+        <p className="t-2">Trois outils pour travailler tes décisions entre deux sessions. Gratuits.</p>
       </header>
       <div className="hub-grid">
         <Link href={`${base}/ranges`} className="hub-tile hub-tile-ranges on-forest">
@@ -28,10 +28,10 @@ export default function TrainerHub({ base, links }: TrainerHubProps) {
           </div>
           <div className="hub-text">
             <h2 className="t-heading">Entraîneur de ranges</h2>
-            <p className="t-2">Drill, quiz et explorateur sur 70 ranges d’ouverture, de 10 à 100 bb. Peins aussi la tienne et partage-la.</p>
+            <p className="t-2">Drill et explorateur sur 70 ranges d’ouverture, de 10 à 100 bb. Peins aussi la tienne et partage-la.</p>
           </div>
         </Link>
-        <Link href={`${base}/equity`} className="hub-tile on-olive">
+        <Link href={`${base}/equity`} className="hub-tile">
           <div className="hub-frag" aria-hidden="true">
             <p className="hub-eq"><b>A♠ K♠</b><span>46 %</span></p>
             <div className="hub-eq-bar"><i style={{ flexGrow: 46 }} /><i style={{ flexGrow: 54 }} /></div>
@@ -42,7 +42,7 @@ export default function TrainerHub({ base, links }: TrainerHubProps) {
             <p className="t-2">Calcule une équité main contre main, ou estime-la d’abord et compare au tirage.</p>
           </div>
         </Link>
-        <Link href={`${base}/quiz`} className="hub-tile on-moss">
+        <Link href={`${base}/quiz`} className="hub-tile on-taupe">
           <div className="hub-frag" aria-hidden="true">
             <p className="hub-spot"><span>HJ · 20 bb</span><b>QQ</b></p>
             <p className="hub-opts"><span>Fold</span><span>Raise</span><span className="is-on">Jam</span></p>

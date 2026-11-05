@@ -7,7 +7,7 @@ export default function CoachBand() {
   return (
     <section id="coach" aria-labelledby="coach-title">
       <div className="ui-wrap">
-        <div className="lp-band on-moss">
+        <div className="lp-band on-caramel">
           <div className="lp-band-text">
             <h2 id="coach-title" className="lp-band-title">Tu coaches&nbsp;?</h2>{' '}
             <p>Publie tes formations, tes vidéos et tes offres de coaching. Tu gères ton agenda&nbsp;; tes élèves réservent et paient en ligne.</p>

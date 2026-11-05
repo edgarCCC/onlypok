@@ -1,5 +1,5 @@
 /* Entraîneur de ranges : dense, lisible, l'outil occupe l'écran (GTO Wizard pour la densité, apple-design pour le retour et le mouvement).
-   Couleur = sens : le pâle pour ce qu'on joue, l'argile pour le tapis, le reste en surfaces. */
+   Couleur = sens : le forêt pour relancer, le violet pour le tapis, la lavande pour la frontière, le reste en surfaces. */
 .tr { --tr-pad: var(--space-4); display: flex; flex-direction: column; min-height: calc(100vh - 64px); background: var(--bg); color: var(--text); font: 400 var(--text-body-dense)/1.45 var(--font-text); font-optical-sizing: auto; }
 @media (min-width: 768px) { .tr { --tr-pad: var(--space-6); } }
 @media (min-width: 1280px) { .tr { --tr-pad: var(--space-8); } }
@@ -107,8 +107,11 @@
 .tr-mx .c.s { background: var(--range-suited); }
 .tr-mx.is-revealed .c { background: var(--act-fold); color: var(--act-fold-ink); transition-delay: calc(var(--d) * 12ms); }
 .tr-mx.is-revealed .c[data-fam] { background: var(--fam); color: var(--fam-ink); font-weight: 600; }
-.tr-mx .c.cur { z-index: 1; overflow: visible; box-shadow: 0 0 0 2px var(--text), inset 0 0 0 1px var(--bg); color: var(--text); font-weight: 700; }
+/* La main jouée, encadrée : un filet clair puis un cadre d'accent, visibles sur toutes les couleurs de case */
+.tr-mx .c.cur { z-index: 2; overflow: visible; box-shadow: 0 0 0 2px var(--surface), 0 0 0 5px var(--accent); color: var(--text); font-weight: 700; }
 .tr-mx.is-revealed .c.cur[data-fam] { color: var(--fam-ink); }
+/* Case de la couleur du cadre : il passe en encre, seulement après la réponse pour ne pas donner la solution */
+.tr-mx.is-revealed .c.cur[data-fam="allin"], .tr-mx.is-revealed .c.cur[data-fam="threebet"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 5px var(--text); }
 .tr-mx.is-paint { cursor: crosshair; touch-action: none; }
 @media (max-width: 479px) { .tr-mx .c { font-size: 0; } }
 
@@ -155,9 +158,6 @@
 /* ── Résultat d'une série ─────────────────────────────────────────────────── */
 .tr-summary { display: flex; flex-direction: column; gap: var(--space-6); width: min(100%, 720px); margin: 0 auto; padding: var(--space-8) var(--tr-pad) var(--space-16); }
 .tr-summary-num { margin: var(--space-2) 0 var(--space-1); font: 700 var(--text-display)/1 var(--font-display); letter-spacing: -.028em; font-variant-numeric: tabular-nums; }
-.tr-summary-stats { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-8); padding: var(--space-3) 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.tr-summary-stats dt { color: var(--text-3); font-size: var(--text-label); }
-.tr-summary-stats dd { font-size: var(--text-heading); font-weight: 600; font-variant-numeric: tabular-nums; }
 .tr-table-data { width: 100%; border-collapse: collapse; font-size: var(--text-body-dense); }
 .tr-table-data caption { padding-bottom: var(--space-2); text-align: left; }
 .tr-table-data thead th { padding: var(--space-2); border-bottom: 1px solid var(--border-strong); color: var(--text-3); font-size: var(--text-label); font-weight: 500; text-align: left; }
@@ -177,8 +177,8 @@
 
 /* ── Équité ───────────────────────────────────────────────────────────────── */
 [data-hand="0"] { --hand: var(--act-raise); }
-[data-hand="1"] { --hand: var(--sage); }
-[data-hand="2"] { --hand: var(--olive); }
+[data-hand="1"] { --hand: var(--accent); }
+[data-hand="2"] { --hand: var(--accent-soft); }
 .eq-main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); padding: var(--space-6) var(--tr-pad) var(--space-8); }
 @media (min-width: 1100px) { .eq-main { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; max-width: 1320px; margin: 0 auto; width: 100%; } }
 .eq-table { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
@@ -246,7 +246,7 @@ button.eq-slot:active { transform: scale(.96); transition-duration: var(--dur-pr
 .hub-head { display: grid; gap: var(--space-2); margin-bottom: var(--space-6); }
 .hub-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
 @media (min-width: 900px) { .hub-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-auto-rows: 1fr; } .hub-tile-ranges { grid-row: span 2; } }
-.hub-tile { display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-6); min-width: 0; padding: var(--space-6); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-card); color: var(--text); text-decoration: none; transition: transform 160ms var(--ease-out), background-color var(--dur-hover) ease, border-color var(--dur-hover) ease; }
+.hub-tile { display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-6); min-width: 0; padding: var(--space-6); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); color: var(--text); text-decoration: none; transition: transform 160ms var(--ease-out), background-color var(--dur-hover) ease, border-color var(--dur-hover) ease; }
 .hub-tile:active { transform: scale(.985); transition-duration: var(--dur-press); }
 .hub-text { display: grid; gap: var(--space-1); }
 .hub-frag { display: grid; gap: var(--space-2); }
@@ -258,7 +258,7 @@ button.eq-slot:active { transform: scale(.96); transition-duration: var(--dur-pr
 .hub-eq span { color: var(--text-2); font-weight: 500; }
 .hub-eq-bar { display: flex; gap: 2px; height: 6px; }
 .hub-eq-bar i { border-radius: 2px; background: var(--act-raise); }
-.hub-eq-bar i + i { background: var(--sage); }
+.hub-eq-bar i + i { background: var(--accent); }
 .hub-spot { display: flex; justify-content: space-between; align-items: baseline; color: var(--text-2); font-size: var(--text-body-dense); }
 .hub-spot b { color: var(--text); font-size: var(--text-title); font-weight: 600; letter-spacing: -.02em; }
 .hub-opts { display: flex; gap: var(--space-1); }

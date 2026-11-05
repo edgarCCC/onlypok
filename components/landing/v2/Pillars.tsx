@@ -6,7 +6,7 @@ import type { OpeningRange } from '@/lib/ranges/drill'
 import { LANDING_ROUTES } from '@/lib/routes'
 import { AgendaFragment, BankrollFragment, EquityFragment, PlayerFragment, PrepFragment, ProgressFragment, QuizFragment, RangeExplorer, SessionsFragment } from './Fragments'
 
-function Tile({ title, children, span = 6, tall = false, tone }: { title: string; children: ReactNode; span?: 4 | 5 | 6 | 7 | 8 | 12; tall?: boolean; tone?: 'forest' | 'moss' | 'olive' | 'ink' }) {
+function Tile({ title, children, span = 6, tall = false, tone }: { title: string; children: ReactNode; span?: 4 | 5 | 6 | 7 | 8 | 12; tall?: boolean; tone?: 'forest' | 'ink' | 'caramel' | 'taupe' | 'moss' | 'olive' | 'ink' }) {
   return (
     <article className={cx('lp-tile', `lp-span-${span}`, tall && 'lp-tile-tall', tone && `on-${tone}`)}>
       <div className="lp-tile-frag">{children}</div>
@@ -56,23 +56,23 @@ export function PillarIndex() {
 export default function Pillars({ btnRange }: { btnRange: OpeningRange }) {
   return (
     <>
-      <Pillar id="entrainer" kicker="S’entraîner" lead="Travaille tes ranges." rest="Cinq positions, quatorze profondeurs, de 10 à 100 bb. Gratuit, sans compte." href={LANDING_ROUTES.trainer} cta="Ouvrir le trainer">
+      <Pillar id="entrainer" kicker="S’entraîner" lead="Travaille tes ranges." rest="Cinq positions, quatorze profondeurs, de 10 à 100 bb. Gratuit avec ton compte." href={LANDING_ROUTES.trainer} cta="Ouvrir le trainer">
         <Tile title="Explore chaque range, position par position" span={8} tall tone="forest"><RangeExplorer range={btnRange} /></Tile>
         <div className="lp-stack lp-span-4">
-          <Tile title="Calcule une équité" span={12} tone="olive"><EquityFragment /></Tile>
-          <Tile title="Teste-toi sur des mains" span={12} tone="moss"><QuizFragment /></Tile>
+          <Tile title="Calcule une équité" span={12}><EquityFragment /></Tile>
+          <Tile title="Teste-toi sur des mains" span={12} tone="taupe"><QuizFragment /></Tile>
         </div>
       </Pillar>
       <Pillar id="etudier" kicker="Étudier" lead="Apprends par chapitres." rest="Des formations vidéo, des leçons gratuites pour te faire une idée, ta progression enregistrée." href={LANDING_ROUTES.formations} cta="Voir les formations">
-        <Tile title="Suis une leçon, garde le plan sous les yeux" span={7} tone="olive"><PlayerFragment /></Tile>
+        <Tile title="Suis une leçon, garde le plan sous les yeux" span={7} tone="ink"><PlayerFragment /></Tile>
         <Tile title="Reprends là où tu t’es arrêté" span={5}><ProgressFragment /></Tile>
       </Pillar>
       <Pillar id="coaching" kicker="Travailler avec un coach" lead="Fais relire ton jeu." rest="Un pack de séances, un créneau dans son agenda, la visio, et une page pour préparer tes mains." href={LANDING_ROUTES.coaches} cta="Voir les coachs">
-        <Tile title="Réserve dans son agenda" span={7} tone="moss"><AgendaFragment /></Tile>
+        <Tile title="Réserve dans son agenda" span={7} tone="caramel"><AgendaFragment /></Tile>
         <Tile title="Prépare la séance" span={5}><PrepFragment /></Tile>
       </Pillar>
       <Pillar id="analyser" kicker="Analyser" lead="Regarde tes chiffres." rest="Importe tes sessions Winamax et Betclic, suis ta bankroll. Le tracker est inclus." href={LANDING_ROUTES.tracker} cta="Ouvrir le tracker">
-        <Tile title="Suis ta bankroll" span={7} tone="ink"><BankrollFragment /></Tile>
+        <Tile title="Suis ta bankroll" span={7} tone="forest"><BankrollFragment /></Tile>
         <Tile title="Retrouve chaque session" span={5}><SessionsFragment /></Tile>
       </Pillar>
     </>

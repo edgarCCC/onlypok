@@ -40,9 +40,9 @@ const FIELDS: Record<string, { key: string, label: string, placeholder: string, 
 }
 
 const TAB_COLORS: Record<string, string> = {
-  formations: 'var(--brand)',
-  videos:     'var(--brand)',
-  coaching:   'var(--brand)',
+  formations: 'var(--accent)',
+  videos:     'var(--accent)',
+  coaching:   'var(--accent)',
 }
 
 /* ─── Hero contextuel par onglet — hiérarchie de page ───────────────────────── */
@@ -78,7 +78,7 @@ function TabHero({ tab, accentColor, count }: {
         transition: 'all 0.4s ease',
       }}>
         <div style={{ width: 6, height: 6, borderRadius: '50%', background: accentColor, boxShadow: 'none' }} />
-        <span style={{ fontSize: 10, fontWeight: 700, color: accentColor, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent-text)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           {copy.eyebrow}
         </span>
       </div>
@@ -235,6 +235,8 @@ export default function FormationsPageClient({
   return (
     <div className="sform-root" style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', overflowX: 'hidden' }}>
       <style>{`
+        @media (hover: hover) and (pointer: fine) { .sform-tab-link:hover { color: ${CREAM} !important; } }
+        @media (max-width: 1100px) { .sform-tabs :is(button, a) { padding: 8px 12px !important; } }
         @media (max-width: 700px) {
           .sform-header-row { flex-wrap: wrap !important; height: auto !important; padding: 10px 16px !important; row-gap: 10px !important; }
           .sform-header-center { min-width: 100% !important; order: 3; }
@@ -282,14 +284,14 @@ export default function FormationsPageClient({
 
           {/* Logo */}
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-            <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--brand)', flexShrink: 0 }} />
+            <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--violet)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-logo)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
           </Link>
 
           {/* Centre */}
           <div ref={centerRef} className="sform-header-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
             {/* Tabs */}
-            <div style={{ position: 'absolute', display: 'inline-flex', background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
+            <div className="sform-tabs" style={{ position: 'absolute', display: 'inline-flex', background: 'var(--surface)', border: '1px solid var(--forest)', borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
               {(['formations','videos','coaching'] as const).map(t => {
                 const active = tab === t
                 const labels: Record<string,string> = { formations: 'Formations', videos: 'Vidéos', coaching: 'Coachs' }
@@ -301,16 +303,19 @@ export default function FormationsPageClient({
                   </button>
                 )
               })}
+              <Link href="/trainer" className="sform-tab-link" style={{ padding: '8px 24px', borderRadius: 10, color: SILVER, fontSize: 13, fontWeight: 400, textDecoration: 'none', transition: 'all 0.25s' }}>
+                Trainer
+              </Link>
             </div>
 
             {/* Pilule compacte */}
             <div style={{ position: 'absolute', transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: !showBigSearch ? 1 : 0, pointerEvents: !showBigSearch ? 'auto' : 'none', transform: !showBigSearch ? 'translateY(0) scale(1)' : 'translateY(-16px) scale(0.92)' }}>
-              <button onClick={e => { e.stopPropagation(); setIsSearchOverlayOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'color-mix(in srgb, var(--brand) 5%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 12%, transparent)`, borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: 'var(--shadow-float)' }}>
+              <button onClick={e => { e.stopPropagation(); setIsSearchOverlayOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--surface)', border: '1.5px solid var(--forest)', borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: 'var(--shadow-float)' }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: CREAM, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pillLabel}</span>
                 <div style={{ width: 1, height: 16, background: `color-mix(in srgb, var(--brand) 12%, transparent)` }} />
                 <span style={{ fontSize: 13, color: SILVER }}>Rechercher…</span>
-                <div style={{ width: 34, height: 34, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }}>
-                  <Search size={15} color="var(--on-brand)" />
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--violet)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }}>
+                  <Search size={15} color="var(--on-violet)" />
                 </div>
               </button>
             </div>
@@ -321,9 +326,9 @@ export default function FormationsPageClient({
             {isLoggedIn ? (
               <Link
                 href={userRole === 'coach' ? '/coach/dashboard' : '/dashboard'}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', padding: '6px 12px 6px 6px', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`, borderRadius: 40, transition: 'all 0.2s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = `color-mix(in srgb, var(--brand) 25%, transparent)` }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = `color-mix(in srgb, var(--brand) 10%, transparent)` }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', padding: '6px 12px 6px 6px', border: '1px solid var(--forest)', borderRadius: 40, transition: 'all 0.2s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--ink)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--forest)' }}>
                 <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                   {authAvatar
                     ? <Image src={authAvatar} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
@@ -342,24 +347,24 @@ export default function FormationsPageClient({
                 </Link>
                 <Link
                   href="/become-coach"
-                  style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none', padding: '8px 16px', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`, borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = `color-mix(in srgb, var(--brand) 25%, transparent)` }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = `color-mix(in srgb, var(--brand) 10%, transparent)` }}>
+                  style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none', padding: '8px 16px', border: '1px solid var(--forest)', borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--ink)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--forest)' }}>
                   Devenir coach
                 </Link>
               </>
             ) : null}
-            <button style={{ width: 38, height: 38, borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
+            <button style={{ width: 38, height: 38, borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid var(--forest)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
               <HelpCircle size={16} />
             </button>
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setShowMenu(!showMenu)} aria-label="Menu" aria-expanded={showMenu} style={{ width: 38, height: 38, borderRadius: 10, background: showMenu ? 'color-mix(in srgb, var(--brand) 8%, transparent)' : 'color-mix(in srgb, var(--brand) 3%, transparent)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
+              <button onClick={() => setShowMenu(!showMenu)} aria-label="Menu" aria-expanded={showMenu} style={{ width: 38, height: 38, borderRadius: 10, background: showMenu ? 'color-mix(in srgb, var(--brand) 8%, transparent)' : 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid var(--forest)', color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
                 <Menu size={16} />
               </button>
               {showMenu && (
-                <div style={{ position: 'absolute', top: 46, right: 0, background: 'var(--bg)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, borderRadius: 14, padding: 6, minWidth: 200, zIndex: 200, boxShadow: 'var(--shadow-float)' }}>
+                <div style={{ position: 'absolute', top: 46, right: 0, background: 'var(--surface)', border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`, borderRadius: 14, padding: 6, minWidth: 200, zIndex: 200, boxShadow: 'var(--shadow-float)' }}>
                   <div style={{ padding: '8px 14px 12px', borderBottom: `1px solid color-mix(in srgb, var(--brand) 5%, transparent)`, marginBottom: 6 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: CREAM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Menu</span>
                   </div>
@@ -391,7 +396,7 @@ export default function FormationsPageClient({
         {/* Barre de recherche */}
         <div ref={searchRef} style={{ height: showBigSearch ? 110 : 0, opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transition: 'all 0.4s cubic-bezier(0.2,0.8,0.2,1)', display: 'flex', justifyContent: 'center', paddingBottom: 20, transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(-24px) scale(0.97)' }}>
           <div className="sform-search-inner" style={{ width: '100%', maxWidth: 860, position: 'relative', padding: '0 40px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg)', backdropFilter: 'blur(25px)', border: `1px solid color-mix(in srgb, var(--brand) 10%, transparent)`, borderRadius: 50, padding: 8, boxShadow: 'var(--shadow-float)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--surface)', backdropFilter: 'blur(25px)', border: '1.5px solid var(--forest)', borderRadius: 50, padding: 8, boxShadow: 'var(--shadow-float)' }}>
               {fields.map((field, idx) => {
                 const isActive = activeField === field.key
                 const isLast   = idx === fields.length - 1
@@ -446,7 +451,7 @@ export default function FormationsPageClient({
                         top: 'calc(100% + 14px)',
                         left: 0,
                         right: 0,
-                        background: 'var(--bg)',
+                        background: 'var(--surface)',
                         border: `1px solid color-mix(in srgb, var(--brand) 8%, transparent)`,
                         borderRadius: 20,
                         padding: 14,
@@ -499,8 +504,8 @@ export default function FormationsPageClient({
                 )
               })}
               <div style={{ paddingLeft: 8 }}>
-                <button aria-label="Lancer la recherche" className="op-cta" onClick={runSearch} style={{ width: 52, height: 52, borderRadius: '50%', background: accentColor, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: 'none', flexShrink: 0 }}>
-                  <Search size={20} color="var(--on-brand)" />
+                <button aria-label="Lancer la recherche" className="op-cta op-cta-violet" onClick={runSearch} style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--violet)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: 'none', flexShrink: 0 }}>
+                  <Search size={20} color="var(--on-violet)" />
                 </button>
               </div>
             </div>

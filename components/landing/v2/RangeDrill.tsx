@@ -1,5 +1,5 @@
 'use client'
-// Le module du hero : un vrai morceau du trainer, jouable tout de suite. Cinq mains, Fold ou Raise, verdict en aria-live,
+// Le module du hero : un vrai morceau du trainer, jouable tout de suite. Cinq mains, six profondeurs, verdict en aria-live,
 // la grille s'ouvre à partir de la main jouée, répartition réelle de la range, récapitulatif.
 // Avant l'hydratation, Fold et Raise sont les boutons d'un formulaire GET vers le trainer ; après, les gestionnaires prennent la main.
 // Aucune attente sur le chemin de l'entrée (apple-design §1 et §3) : réponse et main suivante sont immédiates, jamais verrouillées.
@@ -8,15 +8,15 @@ import { flushSync } from 'react-dom'
 import Button from '@/components/ui/Button'
 import { cx } from '@/lib/cx'
 import {
-  DRILL_HANDS, POSITION_COPY, SEATS, explainVerdict, isAccepted, pickHand, verdictLabel, verdictOf,
-  type DrillAnswer, type DrillPosition, type OpeningRange, type Verdict,
+  DRILL_DEPTHS, DRILL_HANDS, DRILL_STACK, POSITION_COPY, SEATS, explainVerdict, isAccepted, pickHand, verdictLabel, verdictOf,
+  type DrillAnswer, type DrillDepth, type DrillPosition, type OpeningRange, type Verdict,
 } from '@/lib/ranges/drill'
 import { LANDING_ROUTES } from '@/lib/routes'
 import PlayingCards from './PlayingCards'
 import RangeGrid from './RangeGrid'
 
 export interface RangeDrillProps {
-  ranges: Record<DrillPosition, OpeningRange>
+  ranges: Record<DrillPosition, Record<DrillDepth, OpeningRange>>
   sequence: DrillPosition[]
   /** Main du jour, calculée côté serveur : la première main est identique avant et après l'hydratation. */
   firstHand: string
@@ -26,6 +26,7 @@ interface Round { position: DrillPosition; hand: string }
 interface Answer extends Round { answer: DrillAnswer; verdict: Verdict; accepted: boolean }
 
 const CHOICES: readonly DrillAnswer[] = ['Fold', 'Raise']
+const CHOICES_ALLIN: readonly DrillAnswer[] = ['Fold', 'Raise', 'All-in']
 const NEXT_ID = 'drill-next'
 const REPLAY_ID = 'drill-replay'
 
@@ -34,14 +35,14 @@ function focusById(id: string) {
 }
 
 /** Le déroulé du coup, comme dans un solveur : qui a parlé, à qui c'est le tour, qui attend. */
-function ActionPath({ position }: { position: DrillPosition }) {
+function ActionPath({ position, stack }: { position: DrillPosition; stack: DrillDepth }) {
   const hero = SEATS.indexOf(position)
   return (
     <ol className="lp-path" aria-label={`Déroulé du coup : tout le monde a passé jusqu'à ${position}`}>
       {SEATS.map((seat, index) => (
         <li key={seat} className={cx('lp-seat', index === hero && 'is-hero', index > hero && 'is-wait')} aria-current={index === hero ? 'step' : undefined}>
           <span className="lp-seat-name">{seat}</span>
-          <span className="lp-seat-act">{index < hero ? 'Fold' : index === hero ? 'À toi' : '100'}</span>
+          <span className="lp-seat-act">{index < hero ? 'Fold' : index === hero ? 'À toi' : stack}</span>
         </li>
       ))}
     </ol>
@@ -56,12 +57,14 @@ function RangeSplit({ range, revealed }: { range: OpeningRange; revealed: boolea
       <p className="lp-split-hint">La range s’affiche après ta réponse.</p>
       <div className="lp-split-bar" aria-hidden="true">
         <i className="in" style={{ flexBasis: `${split.in}%` }} />
-        <i className="bd" style={{ flexBasis: `${split.border}%` }} />
+        {split.allin > 0 && <i className="ai" style={{ flexBasis: `${split.allin}%` }} />}
+        {split.border > 0 && <i className="bd" style={{ flexBasis: `${split.border}%` }} />}
         <i className="ou" style={{ flexBasis: `${split.out}%` }} />
       </div>
       <dl className="lp-split-legend num" aria-hidden={revealed ? undefined : 'true'}>
         <div><dt>Ouvrir</dt><dd>{split.in} %</dd></div>
-        <div><dt>Frontière</dt><dd>{split.border} %</dd></div>
+        {split.allin > 0 && <div><dt>Tapis</dt><dd>{split.allin} %</dd></div>}
+        {split.border > 0 && <div><dt>Frontière</dt><dd>{split.border} %</dd></div>}
         <div><dt>Passer</dt><dd>{split.out} %</dd></div>
       </dl>
     </div>
@@ -74,10 +77,12 @@ export default function RangeDrill({ ranges, sequence, firstHand }: RangeDrillPr
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Answer[]>([])
   const [finished, setFinished] = useState(false)
+  const [depth, setDepth] = useState<DrillDepth>(DRILL_STACK)
   const questionRef = useRef<HTMLParagraphElement>(null)
 
   const current = rounds[index]
-  const range = ranges[current.position]
+  const range = ranges[current.position][depth]
+  const choices = range.allin.length > 0 ? CHOICES_ALLIN : CHOICES
   const copy = POSITION_COPY[current.position]
   const answered = answers.length > index
   const last = answered ? answers[index] : null
@@ -103,7 +108,7 @@ export default function RangeDrill({ ranges, sequence, firstHand }: RangeDrillPr
       setRounds((prev) => {
         if (prev.length > nextIndex) return prev
         const position = sequence[nextIndex]
-        return [...prev, { position, hand: pickHand(ranges[position], new Set(prev.map((round) => round.hand))) }]
+        return [...prev, { position, hand: pickHand(ranges[position][depth], new Set(prev.map((round) => round.hand))) }]
       })
       setIndex(nextIndex)
     })
@@ -115,10 +120,35 @@ export default function RangeDrill({ ranges, sequence, firstHand }: RangeDrillPr
     questionRef.current?.focus()
   }
 
+  /** Changer de profondeur repose la main à cette profondeur : la réponse et la grille d'avant n'y valent plus. */
+  function changeDepth(next: DrillDepth) {
+    if (next === depth) return
+    setDepth(next)
+    if (finished) {
+      setRounds([initialRound()])
+      setIndex(0)
+      setAnswers([])
+      setFinished(false)
+      return
+    }
+    setAnswers((prev) => prev.slice(0, index))
+  }
+
+  const depthControl = (
+    <div className="lp-depth">
+      <span id="lp-depth-title" className="t-caps">Profondeur (bb)</span>
+      <div className="ui-seg" role="group" aria-labelledby="lp-depth-title">
+        {DRILL_DEPTHS.map((value) => (
+          <button key={value} type="button" className="ui-seg-item num" aria-pressed={value === depth} onClick={() => changeDepth(value)}>{value}</button>
+        ))}
+      </div>
+    </div>
+  )
+
   const toolbar = (position: DrillPosition) => (
     <div className="lp-tool-bar">
-      <ActionPath position={position} />
-      <p className="lp-tool-meta num"><span>100 bb · 6-max</span><span className="lp-tool-count">{finished ? DRILL_HANDS : index + 1} / {DRILL_HANDS}</span></p>
+      <ActionPath position={position} stack={depth} />
+      <p className="lp-tool-meta num"><span>{depth} bb · 6-max</span><span className="lp-tool-count">{finished ? DRILL_HANDS : index + 1} / {DRILL_HANDS}</span></p>
     </div>
   )
 
@@ -126,14 +156,15 @@ export default function RangeDrill({ ranges, sequence, firstHand }: RangeDrillPr
     const score = answers.filter((item) => item.accepted).length
     const lastRound = rounds[DRILL_HANDS - 1]
     return (
-      <div className="lp-tool on-forest" id="exercice">
+      <div className="lp-tool" id="exercice">
         {toolbar(lastRound.position)}
         <div className="lp-tool-body">
           <div className="lp-tool-grid">
-            <RangeGrid range={ranges[lastRound.position]} hand={lastRound.hand} revealed />
-            <RangeSplit range={ranges[lastRound.position]} revealed />
+            <RangeGrid range={ranges[lastRound.position][depth]} hand={lastRound.hand} revealed />
+            <RangeSplit range={ranges[lastRound.position][depth]} revealed />
           </div>
-          <div className="lp-tool-panel">
+          <div className="lp-tool-panel on-forest">
+            {depthControl}
             <h2 id="exercice-title" className="t-caps">Ton résultat</h2>
             <p className="big-num num">{score} sur {DRILL_HANDS}</p>
             <ul className="lp-sum" aria-label="Tes cinq réponses">
@@ -145,7 +176,7 @@ export default function RangeDrill({ ranges, sequence, firstHand }: RangeDrillPr
               ))}
             </ul>
             <div className="lp-tool-foot">
-              <Button href={LANDING_ROUTES.trainerRanges}>Continuer au trainer<span aria-hidden="true"> →</span></Button>
+              <Button href={LANDING_ROUTES.trainerRanges}>Créer mon compte pour continuer<span aria-hidden="true"> →</span></Button>
               <Button id={REPLAY_ID} variant="link" onClick={replay}>Rejouer</Button>
             </div>
           </div>
@@ -156,21 +187,22 @@ export default function RangeDrill({ ranges, sequence, firstHand }: RangeDrillPr
 
   const explanation = last ? explainVerdict(range, current.hand, last.verdict) : ''
   return (
-    <div className="lp-tool on-forest" id="exercice">
+    <div className="lp-tool" id="exercice">
       {toolbar(current.position)}
       <div className="lp-tool-body">
         <div className="lp-tool-grid">
           <RangeGrid range={range} hand={current.hand} revealed={answered} />
           <RangeSplit range={range} revealed={answered} />
         </div>
-        <div className="lp-tool-panel">
+        <div className="lp-tool-panel on-forest">
+          {depthControl}
           <h2 id="exercice-title" className="t-caps">{index === 0 ? 'Main du jour' : `Main ${index + 1}`}</h2>
           <div key={index} className="lp-hand-in">
             <PlayingCards hand={current.hand} />
             <p ref={questionRef} className="lp-question" tabIndex={-1}>{copy.question}<span className="num">{current.hand}</span>&nbsp;?</p>
           </div>
-          <form className="lp-choices" action={LANDING_ROUTES.trainerRanges} method="get" onSubmit={(event: FormEvent) => event.preventDefault()}>
-            {CHOICES.map((choice) => (
+          <form className={cx('lp-choices', choices.length > 2 && 'is-three')} action={LANDING_ROUTES.trainerRanges} method="get" onSubmit={(event: FormEvent) => event.preventDefault()}>
+            {choices.map((choice) => (
               <button
                 key={choice}
                 type="submit"

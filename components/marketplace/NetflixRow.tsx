@@ -19,7 +19,7 @@ export default function NetflixRow({ title, subtitle, formations, accentColor, i
       <div className="sform-row-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           {/* Tick accent — relie la rangée à la couleur de l'onglet */}
-          <div style={{ width: 3, alignSelf: 'stretch', borderRadius: 2, background: 'var(--brand)', flexShrink: 0, marginTop: 4 }} />
+          <div style={{ width: 3, alignSelf: 'stretch', borderRadius: 2, background: accentColor, flexShrink: 0, marginTop: 4 }} />
           <div>
             <h2 style={{ fontFamily: 'var(--font-syne, sans-serif)', fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', marginBottom: 4 }}>
               {title}
@@ -36,7 +36,7 @@ export default function NetflixRow({ title, subtitle, formations, accentColor, i
         </span>
       </div>
       {showAll ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gridAutoRows: '322px', gap: 20, paddingTop: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gridAutoRows: '346px', gap: 28, paddingTop: 12 }}>
           {formations.map((f, i) => (
             /* overflow hidden seulement pour contenir le numéro géant du Top 10 — sinon il clippe le lift hover */
             <div key={f.id} style={{ position: 'relative', overflow: isTop10 ? 'hidden' : 'visible', height: '100%' }}>
@@ -60,12 +60,12 @@ export default function NetflixRow({ title, subtitle, formations, accentColor, i
           ))}
         </div>
       ) : (
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', margin: '0 -24px' }}>
           <EdgeScrollZones scrollRef={scrollRef} />
           {/* paddingTop : laisse la place au lift hover (translateY -4px + scale) sans clipping */}
-          <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', paddingTop: 12, paddingBottom: 8 }}>
+          <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', padding: '12px 24px 40px', marginBottom: -32 }}>
             {formations.map((f, i) => (
-              <div key={f.id} style={{ width: isTop10 && i === 0 ? 340 : 290, height: 322, flexShrink: 0, position: 'relative' }}>
+              <div key={f.id} style={{ width: isTop10 && i === 0 ? 340 : 290, height: 346, flexShrink: 0, position: 'relative' }}>
                   <div
                   style={{ position: 'relative', zIndex: 1, transition: 'transform 0.22s cubic-bezier(0.16,1,0.3,1)', height: '100%' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px) scale(1.02)' }}

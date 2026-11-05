@@ -30,7 +30,7 @@ export default function RangeGrid({ range, hand, revealed, mini = false, classNa
         return (
           <div
             key={combo}
-            className={cx('c', tier, verdict === 'in' && 'in', verdict === 'border' && 'bd', combo === hand && 'cur')}
+            className={cx('c', tier, verdict === 'in' && 'in', verdict === 'allin' && 'ai', verdict === 'border' && 'bd', combo === hand && 'cur')}
             style={{ '--d': distance } as CSSProperties}
           >
             {mini ? null : combo}

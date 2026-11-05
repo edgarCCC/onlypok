@@ -46,7 +46,7 @@ export default function CoachPresentation({ coach, typeColor, avgRating, reviewC
               </div>
               {avgRating !== null && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 6 }}>
-                  <Star size={12} color="var(--brand)" fill="var(--brand)" />
+                  <Star size={12} color="var(--accent)" fill="var(--accent)" />
                   <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>{avgRating.toFixed(1)}</span>
                   <span style={{ fontSize: 12, color: SILVER }}>· {reviewCount} avis</span>
                 </div>

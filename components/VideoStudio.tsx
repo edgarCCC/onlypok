@@ -103,7 +103,7 @@ export default function VideoStudio({ video, onClose }: { video: { url: string; 
         {/* ── Header ── */}
         <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', borderBottom: '1px solid color-mix(in srgb, var(--overlay) 7%, transparent)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 6, height: 6, borderRadius: 2, background: 'var(--brand)' }} />
+            <div style={{ width: 6, height: 6, borderRadius: 2, background: 'var(--violet)' }} />
             <span style={{ fontFamily: 'var(--font-logo)', fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: C }}>ONLYPOK</span>
           </div>
           <h2 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-2)', margin: 0, maxWidth: 480, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

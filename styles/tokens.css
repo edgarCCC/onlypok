@@ -1,92 +1,105 @@
-/* OnlyPok — tokens de design v5. Décision d'Edgar du 05/11 : la base est #C7CBB8, tout le reste en nuances de vert.
-   Six couleurs : #C7CBB8 pâle (la base) · #0F1F17 encre · #1E3A2E forêt · #3E5A3F mousse · #6B7F67 sauge · #3D4337 olive.
-   Un seul thème. Les surfaces sont le pâle teinté de sauge. Les panneaux sombres (.on-forest, .on-moss, .on-olive, .on-ink)
+/* OnlyPok — tokens de design v6. Décision d'Edgar du 05/11 : la landing en Fernwood (.theme-sand), la marketplace et le reste du site en Rootline, avec le violet sur les boutons importants de la marketplace. Rootline : une base crème, deux verts sombres, deux bruns.
+   Cinq couleurs : #EEEDE1 crème (la base) · #15261C encre · #1F3D2B forêt · #886429 caramel · #A88D70 taupe.
+   Un seul thème. Les surfaces sont plus claires que la base. Les panneaux (.on-forest, .on-ink, .on-caramel, .on-taupe)
    redéfinissent les mêmes tokens à l'intérieur : un composant s'y pose sans rien changer.
-   Seule exception hors des verts : l'argile, pour une erreur, une perte et les cartes rouges. */
+   L'accent passe par --accent, --accent-text et --accent-soft : changer de couleur d'accent ne touche que ces lignes.
+   Argile : une erreur, une perte et les cartes rouges. */
 
 :root {
-  /* Les six couleurs de la palette, disponibles telles quelles */
-  --ink: #0F1F17;
-  --forest: #1E3A2E;
+  /* Les cinq couleurs de la référence */
+  --ink: #15261C;
+  --forest: #1F3D2B;
+  --cream: #EEEDE1;
+  --caramel: #886429;
+  --taupe: #A88D70;
+  /* Nuances de vert dérivées, pour les échelles du trainer */
   --moss: #3E5A3F;
   --sage: #6B7F67;
-  --pale: #C7CBB8;
-  --olive: #3D4337;
 
-  /* La base, puis le pâle teinté de sauge à 14, 26 et 40 % */
-  --bg: #C7CBB8;
-  --surface: #BAC0AD;
-  --surface-2: #AFB7A3;
-  --surface-3: #A2AD98;
+  /* La base, une surface plus claire, deux surfaces plus soutenues */
+  --bg: #EEEDE1;
+  --surface: #F8F8F1;
+  --surface-2: #E3E2D5;
+  --surface-3: #D8D6C7;
 
-  /* Filets : l'encre à 14 %, 28 %, 50 % pour les champs */
-  --border: rgb(15 31 23 / .14);
-  --border-strong: rgb(15 31 23 / .28);
-  --border-input: rgb(15 31 23 / .5);
+  /* Filets : l'encre à 12 %, 24 %, 45 % pour les champs */
+  --border: rgb(21 38 28 / .12);
+  --border-strong: rgb(21 38 28 / .24);
+  --border-input: rgb(21 38 28 / .45);
 
-  /* Texte sur la base : encre 10,3:1 · forêt 7,5:1 · olive 6,2:1 (4,9:1 sur surface-2) */
-  --text: #0F1F17;
-  --text-2: #1E3A2E;
-  --text-3: #3D4337;
-  --text-disabled: rgb(15 31 23 / .45);
+  /* Texte sur la base : encre 13,4:1 · forêt 10:1 · gris vert 6:1. --text-soft : uniquement les grands titres (3,1:1) */
+  --text: #15261C;
+  --text-2: #1F3D2B;
+  --text-3: #555A4E;
+  --text-soft: #84867A;
+  --text-disabled: rgb(21 38 28 / .45);
 
-  /* Action : le forêt à plat, texte pâle 7,5:1, un seul bouton plein par écran */
-  --brand: #1E3A2E;
-  --brand-hover: #0F1F17;
-  --on-brand: #C7CBB8;
-  --brand-soft: rgb(30 58 46 / .1);
-  --brand-text: #1E3A2E;
-  --focus: #0F1F17;
+  /* Action : l'encre à plat, texte crème, un seul bouton plein par écran */
+  --brand: #15261C;
+  --brand-hover: #1F3D2B;
+  --on-brand: #EEEDE1;
+  --brand-soft: rgb(21 38 28 / .08);
+  --brand-text: #1F3D2B;
+  --focus: #15261C;
 
-  /* Attention (notification, badge « Nouveau ») : la mousse */
-  --accent: #3E5A3F;
-  --on-accent: #EAEBE4;
-  --accent-text: #1E3A2E;
+  /* Accent : prix, notes, mots mis en avant. Caramel avec texte blanc 5,4:1 ; en petit texte, une nuance plus sombre 5,4:1 sur la base */
+  --accent: #886429;
+  --accent-hover: #6F5120;
+  --on-accent: #FFFFFF;
+  --accent-text: #7A5A24;
+  --accent-soft: #A88D70;
 
-  /* Sens : gain en vert soutenu 5,7:1 ; perte et erreur en argile 5,1:1 */
+  /* Violet de la référence Fernwood : les boutons importants de la marketplace, l'accent de la landing. Texte blanc 4,6:1 */
+  --violet: #8355F3;
+  --violet-hover: #6F42E0;
+  --on-violet: #FFFFFF;
+
+  /* Sens : gain en vert soutenu ; perte et erreur en argile */
   --gain: #1B5029;
   --error: #8A2E1C;
   --card-red: #8A2E1C;
-  /* Face d'une carte à jouer, posée sur un panneau vert */
-  --card-face: #EAEBE4;
-  --card-ink: #0F1F17;
+  /* Face d'une carte à jouer */
+  --card-face: #FBFAF4;
+  --card-ink: #15261C;
 
   /* Matériau translucide de la barre de navigation (apple-design §12) : le contenu défile dessous */
-  --material: rgb(199 203 184 / .82);
-  --material-solid: #C7CBB8;
+  --material: rgb(249 248 241 / .82);
+  --material-solid: #F9F8F1;
 
-  /* Grille de ranges : forêt = dans la range, sauge éclaircie = à la frontière, surfaces = hors range */
-  --range-in: #1E3A2E;
-  --range-in-ink: #C7CBB8;
-  --range-border: #82927B;
-  --range-border-ink: #0F1F17;
-  --range-out: #BAC0AD;
-  --range-pair: #AFB7A3;
-  --range-suited: #BAC0AD;
-  --range-offsuit: #C7CBB8;
-  /* Actions du trainer : plus l'action engage, plus le vert est sombre */
-  --act-allin: #0F1F17;
-  --act-allin-ink: #C7CBB8;
-  --act-3bet: #1E3A2E;
-  --act-3bet-ink: #C7CBB8;
-  --act-limp: #3D4337;
-  --act-limp-ink: #C7CBB8;
-  --act-raise: #3E5A3F;
-  --act-raise-ink: #EAEBE4;
+  /* Grille de ranges : forêt = dans la range, taupe = à la frontière, surfaces = hors range */
+  --range-in: #1F3D2B;
+  --range-in-ink: #EEEDE1;
+  --range-border: #A88D70;
+  --range-border-ink: #15261C;
+  --range-allin: #886429;
+  --range-allin-ink: #FFFFFF;
+  --range-out: #E8E6D9;
+  --range-pair: #DCDACB;
+  --range-suited: #E8E6D9;
+  --range-offsuit: #F1F0E6;
+  /* Actions du trainer : deux verts sombres pour jouer, le caramel et le taupe pour les marquer */
+  --act-allin: #15261C;
+  --act-allin-ink: #EEEDE1;
+  --act-3bet: #886429;
+  --act-3bet-ink: #FFFFFF;
+  --act-limp: #A88D70;
+  --act-limp-ink: #15261C;
+  --act-raise: #1F3D2B;
+  --act-raise-ink: #EEEDE1;
   --act-call: #5F755E;
-  --act-call-ink: #F3F4EF;
+  --act-call-ink: #F8F8F1;
   --act-tight: #82927B;
-  --act-tight-ink: #0F1F17;
-  --act-loose: #A2AD98;
-  --act-loose-ink: #0F1F17;
-  --act-fold: #C7CBB8;
-  --act-fold-ink: #3D4337;
+  --act-tight-ink: #15261C;
+  --act-loose: #B9C3AF;
+  --act-loose-ink: #15261C;
+  --act-fold: #E8E6D9;
+  --act-fold-ink: #555A4E;
 
   /* Voile derrière les modales et calque de contraste pour l'ancien code */
-  --scrim: rgb(15 31 23 / .5);
+  --scrim: rgb(21 38 28 / .5);
   /* Texte posé sur une image assombrie */
   --on-scrim: #FFFFFF;
-  --overlay: #0F1F17;
+  --overlay: #15261C;
 
 /* Espacement : base 4 px. Contrôle 8 × 12 ou 16 ; carte 16 ou 24 ; entre groupes 32, 48 ; entre sections 96 (64 sous 768). */
   --space-1: 4px;
@@ -116,54 +129,111 @@
   color-scheme: light;
 }
 
-/* Panneaux sombres : les nuances de vert posées sur la base. À l'intérieur, les mêmes tokens donnent un texte pâle et un bouton pâle. */
-.on-forest, .on-moss, .on-olive, .on-ink {
-  --border: rgb(199 203 184 / .18);
-  --border-strong: rgb(199 203 184 / .32);
-  --border-input: rgb(199 203 184 / .5);
-  --text: #EAEBE4;
-  --text-2: #C7CBB8;
-  --text-3: #AEB8A5;
-  --text-disabled: rgb(199 203 184 / .5);
-  --brand: #C7CBB8;
-  --brand-hover: #D5D8CA;
-  --on-brand: #0F1F17;
-  --brand-soft: rgb(199 203 184 / .12);
-  --brand-text: #C7CBB8;
-  --focus: #C7CBB8;
-  --accent: #C7CBB8;
-  --on-accent: #0F1F17;
-  --accent-text: #C7CBB8;
+/* Panneaux sombres et caramel : à l'intérieur, les mêmes tokens donnent un texte clair et un bouton clair. */
+.on-forest, .on-ink, .on-caramel {
+  --border: rgb(238 237 225 / .18);
+  --border-strong: rgb(238 237 225 / .32);
+  --border-input: rgb(238 237 225 / .5);
+  --text: #F8F8F1;
+  --text-2: #EEEDE1;
+  --text-3: #BFC3B2;
+  --text-soft: #BFC3B2;
+  --text-disabled: rgb(238 237 225 / .5);
+  --brand: #EEEDE1;
+  --brand-hover: #FBFAF4;
+  --on-brand: #15261C;
+  --brand-soft: rgb(238 237 225 / .12);
+  --brand-text: #EEEDE1;
+  --focus: #EEEDE1;
+  --accent: #D9B26F;
+  --accent-hover: #E6C78F;
+  --on-accent: #15261C;
+  --accent-text: #D9B26F;
   --gain: #A9D79B;
   --error: #EBA794;
   --card-red: #8A2E1C;
   --overlay: #FFFFFF;
-  --range-in: #C7CBB8;
-  --range-in-ink: #0F1F17;
-  --range-border: #82927B;
-  --range-border-ink: #0F1F17;
+  --range-in: #EEEDE1;
+  --range-in-ink: #15261C;
+  --range-border: #A88D70;
+  --range-border-ink: #15261C;
   --act-allin: #A9D79B;
-  --act-allin-ink: #0F1F17;
-  --act-3bet: #EAEBE4;
-  --act-3bet-ink: #0F1F17;
-  --act-limp: #6B7F67;
-  --act-limp-ink: #F3F4EF;
-  --act-raise: #C7CBB8;
-  --act-raise-ink: #0F1F17;
+  --act-allin-ink: #15261C;
+  --act-3bet: #D9B26F;
+  --act-3bet-ink: #15261C;
+  --act-limp: #A88D70;
+  --act-limp-ink: #15261C;
+  --act-raise: #EEEDE1;
+  --act-raise-ink: #15261C;
   --act-call: #82927B;
-  --act-call-ink: #0F1F17;
+  --act-call-ink: #15261C;
   --act-tight: #82927B;
-  --act-tight-ink: #0F1F17;
+  --act-tight-ink: #15261C;
   --act-loose: #3E5A3F;
-  --act-loose-ink: #EAEBE4;
+  --act-loose-ink: #F8F8F1;
   color-scheme: dark;
   background-color: var(--bg);
   color: var(--text);
 }
-.on-forest { --bg: #1E3A2E; --surface: #1E3A2E; --surface-2: #2B4A3A; --surface-3: #3E5A3F; --range-out: #254335; --range-pair: #34543F; --range-suited: #2B4A3A; --range-offsuit: #254335; --act-fold: #254335; --act-fold-ink: #AEB8A5; }
-.on-ink { --bg: #0F1F17; --surface: #0F1F17; --surface-2: #1E3A2E; --surface-3: #3E5A3F; --range-out: #162B21; --range-pair: #2B4A3A; --range-suited: #1E3A2E; --range-offsuit: #162B21; --act-fold: #162B21; --act-fold-ink: #AEB8A5; }
-.on-olive { --bg: #3D4337; --surface: #3D4337; --surface-2: #4A5143; --surface-3: #575F4F; --text-3: #C7CBB8; --range-out: #454C3F; --range-pair: #575F4F; --range-suited: #4A5143; --range-offsuit: #454C3F; --act-fold: #454C3F; --act-fold-ink: #C7CBB8; }
-.on-moss { --bg: #3E5A3F; --surface: #3E5A3F; --surface-2: #4A674B; --surface-3: #567457; --text: #F3F4EF; --text-2: #EAEBE4; --text-3: #DCDFD2; --range-out: #456246; --range-pair: #567457; --range-suited: #4A674B; --range-offsuit: #456246; --act-fold: #456246; --act-fold-ink: #DCDFD2; }
+.on-forest { --bg: #1F3D2B; --surface: #1F3D2B; --surface-2: #2C4C38; --surface-3: #3E5A3F; --range-out: #264634; --range-pair: #34543F; --range-suited: #2C4C38; --range-offsuit: #264634; --act-fold: #264634; --act-fold-ink: #BFC3B2; }
+.on-ink { --bg: #15261C; --surface: #15261C; --surface-2: #1F3D2B; --surface-3: #2C4C38; --range-out: #1B3024; --range-pair: #2C4C38; --range-suited: #1F3D2B; --range-offsuit: #1B3024; --act-fold: #1B3024; --act-fold-ink: #BFC3B2; }
+.on-caramel { --bg: #886429; --surface: #886429; --surface-2: #785822; --surface-3: #6A4E1E; --text: #FFFFFF; --text-2: #FBFAF4; --text-3: #F3EFE2; --text-soft: #F3EFE2; --border: rgb(255 255 255 / .22); --border-strong: rgb(255 255 255 / .4); --border-input: rgb(255 255 255 / .6); --brand: #FBFAF4; --brand-hover: #FFFFFF; --brand-text: #FBFAF4; --focus: #FFFFFF; --accent: #FBFAF4; --accent-text: #FBFAF4; --range-out: #785822; --range-pair: #6A4E1E; --range-suited: #785822; --range-offsuit: #7E5D25; --act-fold: #785822; --act-fold-ink: #F3EFE2; }
+/* Le taupe est clair : texte et bouton en encre */
+.on-taupe {
+  --bg: #A88D70; --surface: #A88D70; --surface-2: #B8A085; --surface-3: #C6B199;
+  --border: rgb(21 38 28 / .22); --border-strong: rgb(21 38 28 / .4); --border-input: rgb(21 38 28 / .6);
+  --text: #15261C; --text-2: #15261C; --text-3: #15261C; --text-soft: #15261C; --text-disabled: rgb(21 38 28 / .55);
+  --brand: #15261C; --brand-hover: #1F3D2B; --on-brand: #EEEDE1; --brand-soft: rgb(21 38 28 / .12); --brand-text: #15261C; --focus: #15261C;
+  --accent: #15261C; --accent-hover: #1F3D2B; --on-accent: #EEEDE1; --accent-text: #15261C;
+  --gain: #15261C; --error: #5E1C10; --overlay: #15261C;
+  --range-out: #B8A085; --range-pair: #C6B199; --range-suited: #B8A085; --range-offsuit: #AF977A; --act-fold: #B8A085; --act-fold-ink: #15261C;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Cartes de la marketplace : un beige plus soutenu que la base, la couleur secondaire de la règle 60/30/10.
+   Edgar a refusé les cartes vert foncé et marron foncé le 05/11. */
+.market-card { --surface: #DCD3BE; --surface-2: #D0C6AF; --surface-3: #C5BAA1; --border: rgb(21 38 28 / .18); --text-3: #4F5347; --accent-text: #6A4D1D; }
+
+/* Landing et trainer : décisions d'Edgar du 05/11, référence Fernwood. Base sable, forêt, violet pour l'accent et les boutons.
+   :root:has(.tr) étend le thème à toute la page du trainer, barre de navigation comprise, quel que soit l'espace (visiteur, élève, coach). */
+.theme-sand, .tr, :root:has(.tr) {
+  --bg: #E8DCC4; --surface: #F6F0E2; --surface-2: #DDD0B5; --surface-3: #D1C3A6;
+  --border: rgb(20 41 29 / .14); --border-strong: rgb(20 41 29 / .26); --border-input: rgb(20 41 29 / .45);
+  --text: #14291D; --text-2: #1F3D2B; --text-3: #4F4F3E; --text-soft: #857A65;
+  --brand: #8355F3; --brand-hover: #6F42E0; --on-brand: #FFFFFF; --brand-soft: rgb(131 85 243 / .12); --brand-text: #1F3D2B; --focus: #1F3D2B;
+  --accent: #8355F3; --accent-hover: #6F42E0; --on-accent: #FFFFFF; --accent-text: #6235D8; --accent-soft: #C4B0F5;
+  --material: rgb(246 240 226 / .82); --material-solid: #F6F0E2;
+  --range-border: #C4B0F5; --range-border-ink: #14291D; --range-allin: #8355F3; --range-allin-ink: #FFFFFF; --range-out: #DDD0B5; --range-pair: #D1C3A6; --range-suited: #E4D9C2; --range-offsuit: #EFE6D3;
+  /* Actions : forêt pour relancer, violet pour le tapis, lavande pour la frontière */
+  --act-raise: #1F3D2B; --act-raise-ink: #E8DCC4;
+  --act-allin: #8355F3; --act-allin-ink: #FFFFFF;
+  --act-3bet: #4C2FA8; --act-3bet-ink: #FFFFFF;
+  --act-limp: #A98CF5; --act-limp-ink: #14291D;
+  --act-call: #5F755E; --act-call-ink: #F8F8F1;
+  --act-tight: #C4B0F5; --act-tight-ink: #14291D;
+  --act-loose: #DCD1F9; --act-loose-ink: #14291D;
+  --act-fold: #EFE6D3; --act-fold-ink: #4F4F3E;
+  --card-face: #FBF7EC;
+  background-color: var(--bg);
+  color: var(--text);
+}
+.theme-sand .on-forest, .theme-sand .on-ink, .tr .on-forest, .tr .on-ink {
+  --text: #F6F0E2; --text-2: #E8DCC4; --brand: #8355F3; --brand-hover: #6F42E0; --on-brand: #FFFFFF; --brand-text: #E8DCC4; --focus: #E8DCC4;
+  --accent: #C4B0F5; --accent-hover: #D3C4F8; --on-accent: #14291D; --accent-text: #C4B0F5; --range-border: #A98CF5;
+  --act-raise: #E8DCC4; --act-raise-ink: #14291D; --act-allin: #A98CF5; --act-allin-ink: #14291D; --act-tight: #A98CF5; --act-tight-ink: #14291D; --act-loose: #7A5CD6; --act-loose-ink: #FFFFFF; --act-limp: #C4B0F5; --act-limp-ink: #14291D;
+}
+.theme-sand .on-caramel, .tr .on-caramel {
+  --bg: #8355F3; --surface: #8355F3; --surface-2: #7249E6; --surface-3: #6540D6; --text: #FFFFFF; --text-2: #FFFFFF; --text-3: #FFFFFF; --text-soft: #FFFFFF;
+  --brand: #FBFAF4; --on-brand: #14291D; --brand-text: #FFFFFF; --focus: #FFFFFF; --accent: #FBFAF4; --on-accent: #14291D; --accent-text: #FFFFFF;
+  --range-out: #7249E6; --range-pair: #6540D6; --range-suited: #7249E6; --range-offsuit: #7A50EC; --act-fold: #7249E6; --act-fold-ink: #FFFFFF;
+}
+.theme-sand .on-taupe, .tr .on-taupe {
+  --bg: #C4B0F5; --surface: #C4B0F5; --surface-2: #B39CF0; --surface-3: #A58BEB; --text: #14291D; --text-2: #14291D; --text-3: #14291D; --text-soft: #14291D;
+  --brand: #14291D; --brand-hover: #1F3D2B; --on-brand: #F6F0E2; --brand-text: #14291D; --focus: #14291D; --accent: #14291D; --on-accent: #F6F0E2; --accent-text: #14291D;
+  --range-out: #B39CF0; --range-pair: #A58BEB; --range-suited: #B39CF0; --range-offsuit: #BBA6F2; --act-fold: #B39CF0; --act-fold-ink: #14291D;
+  --act-allin: #14291D; --act-allin-ink: #F6F0E2;
+}
 
 /* Rayons, familles, échelle, courbes et ombre : déclarés dans @theme static.
    Tailwind v4 les émet tels quels sur :root (ce sont de vraies variables CSS, utilisables partout)
@@ -195,7 +265,7 @@
   --ease-drawer: cubic-bezier(.32, .72, 0, 1);
 
   /* La seule ombre du produit : neutre et faible, sur ce qui flotte (menu, popover, modale, toast). Jamais sur une carte. */
-  --shadow-float: 0 16px 40px -18px rgb(15 31 23 / .38);
+  --shadow-float: 0 16px 40px -18px rgb(21 38 28 / .34);
 }
 
 /* Exposition des couleurs et de l'unité d'espacement aux utilitaires Tailwind (bg-brand, text-brand-text, border-border-strong, p-4 = 16 px…).
@@ -205,8 +275,9 @@
   --color-forest: var(--forest);
   --color-moss: var(--moss);
   --color-sage: var(--sage);
-  --color-pale: var(--pale);
-  --color-olive: var(--olive);
+  --color-cream: var(--cream);
+  --color-caramel: var(--caramel);
+  --color-taupe: var(--taupe);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -232,3 +303,4 @@
   --color-scrim: var(--scrim);
   --spacing: var(--space-1);
 }
+

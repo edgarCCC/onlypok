@@ -23,7 +23,7 @@ export default function CoachRow({ title, subtitle, coaches, accentColor, onOpen
       <div className="sform-row-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           {/* Tick accent — relie la rangée à la couleur de l'onglet */}
-          <div style={{ width: 3, alignSelf: 'stretch', borderRadius: 2, background: 'var(--brand)', flexShrink: 0, marginTop: 4 }} />
+          <div style={{ width: 3, alignSelf: 'stretch', borderRadius: 2, background: 'var(--accent)', flexShrink: 0, marginTop: 4 }} />
           <div>
             <h2 style={{ fontFamily: 'var(--font-syne, sans-serif)', fontSize: 22, fontWeight: 800, color: CREAM, letterSpacing: '-0.5px', marginBottom: 4 }}>
               {title}
@@ -50,10 +50,10 @@ export default function CoachRow({ title, subtitle, coaches, accentColor, onOpen
           ))}
         </div>
       ) : (
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', margin: '0 -24px' }}>
           <EdgeScrollZones scrollRef={scrollRef} />
           {/* paddingTop : laisse la place au lift hover sans clipping */}
-          <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', paddingTop: 12, paddingBottom: 8 }}>
+          <div ref={scrollRef} style={{ display: 'flex', gap: 20, overflowX: 'auto', scrollbarWidth: 'none', padding: '12px 24px 40px', marginBottom: -32 }}>
             {coaches.map(coach => (
               <div key={coach.id} style={{ width: CARD_W, height: CARD_H, flexShrink: 0 }}>
                 <CoachCard coach={coach} onOpen={() => onOpen(coach)} />

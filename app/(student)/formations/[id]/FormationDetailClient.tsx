@@ -474,16 +474,16 @@ export default function FormationDetailClient({
                     <div key={h.id} style={{
                       display: 'flex', flexDirection: 'column', gap: 14,
                       padding: '24px 22px',
-                      background: i === 0 ? `color-mix(in srgb, ${typeColor} 3%, transparent)` : 'transparent',
+                      background: i === 0 ? 'var(--surface)' : 'transparent',
                       borderRadius: i === 0 ? 14 : 0,
-                      border: i === 0 ? `1px solid color-mix(in srgb, ${typeColor} 9%, transparent)` : 'none',
+                      border: i === 0 ? '1px solid var(--border)' : 'none',
                     }}>
                       <div style={{
                         width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                        background: i === 0 ? `color-mix(in srgb, ${typeColor} 13%, transparent)` : 'color-mix(in srgb, var(--brand) 6%, transparent)',
-                        border: `1px solid ${i === 0 ? `color-mix(in srgb, ${typeColor} 21%, transparent)` : 'color-mix(in srgb, var(--brand) 8%, transparent)'}`,
+                        background: i === 0 ? 'color-mix(in srgb, var(--accent) 16%, transparent)' : 'color-mix(in srgb, var(--brand) 6%, transparent)',
+                        border: `1px solid ${i === 0 ? 'color-mix(in srgb, var(--accent) 32%, transparent)' : 'color-mix(in srgb, var(--brand) 8%, transparent)'}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: i === 0 ? typeColor : SILVER,
+                        color: i === 0 ? 'var(--accent-text)' : SILVER,
                       }}>
                         <h.Icon size={20} />
                       </div>
@@ -548,7 +548,7 @@ export default function FormationDetailClient({
                 <p style={{ fontSize: 13, color: SILVER, margin: 0, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                   {avgRating !== null && (
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Star size={12} color="var(--brand)" fill="var(--brand)" />
+                      <Star size={12} color="var(--accent)" fill="var(--accent)" />
                       <span style={{ fontWeight: 600, color: CREAM }}>{avgRating.toFixed(2)}</span>
                       <span>·</span>
                     </span>

@@ -36,8 +36,8 @@ export function StarPicker({ value, onChange }: { value: number, onChange: (v: n
           onMouseLeave={() => setHovered(0)}
           onClick={() => onChange(i)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
-          <Star size={22} color="var(--brand)"
-            fill={(hovered || value) >= i ? 'var(--brand)' : 'none'}
+          <Star size={22} color="var(--accent)"
+            fill={(hovered || value) >= i ? 'var(--accent)' : 'none'}
             style={{ opacity: (hovered || value) >= i ? 1 : 0.3, transition: 'all 0.1s' }} />
         </button>
       ))}
@@ -80,8 +80,8 @@ export function ReviewCard({ r, typeColor }: { r: any; typeColor: string }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ display: 'flex', gap: 2 }}>
           {[1,2,3,4,5].map(i => (
-            <Star key={i} size={13} color="var(--brand)"
-              fill={i <= r.rating ? 'var(--brand)' : 'none'}
+            <Star key={i} size={13} color="var(--accent)"
+              fill={i <= r.rating ? 'var(--accent)' : 'none'}
               style={{ opacity: i <= r.rating ? 1 : 0.2 }} />
           ))}
         </div>
@@ -180,7 +180,7 @@ export function RatingDetailFull({ avgRating, distribution, categoryAvgs, accent
                   <div style={{
                     height: '100%',
                     width: `${(d.count / maxCount) * 100}%`,
-                    background: CREAM,
+                    background: 'var(--accent)',
                     borderRadius: 99, transition: 'width 0.6s ease',
                   }} />
                 </div>
@@ -239,8 +239,8 @@ export function RatingHeroDetail({ avgRating, reviewCount, accentColor }: {
         </span>
         <div style={{ display: 'flex', gap: 2 }}>
           {[1,2,3,4,5].map(i => (
-            <Star key={i} size={11} color="var(--brand)"
-              fill={i <= Math.round(avgRating) ? 'var(--brand)' : 'none'}
+            <Star key={i} size={11} color="var(--accent)"
+              fill={i <= Math.round(avgRating) ? 'var(--accent)' : 'none'}
               style={{ opacity: i <= Math.round(avgRating) ? 1 : 0.2 }} />
           ))}
         </div>
@@ -368,7 +368,7 @@ export default function ReviewSection({ reviews, avgRating, distribution, catego
             </h2>
             {reviews.length > 0 && avgRating !== null && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                {[1,2,3,4,5].map(i => <Star key={i} size={12} color="var(--brand)" fill={i <= Math.round(avgRating) ? 'var(--brand)' : 'none'} style={{ opacity: i <= Math.round(avgRating) ? 1 : 0.2 }} />)}
+                {[1,2,3,4,5].map(i => <Star key={i} size={12} color="var(--accent)" fill={i <= Math.round(avgRating) ? 'var(--accent)' : 'none'} style={{ opacity: i <= Math.round(avgRating) ? 1 : 0.2 }} />)}
                 <span style={{ fontSize: 13, fontWeight: 700, color: CREAM, marginLeft: 4 }}>{avgRating.toFixed(2)}</span>
                 <span style={{ fontSize: 13, color: SILVER }}>· {reviews.length} avis vérifiés</span>
               </div>
@@ -407,7 +407,7 @@ export default function ReviewSection({ reviews, avgRating, distribution, catego
               avgRating={avgRating ?? 0}
               distribution={distribution}
               categoryAvgs={categoryAvgs}
-              accentColor={typeColor}
+              accentColor="var(--accent)"
             />
             {/* Grille de cartes avis — 2 colonnes */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, marginTop: 8 }}>

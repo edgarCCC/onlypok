@@ -768,7 +768,7 @@ export default function OnboardingPage() {
       {/* ── Header ── */}
       <header className="cob-header" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 64, background: 'var(--bg)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--brand)' }} />
+          <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--violet)' }} />
           <span style={{ fontFamily: 'var(--font-logo)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
           <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: VIOLET, padding: '2px 7px', border: `1px solid color-mix(in srgb, var(--brand) 35%, transparent)`, borderRadius: 4 }}>COACH</span>
         </div>

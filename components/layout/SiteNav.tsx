@@ -11,6 +11,7 @@ import { LANDING_ROUTES } from '@/lib/routes'
 
 const NAV_LINKS = [
   { label: 'Formations', href: LANDING_ROUTES.formations },
+  { label: 'Vidéos', href: LANDING_ROUTES.videos },
   { label: 'Coachs', href: LANDING_ROUTES.coaches },
   { label: 'Trainer', href: LANDING_ROUTES.trainer },
   { label: 'Tracker', href: LANDING_ROUTES.tracker },
@@ -72,7 +73,7 @@ export default function SiteNav({ promoteCta = false, wide = false }: { promoteC
   const close = () => setOpen(false)
 
   return (
-    <header className={cx('ui-nav', stage > 0 && 'is-scrolled')}>
+    <header className={cx('ui-nav is-float', stage > 0 && 'is-scrolled')}>
       <div className={cx('ui-wrap ui-nav-bar', wide && 'is-wide')}>
         <Logo />
         <nav className="ui-nav-links" aria-label="Navigation principale">

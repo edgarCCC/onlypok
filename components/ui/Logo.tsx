@@ -11,7 +11,7 @@ export interface LogoProps {
   className?: string
 }
 
-/** « ● ONLYPOK » : point de 7 × 7 px, rayon 2, --brand plat (plus de dégradé), puis le logotype en Unbounded 700, +0,18 em. */
+/** « ● ONLYPOK » : point de 7 × 7 px, rayon 2, --violet plat, puis le logotype en Unbounded 700, +0,18 em. */
 export default function Logo({ href = '/', size = 'md', label = 'OnlyPok, accueil', className }: LogoProps) {
   return (
     <Link href={href} className={cx('ui-logo', size === 'sm' && 'ui-logo-sm', className)} aria-label={label}>

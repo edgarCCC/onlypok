@@ -7,15 +7,14 @@ export const BG       = 'var(--bg)'
 export const CREAM    = 'var(--text)'
 export const MUTED    = 'var(--text-2)'
 export const SILVER   = 'var(--text-3)'
-export const DIM      = 'color-mix(in srgb, var(--brand) 7%, transparent)'
-export const CARD     = 'color-mix(in srgb, var(--overlay) 3%, transparent)'
-export const CARD_HOV = 'color-mix(in srgb, var(--overlay) 5%, transparent)'
-export const BORDER_HOV = 'color-mix(in srgb, var(--brand) 16%, transparent)'
+export const DIM      = 'var(--border)'
+export const CARD     = 'var(--surface)'
+export const CARD_HOV = 'var(--surface)'
+export const BORDER_HOV = 'color-mix(in srgb, var(--accent) 45%, transparent)'
 export const VIO      = 'var(--brand)'
 export const CYAN     = 'var(--brand)'
-export const AMBER    = 'var(--brand)'
-/* CTA de l'univers coach : la couleur d'action, à plat ; le retour à l'appui vient de .op-cta (styles/ui.css) */
-export const AMBER_GRAD = 'var(--brand)'
+/* L'accent garde le rôle de l'ancien ambre : les prix et les notes. */
+export const AMBER    = 'var(--accent-text)'
 
 export const VARIANTS_LIST = ['NLH', 'PLO', 'MTT', 'Cash', 'Expresso', 'SNG', 'PKO', 'Heads-Up']
 
@@ -31,8 +30,8 @@ export function Stars({ rating, size = 11 }: { rating: number; size?: number }) 
     <div style={{ display: 'flex', gap: 2 }}>
       {[1, 2, 3, 4, 5].map(s => (
         <Star key={s} size={size}
-          fill={s <= Math.round(rating) ? AMBER : 'none'}
-          color={s <= Math.round(rating) ? AMBER : 'var(--text-3)'}
+          fill={s <= Math.round(rating) ? 'var(--accent)' : 'none'}
+          color={s <= Math.round(rating) ? 'var(--accent)' : 'var(--text-3)'}
         />
       ))}
     </div>

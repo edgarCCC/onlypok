@@ -1,12 +1,13 @@
-/* Exercice jouable de la landing (D2 §3) : le drill de ranges d'ouverture du trainer, figé à 6-max, 100 bb,
+/* Exercice jouable de la landing (D2 §3) : le drill de ranges d'ouverture du trainer, en 6-max,
    héros au bouton (mains 1, 3, 5) ou au cut-off (mains 2, 4), « tout le monde a passé avant toi », cinq mains.
-   Tout est pur et sérialisable : le serveur construit les deux ranges et la main du jour, le composant client
-   ne reçoit que des tableaux (moins de 2 Ko). Les 68 autres ranges ne quittent pas le serveur. */
+   Six profondeurs au choix, 100 bb par défaut. À 20 bb et moins, certaines mains se jouent à tapis.
+   Tout est pur et sérialisable : le serveur construit les douze ranges et la main du jour, le composant client
+   ne reçoit que des tableaux. Les autres ranges ne quittent pas le serveur. */
 import { ALL_169, RANKS, RAW, countCombos, getNeighbors, parseRange } from './gto'
 
 export type DrillPosition = 'BTN' | 'CO'
-export type Verdict = 'in' | 'border' | 'out'
-export type DrillAnswer = 'Fold' | 'Raise'
+export type Verdict = 'in' | 'allin' | 'border' | 'out'
+export type DrillAnswer = 'Fold' | 'Raise' | 'All-in'
 export type Suit = 'h' | 'd' | 'c' | 's'
 
 export interface PlayingCard {
@@ -17,18 +18,22 @@ export interface PlayingCard {
 /** Range d'ouverture parsée, sérialisable (tableaux, pas de Set) : ce que le serveur passe au composant client. */
 export interface OpeningRange {
   position: DrillPosition
+  /** Profondeur de cette range, en bb. */
+  stack: DrillDepth
   /** Mains ouvertes (liste `Raise` du trainer). */
   raise: string[]
+  /** Mains jouées à tapis (liste `All-in` du trainer), présentes à faible profondeur. */
+  allin: string[]
   /** `Tightifie` : les plus faibles de la range, qu'on peut encore folder. */
   tight: string[]
   /** `Loosifie` : hors range, à ajouter si l'on élargit. */
   loose: string[]
-  /** Voisines d'une main active (raise, tight ou loose), hors range : la zone « intéressante » du tirage. */
+  /** Voisines d'une main active (raise, all-in, tight ou loose), hors range : la zone « intéressante » du tirage. */
   border: string[]
   /** Part des 1 326 combinaisons ouvertes, en pourcentage entier. */
   pct: number
-  /** Répartition réelle des 1 326 combinaisons : dans la range, à la frontière, hors range (en pourcentage entier). */
-  split: { in: number; border: number; out: number }
+  /** Répartition réelle des 1 326 combinaisons : relance, tapis, frontière, hors range (en pourcentage entier). */
+  split: { in: number; allin: number; border: number; out: number }
 }
 
 export interface PositionCopy {
@@ -40,7 +45,9 @@ export interface PositionCopy {
   question: string
 }
 
-export const DRILL_STACK = 100
+export const DRILL_DEPTHS = [100, 50, 25, 20, 15, 10] as const
+export type DrillDepth = (typeof DRILL_DEPTHS)[number]
+export const DRILL_STACK: DrillDepth = 100
 export const DRILL_HANDS = 5
 export const DRILL_SEQUENCE: readonly DrillPosition[] = ['BTN', 'CO', 'BTN', 'CO', 'BTN']
 export const TOTAL_COMBOS = 1326
@@ -53,34 +60,39 @@ export const POSITION_COPY: Record<DrillPosition, PositionCopy> = {
   CO: { at: 'au cut-off', meta: 'CO · 100 bb · 6-max', question: 'Tu es au cut-off, tout le monde a passé avant toi. Que fais-tu avec ' },
 }
 
-const RANGE_KEY: Record<DrillPosition, string> = { BTN: 'BTN_100', CO: 'CO_100' }
-
-export function buildOpeningRange(position: DrillPosition): OpeningRange {
-  const raw = RAW[RANGE_KEY[position]] ?? {}
+export function buildOpeningRange(position: DrillPosition, stack: DrillDepth = DRILL_STACK): OpeningRange {
+  const raw = RAW[`${position}_${stack}`] ?? {}
   const raise = parseRange(raw.Raise ?? '')
+  const allin = parseRange(raw['All-in'] ?? '')
   const tight = parseRange(raw.Tightifie ?? '')
   const loose = parseRange(raw.Loosifie ?? '')
-  const active = new Set([...raise, ...tight, ...loose])
+  const active = new Set([...raise, ...allin, ...tight, ...loose])
   const border = new Set<string>()
   active.forEach((hand) => getNeighbors(hand).forEach((n) => { if (!active.has(n)) border.add(n) }))
-  const combos = raise.reduce((sum, hand) => sum + countCombos(hand), 0)
+  const combos = [...raise, ...allin].reduce((sum, hand) => sum + countCombos(hand), 0)
   const edge = new Set([...tight, ...loose])
   const count = (hands: Iterable<string>) => [...hands].reduce((sum, hand) => sum + countCombos(hand), 0)
-  const inCombos = count(raise.filter((hand) => !edge.has(hand)))
-  const edgeCombos = count(edge)
-  const split = {
-    in: Math.round((inCombos / TOTAL_COMBOS) * 100),
-    border: Math.round((edgeCombos / TOTAL_COMBOS) * 100),
-    out: Math.max(0, 100 - Math.round((inCombos / TOTAL_COMBOS) * 100) - Math.round((edgeCombos / TOTAL_COMBOS) * 100)),
-  }
-  return { position, raise, tight, loose, border: [...border], pct: Math.round((combos / TOTAL_COMBOS) * 100), split }
+  const part = (value: number) => Math.round((value / TOTAL_COMBOS) * 100)
+  const inPart = part(count(raise.filter((hand) => !edge.has(hand))))
+  const allinPart = part(count(allin.filter((hand) => !edge.has(hand))))
+  const borderPart = part(count(edge))
+  const split = { in: inPart, allin: allinPart, border: borderPart, out: Math.max(0, 100 - inPart - allinPart - borderPart) }
+  return { position, stack, raise, allin, tight, loose, border: [...border], pct: part(combos), split }
 }
 
-/** Trois verdicts (D2 §3.2) : frontière = Tightifie ou Loosifie ; dans la range = Raise ; sinon hors range. */
+/** Les douze ranges passées au composant client : deux positions, six profondeurs. */
+export function buildDrillRanges(): Record<DrillPosition, Record<DrillDepth, OpeningRange>> {
+  const forPosition = (position: DrillPosition) =>
+    Object.fromEntries(DRILL_DEPTHS.map((stack) => [stack, buildOpeningRange(position, stack)])) as Record<DrillDepth, OpeningRange>
+  return { BTN: forPosition('BTN'), CO: forPosition('CO') }
+}
+
+/** Verdicts (D2 §3.2) : frontière = Tightifie ou Loosifie ; tapis = All-in ; dans la range = Raise ; sinon hors range. */
 export function verdictLookup(range: OpeningRange): (hand: string) => Verdict {
   const raise = new Set(range.raise)
+  const allin = new Set(range.allin)
   const edge = new Set([...range.tight, ...range.loose])
-  return (hand) => (edge.has(hand) ? 'border' : raise.has(hand) ? 'in' : 'out')
+  return (hand) => (edge.has(hand) ? 'border' : allin.has(hand) ? 'allin' : raise.has(hand) ? 'in' : 'out')
 }
 
 export function verdictOf(range: OpeningRange, hand: string): Verdict {
@@ -90,6 +102,7 @@ export function verdictOf(range: OpeningRange, hand: string): Verdict {
 /** Règle de tolérance du drill : à la frontière, les deux réponses sont acceptées. */
 export function isAccepted(verdict: Verdict, answer: DrillAnswer): boolean {
   if (verdict === 'border') return true
+  if (verdict === 'allin') return answer === 'All-in'
   return verdict === 'in' ? answer === 'Raise' : answer === 'Fold'
 }
 
@@ -101,9 +114,10 @@ export function verdictLabel(verdict: Verdict, accepted: boolean): string {
 /** Une phrase construite à partir des données, jamais un conseil inventé. */
 export function explainVerdict(range: OpeningRange, hand: string, verdict: Verdict): string {
   const { at } = POSITION_COPY[range.position]
-  if (verdict === 'in') return `${hand} fait partie de la range d’ouverture ${at} à ${DRILL_STACK} bb.`
+  if (verdict === 'in') return `${hand} fait partie de la range d’ouverture ${at} à ${range.stack} bb.`
+  if (verdict === 'allin') return `${hand} se joue à tapis ${at} à ${range.stack} bb.`
   if (verdict === 'out') {
-    return `${hand} est hors range : ${at} à ${DRILL_STACK} bb, on ouvre environ ${range.pct} % des combinaisons, et celle-ci n’en fait pas partie.`
+    return `${hand} est hors range : ${at} à ${range.stack} bb, on ouvre environ ${range.pct} % des combinaisons, et celle-ci n’en fait pas partie.`
   }
   const why = range.tight.includes(hand)
     ? 'c’est l’une des mains les plus faibles qu’on ouvre encore'
@@ -113,7 +127,7 @@ export function explainVerdict(range: OpeningRange, hand: string, verdict: Verdi
 
 /** Mains « intéressantes » : dans la range ou à sa frontière, dans l'ordre de la grille. */
 export function candidateHands(range: OpeningRange): string[] {
-  const interesting = new Set([...range.raise, ...range.tight, ...range.loose, ...range.border])
+  const interesting = new Set([...range.raise, ...range.allin, ...range.tight, ...range.loose, ...range.border])
   return ALL_169.filter((hand) => interesting.has(hand))
 }
 
@@ -131,7 +145,7 @@ export function handOfDay(range: OpeningRange, date: Date = new Date()): string 
 export function pickHand(range: OpeningRange, used: ReadonlySet<string>, random: () => number = Math.random): string {
   const roll = random()
   const pool = roll < 0.45
-    ? [...range.raise, ...range.tight, ...range.loose]
+    ? [...range.raise, ...range.allin, ...range.tight, ...range.loose]
     : roll < 0.9 ? range.border : ALL_169
   const fresh = pool.filter((hand) => !used.has(hand))
   const candidates = fresh.length ? fresh : ALL_169

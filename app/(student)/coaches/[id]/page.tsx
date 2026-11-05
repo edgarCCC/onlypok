@@ -47,7 +47,7 @@ function Stars({ rating, size = 12 }: { rating: number; size?: number }) {
     <span style={{ display: 'inline-flex', gap: 2 }}>
       {Array.from({ length: 5 }).map((_, i) => (
         <svg key={i} width={size} height={size} viewBox="0 0 14 14"
-          fill={i < Math.round(rating) ? 'var(--brand)' : 'color-mix(in srgb, var(--brand) 12%, transparent)'}>
+          fill={i < Math.round(rating) ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 18%, transparent)'}>
           <polygon points="7,1 8.8,5.5 13.5,5.5 9.8,8.5 11.2,13 7,10.2 2.8,13 4.2,8.5 0.5,5.5 5.2,5.5" />
         </svg>
       ))}
@@ -65,7 +65,7 @@ function ContentLink({ f, cardColor, icon }: { f: Formation; cardColor: string; 
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 13, fontWeight: 600, color: CREAM, margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.title}</p>
-        <span style={{ fontSize: 12, fontWeight: 700, color: f.price > 0 ? cardColor : 'var(--gain)' }}>{f.price > 0 ? `${f.price}€` : 'Gratuit'}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: f.price > 0 ? 'var(--accent-text)' : 'var(--gain)' }}>{f.price > 0 ? `${f.price}€` : 'Gratuit'}</span>
       </div>
       <ChevronDown size={14} color={'var(--text-3)'} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }} />
     </Link>
@@ -74,7 +74,7 @@ function ContentLink({ f, cardColor, icon }: { f: Formation; cardColor: string; 
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 16, padding: '20px 24px' }}>
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 24px' }}>
       <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' }}>{title}</h2>
       {children}
     </div>
@@ -202,7 +202,7 @@ export default function CoachProfilePage() {
         </button>
 
         {/* ── Hero card ────────────────────────────────────────────────── */}
-        <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 20, overflow: 'visible', marginBottom: 24, position: 'relative' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 20, overflow: 'visible', marginBottom: 24, position: 'relative' }}>
 
           {/* Banner */}
           <div style={{ height: 220, borderRadius: '20px 20px 0 0', overflow: 'hidden', position: 'relative', background: 'var(--surface-2)' }}>
@@ -241,7 +241,7 @@ export default function CoachProfilePage() {
                 )}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, fontSize: 13, color: SILVER }}>
                   {coach.years_experience && <span><Clock size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />{coach.years_experience} an{coach.years_experience > 1 ? 's' : ''} d'expérience</span>}
-                  {coach.hourly_rate && <span style={{ color: CREAM, fontWeight: 700 }}>{coach.hourly_rate}€<span style={{ color: SILVER, fontWeight: 400 }}>/h</span></span>}
+                  {coach.hourly_rate && <span style={{ color: 'var(--accent-text)', fontWeight: 700 }}>{coach.hourly_rate}€<span style={{ color: SILVER, fontWeight: 400 }}>/h</span></span>}
                 </div>
 
                 {/* Trust stats */}
@@ -424,7 +424,7 @@ export default function CoachProfilePage() {
 
             {/* Offres de coaching */}
             {coachingFormations.length > 0 && (
-              <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 16, padding: '20px 20px 16px' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 20px 16px' }}>
                 <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>Offres de coaching</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {coachingFormations.map(f => (
@@ -432,7 +432,7 @@ export default function CoachProfilePage() {
                       <span style={{ fontSize: 13, fontWeight: 600, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {coach.username} — {f.title}
                       </span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: cardColor, flexShrink: 0, marginLeft: 10 }}>{f.price > 0 ? `${f.price}€` : 'Gratuit'}</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: f.price > 0 ? 'var(--accent-text)' : 'var(--gain)', flexShrink: 0, marginLeft: 10 }}>{f.price > 0 ? `${f.price}€` : 'Gratuit'}</span>
                     </Link>
                   ))}
                 </div>
@@ -441,12 +441,12 @@ export default function CoachProfilePage() {
 
             {/* Tarification + Forfaits unifiés */}
             {pricingOptions.length > 0 && (
-              <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 16, padding: '20px 20px 16px' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 20px 16px' }}>
                 <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Tarification</h2>
 
                 {/* Prix affiché (option sélectionnée) */}
                 <div style={{ textAlign: 'center', padding: '4px 0 18px' }}>
-                  <div style={{ fontSize: 46, fontWeight: 700, color: CREAM, letterSpacing: '-2px', lineHeight: 1 }}>
+                  <div style={{ fontSize: 46, fontWeight: 700, color: 'var(--accent-text)', letterSpacing: '-2px', lineHeight: 1 }}>
                     {pricingOptions[selectedPkgIdx]?.price ?? 0}€
                   </div>
                   <div style={{ fontSize: 12, color: SILVER, marginTop: 6 }}>
@@ -483,7 +483,7 @@ export default function CoachProfilePage() {
             )}
 
             {/* Infos pratiques */}
-            <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 16, padding: '20px 20px' }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 20px' }}>
               <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Infos pratiques</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {modeLabel && (

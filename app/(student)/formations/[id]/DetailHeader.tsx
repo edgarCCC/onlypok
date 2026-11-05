@@ -61,6 +61,8 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
 
       <style>{`
         .fdet-header :is(a, button):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        @media (hover: hover) and (pointer: fine) { .fdet-tab-link:hover { color: ${CREAM} !important; } }
+        @media (max-width: 1100px) { .fdet-tabs :is(button, a) { padding: 8px 12px !important; } }
         /* « Se connecter » visiteur : dans la rangée à partir de 960px, dans le menu en dessous (N1 / P1) */
         .fdet-login-row { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1); }
         .fdet-login-menu { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease; }
@@ -90,7 +92,7 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
             <ArrowLeft size={15} />
           </button>
           <Link href="/formations" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--brand)', flexShrink: 0 }} />
+            <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--violet)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-logo)', fontWeight: 700, fontSize: 14, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
           </Link>
           {user && (
@@ -104,9 +106,9 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
 
             {/* Tabs (visibles quand non scrollé) */}
-            <div style={{
+            <div className="fdet-tabs" style={{
               position: 'absolute',
-              display: 'inline-flex', background: 'color-mix(in srgb, var(--brand) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)',
+              display: 'inline-flex', background: 'var(--surface)', border: '1px solid var(--forest)',
               borderRadius: 14, padding: 4, gap: 4,
               transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)',
               opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none',
@@ -125,6 +127,9 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
                   </button>
                 )
               })}
+              <Link href="/trainer" className="fdet-tab-link" style={{ padding: '8px 24px', borderRadius: 10, color: SILVER, fontSize: 13, fontWeight: 400, textDecoration: 'none', transition: 'all 0.25s' }}>
+                Trainer
+              </Link>
             </div>
 
             {/* Pilule compacte (visible quand scrollé) */}
@@ -136,17 +141,17 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
             }}>
               <button onClick={() => setIsSearchOverlayOpen(true)}
                 style={{ display: 'flex', alignItems: 'center', gap: 14,
-                  background: 'color-mix(in srgb, var(--brand) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 12%, transparent)',
+                  background: 'var(--surface)', border: '1.5px solid var(--forest)',
                   borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: 'var(--shadow-float)' }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: CREAM }}>
                   {headerFilters.variant || 'Variante'}
                 </span>
                 <div style={{ width: 1, height: 16, background: 'color-mix(in srgb, var(--brand) 15%, transparent)' }} />
                 <span style={{ fontSize: 13, color: SILVER }}>Rechercher…</span>
-                <div style={{ width: 34, height: 34, borderRadius: '50%', background: headerAccentColor,
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--violet)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   boxShadow: 'none' }}>
-                  <Search size={15} color="var(--on-brand)" />
+                  <Search size={15} color="var(--on-violet)" />
                 </div>
               </button>
             </div>
@@ -158,10 +163,10 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
             {user ? (
               <Link href="/dashboard"
                 style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none',
-                  padding: '8px 16px', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)',
+                  padding: '8px 16px', border: '1px solid var(--forest)',
                   borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'color-mix(in srgb, var(--brand) 25%, transparent)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'color-mix(in srgb, var(--brand) 8%, transparent)' }}>
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--ink)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--forest)' }}>
                 Mon espace
               </Link>
             ) : !loading ? (
@@ -172,16 +177,16 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
                 </Link>
                 <Link href="/become-coach"
                   style={{ fontSize: 13, fontWeight: 600, color: SILVER, textDecoration: 'none',
-                    padding: '8px 16px', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)',
+                    padding: '8px 16px', border: '1px solid var(--forest)',
                     borderRadius: 10, transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'color-mix(in srgb, var(--brand) 25%, transparent)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'color-mix(in srgb, var(--brand) 8%, transparent)' }}>
+                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = CREAM; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--ink)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = SILVER; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--forest)' }}>
                   Devenir coach
                 </Link>
               </>
             ) : null}
             <button
-              style={{ width: 38, height: 38, borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              style={{ width: 38, height: 38, borderRadius: 10, background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid var(--forest)', color: SILVER, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER }}>
               <HelpCircle size={16} />
@@ -190,12 +195,12 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
               <button onClick={() => setShowMenu(v => !v)} aria-label="Menu" aria-expanded={showMenu}
                 style={{ width: 38, height: 38, borderRadius: 10,
                   background: showMenu ? 'color-mix(in srgb, var(--brand) 8%, transparent)' : 'color-mix(in srgb, var(--brand) 3%, transparent)',
-                  border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', color: CREAM,
+                  border: '1px solid var(--forest)', color: CREAM,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <Menu size={16} />
               </button>
               {showMenu && (
-                <div style={{ position: 'absolute', top: 46, right: 0, background: 'var(--bg)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 14, padding: 6, minWidth: 200, zIndex: 200, boxShadow: 'var(--shadow-float)' }}>
+                <div style={{ position: 'absolute', top: 46, right: 0, background: 'var(--surface)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 14, padding: 6, minWidth: 200, zIndex: 200, boxShadow: 'var(--shadow-float)' }}>
                   <div style={{ padding: '8px 14px 12px', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)', marginBottom: 6 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: CREAM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Menu</span>
                   </div>
@@ -235,8 +240,8 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
             transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(-24px) scale(0.97)' }}>
           <div style={{ width: '100%', maxWidth: 860, position: 'relative', padding: '0 40px' }}>
             <div style={{ display: 'flex', alignItems: 'center',
-              background: 'var(--bg)', backdropFilter: 'blur(25px)',
-              border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 50,
+              background: 'var(--surface)', backdropFilter: 'blur(25px)',
+              border: '1.5px solid var(--forest)', borderRadius: 50,
               padding: 8, boxShadow: 'var(--shadow-float)' }}>
 
               {headerFields.map((field, idx) => {
@@ -264,7 +269,7 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
                     )}
                     {isActive && (
                       <div style={{ position: 'absolute', top: 'calc(100% + 14px)', left: 0, right: 0,
-                        background: 'var(--bg)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)',
+                        background: 'var(--surface)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)',
                         borderRadius: 20, padding: 14, zIndex: 110, boxShadow: 'var(--shadow-float)',
                         animation: 'airbnbPop 0.25s ease' }}>
                         <div style={{ padding: '4px 8px 12px', borderBottom: '1px solid color-mix(in srgb, var(--brand) 6%, transparent)', marginBottom: 10 }}>
@@ -324,10 +329,10 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
 
               <div style={{ paddingLeft: 8 }}>
                 <button onClick={() => router.push('/formations')}
-                  style={{ width: 52, height: 52, borderRadius: '50%', background: headerAccentColor,
+                  style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--violet)',
                     border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer', boxShadow: 'none', flexShrink: 0, transition: 'box-shadow 0.3s' }}>
-                  <Search size={20} color="var(--on-brand)" />
+                  <Search size={20} color="var(--on-violet)" />
                 </button>
               </div>
             </div>

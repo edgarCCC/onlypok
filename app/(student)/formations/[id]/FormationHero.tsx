@@ -201,8 +201,8 @@ export default function FormationHero({ formation, contentType, typeColor, varia
       <div style={{ marginTop: 32, marginBottom: 48 }}>
         {/* Séparateur accent */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-          <div style={{ height: 2, width: 32, background: typeColor, borderRadius: 99, boxShadow: 'none' }} />
-          <span style={{ fontSize: 10, letterSpacing: '0.2em', fontWeight: 700, color: typeColor, textTransform: 'uppercase' as const }}>
+          <div style={{ height: 2, width: 32, background: 'var(--accent)', borderRadius: 99, boxShadow: 'none' }} />
+          <span style={{ fontSize: 10, letterSpacing: '0.2em', fontWeight: 700, color: 'var(--accent-text)', textTransform: 'uppercase' as const }}>
             {TYPE_LABELS[contentType]}
             {formation.variant ? ` · ${formation.variant}` : ''}
           </span>
@@ -221,7 +221,7 @@ export default function FormationHero({ formation, contentType, typeColor, varia
         <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap' }}>
           {avgRating !== null && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingRight: 20 }}>
-              <Star size={14} color="var(--brand)" fill="var(--brand)" />
+              <Star size={14} color="var(--accent)" fill="var(--accent)" />
               <span style={{ fontSize: 14, fontWeight: 800, color: CREAM }}>{avgRating.toFixed(2)}</span>
               <span style={{ fontSize: 13, color: SILVER }}>({reviews.length} avis)</span>
             </div>
@@ -280,7 +280,7 @@ export default function FormationHero({ formation, contentType, typeColor, varia
                 &ldquo;{reviews[0].comment.length > 130 ? reviews[0].comment.slice(0, 130) + '…' : reviews[0].comment}&rdquo;
               </p>
               <p style={{ fontSize: 11, color: SILVER, margin: 0, fontWeight: 600 }}>
-                {reviews[0].student?.username ?? 'Élève'} · <span style={{ color: 'var(--brand)' }}>{'★'.repeat(Math.round(reviews[0].rating))}</span>
+                {reviews[0].student?.username ?? 'Élève'} · <span style={{ color: 'var(--accent-text)' }}>{'★'.repeat(Math.round(reviews[0].rating))}</span>
               </p>
             </div>
           </div>

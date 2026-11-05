@@ -7,7 +7,7 @@ export const SILVER = 'var(--text-2)'
 
 export const VARIANT_COLORS: Record<string, string> = {
   NLH: 'var(--brand)', MTT: 'var(--brand)', Cash: 'var(--brand)',
-  Expresso: 'var(--error)', Live: 'var(--brand)', PLO: 'var(--brand)',
+  Expresso: 'var(--accent-text)', Live: 'var(--brand)', PLO: 'var(--brand)',
 }
 export const TYPE_COLORS: Record<string, string> = {
   formation: 'var(--brand)', video: 'var(--brand)', coaching: 'var(--brand)',
@@ -52,7 +52,7 @@ export const HEADER_FIELDS: Record<string, { key: string; label: string; placeho
 }
 
 export const HEADER_TAB_COLORS: Record<string, string> = {
-  formations: 'var(--brand)', videos: 'var(--brand)', coaching: 'var(--brand)',
+  formations: 'var(--accent)', videos: 'var(--accent)', coaching: 'var(--accent)',
 }
 
 /* ─── calendar helpers ──────────────────────────────────────────────────────── */

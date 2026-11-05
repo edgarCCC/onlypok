@@ -28,11 +28,11 @@ export function CoachHeader({ profile }: { profile: HeaderProfile }) {
     <>
       <header className="coach-header">
         <Link href="/coach/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0 }}>
-          <span style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--brand)' }} />
+          <span style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--violet)' }} />
           <span style={{ fontFamily: 'var(--font-logo)', fontWeight: 700, fontSize: 13, letterSpacing: '0.18em', color: NAV.cream }}>
             ONLYPOK
           </span>
-          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: NAV.violet, padding: '2px 6px', border: '1px solid color-mix(in srgb, var(--brand) 35%, transparent)', borderRadius: 4 }}>
+          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-2)', padding: '2px 6px', border: '1px solid color-mix(in srgb, var(--brand) 35%, transparent)', borderRadius: 4 }}>
             Coach
           </span>
         </Link>
