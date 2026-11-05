@@ -45,7 +45,7 @@ export default function Navbar() {
         ) : (
           <>
             <Link href="/login" style={{ fontSize: 13, color: 'var(--text-3)', textDecoration: 'none', padding: '7px 14px' }}>Connexion</Link>
-            <Link href="/register" style={{ fontSize: 13, fontWeight: 600, color: 'var(--on-brand)', textDecoration: 'none', padding: '8px 18px', background: 'var(--accent)', borderRadius: 8, letterSpacing: '-0.1px' }}>S'inscrire</Link>
+            <Link href="/register" style={{ fontSize: 13, fontWeight: 600, color: 'var(--on-brand)', textDecoration: 'none', padding: '8px 18px', background: 'var(--accent)', borderRadius: 8, letterSpacing: '-0.1px' }}>S&apos;inscrire</Link>
           </>
         )}
       </div>

@@ -1,6 +1,6 @@
 'use client'
 // Barre publique : aucun appel à Supabase. Matériau translucide dès qu'on défile, le contenu passe dessous (apple-design §12).
-// promoteCta (landing) : « Créer mon compte » reste en contour tant que le bouton du hero est visible, jamais deux boutons pleins à l'écran.
+// promoteCta (landing) : « Créer mon compte » reste en contour tant que le bouton du hero ou celui du dernier bloc est visible, jamais deux boutons pleins à l'écran.
 // Menu mobile : Échap rend le focus au bouton.
 import Link from 'next/link'
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
@@ -36,9 +36,19 @@ function MenuIcon({ open }: { open: boolean }) {
 export default function SiteNav({ promoteCta = false, wide = false }: { promoteCta?: boolean; wide?: boolean }) {
   const stage = useSyncExternalStore(subscribeScroll, scrollStage, scrollStageOnServer)
   const [open, setOpen] = useState(false)
+  const [finalCtaVisible, setFinalCtaVisible] = useState(false)
   const panelId = useId()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (!promoteCta) return
+    const finalCta = document.querySelector('[data-final-cta]')
+    if (!finalCta) return
+    const observer = new IntersectionObserver(([entry]) => setFinalCtaVisible(entry.isIntersecting))
+    observer.observe(finalCta)
+    return () => observer.disconnect()
+  }, [promoteCta])
 
   useEffect(() => {
     if (!open) return
@@ -71,7 +81,7 @@ export default function SiteNav({ promoteCta = false, wide = false }: { promoteC
         <div className="ui-nav-right">
           <Link href={LANDING_ROUTES.becomeCoach} className="ui-nav-login ui-nav-coach">Devenir coach</Link>
           <Link href={LANDING_ROUTES.login} className="ui-nav-login">Se connecter</Link>
-          <Button href={LANDING_ROUTES.register} size="sm" variant={promoteCta && stage === 2 ? 'primary' : 'secondary'} className="ui-nav-cta">Créer mon compte</Button>
+          <Button href={LANDING_ROUTES.register} size="sm" variant={promoteCta && stage === 2 && !finalCtaVisible ? 'primary' : 'secondary'} className="ui-nav-cta">Créer mon compte</Button>
           <button
             ref={buttonRef}
             type="button"

@@ -241,12 +241,13 @@ textarea.ui-input { min-height: 96px; padding: var(--space-2) var(--space-3); re
   min-width: 0;
   padding: var(--space-3);
   margin: 0 calc(-1 * var(--space-3));
-  border-bottom: 1px solid var(--border);
   border-radius: var(--radius-control);
   color: inherit;
   text-decoration: none;
   transition: background-color var(--dur-hover) ease;
 }
+/* Le filet reste droit et s'aligne sur le texte : posé sur la ligne arrondie, il remontait aux deux bouts. */
+.ui-row::after { content: ""; position: absolute; left: var(--space-3); right: var(--space-3); bottom: 0; border-bottom: 1px solid var(--border); pointer-events: none; }
 .ui-row .t-heading { transition: color var(--dur-hover) ease; }
 .ui-row-link { cursor: pointer; }
 .ui-row-link:active, .ui-row.is-active { background: var(--surface); }

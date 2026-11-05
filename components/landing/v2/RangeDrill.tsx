@@ -167,7 +167,7 @@ export default function RangeDrill({ ranges, sequence, firstHand }: RangeDrillPr
           <h2 id="exercice-title" className="t-caps">{index === 0 ? 'Main du jour' : `Main ${index + 1}`}</h2>
           <div key={index} className="lp-hand-in">
             <PlayingCards hand={current.hand} />
-            <p ref={questionRef} className="lp-question" tabIndex={-1}>{copy.question}<span className="num">{current.hand}</span> ?</p>
+            <p ref={questionRef} className="lp-question" tabIndex={-1}>{copy.question}<span className="num">{current.hand}</span>&nbsp;?</p>
           </div>
           <form className="lp-choices" action={LANDING_ROUTES.trainerRanges} method="get" onSubmit={(event: FormEvent) => event.preventDefault()}>
             {CHOICES.map((choice) => (

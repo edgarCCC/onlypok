@@ -9,7 +9,7 @@ export default function FinalCta() {
         <div className="lp-final-panel on-ink">
         <h2 id="cta-title" className="t-display">Crée ton compte. <span>Le reste vient après.</span></h2>
         <p className="lp-final-sub">C’est gratuit. Tu choisiras une formation, un coach, ou juste le trainer.</p>
-        <div className="lp-cta-row">
+        <div className="lp-cta-row" data-final-cta>
           <Button variant="primary" size="lg" href={LANDING_ROUTES.register}>Créer mon compte</Button>
           <Button variant="link" arrow="right" href={LANDING_ROUTES.trainer}>Continuer sans compte&nbsp;: le trainer</Button>
         </div>
