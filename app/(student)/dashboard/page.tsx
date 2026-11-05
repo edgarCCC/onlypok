@@ -335,7 +335,7 @@ export default function StudentDashboard() {
           <section aria-labelledby="sd-tools" className="sd-section">
             <h2 id="sd-tools" className="t-caps sd-label">Outils</h2>
             <ul className="sd-rows">
-              <li><Link href="/train/ranges" className="sd-row"><span className="sd-row-title">Entraîneur de ranges<span className="sd-row-sub">Drill, quiz, explorateur</span></span></Link></li>
+              <li><Link href="/train/ranges" className="sd-row"><span className="sd-row-title">Entraîneur de ranges<span className="sd-row-sub">Drill, explorateur</span></span></Link></li>
               <li><Link href="/train/equity" className="sd-row"><span className="sd-row-title">Équité<span className="sd-row-sub">Calcul et estimation</span></span></Link></li>
               <li><Link href="/tracker/dashboard" className="sd-row"><span className="sd-row-title">Tracker<span className="sd-row-sub">Bankroll, résultats, stats</span></span></Link></li>
             </ul>

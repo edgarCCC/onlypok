@@ -9,10 +9,9 @@ import Explorer from './Explorer'
 import ToolBar from './ToolBar'
 import './trainer.css'
 
-type Tab = 'drill' | 'quiz' | 'explore' | 'custom'
+type Tab = 'drill' | 'explore' | 'custom'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'drill', label: 'Drill' },
-  { id: 'quiz', label: 'Quiz' },
   { id: 'explore', label: 'Explorer' },
   { id: 'custom', label: 'Ma range' },
 ]
@@ -82,7 +81,7 @@ export default function RangesTool({ backHref = '/trainer' }: { backHref?: strin
     }
   }, [onError])
 
-  const playing = tab === 'drill' || tab === 'quiz'
+  const playing = tab === 'drill'
 
   return (
     <div className="tr">
@@ -112,7 +111,7 @@ export default function RangesTool({ backHref = '/trainer' }: { backHref?: strin
         <Settings value={settings} onClose={() => setShowSettings(false)} onApply={(next) => { setSettings(next); setSeries((value) => value + 1); setShowSettings(false) }} />
       )}
 
-      {playing && <Drill key={`${tab}-${series}`} quiz={tab === 'quiz'} positions={settings.positions} stacks={settings.stacks} count={settings.count} onOpenSettings={onOpenSettings} onError={onError} />}
+      {playing && <Drill key={`${tab}-${series}`} positions={settings.positions} stacks={settings.stacks} count={settings.count} onOpenSettings={onOpenSettings} onError={onError} />}
       {tab === 'explore' && <Explorer />}
       {tab === 'custom' && <CustomRange map={customMap} setMap={updateMap} onError={onError} />}
 

@@ -1,5 +1,5 @@
 'use client'
-// Le drill et le quiz : même écran, seule la règle change (le quiz note et masque la range jusqu'à la réponse).
+// Le drill : une main, une action, la range peut rester masquée ou s'ouvrir à la demande.
 // Aucune attente sur le chemin de l'entrée (apple-design §1 et §3) : une bonne réponse enchaîne seule, « Main suivante » coupe l'attente,
 // une erreur reste affichée tant que tu n'as pas lu la grille.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -15,7 +15,6 @@ interface Scenario { cards: [string, string]; hand: string; position: Position; 
 interface Result { hand: string; position: Position; stack: number; userAction: string; correctAction: string; pts: number; label: string }
 
 export interface DrillProps {
-  quiz: boolean
   positions: Position[]
   stacks: number[]
   count: number
@@ -49,18 +48,14 @@ function correctActionOf(rangeKey: string, hand: string) {
   return 'Fold'
 }
 
-function grade(quiz: boolean, action: string, correct: string): { label: string; pts: number } {
+function grade(action: string, correct: string): { label: string; pts: number } {
   const edge = correct === 'Tightifie' || correct === 'Loosifie'
-  if (action === correct) return { label: quiz ? 'Parfait' : 'Juste', pts: quiz ? 3 : 1 }
-  if (!quiz) {
-    const accepted = (action.includes('Raise') && edge) || (action === 'Fold' && correct === 'Tightifie')
-    return accepted ? { label: 'Juste', pts: 1 } : { label: 'Faux', pts: 0 }
-  }
-  const close = (action.includes('Raise') && edge) || (action === 'Fold' && correct === 'Tightifie') || ((action === 'Tightifie' || action === 'Loosifie') && correct.includes('Raise'))
-  return close ? { label: 'Proche', pts: 1 } : { label: 'Raté', pts: 0 }
+  if (action === correct) return { label: 'Juste', pts: 1 }
+  const accepted = (action.includes('Raise') && edge) || (action === 'Fold' && correct === 'Tightifie')
+  return accepted ? { label: 'Juste', pts: 1 } : { label: 'Faux', pts: 0 }
 }
 
-export default function Drill({ quiz, positions, stacks, count, onOpenSettings, onError }: DrillProps) {
+export default function Drill({ positions, stacks, count, onOpenSettings, onError }: DrillProps) {
   const [scenario, setScenario] = useState<Scenario | null>(null)
   const [index, setIndex] = useState(0)
   const [answered, setAnswered] = useState<Result | null>(null)
@@ -111,12 +106,12 @@ export default function Drill({ quiz, positions, stacks, count, onOpenSettings, 
   const answer = useCallback((action: string) => {
     if (!scenario || answered) return
     const correctAction = correctActionOf(rangeKey, scenario.hand)
-    const { label, pts } = grade(quiz, action, correctAction)
+    const { label, pts } = grade(action, correctAction)
     const result: Result = { hand: scenario.hand, position: scenario.position, stack: scenario.stack, userAction: action, correctAction, pts, label }
     setAnswered(result)
     setResults((previous) => [...previous, result])
     if (pts > 0 && action === correctAction) timer.current = window.setTimeout(goNext, ADVANCE_MS)
-  }, [scenario, answered, rangeKey, quiz, goNext])
+  }, [scenario, answered, rangeKey, goNext])
 
   const next = useCallback(() => {
     goNext()
@@ -139,12 +134,11 @@ export default function Drill({ quiz, positions, stacks, count, onOpenSettings, 
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [answered, finished, buttons, answer, next])
 
-  if (finished) return <Summary quiz={quiz} results={results} count={count} onReplay={restart} onOpenSettings={onOpenSettings} />
+  if (finished) return <Summary results={results} count={count} onReplay={restart} onOpenSettings={onOpenSettings} />
   if (!scenario || !range) return <div className="tr-main" />
 
   const points = results.reduce((sum, result) => sum + result.pts, 0)
-  const streak = (() => { let run = 0; for (let i = results.length - 1; i >= 0 && results[i].pts > 0; i--) run++; return run })()
-  const revealed = !!answered || (!quiz && peek)
+  const revealed = !!answered || peek
   const name = range.name[0]
 
   return (
@@ -157,8 +151,7 @@ export default function Drill({ quiz, positions, stacks, count, onOpenSettings, 
           </div>
           <dl className="tr-score">
             <div><dt>Main</dt><dd>{index + 1}/{count}</dd></div>
-            <div><dt>{quiz ? 'Points' : 'Justes'}</dt><dd>{points}</dd></div>
-            {quiz && streak >= 2 && <div><dt>Série</dt><dd>{streak}</dd></div>}
+            <div><dt>Justes</dt><dd>{points}</dd></div>
           </dl>
         </header>
         <ActionPath position={scenario.position} stack={scenario.stack} />
@@ -188,13 +181,13 @@ export default function Drill({ quiz, positions, stacks, count, onOpenSettings, 
           {answered ? (
             <>
               <p>
-                <strong className={answered.pts > 0 ? 'ui-gain' : 'ui-loss'}>{answered.label}{quiz ? ` +${answered.pts}` : ''}</strong>
+                <strong className={answered.pts > 0 ? 'ui-gain' : 'ui-loss'}>{answered.label}</strong>
                 {' '}{answered.hand} : {answered.correctAction}.
               </p>
               <button type="button" className="ui-btn ui-btn-primary ui-btn-sm" onClick={next}>{index + 1 >= count ? 'Voir le résultat' : 'Main suivante'}</button>
             </>
           ) : (
-            <p className="t-3">{quiz ? 'La range se révèle après ta réponse.' : 'Choisis ton action.'}</p>
+            <p className="t-3">Choisis ton action.</p>
           )}
         </div>
       </section>
@@ -205,7 +198,7 @@ export default function Drill({ quiz, positions, stacks, count, onOpenSettings, 
             <p className="t-caps">Range d’ouverture</p>
             <p className="tr-panel-title">{name} · {scenario.stack} bb</p>
           </div>
-          {!quiz && !answered && (
+          {!answered && (
             <button type="button" className="ui-btn ui-btn-secondary ui-btn-sm" aria-pressed={peek} onClick={() => setPeek((value) => !value)}>
               {peek ? 'Masquer' : 'Voir la range'}
             </button>
@@ -243,30 +236,17 @@ function Split({ split, visible }: { split: { action: string; combos: number }[]
   )
 }
 
-function Summary({ quiz, results, count, onReplay, onOpenSettings }: { quiz: boolean; results: Result[]; count: number; onReplay: () => void; onOpenSettings: () => void }) {
-  const points = results.reduce((sum, result) => sum + result.pts, 0)
+function Summary({ results, count, onReplay, onOpenSettings }: { results: Result[]; count: number; onReplay: () => void; onOpenSettings: () => void }) {
   const good = results.filter((result) => result.pts > 0).length
-  const errors = results.filter((result) => result.userAction !== result.correctAction && result.pts < (quiz ? 3 : 1))
-  const best = results.reduce((state, result) => {
-    const run = result.pts > 0 ? state.run + 1 : 0
-    return { run, best: Math.max(state.best, run) }
-  }, { run: 0, best: 0 }).best
-  const headline = quiz ? `${points}` : `${Math.round((good / Math.max(1, results.length)) * 100)} %`
+  const errors = results.filter((result) => result.userAction !== result.correctAction && result.pts < 1)
+  const headline = `${Math.round((good / Math.max(1, results.length)) * 100)} %`
   return (
     <div className="tr-summary">
       <header>
-        <p className="t-caps">{quiz ? 'Quiz terminé' : 'Série terminée'}</p>
+        <p className="t-caps">Série terminée</p>
         <p className="tr-summary-num">{headline}</p>
-        <p className="t-2">{quiz ? `points sur ${count * 3}` : `${good} justes sur ${count} mains`}</p>
+        <p className="t-2">{good} justes sur {count} mains</p>
       </header>
-      {quiz && (
-        <dl className="tr-summary-stats">
-          <div><dt>Parfait</dt><dd>{results.filter((r) => r.pts === 3).length}</dd></div>
-          <div><dt>Proche</dt><dd>{results.filter((r) => r.pts === 1).length}</dd></div>
-          <div><dt>Raté</dt><dd>{results.filter((r) => r.pts === 0).length}</dd></div>
-          <div><dt>Meilleure série</dt><dd>{best}</dd></div>
-        </dl>
-      )}
       {errors.length > 0 ? (
         <table className="tr-table-data">
           <caption className="t-caps">À revoir</caption>
