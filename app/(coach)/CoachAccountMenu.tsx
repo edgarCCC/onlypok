@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import {
-  UserRound, ExternalLink, Star, BarChart2, Target, Settings, LogOut, ChevronDown,
+  UserRound, ExternalLink, Star, Settings, LogOut, ChevronDown,
   type LucideIcon,
 } from 'lucide-react'
 import { NAV } from './coach-nav'
@@ -23,13 +23,6 @@ export function accountLinks(coachId: string | undefined): { title: string; link
         { href: '/coach/profile', label: 'Mon profil', icon: UserRound },
         ...(coachId ? [{ href: `/coaches/${coachId}`, label: 'Voir ma page publique', icon: ExternalLink, external: true }] : []),
         { href: '/coach/reviews', label: 'Avis reçus', icon: Star },
-      ],
-    },
-    {
-      title: 'Outils joueur',
-      links: [
-        { href: '/tracker',       label: 'Tracker', icon: BarChart2 },
-        { href: '/coach/trainer', label: 'Trainer', icon: Target },
       ],
     },
     {

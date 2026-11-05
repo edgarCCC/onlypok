@@ -138,10 +138,20 @@
 .coach-menu-item:hover { background: color-mix(in srgb, var(--overlay) 5%, transparent); color: var(--coach-cream); }
 .coach-menu-danger:hover { background: color-mix(in srgb, var(--error) 8%, transparent); color: var(--error); }
 
+/* Huit onglets : la barre se resserre par paliers, mesurés avec un nom long et deux compteurs « 99+ ». */
+@media (max-width: 1320px) {
+  .coach-account-name, .coach-account-chevron { display: none; }
+}
+@media (max-width: 1180px) {
+  .coach-tab { padding: 0 9px; }
+  .coach-tab::after { left: 9px; right: 9px; }
+  .coach-tab svg { display: none; }
+}
+
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
 .coach-bottom-bar { display: none; }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .coach-tabs, .coach-account-name, .coach-account-chevron { display: none; }
   .coach-header { padding: 0 16px; }
 
