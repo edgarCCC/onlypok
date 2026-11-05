@@ -776,7 +776,7 @@ export default function EditFormationPage() {
             <div style={card({ padding: 20 })}>
               <p style={label()}>Publication</p>
               <button onClick={togglePublish}
-                style={{ width: '100%', marginTop: 12, padding: '13px', borderRadius: 11, border: formation.published ? '1px solid color-mix(in srgb, var(--error) 30%, transparent)' : 'none', background: formation.published ? 'color-mix(in srgb, var(--error) 10%, transparent)' : `transparent`, color: formation.published ? 'var(--error)' : 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s', boxShadow: formation.published ? 'none' : 'none' }}
+                style={{ width: '100%', marginTop: 12, padding: '13px', borderRadius: 11, border: formation.published ? '1px solid color-mix(in srgb, var(--error) 30%, transparent)' : 'none', background: formation.published ? 'color-mix(in srgb, var(--error) 10%, transparent)' : 'var(--brand)', color: formation.published ? 'var(--error)' : 'var(--on-brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s', boxShadow: formation.published ? 'none' : 'none' }}
                 onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.opacity = '0.82'}
                 onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.opacity = '1'}>
                 {formation.published ? <><EyeOff size={14} /> Dépublier</> : <><Eye size={14} /> Publier</>}

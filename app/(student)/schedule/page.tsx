@@ -13,7 +13,6 @@ import {
 
 const CREAM  = 'var(--text)'
 const SILVER = 'var(--text-2)'
-const DIM    = 'color-mix(in srgb, var(--brand) 20%, transparent)'
 const PURPLE = 'var(--brand)'
 const CYAN   = 'var(--brand)'
 const AMBER  = 'var(--brand)'
@@ -318,28 +317,8 @@ function Dashboard() {
 
         <div style={{ marginBottom: 36 }}>
           <p style={{ fontSize: 11, color: SILVER, marginBottom: 8, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Mon espace</p>
-          <h1 style={{ fontSize: 36, fontWeight: 600, color: CREAM, letterSpacing: '-1px', margin: 0, fontFamily: 'var(--font-syne,sans-serif)' }}>Planning & achats</h1>
+          <h1 style={{ fontSize: 'var(--text-title)', fontWeight: 600, color: CREAM, letterSpacing: '-.022em', margin: 0 }}>Planning & achats</h1>
           <p style={{ fontSize: 13, color: SILVER, marginTop: 8 }}>Tes sessions de coaching et tes formations achetées.</p>
-        </div>
-
-        {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10, marginBottom: 36 }}>
-          {[
-            { label: 'Action requise', value: awaiting.length + pending.length, color: AMBER,  icon: AlertCircle },
-            { label: 'À venir',        value: upcoming.length,                  color: EMER,   icon: CheckCircle },
-            { label: 'Passées',        value: pastAll.length,                   color: PURPLE, icon: Zap },
-            { label: 'Formations',     value: purchases.length,                 color: CYAN,   icon: BookOpen },
-          ].map(({ label, value, color, icon: Icon }) => (
-            <div key={label} style={{ background: `color-mix(in srgb, ${color} 2%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 9%, transparent)`, borderRadius: 14, padding: '16px 18px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-                <div style={{ width: 24, height: 24, borderRadius: 6, background: `color-mix(in srgb, ${color} 9%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon size={11} color={color} />
-                </div>
-                <span style={{ fontSize: 10, fontWeight: 600, color: SILVER, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</span>
-              </div>
-              <div style={{ fontSize: 26, fontWeight: 600, color: CREAM, letterSpacing: '-1px' }}>{value}</div>
-            </div>
-          ))}
         </div>
 
         {/* Awaiting coach approval */}

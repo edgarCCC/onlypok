@@ -346,12 +346,12 @@ export function BookingCard({
             onMouseEnter={e => {
               if (!busy) {
                 (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'
-                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = `0 6px 22px color-mix(in srgb, ${GREEN} 31%, transparent)`
+                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'
               }
             }}
             onMouseLeave={e => {
               (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
-              ;(e.currentTarget as HTMLButtonElement).style.boxShadow = `0 4px 16px color-mix(in srgb, ${GREEN} 19%, transparent)`
+              ;(e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'
             }}
           >
             {busy === 'accept'

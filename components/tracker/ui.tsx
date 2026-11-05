@@ -78,9 +78,11 @@ export function TrackerShell({ children, actions, wide }: {
           </nav>
           <div className="trk-actions">
             {actions}
-            <Link href="/tracker/import" className="ui-btn ui-btn-secondary ui-btn-sm">
-              <Upload size={14} aria-hidden="true" /> Importer
-            </Link>
+            {pathname !== '/tracker/import' && (
+              <Link href="/tracker/import" className="ui-btn ui-btn-secondary ui-btn-sm">
+                <Upload size={14} aria-hidden="true" /> Importer
+              </Link>
+            )}
           </div>
         </div>
 

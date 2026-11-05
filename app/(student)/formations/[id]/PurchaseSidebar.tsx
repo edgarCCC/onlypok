@@ -157,8 +157,8 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
                 ? 'color-mix(in srgb, var(--brand) 12%, transparent)'
                 : ctaDisabled && !paying
                   ? 'color-mix(in srgb, var(--overlay) 5%, transparent)'
-                  : `transparent`,
-              color: hasPurchased ? 'var(--brand)' : ctaDisabled && !paying ? SILVER : 'var(--text)',
+                  : 'var(--brand)',
+              color: hasPurchased ? 'var(--text)' : ctaDisabled && !paying ? SILVER : 'var(--on-brand)',
               fontSize: 14, fontWeight: 800, cursor: ctaDisabled ? 'default' : 'pointer',
               opacity: paying ? 0.75 : 1,
               boxShadow: hasPurchased || ctaDisabled ? 'none' : 'none',
@@ -166,8 +166,8 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
               letterSpacing: '0.01em', marginBottom: checkoutError ? 12 : 20,
               position: 'relative', overflow: 'hidden',
             }}
-            onMouseEnter={e => { if (!ctaDisabled) { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 16px 48px color-mix(in srgb, ${typeColor} 40%, transparent), inset 0 1px 0 color-mix(in srgb, var(--overlay) 25%, transparent)` } }}
-            onMouseLeave={e => { if (!ctaDisabled) { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 32px color-mix(in srgb, ${typeColor} 27%, transparent), inset 0 1px 0 color-mix(in srgb, var(--overlay) 15%, transparent)` } }}>
+            onMouseEnter={e => { if (!ctaDisabled) { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none' } }}
+            onMouseLeave={e => { if (!ctaDisabled) { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none' } }}>
             {paying ? (
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
@@ -187,7 +187,7 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
               transition: 'all 0.18s cubic-bezier(0.4,0,0.2,1)',
               letterSpacing: '0.01em',
             }}
-              onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = `color-mix(in srgb, ${typeColor} 19%, transparent)`; b.style.boxShadow = `0 0 24px color-mix(in srgb, ${typeColor} 25%, transparent)`; b.style.transform = 'translateY(-1px)' }}
+              onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = `color-mix(in srgb, ${typeColor} 19%, transparent)`; b.style.boxShadow = 'none'; b.style.transform = 'translateY(-1px)' }}
               onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = `color-mix(in srgb, ${typeColor} 9%, transparent)`; b.style.boxShadow = 'none'; b.style.transform = 'translateY(0)' }}>
               Racheter — {effectivePrice}€ →
             </button>
@@ -208,13 +208,13 @@ export default function PurchaseSidebar({ formation, contentType, typeColor, pac
               onMouseEnter={e => {
                 const b = e.currentTarget as HTMLButtonElement
                 b.style.background = `color-mix(in srgb, ${typeColor} 19%, transparent)`
-                b.style.boxShadow = `0 0 24px color-mix(in srgb, ${typeColor} 25%, transparent)`
+                b.style.boxShadow = 'none'
                 b.style.transform = 'translateY(-1px)'
               }}
               onMouseLeave={e => {
                 const b = e.currentTarget as HTMLButtonElement
                 b.style.background = `color-mix(in srgb, ${typeColor} 9%, transparent)`
-                b.style.boxShadow = `0 0 0 0 color-mix(in srgb, ${typeColor} 0%, transparent)`
+                b.style.boxShadow = 'none'
                 b.style.transform = 'translateY(0)'
               }}>
               Acheter{effectivePrice > 0 ? ` — ${effectivePrice}€` : ''} · planifier plus tard →

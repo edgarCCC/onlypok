@@ -398,7 +398,7 @@ export default function ReviewSection({ reviews, avgRating, distribution, catego
 
         {reviews.length === 0 ? (
           <div style={{ background: 'color-mix(in srgb, var(--brand) 2%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 7%, transparent)', borderRadius: 14, padding: '64px', textAlign: 'center' }}>
-            <p style={{ color: SILVER, fontSize: 14, margin: 0 }}>Pas encore d'avis — soyez le premier !</p>
+            <p style={{ color: SILVER, fontSize: 14, margin: 0 }}>Pas encore d'avis, sois le premier !</p>
           </div>
         ) : (
           <>

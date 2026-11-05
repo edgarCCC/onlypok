@@ -447,8 +447,7 @@ export default function CoachProfilePage() {
                   onChange={e => { const f = e.target.files?.[0]; if (f) setCropFile(f); e.target.value = '' }} />
 
                 {/* Banner — overflow hidden scoped here only */}
-                <div style={{ height: 100, borderRadius: '18px 18px 0 0', overflow: 'hidden', position: 'relative', background: `linear-gradient(135deg, color-mix(in srgb, ${bannerColor} 33%, transparent) 0%, color-mix(in srgb, ${bannerColor} 13%, transparent) 50%, color-mix(in srgb, var(--bg) 60%, transparent) 100%)` }}>
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, color-mix(in srgb, var(--bg) 55%, transparent) 100%)' }} />
+                <div style={{ height: 100, borderRadius: '18px 18px 0 0', overflow: 'hidden', position: 'relative', background: 'var(--surface-2)' }}>
                   {/* Rate badge */}
                   {hourlyRate && (
                     <div style={{ position: 'absolute', top: 12, right: 14, background: 'color-mix(in srgb, var(--bg) 72%, transparent)', backdropFilter: 'blur(8px)', border: `1px solid color-mix(in srgb, ${bannerColor} 31%, transparent)`, borderRadius: 10, padding: '5px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -465,7 +464,7 @@ export default function CoachProfilePage() {
                 <div
                   onClick={() => avatarRef.current?.click()}
                   title="Cliquer pour changer la photo"
-                  style={{ position: 'absolute', top: 72, left: 18, zIndex: 10, width: 56, height: 56, borderRadius: '50%', border: `3px solid var(--bg)`, overflow: 'hidden', cursor: 'pointer', background: avatarUrl ? 'transparent' : `transparent`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: 'var(--text)', boxShadow: 'none' }}>
+                  style={{ position: 'absolute', top: 72, left: 18, zIndex: 10, width: 56, height: 56, borderRadius: '50%', border: `3px solid var(--bg)`, overflow: 'hidden', cursor: 'pointer', background: avatarUrl ? 'transparent' : 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: 'var(--text)', boxShadow: 'none' }}>
                   {avatarUrl
                     // eslint-disable-next-line @next/next/no-img-element
                     ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

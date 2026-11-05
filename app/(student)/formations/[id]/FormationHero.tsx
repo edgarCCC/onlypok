@@ -268,7 +268,7 @@ export default function FormationHero({ formation, contentType, typeColor, varia
             padding: '12px 16px', borderRadius: 12,
             background: `color-mix(in srgb, ${typeColor} 2%, transparent)`, border: `1px solid color-mix(in srgb, ${typeColor} 9%, transparent)`, maxWidth: 580 }}>
             <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-              background: reviews[0].student?.avatar_url ? 'transparent' : `transparent`,
+              background: reviews[0].student?.avatar_url ? 'transparent' : 'var(--surface-2)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 11, fontWeight: 700, color: 'var(--text)', position: 'relative' }}>
               {reviews[0].student?.avatar_url

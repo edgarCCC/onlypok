@@ -127,7 +127,7 @@ export default function StudentsPage() {
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
           <p style={{ fontSize: 11, color: SILVER, marginBottom: 10, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Communauté</p>
-          <h1 className="cstu-title" style={{ fontSize: 44, fontWeight: 700, color: CREAM, letterSpacing: '-1.5px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>Mes élèves</h1>
+          <h1 className="cstu-title" style={{ fontSize: 'var(--text-title)', fontWeight: 600, color: CREAM, letterSpacing: '-.022em', lineHeight: 1.14, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>Mes élèves</h1>
         </div>
 
         {/* KPIs */}

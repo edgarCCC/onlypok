@@ -907,7 +907,7 @@ function CoachMessagesInner() {
               ) : thread.length === 0 ? (
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <p style={{ color: SILVER, fontSize: 13, textAlign: 'center', maxWidth: 280 }}>
-                    Démarrez la conversation avec{' '}
+                    Démarre la conversation avec{' '}
                     <strong style={{ color: CREAM, fontWeight: 600 }}>
                       {activeConv.student.username ?? 'cet élève'}
                     </strong>{' '}

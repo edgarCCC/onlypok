@@ -611,7 +611,7 @@ function LearnInner() {
                     <div>
                       <div style={{ height: 5, background: 'color-mix(in srgb, var(--overlay) 5%, transparent)', borderRadius: 99, overflow: 'hidden', marginBottom: 6 }}>
                         <div style={{ height: '100%', width: `${progressPct}%`, borderRadius: 99,
-                          background: progressPct === 100 ? EMER : `transparent`,
+                          background: progressPct === 100 ? EMER : 'var(--brand)',
                           transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)',
                           boxShadow: progressPct > 0 ? 'none' : 'none' }} />
                       </div>

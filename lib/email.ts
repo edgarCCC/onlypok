@@ -91,12 +91,12 @@ function shell(body: string) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #07090e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #e8e4dc; }
-    a { color: #a78bfa; }
+    body { background: #0F1F17; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #EAEBE4; }
+    a { color: #C7CBB8; }
   </style>
 </head>
-<body style="background:#07090e; padding: 0;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#07090e; padding: 40px 16px;">
+<body style="background:#0F1F17; padding: 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0F1F17; padding: 40px 16px;">
     <tr><td align="center">
       <table width="100%" style="max-width:560px;">
 
@@ -104,21 +104,21 @@ function shell(body: string) {
         <tr><td style="padding-bottom:28px;">
           <table cellpadding="0" cellspacing="0">
             <tr>
-              <td style="width:8px;height:8px;border-radius:2px;background:linear-gradient(135deg,#7c3aed,#06b6d4);"></td>
-              <td style="padding-left:10px;font-size:14px;font-weight:700;letter-spacing:0.18em;color:#e8e4dc;">ONLYPOK</td>
+              <td style="width:8px;height:8px;border-radius:2px;background:#C7CBB8;"></td>
+              <td style="padding-left:10px;font-size:14px;font-weight:700;letter-spacing:0.18em;color:#EAEBE4;">ONLYPOK</td>
             </tr>
           </table>
         </td></tr>
 
         <!-- Card -->
-        <tr><td style="background:#0d1117;border:1px solid rgba(232,228,220,0.09);border-radius:16px;padding:32px 32px 28px;">
+        <tr><td style="background:#162B21;border:1px solid rgba(199,203,184,0.09);border-radius:16px;padding:32px 32px 28px;">
           ${body}
         </td></tr>
 
         <!-- Footer -->
-        <tr><td style="padding-top:24px;text-align:center;font-size:11px;color:rgba(232,228,220,0.3);line-height:1.6;">
+        <tr><td style="padding-top:24px;text-align:center;font-size:11px;color:#9EA994;line-height:1.6;">
           OnlyPok — la plateforme des coachs poker<br/>
-          <a href="${getAppUrl()}" style="color:rgba(232,228,220,0.3);text-decoration:none;">${esc(getAppUrl().replace(/^https?:\/\//, ''))}</a>
+          <a href="${getAppUrl()}" style="color:#9EA994;text-decoration:none;">${esc(getAppUrl().replace(/^https?:\/\//, ''))}</a>
         </td></tr>
 
       </table>
@@ -134,8 +134,8 @@ function pill(text: string, color: string, bg: string) {
 }
 
 /* ── CTA button ───────────────────────────────────────────── */
-function cta(text: string, href: string, color = '#7c3aed') {
-  return `<a href="${href}" style="display:inline-block;margin-top:22px;padding:12px 24px;border-radius:10px;background:${color};color:#fff;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.02em;">${text}</a>`
+function cta(text: string, href: string) {
+  return `<a href="${href}" style="display:inline-block;margin-top:22px;padding:12px 24px;border-radius:10px;background:#C7CBB8;color:#0F1F17;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.02em;">${text}</a>`
 }
 
 /* ─────────────────────────────────────────────────────────── */
@@ -156,44 +156,44 @@ export async function sendCoachNewBookingEmail({
   const appUrl = getAppUrl()
 
   const html = shell(`
-    <p style="font-size:12px;color:rgba(232,228,220,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Nouvelle réservation</p>
+    <p style="font-size:12px;color:#9EA994;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Nouvelle réservation</p>
 
-    <h1 style="font-size:22px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;">
+    <h1 style="font-size:22px;font-weight:800;color:#EAEBE4;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;">
       ${esc(studentUsername)} veut un coaching
     </h1>
 
-    <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:24px;line-height:1.55;">
-      Un élève vient de réserver votre coaching. Vous avez <strong style="color:#f59e0b;">${COACH_APPROVAL_HOURS} heures</strong> pour accepter ou refuser la demande.
+    <p style="font-size:14px;color:#C7CBB8;margin-bottom:24px;line-height:1.55;">
+      Un élève vient de réserver ton coaching. Tu as <strong style="color:#E39A87;">${COACH_APPROVAL_HOURS} heures</strong> pour accepter ou refuser la demande.
     </p>
 
-    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(232,228,220,0.03);border:1px solid rgba(232,228,220,0.07);border-radius:12px;padding:16px 18px;margin-bottom:8px;">
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(199,203,184,0.03);border:1px solid rgba(199,203,184,0.07);border-radius:12px;padding:16px 18px;margin-bottom:8px;">
       <tr>
-        <td style="font-size:12px;color:rgba(232,228,220,0.4);padding-bottom:6px;">Formation</td>
-        <td align="right">${pill('Coaching', '#7c3aed', 'rgba(124,58,237,0.12)')}</td>
+        <td style="font-size:12px;color:#9EA994;padding-bottom:6px;">Formation</td>
+        <td align="right">${pill('Coaching', '#C7CBB8', 'rgba(199,203,184,0.12)')}</td>
       </tr>
       <tr>
-        <td colspan="2" style="font-size:15px;font-weight:700;color:#e8e4dc;padding-bottom:12px;">${esc(formationTitle)}</td>
+        <td colspan="2" style="font-size:15px;font-weight:700;color:#EAEBE4;padding-bottom:12px;">${esc(formationTitle)}</td>
       </tr>
       ${packLabel ? `<tr>
-        <td style="font-size:12px;color:rgba(232,228,220,0.4);">Pack</td>
-        <td align="right" style="font-size:13px;color:#06b6d4;font-weight:600;">${esc(packLabel)}</td>
+        <td style="font-size:12px;color:#9EA994;">Pack</td>
+        <td align="right" style="font-size:13px;color:#C7CBB8;font-weight:600;">${esc(packLabel)}</td>
       </tr>` : ''}
       ${price != null ? `<tr>
-        <td style="font-size:12px;color:rgba(232,228,220,0.4);padding-top:6px;">Montant retenu</td>
-        <td align="right" style="font-size:16px;font-weight:800;color:#4ade80;">${price}€</td>
+        <td style="font-size:12px;color:#9EA994;padding-top:6px;">Montant retenu</td>
+        <td align="right" style="font-size:16px;font-weight:800;color:#9CCB8E;">${price}€</td>
       </tr>` : ''}
     </table>
 
-    <p style="font-size:12px;color:rgba(232,228,220,0.3);margin-bottom:0;margin-top:8px;">
-      Le paiement est retenu sur le compte de l'élève. Il sera libéré après votre acceptation.
+    <p style="font-size:12px;color:#9EA994;margin-bottom:0;margin-top:8px;">
+      Le paiement est retenu sur le compte de l'élève. Il sera libéré après ton acceptation.
     </p>
 
-    ${cta('Voir la demande →', `${appUrl}/coach/agenda?tab=validate`, '#7c3aed')}
+    ${cta('Voir la demande →', `${appUrl}/coach/agenda?tab=validate`)}
   `)
 
   await sendEmail('coach_new_booking', {
     to:   email,
-    subject: `🎯 ${studentUsername} a réservé votre coaching "${formationTitle}"`,
+    subject: `${studentUsername} a réservé ton coaching "${formationTitle}"`,
     html,
   })
 }
@@ -220,37 +220,37 @@ export async function sendStudentBookingAcceptedEmail({
 
   const html = shell(`
     <div style="text-align:center;margin-bottom:24px;">
-      <div style="display:inline-flex;width:56px;height:56px;border-radius:50%;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);align-items:center;justify-content:center;margin-bottom:12px;">
+      <div style="display:inline-flex;width:56px;height:56px;border-radius:50%;background:rgba(156,203,142,0.12);border:1px solid rgba(156,203,142,0.3);align-items:center;justify-content:center;margin-bottom:12px;">
         <span style="font-size:24px;">✓</span>
       </div>
     </div>
 
-    <p style="font-size:12px;color:rgba(232,228,220,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;text-align:center;">Coaching confirmé</p>
+    <p style="font-size:12px;color:#9EA994;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;text-align:center;">Coaching confirmé</p>
 
-    <h1 style="font-size:22px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:10px;text-align:center;line-height:1.2;">
-      Votre coaching a été accepté&nbsp;!
+    <h1 style="font-size:22px;font-weight:800;color:#EAEBE4;letter-spacing:-0.4px;margin-bottom:10px;text-align:center;line-height:1.2;">
+      Ton coaching a été accepté&nbsp;!
     </h1>
 
-    <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:24px;line-height:1.55;text-align:center;">
-      <strong style="color:#e8e4dc;">${esc(coachUsername)}</strong> a accepté votre demande pour<br/>
-      <em style="color:#a78bfa;">${esc(formationTitle)}</em>.<br/>
+    <p style="font-size:14px;color:#C7CBB8;margin-bottom:24px;line-height:1.55;text-align:center;">
+      <strong style="color:#EAEBE4;">${esc(coachUsername)}</strong> a accepté ta demande pour<br/>
+      <em style="color:#C7CBB8;">${esc(formationTitle)}</em>.<br/>
       ${session
-        ? `Séance confirmée le <strong style="color:#e8e4dc;">${session.dateStr} à ${session.timeStr}</strong> (${EMAIL_TZ_LABEL}). Le lien de visio est dans votre planning.`
-        : 'Retrouvez votre séance dans votre planning : lien de visio, ou choix du créneau s’il reste à planifier.'}
+        ? `Séance confirmée le <strong style="color:#EAEBE4;">${session.dateStr} à ${session.timeStr}</strong> (${EMAIL_TZ_LABEL}). Le lien de visio est dans ton planning.`
+        : 'Retrouve ta séance dans ton planning : lien de visio, ou choix du créneau s’il reste à planifier.'}
     </p>
 
     <div style="text-align:center;">
-      ${cta(session ? 'Voir mon planning →' : 'Ouvrir mon planning →', `${appUrl}/schedule`, '#10b981')}
+      ${cta(session ? 'Voir mon planning →' : 'Ouvrir mon planning →', `${appUrl}/schedule`)}
     </div>
 
-    <p style="font-size:11px;color:rgba(232,228,220,0.25);margin-top:20px;text-align:center;">
+    <p style="font-size:11px;color:#9EA994;margin-top:20px;text-align:center;">
       Référence réservation : ${bookingId.slice(0, 8).toUpperCase()}
     </p>
   `)
 
   await sendEmail('student_booking_accepted', {
     to:   email,
-    subject: `✅ ${coachUsername} a accepté votre coaching "${formationTitle}"`,
+    subject: `${coachUsername} a accepté ton coaching "${formationTitle}"`,
     html,
   })
 }
@@ -271,35 +271,35 @@ export async function sendStudentBookingDeclinedEmail({
   const appUrl = getAppUrl()
 
   const html = shell(`
-    <p style="font-size:12px;color:rgba(232,228,220,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Coaching refusé</p>
+    <p style="font-size:12px;color:#9EA994;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Coaching refusé</p>
 
-    <h1 style="font-size:22px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:10px;line-height:1.2;">
-      Votre demande n'a pas été acceptée
+    <h1 style="font-size:22px;font-weight:800;color:#EAEBE4;letter-spacing:-0.4px;margin-bottom:10px;line-height:1.2;">
+      Ta demande n'a pas été acceptée
     </h1>
 
-    <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:20px;line-height:1.55;">
-      <strong style="color:#e8e4dc;">${esc(coachUsername)}</strong> n'a pas pu accepter votre demande de coaching pour
-      <em style="color:#a78bfa;">${esc(formationTitle)}</em>.
+    <p style="font-size:14px;color:#C7CBB8;margin-bottom:20px;line-height:1.55;">
+      <strong style="color:#EAEBE4;">${esc(coachUsername)}</strong> n'a pas pu accepter ta demande de coaching pour
+      <em style="color:#C7CBB8;">${esc(formationTitle)}</em>.
     </p>
 
-    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:14px 18px;margin-bottom:8px;">
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(156,203,142,0.04);border:1px solid rgba(156,203,142,0.15);border-radius:12px;padding:14px 18px;margin-bottom:8px;">
       <tr>
-        <td style="font-size:13px;color:rgba(232,228,220,0.6);">💚 Votre remboursement</td>
-        <td align="right" style="font-size:13px;color:#4ade80;font-weight:700;">Automatique</td>
+        <td style="font-size:13px;color:#C7CBB8;">Ton remboursement</td>
+        <td align="right" style="font-size:13px;color:#9CCB8E;font-weight:700;">Automatique</td>
       </tr>
       <tr>
-        <td colspan="2" style="font-size:12px;color:rgba(232,228,220,0.3);padding-top:4px;">
-          Le montant sera crédité sur votre moyen de paiement sous 5 à 10 jours ouvrés.
+        <td colspan="2" style="font-size:12px;color:#9EA994;padding-top:4px;">
+          Le montant sera crédité sur ton moyen de paiement sous 5 à 10 jours ouvrés.
         </td>
       </tr>
     </table>
 
-    ${cta('Explorer d\'autres coachs →', `${appUrl}/coaches`, '#7c3aed')}
+    ${cta('Explorer d\'autres coachs →', `${appUrl}/coaches`)}
   `)
 
   await sendEmail('student_booking_declined', {
     to:   email,
-    subject: `Votre demande de coaching "${formationTitle}" — remboursement en cours`,
+    subject: `Ta demande de coaching "${formationTitle}" : remboursement en cours`,
     html,
   })
 }
@@ -310,13 +310,13 @@ export async function sendStudentBookingDeclinedEmail({
 function meetingBlock(meetingUrl: string) {
   const href = esc(meetingUrl)
   return `
-    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.25);border-radius:12px;padding:14px 18px;margin-bottom:22px;">
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(199,203,184,0.06);border:1px solid rgba(199,203,184,0.25);border-radius:12px;padding:14px 18px;margin-bottom:22px;">
       <tr>
-        <td style="font-size:12px;color:rgba(232,228,220,0.4);padding-bottom:6px;">Lien de la session</td>
+        <td style="font-size:12px;color:#9EA994;padding-bottom:6px;">Lien de la session</td>
       </tr>
       <tr>
         <td>
-          <a href="${href}" style="font-size:14px;font-weight:700;color:#06b6d4;text-decoration:none;word-break:break-all;">${href}</a>
+          <a href="${href}" style="font-size:14px;font-weight:700;color:#C7CBB8;text-decoration:none;word-break:break-all;">${href}</a>
         </td>
       </tr>
     </table>`
@@ -345,37 +345,37 @@ export async function sendCoachSlotConfirmedEmail({
   const isPending = !meetingUrl
 
   const html = shell(`
-    <p style="font-size:12px;color:rgba(232,228,220,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">${isPending ? 'Créneau à valider' : 'Session planifiée'}</p>
+    <p style="font-size:12px;color:#9EA994;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">${isPending ? 'Créneau à valider' : 'Session planifiée'}</p>
 
-    <h1 style="font-size:22px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;">
+    <h1 style="font-size:22px;font-weight:800;color:#EAEBE4;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;">
       ${isPending ? 'Nouveau créneau proposé' : 'Nouveau créneau réservé'}
     </h1>
 
-    <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:22px;line-height:1.55;">
-      <strong style="color:#e8e4dc;">${esc(studentUsername)}</strong> ${isPending ? 'propose un créneau' : 'a sélectionné un créneau'} pour votre coaching <em style="color:#a78bfa;">${esc(formationTitle)}</em>.
-      ${isPending ? `Vous avez <strong style="color:#f59e0b;">${COACH_APPROVAL_HOURS} heures</strong> pour accepter ou refuser la demande.` : ''}
+    <p style="font-size:14px;color:#C7CBB8;margin-bottom:22px;line-height:1.55;">
+      <strong style="color:#EAEBE4;">${esc(studentUsername)}</strong> ${isPending ? 'propose un créneau' : 'a sélectionné un créneau'} pour ton coaching <em style="color:#C7CBB8;">${esc(formationTitle)}</em>.
+      ${isPending ? `Tu as <strong style="color:#E39A87;">${COACH_APPROVAL_HOURS} heures</strong> pour accepter ou refuser la demande.` : ''}
     </p>
 
-    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:16px 18px;margin-bottom:22px;">
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(199,203,184,0.06);border:1px solid rgba(199,203,184,0.2);border-radius:12px;padding:16px 18px;margin-bottom:22px;">
       <tr>
-        <td style="font-size:12px;color:rgba(232,228,220,0.4);padding-bottom:4px;">Date</td>
-        <td align="right" style="font-size:14px;font-weight:700;color:#e8e4dc;">${dateStr}</td>
+        <td style="font-size:12px;color:#9EA994;padding-bottom:4px;">Date</td>
+        <td align="right" style="font-size:14px;font-weight:700;color:#EAEBE4;">${dateStr}</td>
       </tr>
       <tr>
-        <td style="font-size:12px;color:rgba(232,228,220,0.4);">Heure (${EMAIL_TZ_LABEL})</td>
-        <td align="right" style="font-size:20px;font-weight:800;color:#06b6d4;">${timeStr}</td>
+        <td style="font-size:12px;color:#9EA994;">Heure (${EMAIL_TZ_LABEL})</td>
+        <td align="right" style="font-size:20px;font-weight:800;color:#C7CBB8;">${timeStr}</td>
       </tr>
     </table>
 
     ${isPending
-      ? `<p style="font-size:12px;color:rgba(232,228,220,0.3);margin-bottom:0;">
-           Le paiement de l'élève est retenu. Le lien de visio est créé quand vous acceptez ; en cas de refus, l'élève est remboursé.
+      ? `<p style="font-size:12px;color:#9EA994;margin-bottom:0;">
+           Le paiement de l'élève est retenu. Le lien de visio est créé quand tu acceptes ; en cas de refus, l'élève est remboursé.
          </p>
-         ${cta('Accepter ou refuser →', `${appUrl}/coach/agenda?tab=validate`, '#f59e0b')}`
+         ${cta('Accepter ou refuser →', `${appUrl}/coach/agenda?tab=validate`)}`
       : `${meetingBlock(meetingUrl)}
-         ${cta('Rejoindre la session →', esc(meetingUrl), '#06b6d4')}
+         ${cta('Rejoindre la session →', esc(meetingUrl))}
          &nbsp;&nbsp;
-         ${cta('Voir mes sessions →', `${appUrl}/coach/agenda?tab=upcoming`, '#7c3aed')}`}
+         ${cta('Voir mes sessions →', `${appUrl}/coach/agenda?tab=upcoming`)}`}
   `)
 
   await sendEmail('coach_slot_proposed', {
@@ -409,34 +409,34 @@ export async function sendStudentSlotConfirmedEmail({
 
   const html = shell(`
     <div style="text-align:center;margin-bottom:22px;">
-      <div style="display:inline-block;padding:10px 20px;border-radius:99px;background:${isPending ? 'rgba(245,158,11,0.12)' : 'rgba(6,182,212,0.12)'};border:1px solid ${isPending ? 'rgba(245,158,11,0.3)' : 'rgba(6,182,212,0.3)'};">
-        <span style="font-size:13px;font-weight:700;color:${isPending ? '#f59e0b' : '#06b6d4'};letter-spacing:0.04em;">${isPending ? 'DEMANDE ENVOYÉE' : 'SESSION CONFIRMÉE'}</span>
+      <div style="display:inline-block;padding:10px 20px;border-radius:99px;background:${isPending ? 'rgba(227,154,135,0.12)' : 'rgba(199,203,184,0.12)'};border:1px solid ${isPending ? 'rgba(227,154,135,0.3)' : 'rgba(199,203,184,0.3)'};">
+        <span style="font-size:13px;font-weight:700;color:${isPending ? '#E39A87' : '#C7CBB8'};letter-spacing:0.04em;">${isPending ? 'DEMANDE ENVOYÉE' : 'SESSION CONFIRMÉE'}</span>
       </div>
     </div>
 
-    <h1 style="font-size:22px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;text-align:center;">
-      ${isPending ? 'Votre demande de créneau est envoyée' : 'Votre créneau est réservé&nbsp;!'}
+    <h1 style="font-size:22px;font-weight:800;color:#EAEBE4;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;text-align:center;">
+      ${isPending ? 'Ta demande de créneau est envoyée' : 'Ton créneau est réservé&nbsp;!'}
     </h1>
 
-    <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:22px;line-height:1.55;text-align:center;">
-      Coaching <em style="color:#a78bfa;">${esc(formationTitle)}</em> avec <strong style="color:#e8e4dc;">${esc(coachUsername)}</strong>
-      ${isPending ? `<br/>Le coach a <strong style="color:#f59e0b;">${COACH_APPROVAL_HOURS} heures</strong> pour confirmer. Vous serez prévenu dès sa réponse ; en cas de refus, vous êtes remboursé.` : ''}
+    <p style="font-size:14px;color:#C7CBB8;margin-bottom:22px;line-height:1.55;text-align:center;">
+      Coaching <em style="color:#C7CBB8;">${esc(formationTitle)}</em> avec <strong style="color:#EAEBE4;">${esc(coachUsername)}</strong>
+      ${isPending ? `<br/>Le coach a <strong style="color:#E39A87;">${COACH_APPROVAL_HOURS} heures</strong> pour confirmer. Tu seras prévenu dès sa réponse ; en cas de refus, tu es remboursé.` : ''}
     </p>
 
-    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:18px 20px;margin-bottom:22px;">
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(199,203,184,0.06);border:1px solid rgba(199,203,184,0.2);border-radius:12px;padding:18px 20px;margin-bottom:22px;">
       <tr>
-        <td colspan="2" style="font-size:24px;font-weight:800;color:#e8e4dc;text-align:center;padding-bottom:6px;">${timeStr}</td>
+        <td colspan="2" style="font-size:24px;font-weight:800;color:#EAEBE4;text-align:center;padding-bottom:6px;">${timeStr}</td>
       </tr>
       <tr>
-        <td colspan="2" style="font-size:13px;color:rgba(232,228,220,0.5);text-align:center;">${dateStr} · ${EMAIL_TZ_LABEL}</td>
+        <td colspan="2" style="font-size:13px;color:#C7CBB8;text-align:center;">${dateStr} · ${EMAIL_TZ_LABEL}</td>
       </tr>
     </table>
 
     ${isPending ? '' : meetingBlock(meetingUrl)}
 
     <div style="text-align:center;">
-      ${isPending ? '' : `${cta('Rejoindre la session →', esc(meetingUrl), '#06b6d4')}\n      &nbsp;&nbsp;`}
-      ${cta('Mon planning →', `${appUrl}/schedule`, '#7c3aed')}
+      ${isPending ? '' : `${cta('Rejoindre la session →', esc(meetingUrl))}\n      &nbsp;&nbsp;`}
+      ${cta('Mon planning →', `${appUrl}/schedule`)}
     </div>
   `)
 
@@ -444,7 +444,7 @@ export async function sendStudentSlotConfirmedEmail({
     to:   email,
     subject: isPending
       ? `⏳ Demande envoyée — ${dateStr} à ${timeStr} (${EMAIL_TZ_LABEL}), en attente du coach`
-      : `📅 Votre coaching confirmé — ${dateStr} à ${timeStr}`,
+      : `Ton coaching est confirmé : ${dateStr} à ${timeStr}`,
     html,
   })
 }
@@ -467,41 +467,41 @@ export async function sendCoachProofReviewedEmail({
   const isApproved = status === 'approved'
 
   const html = shell(`
-    <p style="font-size:12px;color:rgba(232,228,220,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Vérification de preuve</p>
+    <p style="font-size:12px;color:#9EA994;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Vérification de preuve</p>
 
-    <h1 style="font-size:22px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;">
-      ${isApproved ? 'Votre preuve est validée ✓' : 'Votre preuve a été refusée'}
+    <h1 style="font-size:22px;font-weight:800;color:#EAEBE4;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;">
+      ${isApproved ? 'Ta preuve est validée' : 'Ta preuve a été refusée'}
     </h1>
 
-    <p style="font-size:14px;color:rgba(232,228,220,0.55);margin-bottom:24px;line-height:1.55;">
+    <p style="font-size:14px;color:#C7CBB8;margin-bottom:24px;line-height:1.55;">
       ${isApproved
-        ? 'Notre équipe a vérifié votre preuve : elle est maintenant visible sur votre profil public et renforce votre crédibilité auprès des élèves.'
-        : 'Notre équipe a examiné votre preuve mais n\'a pas pu la valider. Vous pouvez en soumettre une nouvelle depuis votre profil.'}
+        ? 'Notre équipe a vérifié ta preuve : elle est maintenant visible sur ton profil public et renforce ta crédibilité auprès des élèves.'
+        : 'Notre équipe a examiné ta preuve mais n\'a pas pu la valider. Tu peux en soumettre une nouvelle depuis ton profil.'}
     </p>
 
-    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(232,228,220,0.03);border:1px solid rgba(232,228,220,0.07);border-radius:12px;padding:16px 18px;margin-bottom:8px;">
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(199,203,184,0.03);border:1px solid rgba(199,203,184,0.07);border-radius:12px;padding:16px 18px;margin-bottom:8px;">
       <tr>
-        <td style="font-size:12px;color:rgba(232,228,220,0.4);padding-bottom:6px;">Catégorie</td>
+        <td style="font-size:12px;color:#9EA994;padding-bottom:6px;">Catégorie</td>
         <td align="right">${isApproved
-          ? pill('Validée', '#4ade80', 'rgba(74,222,128,0.12)')
-          : pill('Refusée', '#ef4444', 'rgba(239,68,68,0.12)')}</td>
+          ? pill('Validée', '#9CCB8E', 'rgba(156,203,142,0.12)')
+          : pill('Refusée', '#E39A87', 'rgba(227,154,135,0.12)')}</td>
       </tr>
       <tr>
-        <td colspan="2" style="font-size:15px;font-weight:700;color:#e8e4dc;">${esc(categoryLabel)}</td>
+        <td colspan="2" style="font-size:15px;font-weight:700;color:#EAEBE4;">${esc(categoryLabel)}</td>
       </tr>
       ${!isApproved && reason ? `<tr>
-        <td colspan="2" style="font-size:13px;color:#ef4444;padding-top:12px;line-height:1.5;">Motif : ${esc(reason)}</td>
+        <td colspan="2" style="font-size:13px;color:#E39A87;padding-top:12px;line-height:1.5;">Motif : ${esc(reason)}</td>
       </tr>` : ''}
     </table>
 
-    ${cta(isApproved ? 'Voir mon profil →' : 'Soumettre une nouvelle preuve →', `${appUrl}/coach/profile`, isApproved ? '#4ade80' : '#7c3aed')}
+    ${cta(isApproved ? 'Voir mon profil →' : 'Soumettre une nouvelle preuve →', `${appUrl}/coach/profile`)}
   `)
 
   await sendEmail('coach_proof_reviewed', {
     to:   email,
     subject: isApproved
-      ? `✅ Votre preuve "${categoryLabel}" est validée`
-      : `❌ Votre preuve "${categoryLabel}" a été refusée`,
+      ? `Ta preuve "${categoryLabel}" est validée`
+      : `Ta preuve "${categoryLabel}" a été refusée`,
     html,
   })
 }
@@ -518,15 +518,15 @@ export async function sendAdminAlertEmail({ subject, details }: { subject: strin
 
   const rows = Object.entries(details)
     .map(([k, v]) => `<tr>
-      <td style="font-size:12px;color:rgba(232,228,220,0.4);padding:4px 12px 4px 0;vertical-align:top;">${esc(k)}</td>
-      <td style="font-size:13px;color:#e8e4dc;font-family:monospace;word-break:break-all;">${esc(String(v ?? '—'))}</td>
+      <td style="font-size:12px;color:#9EA994;padding:4px 12px 4px 0;vertical-align:top;">${esc(k)}</td>
+      <td style="font-size:13px;color:#EAEBE4;font-family:monospace;word-break:break-all;">${esc(String(v ?? '—'))}</td>
     </tr>`)
     .join('')
 
   const html = shell(`
-    <p style="font-size:12px;color:#f87171;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Alerte technique</p>
-    <h1 style="font-size:20px;font-weight:800;color:#e8e4dc;letter-spacing:-0.4px;margin-bottom:16px;line-height:1.3;">${esc(subject)}</h1>
-    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(232,228,220,0.03);border:1px solid rgba(232,228,220,0.07);border-radius:12px;padding:16px 18px;">
+    <p style="font-size:12px;color:#E39A87;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Alerte technique</p>
+    <h1 style="font-size:20px;font-weight:800;color:#EAEBE4;letter-spacing:-0.4px;margin-bottom:16px;line-height:1.3;">${esc(subject)}</h1>
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:rgba(199,203,184,0.03);border:1px solid rgba(199,203,184,0.07);border-radius:12px;padding:16px 18px;">
       ${rows}
     </table>
   `)

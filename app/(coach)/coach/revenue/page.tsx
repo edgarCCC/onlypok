@@ -165,7 +165,7 @@ export default function RevenuePage() {
             <ArrowLeft size={13} /> Tableau de bord
           </Link>
           <p style={{ fontSize: 11, color: SILVER, marginBottom: 8, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Revenus</p>
-          <h1 className="rev-title" style={{ fontSize: 44, fontWeight: 700, color: CREAM, letterSpacing: '-1px', lineHeight: 1, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>
+          <h1 className="rev-title" style={{ fontSize: 'var(--text-title)', fontWeight: 600, color: CREAM, letterSpacing: '-.022em', lineHeight: 1.14, fontFamily: 'var(--font-syne,sans-serif)', margin: 0 }}>
             Mes revenus
           </h1>
         </div>

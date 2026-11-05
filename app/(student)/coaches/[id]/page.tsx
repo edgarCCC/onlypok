@@ -11,13 +11,11 @@ import {
   Target, Settings, TrendingUp, ChevronDown,
 } from 'lucide-react'
 import FourAcesLoader from '@/components/FourAcesLoader'
-import { useUser } from '@/hooks/useUser'
+import RoleHeader from '@/components/layout/RoleHeader'
 
 const CREAM  = 'var(--text)'
 const SILVER = 'var(--text-2)'
-const DIM    = 'color-mix(in srgb, var(--brand) 18%, transparent)'
 const VIOLET = 'var(--brand)'
-const CYAN   = 'var(--brand)'
 
 const VARIANT_COLORS: Record<string, string> = {
   'MTT': 'var(--brand)', 'Cash': 'var(--gain)', 'Live': 'var(--brand)',
@@ -98,7 +96,6 @@ export default function CoachProfilePage() {
   const params  = useParams<{ id: string }>()
   const router  = useRouter()
   const supabase = useMemo(() => createClient(), [])
-  const { profile } = useUser()
 
   const [coach,         setCoach]         = useState<Coach | null>(null)
   const [reviews,       setReviews]       = useState<Review[]>([])
@@ -196,35 +193,19 @@ export default function CoachProfilePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: CREAM }}>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        background: `transparent, transparent`,
-        transition: 'background 0.8s ease' }} />
 
-      {/* ── Header fixe ── */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 64, background: 'var(--bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid color-mix(in srgb, var(--overlay) 7%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 clamp(16px,3vw,40px)' }}>
-        <Link href="/formations" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--brand)', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--font-logo)', fontWeight: 700, fontSize: 15, letterSpacing: '0.18em', color: CREAM }}>ONLYPOK</span>
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: profile?.role === 'coach' ? 'var(--brand)' : 'var(--brand)', padding: '2px 7px', border: `1px solid ${profile?.role === 'coach' ? 'color-mix(in srgb, var(--brand) 35%, transparent)' : 'color-mix(in srgb, var(--brand) 35%, transparent)'}`, borderRadius: 4 }}>{profile?.role === 'coach' ? 'Coach' : 'Élève'}</span>
-        </Link>
-        <button onClick={() => router.back()} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: SILVER, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500, padding: 0 }}>
-          <ArrowLeft size={13} /> Retour
+      <RoleHeader />
+
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: 'var(--space-4) 28px 100px' }}>
+        <button type="button" onClick={() => router.back()} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: SILVER, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500, padding: 'var(--space-2) 0', marginBottom: 'var(--space-2)' }}>
+          <ArrowLeft size={13} aria-hidden="true" /> Retour
         </button>
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--on-brand)', overflow: 'hidden', border: '1.5px solid color-mix(in srgb, var(--brand) 40%, transparent)', flexShrink: 0, position: 'relative' }}>
-          {profile?.avatar_url
-            ? <Image src={profile.avatar_url} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
-            : (profile?.username ?? 'E')[0].toUpperCase()}
-        </div>
-      </header>
-
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto', padding: '88px 28px 100px' }}>
 
         {/* ── Hero card ────────────────────────────────────────────────── */}
         <div style={{ background: 'color-mix(in srgb, var(--brand) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--brand) 8%, transparent)', borderRadius: 20, overflow: 'visible', marginBottom: 24, position: 'relative' }}>
 
           {/* Banner */}
-          <div style={{ height: 220, borderRadius: '20px 20px 0 0', overflow: 'hidden', position: 'relative', background: `linear-gradient(135deg, color-mix(in srgb, ${cardColor} 33%, transparent) 0%, color-mix(in srgb, ${cardColor} 13%, transparent) 55%, color-mix(in srgb, var(--bg) 50%, transparent) 100%)` }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, color-mix(in srgb, var(--bg) 65%, transparent) 100%)' }} />
+          <div style={{ height: 220, borderRadius: '20px 20px 0 0', overflow: 'hidden', position: 'relative', background: 'var(--surface-2)' }}>
             {modeLabel && (
               <div style={{ position: 'absolute', top: 14, right: 16, display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 99, background: 'color-mix(in srgb, var(--bg) 75%, transparent)', backdropFilter: 'blur(8px)', border: `1px solid color-mix(in srgb, ${modeLabel.color} 25%, transparent)`, color: modeLabel.color }}>
                 <modeLabel.icon size={11} /> {modeLabel.text}
@@ -233,7 +214,7 @@ export default function CoachProfilePage() {
           </div>
 
           {/* Avatar */}
-          <div style={{ position: 'absolute', top: 176, left: 32, zIndex: 10, width: 88, height: 88, borderRadius: '50%', border: `4px solid var(--bg)`, overflow: 'hidden', background: coach.avatar_url ? 'transparent' : `transparent`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 600, color: 'var(--text)', boxShadow: 'none' }}>
+          <div style={{ position: 'absolute', top: 176, left: 32, zIndex: 10, width: 88, height: 88, borderRadius: '50%', border: `4px solid var(--bg)`, overflow: 'hidden', background: coach.avatar_url ? 'transparent' : 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 600, color: 'var(--text)', boxShadow: 'none' }}>
             {coach.avatar_url
               ? <Image src={coach.avatar_url} alt={coach.username ?? 'Coach'} fill sizes="88px" style={{ objectFit: 'cover' }} />
               : initials}
