@@ -21,6 +21,8 @@ const SCALE: { label: string; range: string; pts: number }[] = [
   { label: 'Bon', range: '7 %', pts: 2 },
   { label: 'Proche', range: '15 %', pts: 1 },
 ]
+/* Choix d'Edgar : des boutons d'ajustement plutôt qu'un champ ou un curseur, grand chiffre et barre au-dessus. */
+const STEPS = [-10, -5, -1, 1, 5, 10]
 const emptyHands = (): (Card | null)[][] => [[null, null], [null, null], [null, null]]
 const emptyBoard = (): (Card | null)[] => [null, null, null, null, null]
 const initGuesses = (n: number) => (n === 3 ? [34, 33, 33] : [50, 50])
@@ -119,7 +121,8 @@ export default function EquityTool({ backHref = '/trainer' }: { backHref?: strin
     if (mode === 'quiz' && quizHands.length === 0) dealQuiz(quizType, numHands)
   }, [mode, quizHands.length, dealQuiz, quizType, numHands])
 
-  const setGuess = (hi: number, value: number) => setGuesses((previous) => {
+  const adjustGuess = (hi: number, delta: number) => setGuesses((previous) => {
+    const value = Math.max(0, Math.min(100, previous[hi] + delta))
     const next = previous.map((guess, index) => (index === hi ? value : guess))
     if (numHands === 2) next[1 - hi] = 100 - value
     return next
@@ -256,7 +259,7 @@ export default function EquityTool({ backHref = '/trainer' }: { backHref?: strin
             {Array.from({ length: numHands }, (_, hi) => (
               <div key={hi} className="eq-guess-row" data-hand={hi}>
                 <div className="eq-guess-head">
-                  <label htmlFor={`eq-guess-${hi}`}><i aria-hidden="true" />Main {hi + 1}</label>
+                  <span className="eq-guess-name"><i aria-hidden="true" />Main {hi + 1}</span>
                   {quizResults
                     ? <span className="eq-guess-vals"><span className="t-3">{fmt(guesses[hi])} %</span> <b>{fmt(quizResults[hi])} %</b></span>
                     : <b className="eq-guess-num">{guesses[hi]} %</b>}
@@ -267,17 +270,20 @@ export default function EquityTool({ backHref = '/trainer' }: { backHref?: strin
                     <em style={{ left: `${guesses[hi]}%` }} />
                   </div>
                 ) : (
-                  <input
-                    id={`eq-guess-${hi}`}
-                    className="eq-range"
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={guesses[hi]}
-                    disabled={numHands === 2 && hi === 1}
-                    onChange={(event) => setGuess(hi, Number(event.target.value))}
-                  />
+                  <>
+                    <div className="eq-compare" aria-hidden="true"><i style={{ transform: `scaleX(${guesses[hi] / 100})` }} /></div>
+                    {numHands === 2 && hi === 1 ? (
+                      <p className="eq-hint">100 % moins la main 1</p>
+                    ) : (
+                      <div className="eq-steps" role="group" aria-label={`Ajuster la main ${hi + 1}`}>
+                        {STEPS.map((delta) => (
+                          <button key={delta} type="button" className="eq-step" aria-label={`${delta > 0 ? 'Plus' : 'Moins'} ${Math.abs(delta)} points`} onClick={() => adjustGuess(hi, delta)}>
+                            {delta > 0 ? `+${delta}` : `−${Math.abs(delta)}`}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}

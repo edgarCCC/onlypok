@@ -185,7 +185,7 @@
 .eq-table > .ui-seg { align-self: flex-start; }
 .eq-hands { display: flex; flex-wrap: wrap; gap: var(--space-6) var(--space-8); }
 .eq-hand { display: grid; gap: var(--space-2); }
-.eq-hand .t-caps i, .eq-guess-head label i { display: inline-block; width: 8px; height: 8px; margin-right: var(--space-2); border-radius: var(--radius-cell); background: var(--hand); }
+.eq-hand .t-caps i, .eq-guess-name i { display: inline-block; width: 8px; height: 8px; margin-right: var(--space-2); border-radius: var(--radius-cell); background: var(--hand); }
 .eq-cards { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 .eq-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 72px; padding: 0; background: none; border: 1px dashed var(--border-strong); border-radius: 8px; color: var(--text); font: 700 1.375rem/1 var(--font-text); font-variant-numeric: tabular-nums; transition: transform 160ms var(--ease-out), border-color var(--dur-hover) ease, background-color var(--dur-hover) ease; }
 button.eq-slot { cursor: pointer; }
@@ -218,9 +218,10 @@ button.eq-slot:active { transform: scale(.96); transition-duration: var(--dur-pr
 .eq-guess-num { font-size: var(--text-title); font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .eq-guess-vals { font-variant-numeric: tabular-nums; }
 .eq-guess-vals b { margin-left: var(--space-2); font-size: var(--text-title); font-weight: 600; letter-spacing: -.02em; }
-.eq-range { width: 100%; height: 24px; margin: 0; background: none; accent-color: var(--brand); cursor: grab; }
-.eq-range:active { cursor: grabbing; }
-.eq-range:disabled { cursor: default; opacity: .55; }
+.eq-guess-name { font-weight: 500; }
+.eq-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-1); }
+.eq-step { min-height: 40px; padding: 0; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font: 600 var(--text-label)/1 var(--font-text); font-variant-numeric: tabular-nums; cursor: pointer; transition: transform 140ms var(--ease-out), background-color var(--dur-hover) ease; }
+.eq-step:active { transform: scale(.94); transition-duration: var(--dur-press); }
 .eq-compare { position: relative; height: 8px; overflow: visible; background: var(--surface-2); border-radius: 4px; }
 .eq-compare i { position: absolute; inset: 0; background: var(--hand); border-radius: 4px; transform-origin: left; }
 .eq-compare em { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--text); border-radius: 1px; }
@@ -271,7 +272,7 @@ button.eq-slot:active { transform: scale(.96); transition-duration: var(--dur-pr
   .tr-back:hover { color: var(--text); }
   .hub-tile:hover { background: var(--surface-2); border-color: var(--border-strong); }
   .hub-links a:hover { text-decoration: underline; }
-  .eq-pick:not(:disabled):hover { background: var(--surface-3); }
+  .eq-pick:not(:disabled):hover, .eq-step:hover { background: var(--surface-3); }
   button.eq-slot:hover { border-color: var(--text-3); }
   .tr-chip:not([aria-pressed="true"]):hover { background: var(--surface-2); color: var(--text); }
   .tr-key:not([aria-disabled="true"]):hover { background: var(--surface-2); border-color: var(--text-3); }
@@ -287,5 +288,5 @@ button.eq-slot:active { transform: scale(.96); transition-duration: var(--dur-pr
   .tr-seat { transition: background-color 150ms ease; }
   .tr-stat-bar i { transition: none; }
   .eq-bar i { transition: none; }
-  .eq-pick:active:not(:disabled), button.eq-slot:active, .hub-tile:active { transform: none; }
+  .eq-pick:active:not(:disabled), .eq-step:active, button.eq-slot:active, .hub-tile:active { transform: none; }
 }
