@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { ADMIN_LOGIN_ROUTE, isAdminRoute, isCoachRoute, isStudentRoute } from '@/lib/routes'
+import { ADMIN_LOGIN_ROUTE, isAdminRoute, isCoachRoute, isStudentRoute, opensOnRegister } from '@/lib/routes'
 import { homeForRole, isAuthRoute, safeNext } from '@/lib/auth-redirect'
 
 export async function proxy(request: NextRequest) {
@@ -39,8 +39,9 @@ export async function proxy(request: NextRequest) {
     }
     const isProtected = isCoachRoute(pathname) || isStudentRoute(pathname)
     if (isProtected) {
-      // Retour après connexion (N2) : /login reçoit le chemin et la query d'origine
-      const loginUrl = new URL('/login', request.url)
+      // Retour après connexion (N2) : la page d'entrée reçoit le chemin et la query d'origine.
+      // Le trainer et le tracker amènent sur la création de compte, le reste sur la connexion.
+      const loginUrl = new URL(opensOnRegister(pathname) ? '/register' : '/login', request.url)
       loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`)
       return NextResponse.redirect(loginUrl)
     }

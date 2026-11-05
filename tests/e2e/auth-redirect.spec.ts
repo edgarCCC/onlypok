@@ -73,14 +73,30 @@ test.describe('Proxy — visiteur sur une route protégée (serveur requis)', ()
   test('redirige vers /login?next=<chemin + query d’origine>', async ({ request }) => {
     const res = await request.get('/schedule?tab=upcoming', { maxRedirects: 0 })
     expect(res.status()).toBe(307)
-    const location = new URL(res.headers()['location'])
+    const location = new URL(res.headers()['location'], 'http://localhost')
     expect(location.pathname).toBe('/login')
     expect(location.searchParams.get('next')).toBe('/schedule?tab=upcoming')
+  })
+
+  test('le trainer demande un compte : le visiteur arrive sur la création de compte', async ({ request }) => {
+    const res = await request.get('/trainer/ranges?share=abc', { maxRedirects: 0 })
+    expect(res.status()).toBe(307)
+    const location = new URL(res.headers()['location'], 'http://localhost')
+    expect(location.pathname).toBe('/register')
+    expect(location.searchParams.get('next')).toBe('/trainer/ranges?share=abc')
+  })
+
+  test('le tracker demande un compte : le visiteur arrive sur la création de compte', async ({ request }) => {
+    const res = await request.get('/tracker/stats', { maxRedirects: 0 })
+    expect(res.status()).toBe(307)
+    const location = new URL(res.headers()['location'], 'http://localhost')
+    expect(location.pathname).toBe('/register')
+    expect(location.searchParams.get('next')).toBe('/tracker/stats')
   })
 
   test('le lecteur /formations/<id>/learn garde sa cible', async ({ request }) => {
     const res = await request.get('/formations/abc/learn', { maxRedirects: 0 })
     expect(res.status()).toBe(307)
-    expect(new URL(res.headers()['location']).searchParams.get('next')).toBe('/formations/abc/learn')
+    expect(new URL(res.headers()['location'], 'http://localhost').searchParams.get('next')).toBe('/formations/abc/learn')
   })
 })

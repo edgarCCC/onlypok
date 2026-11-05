@@ -30,11 +30,6 @@ test.describe('Pages publiques', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
 
-  test('trainer hub accessible', async ({ page }) => {
-    await page.goto('/trainer')
-    await expect(page).toHaveTitle(/Trainer poker/i)
-  })
-
   test('pages légales accessibles depuis le footer', async ({ page }) => {
     await page.goto('/legal/cgu')
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/Conditions générales/i)

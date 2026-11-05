@@ -16,11 +16,6 @@ export interface PublicRoute {
 export const PUBLIC_ROUTES: readonly PublicRoute[] = [
   { path: '/',                       changeFrequency: 'weekly',  priority: 1 },
   { path: '/formations',             changeFrequency: 'daily',   priority: 0.9 },
-  { path: '/trainer',                changeFrequency: 'monthly', priority: 0.7 },
-  { path: '/trainer/ranges',         changeFrequency: 'monthly', priority: 0.6 },
-  { path: '/trainer/equity',         changeFrequency: 'monthly', priority: 0.6 },
-  { path: '/trainer/quiz',           changeFrequency: 'monthly', priority: 0.6 },
-  { path: '/tracker',                changeFrequency: 'monthly', priority: 0.6 },
   { path: '/register',               changeFrequency: 'yearly',  priority: 0.5 },
   { path: '/become-coach',           changeFrequency: 'yearly',  priority: 0.5 },
   { path: '/legal/mentions-legales', changeFrequency: 'yearly',  priority: 0.1 },
@@ -52,8 +47,10 @@ export const LANDING_ROUTES = {
   legalCookies: '/legal/cookies',
 } as const
 
+// Trainer et tracker : un compte est obligatoire (Edgar, 05/11). Un visiteur arrive sur la création de compte, pas sur la connexion.
+const REGISTER_FIRST_ROUTES: readonly string[] = ['/trainer', '/tracker']
 // Espace élève : connecté, quel que soit le rôle
-export const STUDENT_ROUTES: readonly string[] = ['/dashboard', '/schedule', '/train', '/messages', '/coaching']
+export const STUDENT_ROUTES: readonly string[] = ['/dashboard', '/schedule', '/train', ...REGISTER_FIRST_ROUTES, '/messages', '/coaching']
 // Lecteur de formation, /formations/[id]/learn : connecté (la garde d'achat reste dans la page)
 const LEARN_ROUTE = /^\/formations\/[^/]+\/learn(?:\/|$)/
 // Espace coach : rôle coach ou admin
@@ -67,6 +64,10 @@ export const PROTECTED_ROUTES: readonly string[] = [...COACH_ROUTES, ...ADMIN_RO
 
 function matchesRoute(pathname: string, route: string): boolean {
   return pathname === route || pathname.startsWith(`${route}/`)
+}
+
+export function opensOnRegister(pathname: string): boolean {
+  return REGISTER_FIRST_ROUTES.some((route) => matchesRoute(pathname, route))
 }
 
 export function isStudentRoute(pathname: string): boolean {

@@ -1,4 +1,4 @@
-// S6 — CTA final : le dernier mot est honnête. Un seul bouton plein, un lien vers le trainer sans compte.
+// S6 — CTA final : le dernier mot est honnête. Un seul bouton plein, un lien pour qui a déjà un compte.
 import Button from '@/components/ui/Button'
 import { LANDING_ROUTES } from '@/lib/routes'
 
@@ -11,7 +11,7 @@ export default function FinalCta() {
         <p className="lp-final-sub">C’est gratuit. Tu choisiras une formation, un coach, ou juste le trainer.</p>
         <div className="lp-cta-row" data-final-cta>
           <Button variant="primary" size="lg" href={LANDING_ROUTES.register}>Créer mon compte</Button>
-          <Button variant="link" arrow="right" href={LANDING_ROUTES.trainer}>Continuer sans compte&nbsp;: le trainer</Button>
+          <Button variant="link" arrow="right" href={LANDING_ROUTES.login}>J’ai déjà un compte</Button>
         </div>
         </div>
       </div>
