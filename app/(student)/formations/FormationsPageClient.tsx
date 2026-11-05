@@ -235,8 +235,6 @@ export default function FormationsPageClient({
   return (
     <div className="sform-root" style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', overflowX: 'hidden' }}>
       <style>{`
-        @media (hover: hover) and (pointer: fine) { .sform-tab-link:hover { color: ${CREAM} !important; } }
-        @media (max-width: 1100px) { .sform-tabs :is(button, a) { padding: 8px 12px !important; } }
         @media (max-width: 700px) {
           .sform-header-row { flex-wrap: wrap !important; height: auto !important; padding: 10px 16px !important; row-gap: 10px !important; }
           .sform-header-center { min-width: 100% !important; order: 3; }
@@ -291,7 +289,7 @@ export default function FormationsPageClient({
           {/* Centre */}
           <div ref={centerRef} className="sform-header-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
             {/* Tabs */}
-            <div className="sform-tabs" style={{ position: 'absolute', display: 'inline-flex', background: 'var(--surface)', border: '1px solid var(--forest)', borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
+            <div style={{ position: 'absolute', display: 'inline-flex', background: 'var(--surface)', border: '1px solid var(--forest)', borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
               {(['formations','videos','coaching'] as const).map(t => {
                 const active = tab === t
                 const labels: Record<string,string> = { formations: 'Formations', videos: 'Vidéos', coaching: 'Coachs' }
@@ -303,9 +301,6 @@ export default function FormationsPageClient({
                   </button>
                 )
               })}
-              <Link href="/trainer" className="sform-tab-link" style={{ padding: '8px 24px', borderRadius: 10, color: SILVER, fontSize: 13, fontWeight: 400, textDecoration: 'none', transition: 'all 0.25s' }}>
-                Trainer
-              </Link>
             </div>
 
             {/* Pilule compacte */}
@@ -332,7 +327,7 @@ export default function FormationsPageClient({
                 <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                   {authAvatar
                     ? <Image src={authAvatar} alt="" fill sizes="28px" style={{ objectFit: 'cover' }} />
-                    : <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text)' }}>{(authUsername ?? 'U')[0].toUpperCase()}</span>
+                    : <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--on-brand)' }}>{(authUsername ?? 'U')[0].toUpperCase()}</span>
                   }
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 600, color: CREAM, whiteSpace: 'nowrap' }}>

@@ -61,8 +61,6 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
 
       <style>{`
         .fdet-header :is(a, button):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-        @media (hover: hover) and (pointer: fine) { .fdet-tab-link:hover { color: ${CREAM} !important; } }
-        @media (max-width: 1100px) { .fdet-tabs :is(button, a) { padding: 8px 12px !important; } }
         /* « Se connecter » visiteur : dans la rangée à partir de 960px, dans le menu en dessous (N1 / P1) */
         .fdet-login-row { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1); }
         .fdet-login-menu { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease; }
@@ -106,7 +104,7 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
 
             {/* Tabs (visibles quand non scrollé) */}
-            <div className="fdet-tabs" style={{
+            <div style={{
               position: 'absolute',
               display: 'inline-flex', background: 'var(--surface)', border: '1px solid var(--forest)',
               borderRadius: 14, padding: 4, gap: 4,
@@ -127,9 +125,6 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
                   </button>
                 )
               })}
-              <Link href="/trainer" className="fdet-tab-link" style={{ padding: '8px 24px', borderRadius: 10, color: SILVER, fontSize: 13, fontWeight: 400, textDecoration: 'none', transition: 'all 0.25s' }}>
-                Trainer
-              </Link>
             </div>
 
             {/* Pilule compacte (visible quand scrollé) */}
