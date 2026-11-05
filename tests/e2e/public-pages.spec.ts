@@ -5,7 +5,7 @@ test.describe('Pages publiques', () => {
     await page.goto('/')
     await expect(page).toHaveTitle(/OnlyPok/i)
     await expect(page.locator('h1').first()).toBeVisible()
-    await expect(page.getByRole('link', { name: 'ONLYPOK' })).toBeVisible()
+    await expect(page.getByRole('link', { name: /OnlyPok, accueil/ })).toBeVisible()
   })
 
   test('landing mobile — pas de scroll horizontal', async ({ page }) => {
@@ -25,8 +25,9 @@ test.describe('Pages publiques', () => {
 
   test('listing coachs se charge', async ({ page }) => {
     await page.goto('/coaches')
-    await expect(page).toHaveTitle(/Coachs poker/i)
-    await expect(page.getByRole('heading', { name: /coachs/i }).first()).toBeVisible()
+    // L'annuaire vit dans la marketplace : /coaches renvoie vers son onglet
+    await expect(page).toHaveURL(/\/formations\?tab=coaching/)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
 
   test('trainer hub accessible', async ({ page }) => {

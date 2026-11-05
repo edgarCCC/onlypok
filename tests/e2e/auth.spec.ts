@@ -4,8 +4,8 @@ test.describe('Authentification', () => {
   test('login affiche une erreur avec de mauvais identifiants', async ({ page }) => {
     await page.goto('/login')
     await page.getByPlaceholder('toi@exemple.com').fill('inexistant@test.com')
-    await page.getByPlaceholder('••••••••').fill('mauvais-mot-de-passe')
-    await page.getByRole('button', { name: /Accéder à mon espace/i }).click()
+    await page.getByLabel('Mot de passe', { exact: true }).fill('mauvais-mot-de-passe')
+    await page.getByRole('button', { name: 'Se connecter' }).click()
     // filter() exclut le route-announcer Next.js qui a aussi role="alert"
     await expect(page.getByRole('alert').filter({ hasText: /incorrect/i })).toBeVisible({ timeout: 15000 })
   })
@@ -27,7 +27,7 @@ test.describe('Authentification', () => {
 
   test('login → lien inscription élève', async ({ page }) => {
     await page.goto('/login')
-    await page.getByRole('link', { name: /Créer un compte élève/i }).click()
+    await page.getByRole('link', { name: 'Crée-le' }).click()
     await expect(page).toHaveURL(/\/register/)
   })
 })

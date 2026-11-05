@@ -11,10 +11,9 @@ const COACH   = { email: process.env.E2E_COACH_EMAIL,   password: process.env.E2
 
 async function login(page: import('@playwright/test').Page, email: string, password: string, role: 'student' | 'coach') {
   await page.goto('/login')
-  if (role === 'coach') await page.getByRole('button', { name: /Coach/ }).first().click()
   await page.getByPlaceholder('toi@exemple.com').fill(email)
-  await page.getByPlaceholder('••••••••').fill(password)
-  await page.getByRole('button', { name: /Accéder à mon espace/i }).click()
+  await page.getByLabel('Mot de passe', { exact: true }).fill(password)
+  await page.getByRole('button', { name: 'Se connecter' }).click()
   await page.waitForURL(role === 'coach' ? /\/coach\/dashboard/ : /\/formations/, { timeout: 15000 })
 }
 
