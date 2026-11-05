@@ -44,6 +44,19 @@ test.describe('Pages publiques', () => {
     await expect(page).toHaveTitle(/Formations poker/i)
   })
 
+  test('marketplace : les onglets sont centrés sur la page, alignés sur la recherche', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 800 })
+    await page.goto('/formations')
+    // La largeur des actions n'est définitive qu'une fois la session lue
+    await expect(page.getByRole('link', { name: 'Se connecter' }).first()).toBeVisible()
+    const tabs = page.locator('header').getByRole('button', { name: 'Coachs', exact: true }).locator('..')
+    await expect(async () => {
+      const box = await tabs.boundingBox()
+      expect(box).not.toBeNull()
+      expect(Math.abs(box!.x + box!.width / 2 - 720)).toBeLessThanOrEqual(2)
+    }).toPass()
+  })
+
   test('listing coachs se charge', async ({ page }) => {
     await page.goto('/coaches')
     // L'annuaire vit dans la marketplace : /coaches renvoie vers son onglet

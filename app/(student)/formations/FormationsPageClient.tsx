@@ -259,6 +259,17 @@ export default function FormationsPageClient({
         @media (max-width: 959px) { .sform-login-row { display: none !important; } }
         @media (min-width: 960px) { .sform-login-menu { display: none !important; } }
         .sform-q-input::placeholder { color: var(--text-3); }
+        /* À partir de 960px, les onglets se centrent sur la page, alignés sur la recherche, et non entre le logo et les actions, de largeurs différentes.
+           Ils gardent une vraie place dans la grille : si la largeur manque, ils glissent sans rien chevaucher. */
+        @media (min-width: 960px) {
+          .sform-header-row { display: grid !important; grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr); }
+          .sform-header-row > :first-child { justify-self: start; }
+          .sform-header-row > :last-child { justify-self: end; }
+          .sform-header-center { display: grid !important; justify-items: center; }
+          .sform-header-center > * { position: static !important; grid-area: 1 / 1; }
+        }
+        @media (min-width: 960px) and (max-width: 1099px) { .sform-pill-label { max-width: 120px !important; } }
+        @media (max-width: 959px) { .sform-tabs button { padding: 8px 12px !important; } }
       `}</style>
 
       {/* Lumière centrale forte */}
@@ -289,7 +300,7 @@ export default function FormationsPageClient({
           {/* Centre */}
           <div ref={centerRef} className="sform-header-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
             {/* Tabs */}
-            <div style={{ position: 'absolute', display: 'inline-flex', background: 'var(--surface)', border: '1px solid var(--forest)', borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
+            <div className="sform-tabs" style={{ position: 'absolute', display: 'inline-flex', background: 'var(--surface)', border: '1px solid var(--forest)', borderRadius: 14, padding: 4, gap: 4, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: showBigSearch ? 1 : 0, pointerEvents: showBigSearch ? 'auto' : 'none', transform: showBigSearch ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.92)', zIndex: 10 }}>
               {(['formations','videos','coaching'] as const).map(t => {
                 const active = tab === t
                 const labels: Record<string,string> = { formations: 'Formations', videos: 'Vidéos', coaching: 'Coachs' }
@@ -306,7 +317,7 @@ export default function FormationsPageClient({
             {/* Pilule compacte */}
             <div style={{ position: 'absolute', transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)', opacity: !showBigSearch ? 1 : 0, pointerEvents: !showBigSearch ? 'auto' : 'none', transform: !showBigSearch ? 'translateY(0) scale(1)' : 'translateY(-16px) scale(0.92)' }}>
               <button onClick={e => { e.stopPropagation(); setIsSearchOverlayOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--surface)', border: '1.5px solid var(--forest)', borderRadius: 40, padding: '6px 8px 6px 20px', cursor: 'pointer', boxShadow: 'var(--shadow-float)' }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: CREAM, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pillLabel}</span>
+                <span className="sform-pill-label" style={{ fontSize: 13, fontWeight: 700, color: CREAM, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pillLabel}</span>
                 <div style={{ width: 1, height: 16, background: `color-mix(in srgb, var(--brand) 12%, transparent)` }} />
                 <span style={{ fontSize: 13, color: SILVER }}>Rechercher…</span>
                 <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--violet)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }}>

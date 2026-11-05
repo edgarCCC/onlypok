@@ -61,6 +61,15 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
 
       <style>{`
         .fdet-header :is(a, button):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        /* À partir de 960px, les onglets se centrent sur la page, comme sur la marketplace (FormationsPageClient). */
+        @media (min-width: 960px) {
+          .fdet-header-row { display: grid !important; grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr); }
+          .fdet-header-left { display: flex !important; align-items: center; gap: 24px; justify-self: start; }
+          .fdet-header-row > :last-child { justify-self: end; }
+          .fdet-header-center { display: grid !important; justify-items: center; }
+          .fdet-header-center > * { position: static !important; grid-area: 1 / 1; }
+        }
+        @media (max-width: 959px) { .fdet-tabs button { padding: 8px 12px !important; } }
         /* « Se connecter » visiteur : dans la rangée à partir de 960px, dans le menu en dessous (N1 / P1) */
         .fdet-login-row { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s cubic-bezier(0.23,1,0.32,1); }
         .fdet-login-menu { color: ${SILVER}; transition: color 0.15s ease, background-color 0.15s ease; }
@@ -81,9 +90,10 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
         transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
       }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', height: 80, padding: '0 40px', gap: 24 }}>
+        <div className="fdet-header-row" style={{ display: 'flex', alignItems: 'center', height: 80, padding: '0 40px', gap: 24 }}>
 
           {/* Back + Logo + badge Élève */}
+          <div className="fdet-header-left" style={{ display: 'contents' }}>
           <button onClick={() => router.back()} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, color: SILVER, flexShrink: 0, transition: 'color 0.15s, background 0.15s' }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = CREAM; (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--brand) 5%, transparent)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = SILVER; (e.currentTarget as HTMLButtonElement).style.background = 'none' }}>
@@ -99,12 +109,13 @@ export default function DetailHeader({ initialContentType, isScrolled, isSearchO
               {profile?.role === 'coach' ? 'Coach' : 'Élève'}
             </span>
           )}
+          </div>
 
           {/* Centre : tabs ↔ pilule compacte */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
+          <div className="fdet-header-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', height: 48, alignItems: 'center' }}>
 
             {/* Tabs (visibles quand non scrollé) */}
-            <div style={{
+            <div className="fdet-tabs" style={{
               position: 'absolute',
               display: 'inline-flex', background: 'var(--surface)', border: '1px solid var(--forest)',
               borderRadius: 14, padding: 4, gap: 4,
